@@ -1,68 +1,103 @@
-interface OverviewProps {
-  balanceInfo: BalanceInfo | null;
-}
+import { formatBalance, getCommaSeperatedNumber } from "@/utils";
+import { usdcSearchDenom, useAccountBalance } from "@/hooks/useAccountBalance";
+import { RightArrowIcon, ScanIcon } from "./Icons";
+import { WalletSend } from "./WalletSend/WalletSend";
+import { WalletReceive } from "./WalletReceive";
+import type { AbstraxionAccount } from "@/types";
 
-const XION_TO_USDC_CONVERSION = 50;
+export const XION_TO_USDC_CONVERSION = 50;
 
-export const Overview = ({ balanceInfo }: OverviewProps) => {
-  const xionBalance = balanceInfo?.balances.find(
-    (balance) => balance.denom === "xion"
+export const Overview = ({ account }: { account?: AbstraxionAccount }) => {
+  const { balanceInfo: accountBalance, sendTokens } = useAccountBalance();
+
+  const xionBalance = accountBalance?.balances.find(
+    (balance) => balance.denom === "uxion",
+  );
+  const usdcBalance = accountBalance.balances.find(
+    (coin) => coin.denom === usdcSearchDenom,
   );
 
   return (
-    <div className="w-full bg-gradient-to-l from-slate-300 via-slate-400 to-slate-400 rounded-2xl p-6">
-      <div className="flex mb-6 items-center">
-        <h1 className="font-akkuratLL text-white text-2xl font-bold leading-7 mr-6">
+    <div
+      style={{
+        backgroundImage: `url('/overviewBackground.png')`,
+      }}
+      className="ui-w-full ui-bg-cover ui-bg-no-repeat ui-bg-center ui-rounded-2xl ui-p-6 bg-fixed"
+    >
+      <div className="ui-mb-6 ui-flex ui-items-center">
+        <h1 className="ui-font-akkuratLL ui-mr-6 ui-text-2xl ui-font-bold ui-leading-7 ui-text-white">
           Personal Account
         </h1>
         {/* <ScanIcon color="white" /> */}
       </div>
-      <h3 className="font-akkuratLL text-white text-opacity-50 text-sm font-bold">
+      <h3 className="ui-font-akkuratLL ui-text-sm ui-text-white/50 ui-mb-2">
         Current Balance
       </h3>
-      <div className="flex justify-between items-center">
-        {balanceInfo && (
-          <h1 className="font-akkuratLL text-4xl font-bold leading-wide text-white">
-            ${balanceInfo?.total}
+      <div className="ui-flex ui-items-center ui-justify-between">
+        {accountBalance && (
+          <h1 className="ui-font-akkuratLL ui-leading-wide ui-text-4xl ui-font-bold ui-text-white">
+            ${/* TODO: Change once we support multiple currencies */}
+            {formatBalance(accountBalance.total)}
           </h1>
         )}
         {/* Hidden until functionality is in place. */}
-        {/* <div className="flex">
-          <div className="w-12 h-12 bg-black rounded-full flex justify-center items-center mr-6">
+        <div className="ui-flex">
+          {/* <div className="w-12 h-12 bg-black rounded-full flex justify-center items-center mr-6">
             <ScanIcon color="white" />
-          </div>
-          <div className="w-12 h-12 bg-black rounded-full flex justify-center items-center">
-            <RightArrowIcon color="white" />
-          </div>
-        </div> */}
+          </div> */}
+          {account?.id && (
+            <WalletReceive
+              xionAddress={account.id}
+              trigger={
+                <div className="ui-mr-4 ui-flex ui-h-12 ui-w-12 ui-items-center ui-justify-center ui-rounded-full ui-bg-black hover:ui-cursor-pointer">
+                  <ScanIcon color="white" />
+                </div>
+              }
+            />
+          )}
+          <WalletSend
+            balanceInfo={accountBalance}
+            sendTokens={sendTokens}
+            trigger={
+              <div className="ui-flex ui-h-12 ui-w-12 ui-items-center ui-justify-center ui-rounded-full ui-bg-black hover:ui-cursor-pointer">
+                <RightArrowIcon color="white" />
+              </div>
+            }
+          />
+        </div>
       </div>
       {/* Divider */}
-      <div className="my-6 w-full h-[1px] bg-white bg-opacity-20"></div>
-      {/* Wait for USDC */}
-      {/* <div className="flex justify-between items-center mb-3">
-        <p className="text-white text-base font-normal font-akkuratLL leading-normal">
-          USDC
-        </p>
-        <div className="flex">
-          <p className="text-white text-base font-normal font-akkuratLL leading-normal">
-            190 USDC
-          </p>
-          <p className="ml-6 text-right text-white text-opacity-70 text-base font-normal font-akkuratLL leading-normal">
-            $190 USDC
-          </p>
-        </div>
-      </div> */}
+      <div className="ui-my-6 ui-h-[1px] ui-w-full ui-bg-white/20" />
       {xionBalance && (
-        <div className="flex justify-between items-center">
-          <p className="text-white text-base font-normal font-akkuratLL leading-normal">
+        <div className="ui-flex ui-items-center ui-justify-between">
+          <p className="ui-font-akkuratLL ui-text-base ui-font-normal ui-leading-normal ui-text-white">
             XION
           </p>
-          <div className="flex">
-            <p className="text-white text-base font-normal font-akkuratLL leading-normal">
-              {xionBalance.amount} XION
+          <div className="ui-flex">
+            <p className="ui-font-akkuratLL ui-text-base ui-font-normal ui-leading-normal ui-text-white">
+              {getCommaSeperatedNumber(Number(xionBalance.amount))} XION
             </p>
-            <p className="ml-6 text-right text-white text-opacity-70 text-base font-normal font-akkuratLL leading-normal">
-              ${Number(xionBalance.amount) * XION_TO_USDC_CONVERSION} USDC
+            <p className="ui-font-akkuratLL ui-ml-6 ui-text-right ui-text-base ui-font-normal ui-leading-normal ui-text-white/70">
+              $
+              {formatBalance(
+                Number(xionBalance.amount) * XION_TO_USDC_CONVERSION,
+              )}{" "}
+              USD
+            </p>
+          </div>
+        </div>
+      )}
+      {usdcBalance && (
+        <div className="ui-flex ui-items-center ui-justify-between">
+          <p className="ui-font-akkuratLL ui-text-base ui-font-normal ui-leading-normal ui-text-white">
+            USDC
+          </p>
+          <div className="ui-flex">
+            <p className="ui-font-akkuratLL ui-text-base ui-font-normal ui-leading-normal ui-text-white">
+              {getCommaSeperatedNumber(Number(usdcBalance.amount))} USDC
+            </p>
+            <p className="ui-font-akkuratLL ui-ml-6 ui-text-right ui-text-base ui-font-normal ui-leading-normal ui-text-white/70">
+              ${formatBalance(Number(usdcBalance.amount))} USD
             </p>
           </div>
         </div>

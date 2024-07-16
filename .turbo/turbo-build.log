@@ -1,0 +1,47 @@
+
+> abstraxion-dashboard@0.2.0-alpha.27 build /Users/greg/Projects/burnt/xion.js/apps/abstraxion-dashboard
+> next build
+
+[@sentry/nextjs] The Sentry Next.js SDK `tunnelRoute` option will not work in combination with Next.js static exports. The `tunnelRoute` option uses serverside features that cannot be accessed in export mode. If you still want to tunnel Sentry events, set up your own tunnel: https://docs.sentry.io/platforms/javascript/troubleshooting/#using-the-tunnel-option
+   ▲ Next.js 14.0.3
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+warn  - It seems like you don't have a global error handler set up. It is recommended that you add a global-error.js file with Sentry instrumentation so that React rendering errors are reported to Sentry. Read more: https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/#react-render-errors-in-app-router
+(node:52905) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ⚠ For production Image Optimization with Next.js, the optional 'sharp' package is strongly recommended. Run 'npm i sharp', and Next.js will use it automatically for Image Optimization.
+Read more: https://nextjs.org/docs/messages/sharp-missing-in-production
+error - No Sentry auth token configured. Source maps will not be uploaded.
+To fix this, use Sentry's Vercel integration to automatically set the SENTRY_AUTH_TOKEN environment variable: https://vercel.com/integrations/sentry
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./components/ModalViews/RemoveAuthenticator/RemoveAuthenticatorForm.tsx
+62:6  Warning: React Hook useEffect has missing dependencies: 'setAbstractAccount' and 'stopPolling'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+81:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    233 kB         1.76 MB
+├ ○ /_not-found                          876 B           142 kB
+└ ○ /icon.svg                            0 B                0 B
++ First Load JS shared by all            141 kB
+  ├ chunks/623-40d4423d60421251.js       85.2 kB
+  ├ chunks/985d4aa8-725a60e92b4b3bf4.js  53.3 kB
+  ├ chunks/main-app-9e4906b2021c9a07.js  477 B
+  └ chunks/webpack-c1c223b2c417c59b.js   1.88 kB
+
+
+○  (Static)  prerendered as static content
+

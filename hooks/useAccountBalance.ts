@@ -1,52 +1,88 @@
-import { AbstraxionAccount } from "@burnt-labs/abstraxion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAbstraxionAccount, useAbstraxionSigningClient } from "@/hooks";
+import { XION_TO_USDC_CONVERSION } from "@/components/Overview";
 
-const XION_FRACTIONAL = 1000000;
+export const usdcSearchDenom =
+  "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64";
 
-export function useAccountBalance(account?: AbstraxionAccount, client?: any) {
+export function useAccountBalance() {
+  const { data: account } = useAbstraxionAccount();
+  const { client } = useAbstraxionSigningClient();
   const [balanceInfo, setBalanceInfo] = useState<BalanceInfo>({
     total: 0,
     balances: [],
   });
 
+  async function fetchBalances() {
+    try {
+      if (!account) {
+        throw new Error("No account");
+      }
+
+      if (!client) {
+        throw new Error("No signing client");
+      }
+      // TODO: Can we optimize balance fetching
+      const uxionBalance = await client.getBalance(account.id, "uxion");
+      const usdcBalance = await client.getBalance(account.id, usdcSearchDenom);
+
+      const uxionToUsd = Number(uxionBalance.amount) * XION_TO_USDC_CONVERSION;
+
+      setBalanceInfo({
+        total: uxionToUsd + Number(usdcBalance.amount),
+        balances: [uxionBalance, usdcBalance],
+      });
+    } catch (error) {
+      console.error("Error fetching balances:", error);
+    }
+  }
+
   useEffect(() => {
-    if (!account?.bech32Address) return;
+    if (account && client) {
+      fetchBalances();
+    }
+  }, [account, client]);
 
-    const fetchBalances = async () => {
-      let newBalances: Coin[] = [];
-      const uxionBalance = await client?.getBalance(
-        account.bech32Address,
-        "uxion"
-      );
-
-      if (uxionBalance?.amount) {
-        const xionBalance: Coin = {
-          denom: "xion",
-          amount: String(Number(uxionBalance.amount) * XION_FRACTIONAL),
-        };
-        newBalances.push(xionBalance);
+  async function sendTokens(
+    senderAddress: string,
+    sendAmount: number,
+    denom: string,
+    memo: string,
+  ) {
+    try {
+      if (!account) {
+        throw new Error("No account");
       }
 
-      const newTotal = newBalances.reduce(
-        (acc, curr) => acc + Number(curr.amount),
-        0
-      );
-
-      const newBalanceInfo = {
-        total: newTotal,
-        balances: newBalances,
-      };
-
-      //   Check if the new balance info is different from the old one
-      if (JSON.stringify(newBalanceInfo) === JSON.stringify(balanceInfo)) {
-        return;
+      if (!client) {
+        throw new Error("No signing client");
       }
 
-      setBalanceInfo(newBalanceInfo);
-    };
+      const convertedSendAmount = String(sendAmount * 1000000);
 
-    fetchBalances();
-  }, [account, client, balanceInfo]);
+      const res = await client.sendTokens(
+        account.id,
+        senderAddress,
+        [{ denom, amount: convertedSendAmount }],
+        {
+          amount: [{ denom: "uxion", amount: "0" }],
+          gas: "200000", // TODO: Dynamic?
+        },
+        memo,
+      );
 
-  return balanceInfo;
+      if (res.rawLog?.includes("failed")) {
+        throw new Error(res.rawLog);
+      }
+
+      fetchBalances(); // Update balances after successful token send
+      return res;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  const memoizedBalanceInfo = useMemo(() => balanceInfo, [balanceInfo]);
+
+  return { balanceInfo: memoizedBalanceInfo, sendTokens };
 }

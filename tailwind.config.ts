@@ -1,20 +1,24 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss";
+import sharedConfig from "@burnt-labs/tailwind-config/tailwind.config.ts";
 
 const config: Config = {
-  content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ["./components/**/*.{js,ts,jsx,tsx,mdx}", "./app/page.tsx"],
   theme: {
     extend: {
       backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "overview-bg":
+          "url('/apps/abstraxion-dashboard/public/overviewBackground.png')",
       },
       colors: {
         primary: "#000",
+        mainnet: "#CAF033",
+        "mainnet-bg": "rgba(4, 199, 0, 0.2)",
+        testnet: "#FFAA4A",
+        "testnet-bg": "rgba(255, 170, 74, 0.2)",
+        inactive: "#BDBDBD",
+      },
+      flexGrow: {
+        "2": "2",
       },
       fontFamily: {
         akkuratLL: ["var(--font-akkuratLL)"],
@@ -34,5 +38,7 @@ const config: Config = {
     },
   },
   plugins: [],
+  prefix: "ui-",
+  presets: [sharedConfig],
 };
-export default config
+export default config;

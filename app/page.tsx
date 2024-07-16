@@ -1,77 +1,86 @@
 "use client";
-import { useEffect } from "react";
-
+import { useContext, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AccountInfo } from "@/components/AccountInfo";
+import { AbstraxionContext } from "@/components/AbstraxionContext";
 import { Overview } from "@/components/Overview";
-
-import {
-  Abstraxion,
-  AbstraxionAccount,
-  useAbstraxionAccount,
-  useAbstraxionSigningClient,
-} from "@burnt-labs/abstraxion";
-import { useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
-import { useAccountBalance } from "@/hooks/useAccountBalance";
-import { ChevronDownIcon, WalletIcon } from "@/components/Icons";
-
-export interface AccountWithAuthenticator extends AbstraxionAccount {
-  authenticators: Authenticators;
-}
+import { Abstraxion } from "@/components/Abstraxion";
+import { useAbstraxionAccount } from "../hooks";
+import Image from "next/image";
+import type { AbstraxionAccount } from "@/types";
 
 export default function Home() {
-  const [isOpen, setIsOpen] = useState(false);
+  const searchParams = useSearchParams();
   const { data: account } = useAbstraxionAccount();
-  const { client } = useAbstraxionSigningClient();
-  const accountBalance = useAccountBalance(account, client);
+
+  const contracts = searchParams.get("contracts");
+  const stake = Boolean(searchParams.get("stake"));
+  const bank = searchParams.get("bank");
+  const grantee = searchParams.get("grantee");
+  const { isOpen, setIsOpen, isMainnet } = useContext(AbstraxionContext);
+
+  const [showMobileSiderbar, setShowMobileSiderbar] = useState(false);
 
   return (
     <>
-      {!account?.bech32Address ? (
-        <div className="flex h-screen justify-center items-center overflow-y-auto flex-1 p-6">
+      {!account?.id || (grantee && (contracts || stake || bank)) ? (
+        <div className="ui-flex ui-h-screen ui-flex-1 ui-items-center ui-justify-center ui-overflow-y-auto ui-p-6">
           <Abstraxion onClose={() => null} isOpen={true} />
         </div>
       ) : (
-        <>
-          <Sidebar />
-          <div className="h-screen overflow-y-auto flex-1 p-6">
-            <div className="relative">
-              <Abstraxion onClose={() => setIsOpen(false)} isOpen={isOpen} />
-              {/* Header */}
-              <div className="flex justify-between mb-8 items-center">
-                <h1 className="font-akkuratLL text-4xl font-bold leading-wide">
-                  Welcome Home!
-                </h1>
-                <button
-                  className="flex items-center w-52 h-12 bg-slate-100 rounded"
-                  onClick={() => setIsOpen(true)}
+        <div className="ui-flex ui-relative ui-h-screen">
+          {showMobileSiderbar ? (
+            <div className="ui-absolute ui-h-screen ui-w-screen ui-bg-black ui-bg-opacity-20 ui-backdrop-blur-md ui-z-50">
+              <Sidebar onClose={() => setShowMobileSiderbar(false)} />
+            </div>
+          ) : null}
+          <div className="ui-hidden sm:ui-flex">
+            <Sidebar />
+          </div>
+
+          <div className="ui-flex ui-flex-1 ui-flex-col">
+            <div className="ui-flex sm:!ui-hidden  ui-justify-between ui-items-center ui-bg-black ui-p-6 ui-border-b-[1px] ui-border-[#6C6A6A]">
+              <div className="ui-flex ui-items-center">
+                <Image src="/logo.png" alt="XION Logo" width="90" height="32" />
+                <div
+                  className={`ui-flex ${
+                    isMainnet ? "ui-bg-mainnet-bg" : "ui-bg-testnet-bg"
+                  } ui-px-2 ui-py-1 ui-ml-4 ${
+                    isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
+                  } ui-rounded-md ui-font-akkuratLL ui-text-xs ui-tracking-widest`}
                 >
-                  <div className="w-8 h-8 mx-2 bg-black items-center justify-center rounded-full">
-                    <WalletIcon color="white" backgroundColor="black" />
-                  </div>
-                  <p className="font-akkuratLL font-medium">Personal Account</p>
-                  <ChevronDownIcon />
-                </button>
-              </div>
-              {/* Tiles */}
-              <div className="flex max-w-7xl mx-auto">
-                {/* Left Tiles */}
-                <div className="flex flex-col flex-2">
-                  <h3 className="text-base font-bold font-akkuratLL mb-4">
-                    Overview
-                  </h3>
-                  <Overview balanceInfo={accountBalance} />
-                  <h3 className="mt-8 mb-4 text-black text-base font-bold font-akkuratLL">
-                    Account Info
-                  </h3>
-                  <AccountInfo account={account as AccountWithAuthenticator} />
+                  {isMainnet ? "MAINNET" : "TESTNET"}
                 </div>
-                {/* Right Tiles */}
-                <div className="flex flex-col flex-1"></div>
+              </div>
+              <div onClick={() => setShowMobileSiderbar(true)}>
+                <div className="ui-bg-white ui-w-8 ui-h-[1px] ui-mb-2" />
+                <div className="ui-bg-white ui-w-6 ui-h-[1px] ui-ml-auto" />
+              </div>
+            </div>
+            <div className="ui-h-screen ui-bg-black ui-flex-1 ui-overflow-y-auto ui-p-6">
+              <div className="ui-relative">
+                <Abstraxion onClose={() => setIsOpen(false)} isOpen={isOpen} />
+                {/* Tiles */}
+                <div className="ui-mx-auto ui-flex ui-max-w-7xl">
+                  {/* Left Tiles */}
+                  <div className="ui-flex-grow-2 ui-flex ui-flex-col">
+                    <h3 className="ui-font-akkuratLL ui-mb-4 ui-text-2xl ui-text-white ui-font-bold">
+                      Overview
+                    </h3>
+                    <Overview account={account as AbstraxionAccount} />
+                    <h3 className="ui-font-akkuratLL ui-mb-4 ui-mt-8 ui-text-2xl ui-font-bold ui-text-white">
+                      Account Info
+                    </h3>
+                    <AccountInfo account={account as AbstraxionAccount} />
+                  </div>
+                  {/* Right Tiles */}
+                  <div className="ui-hidden sm:ui-flex sm:ui-flex-1 sm:ui-flex-col"></div>
+                </div>
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </>
   );

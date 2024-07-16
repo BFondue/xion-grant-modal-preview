@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Providers } from "./providers";
-
 import "./globals.css";
+import "@burnt-labs/ui/dist/index.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const akkuratLL = localFont({
   src: [
@@ -31,17 +32,20 @@ const akkuratLL = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Xion Account Dashboard",
-  description: "A dashboard for managing Xion accounts.",
+  title: "XION Account Dashboard",
+  description: "A dashboard for managing XION accounts.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className={akkuratLL.variable}>
-        <Providers>
-          <div className="flex">{children}</div>
-        </Providers>
+        <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
