@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  prefix: "ui-",
   content: ["./components/**/*.{js,ts,jsx,tsx,mdx}", "./app/page.tsx"],
   theme: {
     extend: {
@@ -38,8 +39,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-  prefix: "ui-",
+  plugins: [],
   presets: [],
 };
 export default config;
