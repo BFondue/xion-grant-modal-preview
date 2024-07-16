@@ -12,11 +12,9 @@
   },
   "dependencies": {
     "@apollo/client": "^3.8.8",
-    "@burnt-labs/abstraxion": "workspace:*",
-    "@burnt-labs/constants": "workspace:*",
-    "@burnt-labs/signers": "workspace:*",
-    "@burnt-labs/tailwind-config": "workspace:*",
-    "@burnt-labs/ui": "workspace:*",
+    "@burnt-labs/abstraxion": "^1.0.0-alpha.45",
+    "@burnt-labs/constants": "^0.1.0-alpha.8",
+    "@burnt-labs/signers": "^0.1.0-alpha.10",
     "@cosmjs/crypto": "^0.32.2",
     "@cosmjs/proto-signing": "^0.32.2",
     "@cosmjs/stargate": "^0.32.2",
@@ -31,10 +29,10 @@
     "next": "^14.0.3",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@burnt-labs/tsconfig": "workspace:*",
     "@svgr/webpack": "^8.1.0",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",

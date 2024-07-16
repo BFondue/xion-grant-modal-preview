@@ -1,11 +1,12 @@
 import type { Config } from "tailwindcss";
-import sharedConfig from "@burnt-labs/tailwind-config/tailwind.config.ts";
 
 const config: Config = {
   content: ["./components/**/*.{js,ts,jsx,tsx,mdx}", "./app/page.tsx"],
   theme: {
     extend: {
       backgroundImage: {
+        "glow-conic":
+          "conic-gradient(from 180deg at 50% 50%, #2a8af6 0deg, #a853ba 180deg, #e92a67 360deg)",
         "overview-bg":
           "url('/apps/abstraxion-dashboard/public/overviewBackground.png')",
       },
@@ -37,8 +38,8 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
   prefix: "ui-",
-  presets: [sharedConfig],
+  presets: [],
 };
 export default config;
