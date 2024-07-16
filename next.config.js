@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
+  output: process.env.NEXT_CONFIG_OUTPUT || null,
   webpack(config) {
     // Grab the existing rule that handles SVG imports
     const fileLoaderRule = config.module.rules.find((rule) =>
@@ -60,6 +61,7 @@ module.exports = withSentryConfig(
   {
     // For all available options, see:
     // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+
 
     // Upload a larger set of source maps for prettier stack traces (increases build time)
     widenClientFileUpload: true,
