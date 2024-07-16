@@ -40,6 +40,5 @@ const config: Config = {
     },
   },
   plugins: [],
-  presets: [],
 };
 export default config;
