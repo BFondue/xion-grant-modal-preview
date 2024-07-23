@@ -112,7 +112,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
               >
                 {isMainnet ? "MAINNET" : "TESTNET"}
               </div>
-              <a href="https://xion.burnt.com/">
+              <a href="https://burnt.com/terms-and-conditions">
                 <Image
                   src="/logo.png"
                   alt="XION Logo"
