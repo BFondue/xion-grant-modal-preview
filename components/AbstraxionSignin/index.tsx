@@ -9,6 +9,13 @@ import {
 } from "../AbstraxionContext";
 import { getHumanReadablePubkey } from "@/utils";
 
+const okxFlag = process.env.NEXT_PUBLIC_OKX_FLAG === "true";
+const deploymentEnv = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
+
+// Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
+const shouldEnableFeature =
+  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && okxFlag);
+
 export const AbstraxionSignin = () => {
   const stytchClient = useStytch();
 
@@ -83,8 +90,8 @@ export const AbstraxionSignin = () => {
       return;
     }
     try {
-      await window.okxwallet.keplr.enable("xion-testnet-1");
-      const okxAccount = await window.okxwallet.keplr.getKey("xion-testnet-1");
+      await window.okxwallet.keplr.enable(chainInfo.chainId);
+      const okxAccount = await window.okxwallet.keplr.getKey(chainInfo.chainId);
       const authenticator = getHumanReadablePubkey(okxAccount.pubKey);
       setConnectionType("okx");
       localStorage.setItem("loginType", "okx");
@@ -181,7 +188,7 @@ export const AbstraxionSignin = () => {
           >
             Log in / Sign up
           </Button>
-          <div className="ui-w-full">
+          {shouldEnableFeature ? <div className="ui-w-full">
             <button
               className="ui-flex ui-text-white ui-text-sm ui-w-full ui-items-center ui-gap-3"
               onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
@@ -213,7 +220,7 @@ export const AbstraxionSignin = () => {
                 </Button>
               </div>
             ) : null}
-          </div>
+          </div> : null}
         </>
       )}
     </ModalSection>

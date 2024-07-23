@@ -23,6 +23,14 @@ import {
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "@/hooks";
 import { encodeHex } from "@/utils";
 import { AllSmartWalletQuery } from "@/utils/queries";
+import { findLowestMissingOrNextIndex } from "@/utils/authenticator-util";
+
+const okxFlag = process.env.NEXT_PUBLIC_OKX_FLAG === "true";
+const deploymentEnv = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
+
+// Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
+const shouldEnableFeature =
+  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && okxFlag);
 
 // TODO: Add webauthn to this and remove "disable" prop from button when implemented
 type AuthenticatorStates = "none" | "keplr" | "metamask" | "okx";
@@ -145,7 +153,7 @@ export function AddAuthenticatorsForm({
         signArbMessage,
       );
 
-      const accountIndex = abstractAccount?.authenticators.nodes.length; // TODO: Be careful here, if indexer returns wrong number this can overwrite accounts
+     const accountIndex = findLowestMissingOrNextIndex(abstractAccount?.authenticators.nodes)
 
       const msg = {
         add_auth_method: {
@@ -192,15 +200,15 @@ export function AddAuthenticatorsForm({
       const encoder = new TextEncoder();
       const signArbMessage = Buffer.from(encoder.encode(abstractAccount?.id));
 
-      await window.okxwallet.keplr.enable("xion-testnet-1");
-      const okxAccount = await window.okxwallet.keplr.getKey("xion-testnet-1");
+      await window.okxwallet.keplr.enable(chainInfo.chainId);
+      const okxAccount = await window.okxwallet.keplr.getKey(chainInfo.chainId);
       const signArbRes = await window.okxwallet.keplr.signArbitrary(
         chainInfo.chainId,
         okxAccount.bech32Address,
         signArbMessage,
       );
 
-      const accountIndex = abstractAccount?.authenticators.nodes.length; // TODO: Be careful here, if indexer returns wrong number this can overwrite accounts
+     const accountIndex = findLowestMissingOrNextIndex(abstractAccount?.authenticators.nodes)
 
       const msg = {
         add_auth_method: {
@@ -262,7 +270,7 @@ export function AddAuthenticatorsForm({
       );
       const base64String = btoa(String.fromCharCode.apply(null, byteArray));
 
-      const accountIndex = abstractAccount?.authenticators.nodes.length; // TODO: Be careful here, if indexer returns wrong number this can overwrite accounts
+     const accountIndex = findLowestMissingOrNextIndex(abstractAccount?.authenticators.nodes)
 
       const msg = {
         add_auth_method: {
@@ -349,6 +357,7 @@ export function AddAuthenticatorsForm({
               className={
                 selectedAuthenticator === "okx" ? "!ui-border-white" : ""
               }
+              disabled={!shouldEnableFeature}
               onClick={() => handleSwitch("okx")}
               structure="outlined"
             >
