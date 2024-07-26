@@ -1,0 +1,5 @@
+# https://developers.cloudflare.com/pages/configuration/headers/
+# (uncomment and edit below)
+/
+    Content-Security-Policy: frame-ancestors 'none'
+    X-Frame-Options: DENY
