@@ -1,7 +1,7 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
 import { useStytch } from "@stytch/react";
-import { Button, Input, ModalSection } from "@burnt-labs/ui";
+import { Button, Input, MetamaskLogo, ModalSection } from "@burnt-labs/ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -11,11 +11,15 @@ import { getHumanReadablePubkey } from "../../utils";
 import okxLogo from "../../assets/okx-logo.png";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
+const metamaskFlag = process.env.NEXT_PUBLIC_METAMASK_FLAG === "true";
 const deploymentEnv = import.meta.env.META_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
-const shouldEnableFeature =
+const shouldEnableOkx =
   deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && okxFlag);
+
+const shouldEnableMetamask =
+  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && metamaskFlag);
 
 export const AbstraxionSignin = () => {
   const stytchClient = useStytch();
@@ -31,7 +35,7 @@ export const AbstraxionSignin = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const { setConnectionType, setAbstraxionError, chainInfo } = useContext(
-    AbstraxionContext,
+    AbstraxionContext
   ) as AbstraxionContextProps;
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,6 +115,24 @@ export const AbstraxionSignin = () => {
       localStorage.setItem("okxWalletName", okxAccount.name);
     } catch (error) {
       setAbstraxionError("OKX wallet connect error");
+    }
+  }
+
+  async function handleMetamask() {
+    if (!window.ethereum) {
+      alert("Please install the Metamask wallet extension");
+      return;
+    }
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const primaryAccount = accounts[0];
+      setConnectionType("metamask");
+      localStorage.setItem("loginType", "metamask");
+      localStorage.setItem("loginAuthenticator", primaryAccount);
+    } catch (error) {
+      setAbstraxionError("Metamask connect error");
     }
   }
 
@@ -199,34 +221,49 @@ export const AbstraxionSignin = () => {
           >
             Log in / Sign up
           </Button>
-          {shouldEnableFeature ? <div className="ui-w-full">
-            <button
-              className="ui-flex ui-text-white ui-text-sm ui-w-full ui-items-center ui-gap-3"
-              onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
-            >
-              <span>Advanced Options</span>
-              {/* Down Caret */}
-              <div
-                className={`ui-h-1.5 ui-w-1.5 ${
-                  showAdvanced ? "-ui-rotate-[135deg]" : "ui-rotate-45"
-                }  ui-border-white ui-border-r-[1px] ui-border-b-[1px]`}
-              />
-            </button>
-            {showAdvanced ? (
-              <div className="ui-flex ui-flex-col ui-w-full ui-gap-2">
-                <p className="ui-my-4 ui-text-sm ui-text-white ui-opacity-50">
-                  Log into your existing XION Meta account with a crypto wallet
-                </p>
-                <Button
-                  fullWidth={true}
-                  onClick={handleOkx}
-                  structure="outlined"
-                >
+          {shouldEnableOkx || shouldEnableMetamask ? (
+            <div className="ui-w-full">
+              <button
+                className="ui-flex ui-text-white ui-text-sm ui-w-full ui-items-center ui-gap-3"
+                onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
+              >
+                <span>Advanced Options</span>
+                {/* Down Caret */}
+                <div
+                  className={`ui-h-1.5 ui-w-1.5 ${
+                    showAdvanced ? "-ui-rotate-[135deg]" : "ui-rotate-45"
+                  }  ui-border-white ui-border-r-[1px] ui-border-b-[1px]`}
+                />
+              </button>
+              {showAdvanced ? (
+                <div className="ui-flex ui-flex-col ui-w-full ui-gap-2">
+                  <p className="ui-my-4 ui-text-sm ui-text-white ui-opacity-50">
+                    Log into your existing XION Meta account with a crypto
+                    wallet
+                  </p>
+                  {shouldEnableOkx ? (
+                    <Button
+                      fullWidth={true}
+                      onClick={handleOkx}
+                      structure="outlined"
+                    >
                   <img src={okxLogo} height={82} width={50} alt="OKX Logo" />
-                </Button>
-              </div>
-            ) : null}
-          </div> : null}
+                    </Button>
+                  ) : null}
+                  {shouldEnableMetamask ? (
+                    <Button
+                      fullWidth={true}
+                      onClick={handleMetamask}
+                      structure="outlined"
+                      className="ui-mb-16 sm:ui-mb-0"
+                    >
+                      <MetamaskLogo />
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </>
       )}
     </ModalSection>
