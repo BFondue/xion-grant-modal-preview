@@ -34,7 +34,14 @@ export const AbstraxionSignin = () => {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmailError("");
-    setEmail(e.target.value.toLowerCase());
+    let newEmail;
+    if (chainInfo.chainId === "xion-testnet-1") {
+      newEmail = e.currentTarget.value.toLowerCase();
+    } else {
+      newEmail = e.currentTarget.value.toLowerCase().trim();
+
+    }
+    setEmail(newEmail);
   };
 
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
