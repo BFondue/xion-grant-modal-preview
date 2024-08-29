@@ -12,6 +12,7 @@ import { truncateAddress } from "@/utils";
 import { useAbstraxionAccount } from "@/hooks";
 import { Loading } from "../Loading";
 import { WalletIcon } from "../Icons";
+import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 
 export const AbstraxionWallets = () => {
   const {
@@ -29,6 +30,7 @@ export const AbstraxionWallets = () => {
   const session_token = stytchClient.session.getTokens()?.session_token;
 
   const { loginAuthenticator } = useAbstraxionAccount();
+  const {xionDisconnect} = useXionDisconnect();
 
   const { disconnect } = useDisconnect();
 
@@ -43,19 +45,6 @@ export const AbstraxionWallets = () => {
 
   const [isGeneratingNewWallet, setIsGeneratingNewWallet] = useState(false);
   const [fetchingNewWallets, setFetchingNewWallets] = useState(false);
-
-  const handleDisconnect = async () => {
-    if (connectionType === "stytch") {
-      await stytchClient.session.revoke();
-    }
-    disconnect();
-    setConnectionType("none");
-    setAbstractAccount(undefined);
-    localStorage.removeItem("loginType");
-    localStorage.removeItem("loginAuthenticator");
-    localStorage.removeItem("okxXionAddress");
-    localStorage.removeItem("okxWalletName");
-  };
 
   const handleJwtAALoginOrCreate = useCallback(async () => {
     try {
@@ -92,6 +81,19 @@ export const AbstraxionWallets = () => {
     setFetchingNewWallets,
     setAbstraxionError,
   ]);
+
+  useEffect(() => {
+    if (data?.smartAccounts.nodes.length === 1 && !abstractAccount) {
+      const node = data.smartAccounts.nodes[0];
+      setAbstractAccount({
+        ...node,
+        userId: user?.user_id,
+        currentAuthenticatorIndex: node.authenticators.nodes.find(
+          (authenticator) => authenticator.authenticator === loginAuthenticator,
+        ).authenticatorIndex,
+      });
+    }
+  })
 
   useEffect(() => {
     if (previousData && data !== previousData) {
@@ -210,7 +212,7 @@ export const AbstraxionWallets = () => {
             <Button
               structure="destructive-outline"
               fullWidth={true}
-              onClick={handleDisconnect}
+              onClick={xionDisconnect}
             >
               Disconnect
             </Button>

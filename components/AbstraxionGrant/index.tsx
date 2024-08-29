@@ -14,6 +14,7 @@ import { generateBankGrant } from "@/components/AbstraxionGrant/generateBankGran
 import { generateContractGrant } from "@/components/AbstraxionGrant/generateContractGrant.tsx";
 import { generateStakeGrant } from "@/components/AbstraxionGrant/generateStakeGrant.tsx";
 import { getEnvStringOrThrow } from "@/utils";
+import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -31,6 +32,7 @@ export const AbstraxionGrant = ({
   const { client } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
   const searchParams = useSearchParams();
+  const { xionDisconnect } = useXionDisconnect();
 
   const [inProgress, setInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -217,6 +219,7 @@ export const AbstraxionGrant = ({
               >
                 Allow and Continue
               </Button>
+              <Button structure="outlined" onClick={xionDisconnect}>Switch Account</Button>
               <Button structure="naked">Deny Access</Button>
             </div>
           </div>
