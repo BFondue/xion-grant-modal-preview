@@ -10,7 +10,6 @@ import {
 } from "@cosmjs/stargate/build/stargateclient";
 import { Button, Spinner } from "@burnt-labs/ui";
 import { CheckIcon } from "../Icons";
-import burntAvatar from "../../assets/burntAvatarCircle.png";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { useSearchParams } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
@@ -183,7 +182,7 @@ export const AbstraxionGrant = ({
       ) : (
         <>
           <div className="ui-mb-10 ui-flex ui-items-center ui-justify-center">
-            <Image src={burntAvatar} alt="Burnt Avatar" />
+            <Image src="/burntAvatarCircle.png" alt="Burnt Avatar" />
           </div>
           <div className="mb-4">
             <h1 className="ui-text-base ui-font-bold ui-leading-tight">
