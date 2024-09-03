@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import { Providers } from "./providers";
 import "./globals.css";
 import "@burnt-labs/ui/dist/index.css";
-import { Analytics } from "@vercel/analytics/react";
 
 const akkuratLL = localFont({
   src: [
@@ -45,7 +44,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={akkuratLL.variable}>
         <Providers>{children}</Providers>
-        <Analytics />
       </body>
     </html>
   );

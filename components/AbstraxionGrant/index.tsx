@@ -7,7 +7,6 @@ import burntAvatar from "@/public/burntAvatarCircle.png";
 import { CheckIcon } from "../Icons";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { useSearchParams } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
 import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate/build/stargateclient";
 import { generateBankGrant } from "@/components/AbstraxionGrant/generateBankGrant.tsx";
@@ -120,7 +119,6 @@ export const AbstraxionGrant = ({
     } catch (error) {
       setInProgress(false);
       console.log("something went wrong: ", error);
-      Sentry.captureException(error);
     }
   };
 
