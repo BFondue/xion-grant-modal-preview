@@ -12,7 +12,6 @@ import { Button, Spinner } from "@burnt-labs/ui";
 import { CheckIcon } from "../Icons";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { useSearchParams } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
 import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
 import { generateBankGrant } from "@/components/AbstraxionGrant/generateBankGrant.tsx";
 import { generateContractGrant } from "@/components/AbstraxionGrant/generateContractGrant.tsx";
@@ -154,7 +153,6 @@ export const AbstraxionGrant = ({
     } catch (error) {
       setInProgress(false);
       console.log("something went wrong: ", error);
-      Sentry.captureException(error);
     }
   };
 
