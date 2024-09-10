@@ -13,9 +13,10 @@
   },
   "dependencies": {
     "@apollo/client": "^3.8.8",
-    "@burnt-labs/abstraxion": "^1.0.0-alpha.45",
-    "@burnt-labs/constants": "^0.1.0-alpha.8",
-    "@burnt-labs/signers": "^0.1.0-alpha.10",
+    "@burnt-labs/abstraxion": "^1.0.0-alpha.48",
+    "@burnt-labs/constants": "^0.1.0-alpha.11",
+    "@burnt-labs/signers": "^0.1.0-alpha.12",
+    "@cosmjs/crypto": "^0.32.2",
     "@cosmjs/proto-signing": "^0.32.2",
     "@cosmjs/stargate": "^0.32.2",
     "@stytch/nextjs": "^14.0.0",

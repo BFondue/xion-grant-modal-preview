@@ -2,9 +2,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button, Spinner } from "@burnt-labs/ui";
-import { useAbstraxionAccount, useAbstraxionSigningClient } from "@/hooks";
-import burntAvatar from "@/public/burntAvatarCircle.png";
 import { CheckIcon } from "../Icons";
+import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { useSearchParams } from "next/navigation";
 import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
@@ -12,6 +11,8 @@ import { assertIsDeliverTxSuccess } from "@cosmjs/stargate/build/stargateclient"
 import { generateBankGrant } from "@/components/AbstraxionGrant/generateBankGrant.tsx";
 import { generateContractGrant } from "@/components/AbstraxionGrant/generateContractGrant.tsx";
 import { generateStakeGrant } from "@/components/AbstraxionGrant/generateStakeGrant.tsx";
+import { getEnvStringOrThrow } from "@/utils";
+import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -29,6 +30,7 @@ export const AbstraxionGrant = ({
   const { client } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
   const searchParams = useSearchParams();
+  const { xionDisconnect } = useXionDisconnect();
 
   const [inProgress, setInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -36,7 +38,7 @@ export const AbstraxionGrant = ({
   useEffect(function redirectToDapp() {
     if (showSuccess && searchParams.get("redirect_uri")) {
       let redirectUri = new URLSearchParams(window.location.search).get(
-        "redirect_uri",
+        "redirect_uri"
       );
       let url: URL | null = null;
       if (redirectUri) {
@@ -65,8 +67,8 @@ export const AbstraxionGrant = ({
     const timestampThreeMonthsFromNow = BigInt(
       Math.floor(
         new Date(new Date().setMonth(new Date().getMonth() + 3)).getTime() /
-          1000,
-      ),
+          1000
+      )
     );
 
     const msgs: EncodeObject[] = [];
@@ -77,20 +79,20 @@ export const AbstraxionGrant = ({
           timestampThreeMonthsFromNow,
           grantee,
           granter,
-          contracts,
-        ),
+          contracts
+        )
       );
     }
 
     if (stake) {
       msgs.push(
-        ...generateStakeGrant(timestampThreeMonthsFromNow, grantee, granter),
+        ...generateStakeGrant(timestampThreeMonthsFromNow, grantee, granter)
       );
     }
 
     if (bank.length > 0) {
       msgs.push(
-        generateBankGrant(timestampThreeMonthsFromNow, grantee, granter, bank),
+        generateBankGrant(timestampThreeMonthsFromNow, grantee, granter, bank)
       );
     }
 
@@ -99,20 +101,57 @@ export const AbstraxionGrant = ({
         throw new Error("No grants to send");
       }
 
-      const deliverTxResponse = await client?.signAndBroadcast(
-        account.id,
-        msgs,
-        {
-          amount: [{ amount: "0", denom: "uxion" }],
-          gas: "500000",
-        },
-      );
+      // const deliverTxResponse = await client?.signAndBroadcast(
+      //   account.id,
+      //   msgs,
+      //   {
+      //     amount: [{ amount: "0", denom: "uxion" }],
+      //     gas: "500000",
+      //   },
+      // );
 
-      assertIsDeliverTxSuccess({
-        ...deliverTxResponse,
-        gasUsed: BigInt(deliverTxResponse.gasUsed),
-        gasWanted: BigInt(deliverTxResponse.gasWanted),
-      });
+      // assertIsDeliverTxSuccess({
+      //   ...deliverTxResponse,
+      //   gasUsed: BigInt(deliverTxResponse.gasUsed),
+      //   gasWanted: BigInt(deliverTxResponse.gasWanted),
+      // });
+
+      try {
+        const deliverTxResponse = await client?.signAndBroadcast(
+          account.id,
+          msgs,
+          {
+            amount: [{ amount: "0", denom: "uxion" }],
+            gas: "500000",
+            granter: getEnvStringOrThrow(
+              "NEXT_PUBLIC_FEE_GRANTER_ADDRESS",
+              process.env.NEXT_PUBLIC_FEE_GRANTER_ADDRESS
+            ),
+          }
+        );
+
+        assertIsDeliverTxSuccess({
+          ...deliverTxResponse,
+          gasUsed: BigInt(deliverTxResponse.gasUsed),
+          gasWanted: BigInt(deliverTxResponse.gasWanted),
+        });
+      } catch (error) {
+        // This account doesn't have the fee grant, trying without fee grant.
+        const deliverTxResponse = await client?.signAndBroadcast(
+          account.id,
+          msgs,
+          {
+            amount: [{ amount: "0", denom: "uxion" }],
+            gas: "500000",
+          }
+        );
+
+        assertIsDeliverTxSuccess({
+          ...deliverTxResponse,
+          gasUsed: BigInt(deliverTxResponse.gasUsed),
+          gasWanted: BigInt(deliverTxResponse.gasWanted),
+        });
+      }
 
       setShowSuccess(true);
       setInProgress(false);
@@ -146,7 +185,7 @@ export const AbstraxionGrant = ({
       ) : (
         <>
           <div className="ui-mb-10 ui-flex ui-items-center ui-justify-center">
-            <Image src={burntAvatar} alt="Burnt Avatar" />
+            <Image src="/burntAvatarCircle.png" alt="Burnt Avatar" />
           </div>
           <div className="mb-4">
             <h1 className="ui-text-base ui-font-bold ui-leading-tight">
@@ -177,6 +216,7 @@ export const AbstraxionGrant = ({
               >
                 Allow and Continue
               </Button>
+              <Button structure="outlined" onClick={xionDisconnect}>Switch Account</Button>
               <Button structure="naked">Deny Access</Button>
             </div>
           </div>

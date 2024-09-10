@@ -13,10 +13,23 @@ export const generateContractGrant = (
   granter: string,
   contracts: ContractGrantDescription[],
 ) => {
+
+  const validGrants = contracts.filter((contractGrantDescription) => {
+    if (typeof contractGrantDescription === "string") {
+      return true;
+    }
+    if (contractGrantDescription != null) {
+      const { address, amounts } = contractGrantDescription;
+      return address && amounts;
+    }
+    console.warn("Contract was omitted because it was improperly encoded");
+    return false;
+  });
+
   const contractExecutionAuthorizationValue =
     ContractExecutionAuthorization.encode(
       ContractExecutionAuthorization.fromPartial({
-        grants: contracts.map((contractGrantDescription) => {
+        grants: validGrants.map((contractGrantDescription) => {
           if (typeof contractGrantDescription === "string") {
             const contract = contractGrantDescription;
             return {
