@@ -274,7 +274,7 @@ export function WalletSendForm({
               <p className="ui-w-full ui-text-center ui-text-xs ui-font-akkuratLL ui-text-white/40">
                 From
               </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white">
+              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
                 {account.id}
               </p>
             </div>
@@ -282,7 +282,7 @@ export function WalletSendForm({
               <p className="ui-w-full ui-text-center ui-text-xs ui-font-akkuratLL ui-text-white/40">
                 To
               </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white">
+              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
                 {recipientAddress}
               </p>
             </div>
@@ -327,7 +327,7 @@ export function WalletSendForm({
               <p className="ui-w-full ui-text-center ui-text-xs ui-font-akkuratLL ui-text-white/40">
                 From
               </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white">
+              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
                 {account.id}
               </p>
             </div>
@@ -335,7 +335,7 @@ export function WalletSendForm({
               <p className="ui-w-full ui-text-center ui-text-xs ui-font-akkuratLL ui-text-white/40">
                 To
               </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white">
+              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
                 {recipientAddress}
               </p>
             </div>
@@ -399,10 +399,7 @@ export function WalletSendForm({
               <label className="ui-font-akkuratLL ui-text-xs ui-text-white/50">
                 From:
               </label>
-              <p
-                style={{ wordBreak: "break-word" }}
-                className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white"
-              >
+              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
                 {account.id}
               </p>
             </div>
