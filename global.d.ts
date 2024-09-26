@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 interface Coin {
   readonly denom: string;
   readonly amount: string;

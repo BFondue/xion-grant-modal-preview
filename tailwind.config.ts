@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   prefix: "ui-",
-  content: ["./components/**/*.{js,ts,jsx,tsx,mdx}", "./app/page.tsx"],
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       backgroundImage: {
