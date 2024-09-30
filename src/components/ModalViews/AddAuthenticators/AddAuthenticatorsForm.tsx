@@ -8,7 +8,7 @@ import {
 import { WalletType, useAccount, useSuggestChainAndConnect } from "graz";
 import { useStytchUser } from "@stytch/react";
 import {
-  Button,
+  Button, MetamaskLogo,
   Spinner,
 } from "@burnt-labs/ui";
 import {
@@ -23,11 +23,15 @@ import { deepEqual } from "../../../utils/general";
 import {useNumiaSmartAccounts} from "../../../hooks/useNumiaSmartAccounts";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
+const metamaskFlag = process.env.NEXT_PUBLIC_METAMASK_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
-const shouldEnableFeature =
+const shouldEnableOkx =
   deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && okxFlag);
+
+const shouldEnableMetamask =
+  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && metamaskFlag);
 
 // TODO: Add webauthn to this and remove "disable" prop from button when implemented
 type AuthenticatorStates = "none" | "keplr" | "metamask" | "okx";
@@ -47,7 +51,7 @@ export function AddAuthenticatorsForm({
 
   // Context state
   const { abstractAccount,setAbstractAccount, chainInfo } = useContext(
-    AbstraxionContext,
+    AbstraxionContext
   ) as AbstraxionContextProps;
 
   // Hooks
@@ -129,10 +133,12 @@ export function AddAuthenticatorsForm({
       const signArbRes = await keplr.signArbitrary(
         chainInfo.chainId,
         grazAccount?.bech32Address,
-        signArbMessage,
+        signArbMessage
       );
 
-     const accountIndex = findLowestMissingOrNextIndex(abstractAccount?.authenticators)
+      const accountIndex = findLowestMissingOrNextIndex(
+        abstractAccount?.authenticators
+      );
 
       const msg = {
         add_auth_method: {
@@ -158,7 +164,7 @@ export function AddAuthenticatorsForm({
       return res;
     } catch (error) {
       setErrorMessage(
-        "Something went wrong trying to add Keplr wallet as authenticator",
+        "Something went wrong trying to add Keplr wallet as authenticator"
       );
       setIsLoading(false);
     }
@@ -184,10 +190,12 @@ export function AddAuthenticatorsForm({
       const signArbRes = await window.okxwallet.keplr.signArbitrary(
         chainInfo.chainId,
         okxAccount.bech32Address,
-        signArbMessage,
+        signArbMessage
       );
 
-     const accountIndex = findLowestMissingOrNextIndex(abstractAccount?.authenticators)
+      const accountIndex = findLowestMissingOrNextIndex(
+        abstractAccount?.authenticators
+      );
 
       const msg = {
         add_auth_method: {
@@ -214,7 +222,7 @@ export function AddAuthenticatorsForm({
     } catch (error) {
       console.log(error);
       setErrorMessage(
-        "Something went wrong trying to add OKX wallet as authenticator",
+        "Something went wrong trying to add OKX wallet as authenticator"
       );
       setIsLoading(false);
     }
@@ -245,11 +253,13 @@ export function AddAuthenticatorsForm({
       });
 
       const byteArray = new Uint8Array(
-        ethSignature.match(/[\da-f]{2}/gi).map((hex) => parseInt(hex, 16)),
+        ethSignature.match(/[\da-f]{2}/gi).map((hex) => parseInt(hex, 16))
       );
       const base64String = btoa(String.fromCharCode.apply(null, byteArray));
 
-     const accountIndex = findLowestMissingOrNextIndex(abstractAccount?.authenticators)
+      const accountIndex = findLowestMissingOrNextIndex(
+        abstractAccount?.authenticators
+      );
 
       const msg = {
         add_auth_method: {
@@ -276,7 +286,7 @@ export function AddAuthenticatorsForm({
       return res;
     } catch (error) {
       setErrorMessage(
-        "Something went wrong trying to add Ethereum wallet as authenticator",
+        "Something went wrong trying to add Ethereum wallet as authenticator"
       );
       setIsLoading(false);
     }
@@ -315,28 +325,30 @@ export function AddAuthenticatorsForm({
           </Button> */}
           <div className="ui-flex ui-gap-4 ui-w-full ui-justify-center">
             {/* <Button
-          className={
-            selectedAuthenticator === "keplr" ? "!ui-border-white" : ""
-          }
-          onClick={() => handleSwitch("keplr")}
-          structure="outlined"
-        >
-          <KeplrLogo />
-        </Button>
-        <Button
-          className={
-            selectedAuthenticator === "metamask" ? "!ui-border-white" : ""
-          }
-          onClick={() => handleSwitch("metamask")}
-          structure="outlined"
-        >
-          <MetamaskLogo />
-        </Button> */}
+                className={
+                  selectedAuthenticator === "keplr" ? "!ui-border-white" : ""
+                }
+                onClick={() => handleSwitch("keplr")}
+                structure="outlined"
+              >
+                <KeplrLogo />
+              </Button>
+            */}
+            <Button
+              className={
+                selectedAuthenticator === "metamask" ? "!ui-border-white" : ""
+              }
+              disabled={!shouldEnableMetamask}
+              onClick={() => handleSwitch("metamask")}
+              structure="outlined"
+            >
+              <MetamaskLogo />
+            </Button>
             <Button
               className={
                 selectedAuthenticator === "okx" ? "!ui-border-white" : ""
               }
-              disabled={!shouldEnableFeature}
+              disabled={!shouldEnableOkx}
               onClick={() => handleSwitch("okx")}
               structure="outlined"
             >

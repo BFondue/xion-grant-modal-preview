@@ -21,7 +21,7 @@ export const useAbstraxionAccount = () => {
 
   const loginType = localStorage.getItem("loginType");
   const [loginAuthenticator, setLoginAuthenticator] = useState(
-    localStorage.getItem("loginAuthenticator"),
+    localStorage.getItem("loginAuthenticator")
   );
 
   const { data: grazAccount, isConnected } = useAccount();
