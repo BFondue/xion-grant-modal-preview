@@ -11,8 +11,8 @@ import { getHumanReadablePubkey } from "../../utils";
 import okxLogo from "../../assets/okx-logo.png";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
-const metamaskFlag = process.env.NEXT_PUBLIC_METAMASK_FLAG === "true";
-const deploymentEnv = import.meta.env.META_DEPLOYMENT_ENV;
+const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
+const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
 const shouldEnableOkx =

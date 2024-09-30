@@ -23,7 +23,7 @@ import { deepEqual } from "../../../utils/general";
 import {useNumiaSmartAccounts} from "../../../hooks/useNumiaSmartAccounts";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
-const metamaskFlag = process.env.NEXT_PUBLIC_METAMASK_FLAG === "true";
+const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
