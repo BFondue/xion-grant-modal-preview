@@ -24,7 +24,7 @@ export function WalletSendForm({
     senderAddress: string,
     sendAmount: number,
     denom: string,
-    memo: string,
+    memo: string
   ) => Promise<DeliverTxResponse>;
   balanceInfo: BalanceInfo;
   setIsOpen: any;
@@ -32,10 +32,10 @@ export function WalletSendForm({
   const { data: account } = useAbstraxionAccount();
 
   const xionBalance = balanceInfo.balances.find(
-    (coin) => coin.denom === "uxion",
+    (coin) => coin.denom === "uxion"
   );
   const usdcBalance = balanceInfo.balances.find(
-    (coin) => coin.denom === usdcSearchDenom,
+    (coin) => coin.denom === usdcSearchDenom
   );
 
   const [selectedCurrency, setSelectedCurrency] = useState<SelectedCurrency>({
@@ -103,7 +103,7 @@ export function WalletSendForm({
         recipientAddress,
         Number(sendAmount),
         selectedCurrency.denom,
-        userMemo,
+        userMemo
       );
       setIsSuccess(true);
     } catch (error) {
@@ -167,7 +167,7 @@ export function WalletSendForm({
                     Number(selectedCurrency.balance?.amount) *
                       (selectedCurrency.type === "xion"
                         ? XION_TO_USDC_CONVERSION
-                        : 1),
+                        : 1)
                   )}{" "}
                   USD
                 </span>
@@ -179,7 +179,7 @@ export function WalletSendForm({
 
         <div
           className={`${
-            showDropdown ? "ui-absolute ui-top-20 ui-left-0" : "ui-hidden"
+            showDropdown ? "ui-absolute ui-left-0" : "ui-hidden"
           } ui-w-full ui-rounded-bl-lg ui-rounded-br-lg ui-bg-black ui-border-t ui-border-white/20`}
         >
           <div
@@ -197,7 +197,7 @@ export function WalletSendForm({
                 <span className="ui-text-white/50 ui-pl-2">
                   $
                   {formatBalance(
-                    Number(xionBalance?.amount) * XION_TO_USDC_CONVERSION,
+                    Number(xionBalance?.amount) * XION_TO_USDC_CONVERSION
                   )}{" "}
                   USD
                 </span>
@@ -262,7 +262,7 @@ export function WalletSendForm({
                   1000000 *
                   (selectedCurrency.type === "xion"
                     ? XION_TO_USDC_CONVERSION
-                    : 1),
+                    : 1)
               )}{" "}
               USD
             </p>
@@ -315,7 +315,7 @@ export function WalletSendForm({
                   1000000 *
                   (selectedCurrency.type === "xion"
                     ? XION_TO_USDC_CONVERSION
-                    : 1),
+                    : 1)
               )}{" "}
               USD
             </p>
@@ -368,7 +368,7 @@ export function WalletSendForm({
                       1000000 *
                       (selectedCurrency.type === "xion"
                         ? XION_TO_USDC_CONVERSION
-                        : 1),
+                        : 1)
                   )}{" "}
                   USD
                 </p>
