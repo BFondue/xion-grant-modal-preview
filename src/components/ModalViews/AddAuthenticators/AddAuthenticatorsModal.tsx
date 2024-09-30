@@ -12,12 +12,15 @@ export default function AddAuthenticatorsModal({
   return (
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
       <DialogContent
-        className="ui-text-white"
-        onPointerDownOutside={(e: any) => e.preventDefault()}
+        className="ui-text-white ui-flex ui-flex-col"
+        onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <DialogClose className="ui-absolute ui-top-5 ui-right-10">
-          <CloseIcon className="ui-stroke-white/50" />
-        </DialogClose>
+        <div className="ui-flex ui-justify-end">
+          <DialogClose className="ui-inline-flex">
+            <CloseIcon className="ui-stroke-white/50" />
+          </DialogClose>
+        </div>
+
         <AddAuthenticatorsForm setIsOpen={setIsOpen} />
       </DialogContent>
     </Dialog>
