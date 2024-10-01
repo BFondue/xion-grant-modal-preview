@@ -24,11 +24,12 @@ export interface ModalProps {
 }
 
 export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
-  const { contracts, stake, bank, grantee } = useQueryParams([
+  const { contracts, stake, bank, grantee, treasury } = useQueryParams([
     "contracts",
     "stake",
     "bank",
     "grantee",
+    "treasury"
   ]);
 
   const { abstraxionError, isMainnet } = useContext(
@@ -72,12 +73,13 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
           ) : account?.id &&
             grantee &&
             // We support granting any combunation of
-            (contractsArray.length > 0 || stake || bankArray.length > 0) ? (
+            (contractsArray.length > 0 || stake || bankArray.length > 0 || treasury) ? (
             <AbstraxionGrant
               bank={bankArray}
               contracts={contractsArray}
               grantee={grantee}
               stake={Boolean(stake)}
+              treasury={treasury}
             />
           ) : isConnected ? (
             <AbstraxionWallets />

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   assertIsDeliverTxSuccess,
 } from "@cosmjs/stargate/build/stargateclient";
@@ -16,12 +16,16 @@ import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 
 import burntAvatar from "../../assets/burntAvatarCircle.png";
 import { useQueryParams } from "../../hooks/useQueryParams";
+import { PermissionDescription } from "../../types/treasury-types";
+import { generateTreasuryGrants } from "../../utils/generate-treasury-grants";
+import { queryTreasuryContract } from "../../utils/query-treasury-contract";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
   grantee: string;
   stake: boolean;
   bank: { denom: string; amount: string }[];
+  treasury?: string;
 }
 
 export const AbstraxionGrant = ({
@@ -29,6 +33,7 @@ export const AbstraxionGrant = ({
   grantee,
   stake,
   bank,
+  treasury
 }: AbstraxionGrantProps) => {
   const { client } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
@@ -37,6 +42,7 @@ export const AbstraxionGrant = ({
 
   const [inProgress, setInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [permissions, setPermissions] = useState<PermissionDescription[]>([]);
 
   useEffect(function redirectToDapp() {
     if (showSuccess && redirect_uri) {
@@ -73,6 +79,56 @@ export const AbstraxionGrant = ({
           1000
       )
     );
+
+    if (treasury) {
+      try {
+        const grantMsgs = await generateTreasuryGrants(
+          treasury,
+          client,
+          granter,
+          grantee
+        );
+
+        const deliverTxResponse = await client?.signAndBroadcast(
+          account.id,
+          grantMsgs,
+          {
+            amount: [{ amount: "0", denom: "uxion" }],
+            gas: "500000",
+          }
+        );
+
+        assertIsDeliverTxSuccess({
+          ...deliverTxResponse,
+          gasUsed: BigInt(deliverTxResponse.gasUsed),
+          gasWanted: BigInt(deliverTxResponse.gasWanted),
+        });
+
+        const deployFeeGrantMsg = {
+          deploy_fee_grant: {
+            authz_granter: granter,
+            authz_grantee: grantee,
+          },
+        };
+
+        const deployFeeGrantTx = await client.execute(
+          account.id,
+          treasury,
+          deployFeeGrantMsg,
+          {
+            amount: [{ amount: "0", denom: "uxion" }],
+            gas: "500000",
+          }
+        );
+
+        setShowSuccess(true);
+      } catch (error) {
+        console.warn(error);
+      } finally {
+        setInProgress(false);
+        return;
+      }
+    }
 
     const msgs: EncodeObject[] = [];
 
@@ -149,6 +205,25 @@ export const AbstraxionGrant = ({
     }
   };
 
+  const query = useCallback(async () => {
+    try {
+      const permissionDescriptions = await queryTreasuryContract(
+        treasury,
+        client
+      );
+
+      setPermissions(permissionDescriptions);
+    } catch (error) {
+      console.warn(error);
+    }
+  }, [client, permissions]);
+
+  useEffect(() => {
+    if (client && treasury) {
+      query();
+    }
+  }, [client]);
+
   if (inProgress) {
     return (
       <div className="ui-w-full ui-h-full ui-min-h-[500px] ui-flex ui-items-center ui-justify-center ui-text-white">
@@ -177,22 +252,39 @@ export const AbstraxionGrant = ({
           </div>
           <div className="mb-4">
             <h1 className="ui-text-base ui-font-bold ui-leading-tight">
-              A 3rd party would like to:
+            A 3rd party would like:
             </h1>
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mt-8" />
             <ul className="ui-my-8 ui-list-disc ui-list-none">
-              <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
-                <span className="ui-mr-2">
-                  <CheckIcon color="white" />
-                </span>
-                Have access to your account
-              </li>
-              <li className="ui-flex ui-items-baseline ui-text-sm">
-                <span className="ui-mr-2">
-                  <CheckIcon color="white" />
-                </span>
-                Log you in to their app
-              </li>
+              {treasury ? (
+                permissions.map((permission, i) => (
+                  <li
+                    className="ui-flex ui-items-baseline ui-text-sm ui-mb-4 ui-overflow-x-auto"
+                    key={i}
+                  >
+                    <span className="ui-mr-2">
+                      <CheckIcon color="white" />
+                    </span>
+                    "{permission.dappDescription}" -{" "}
+                    {permission.authorizationDescription}
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
+                    <span className="ui-mr-2">
+                      <CheckIcon color="white" />
+                    </span>
+                    Have access to your account
+                  </li>
+                  <li className="ui-flex ui-items-baseline ui-text-sm">
+                    <span className="ui-mr-2">
+                      <CheckIcon color="white" />
+                    </span>
+                    Log you in to their app
+                  </li>
+                </>
+              )}
             </ul>
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mb-8" />
             <div className="ui-w-full ui-flex ui-flex-col ui-gap-4">

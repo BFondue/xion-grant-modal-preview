@@ -6,17 +6,17 @@ import { Overview } from "./Overview";
 import { Sidebar } from "./Sidebar";
 import { Abstraxion } from "./Abstraxion";
 import { useAbstraxionAccount } from "../hooks";
-import type { AbstraxionAccount } from "../types";
 
 import xionLogo from "../assets/logo.png";
 import { useQueryParams } from "../hooks/useQueryParams";
 
 export function App() {
-  const { contracts, stake, bank, grantee } = useQueryParams([
+  const { contracts, stake, bank, grantee, treasury } = useQueryParams([
     "contracts",
     "stake",
     "bank",
     "grantee",
+    "treasury"
   ]);
   const { data: account } = useAbstraxionAccount();
   const { isOpen, setIsOpen, isMainnet } = useContext(AbstraxionContext);
@@ -25,7 +25,7 @@ export function App() {
 
   return (
     <>
-      {!account?.id || (grantee && (contracts || stake || bank)) ? (
+      {!account?.id || (grantee && (contracts || stake || bank || treasury)) ? (
         <div className="ui-flex ui-h-screen ui-flex-1 ui-items-center ui-justify-center ui-overflow-y-auto ui-p-6">
           <Abstraxion onClose={() => null} isOpen={true} />
         </div>
