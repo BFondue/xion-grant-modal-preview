@@ -6,7 +6,7 @@ export function getGasCalculation(simmedGas: number, chainId: string): StdFee {
   const gasAdjustment = import.meta.env.VITE_GAS_ADJUSTMENT
       ? parseFloat(import.meta.env.VITE_GAS_ADJUSTMENT)
       : xionGasValues.gasAdjustment;
-  const gasAdjustmentMargin = import.meta.env.VITE_GAS_ADJUSTMENT_MARGIN
+  const gasAdjustmentMargin = import.meta.env.VITE_GAS_MARGIN
       ? parseInt(import.meta.env.VITE_GAS_ADJUSTMENT_MARGIN, 10)
       : xionGasValues.gasAdjustmentMargin;
 
