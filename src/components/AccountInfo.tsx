@@ -1,25 +1,21 @@
 import { useState } from "react";
 import {
+  AccountWalletLogo,
   Button,
   EmailIcon,
-  AccountWalletLogo,
   EthereumLogo,
-  TrashIcon,
   Popover,
-  PopoverTrigger,
   PopoverContent,
+  PopoverTrigger,
+  TrashIcon,
 } from "@burnt-labs/ui";
 import { CopyIcon } from "../components/Icons";
 import { truncateAddress } from "../utils";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
-import type {
-  AbstraxionAccount,
-  AuthenticatorNodes,
-  authenticatorTypes,
-} from "../types";
+import type { authenticatorTypes } from "../types";
 
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
-import {Authenticator, SmartAccount} from "../indexer-strategies/types";
+import { Authenticator, SmartAccount } from "../indexer-strategies/types";
 
 export const AccountInfo = ({ account }: { account?: SmartAccount }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -72,7 +68,7 @@ export const AccountInfo = ({ account }: { account?: SmartAccount }) => {
     return account?.authenticators.map((authenticator) => {
       return (
         <div
-          key={authenticator.authenticator}
+          key={authenticator.id}
           className="ui-flex ui-items-center ui-px-4 ui-mb-3 ui-h-16 ui-bg-black ui-rounded-lg"
         >
           <div className="ui-flex ui-w-10 ui-h-10 ui-bg-white/20 ui-items-center ui-justify-center ui-rounded-full">

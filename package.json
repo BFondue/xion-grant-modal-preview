@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite --port 3000",
     "build": "vite build",
+    "check-types": "tsc --noEmit",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -45,6 +46,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.2.2",
     "vite": "^5.4.3",
+    "vite-plugin-checker": "^0.8.0",
     "vite-plugin-node-polyfills": "^0.22.0",
     "wrangler": "^3.64.0"
   },

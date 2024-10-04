@@ -61,13 +61,15 @@ export const useAbstraxionSigningClient = () => {
           abstractAccount.id,
           abstractAccount.currentAuthenticatorIndex,
           sessionToken,
-          // getEnvStringOrThrow(
-          //   "VITE_DEFAULT_INDEXER_URL",
-          //   import.meta.env.VITE_DEFAULT_INDEXER_URL,
-          // ),
+          //  @TODO Will need to find a better pattern eventually
+          abstractAccount.codeId === 21 ?
           getEnvStringOrThrow(
             "VITE_DEFAULT_API_URL",
             import.meta.env.VITE_DEFAULT_API_URL,
+          ):
+          getEnvStringOrThrow(
+            "VITE_NEW_CONTRACT_API_URL",
+            import.meta.env.VITE_NEW_CONTRACT_API_URL,
           ),
         );
         break;
