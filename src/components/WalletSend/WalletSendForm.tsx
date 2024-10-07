@@ -1,12 +1,8 @@
 import { ChangeEvent, useState } from "react";
 import { DeliverTxResponse } from "@cosmjs/stargate";
-import { Button, Input, ChevronDown } from "@burnt-labs/ui";
-import { XION_TO_USDC_CONVERSION } from "../Overview";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { useAbstraxionAccount } from "../../hooks";
-import { formatBalance, isValidWalletAddress } from "../../utils";
-import { USDCIcon } from "../Icons/USDC";
-import { XionIcon } from "../Icons/Xion";
+import { isValidWalletAddress } from "../../utils";
 import { usdcSearchDenom } from "../../hooks/useAccountBalance";
 import { SelectedCurrency } from "./WalletSendTypes";
 import { WalletSendInput } from "./WalletSendInput";

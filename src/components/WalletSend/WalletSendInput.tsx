@@ -1,3 +1,4 @@
+import React from "react";
 import { Button, Input, ChevronDown } from "@burnt-labs/ui";
 import { SelectedCurrency } from "./WalletSendTypes";
 import { XION_TO_USDC_CONVERSION } from "../Overview";
@@ -6,7 +7,6 @@ import { USDCIcon } from "../Icons/USDC";
 import { XionIcon } from "../Icons/Xion";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import { usdcSearchDenom } from "../../hooks/useAccountBalance";
-import React from "react";
 
 interface WalletSendInputProps {
   selectedCurrency: SelectedCurrency;
