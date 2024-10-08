@@ -15,9 +15,17 @@ import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAut
 import type { authenticatorTypes } from "../types";
 
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
-import { Authenticator, SmartAccount } from "../indexer-strategies/types";
+import {
+  Authenticator,
+  SelectedSmartAccount,
+} from "../indexer-strategies/types";
+import { AbstraxionMigrate } from "./AbstraxionMigrate";
 
-export const AccountInfo = ({ account }: { account?: SmartAccount }) => {
+export const AccountInfo = ({
+  account,
+}: {
+  account?: SelectedSmartAccount;
+}) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [authenticatorToRemove, setAuthenticatorToRemove] = useState<
@@ -140,6 +148,12 @@ export const AccountInfo = ({ account }: { account?: SmartAccount }) => {
         {/* TODO: Add history components */}
         {/* <div className="flex flex-1 flex-col"></div> */}
       </div>
+      <AbstraxionMigrate
+        currentCodeId={account.codeId}
+        updateContractCodeID={async () => {
+          window.location.reload();
+        }}
+      />
       <RemoveAuthenticatorModal
         isOpen={isRemoveModalOpen}
         setIsOpen={setIsRemoveModalOpen}
