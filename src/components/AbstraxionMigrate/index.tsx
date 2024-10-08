@@ -32,7 +32,7 @@ export const AbstraxionMigrate = ({
     if (!client) return;
     try {
       setInProgress(true);
-      
+
       await client.migrate(
         account.id,
         account.id,
@@ -80,7 +80,7 @@ export const AbstraxionMigrate = ({
         </p>
         <div className="ui-w-full ui-flex ui-flex-col ui-gap-4">
           <Button structure="base" fullWidth={true} onClick={migrateAccount}>
-            Migrate Account
+            Upgrade Account
           </Button>
         </div>
       </div>
