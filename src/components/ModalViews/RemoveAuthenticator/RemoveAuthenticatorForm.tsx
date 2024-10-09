@@ -17,10 +17,13 @@ import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../../AbstraxionContext";
-import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../../hooks";
+import {
+  useAbstraxionAccount,
+  useAbstraxionSigningClient,
+} from "../../../hooks";
 import { AllSmartWalletQuery } from "../../../utils/queries";
 import type { AuthenticatorNodes, authenticatorTypes } from "../../../types";
-import {Authenticator} from "../../../indexer-strategies/types";
+import { Authenticator } from "../../../indexer-strategies/types";
 
 export function RemoveAuthenticatorForm({
   authenticator,
@@ -35,7 +38,7 @@ export function RemoveAuthenticatorForm({
 
   // Context state
   const { abstractAccount, setAbstractAccount } = useContext(
-    AbstraxionContext,
+    AbstraxionContext
   ) as AbstraxionContextProps;
 
   // Hooks
@@ -50,7 +53,7 @@ export function RemoveAuthenticatorForm({
       },
       fetchPolicy: "network-only",
       notifyOnNetworkStatusChange: true,
-    },
+    }
   );
 
   // Stop polling upon new data and update context
@@ -111,13 +114,13 @@ export function RemoveAuthenticatorForm({
       >
         <div className="ui-flex ui-w-10 ui-h-10 ui-bg-white/20 ui-items-center ui-justify-center ui-rounded-full">
           {handleAuthenticatorLogos(
-            authenticator.type.toUpperCase() as authenticatorTypes,
+            authenticator.type.toUpperCase() as authenticatorTypes
           )}
         </div>
         <div className="ui-ml-4 ui-flex ui-flex-1 ui-items-center ui-justify-between">
           <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
             {handleAuthenticatorLabels(
-              authenticator.type.toUpperCase() as authenticatorTypes,
+              authenticator.type.toUpperCase() as authenticatorTypes
             )}
           </p>
         </div>
@@ -143,7 +146,7 @@ export function RemoveAuthenticatorForm({
 
       if (abstractAccount.authenticators.length <= 1) {
         throw new Error(
-          "You are trying to remove the only authenticator on the account and will lose all access. We cannot allow this operation.",
+          "You are trying to remove the only authenticator on the account and will lose all access. We cannot allow this operation."
         );
       }
 
@@ -153,10 +156,7 @@ export function RemoveAuthenticatorForm({
         },
       };
 
-      const res = await client.removeAbstractAccountAuthenticator(msg, "", {
-        amount: [{ amount: "0", denom: "uxion" }],
-        gas: "500000",
-      });
+      const res = await client.removeAbstractAccountAuthenticator(msg, "");
 
       if (res?.rawLog?.includes("failed")) {
         throw new Error("Transaction failed");

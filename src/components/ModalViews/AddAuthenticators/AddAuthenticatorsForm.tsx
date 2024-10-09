@@ -7,20 +7,20 @@ import {
 } from "react";
 import { WalletType, useAccount, useSuggestChainAndConnect } from "graz";
 import { useStytchUser } from "@stytch/react";
-import {
-  Button, MetamaskLogo,
-  Spinner,
-} from "@burnt-labs/ui";
+import { Button, MetamaskLogo, Spinner } from "@burnt-labs/ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../../AbstraxionContext";
-import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../../hooks";
+import {
+  useAbstraxionAccount,
+  useAbstraxionSigningClient,
+} from "../../../hooks";
 import { encodeHex } from "../../../utils";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
 import { useSubquerySmartAccounts } from "../../../hooks/useSubquerySmartAccounts";
 import { deepEqual } from "../../../utils/general";
-import {useNumiaSmartAccounts} from "../../../hooks/useNumiaSmartAccounts";
+import { useNumiaSmartAccounts } from "../../../hooks/useNumiaSmartAccounts";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
@@ -50,7 +50,7 @@ export function AddAuthenticatorsForm({
   const [isLoading, setIsLoading] = useState(false);
 
   // Context state
-  const { abstractAccount,setAbstractAccount, chainInfo } = useContext(
+  const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
     AbstraxionContext
   ) as AbstraxionContextProps;
 
@@ -63,8 +63,8 @@ export function AddAuthenticatorsForm({
     onError: () => setIsLoading(false),
     onLoading: () => setIsLoading(true),
   });
-  const {data, startPolling, isSuccess} = useNumiaSmartAccounts(true, () => {
-    setIsLoading(false)
+  const { data, startPolling, isSuccess } = useNumiaSmartAccounts(true, () => {
+    setIsLoading(false);
   });
 
   useEffect(() => {
@@ -78,13 +78,11 @@ export function AddAuthenticatorsForm({
         (authenticator) => authenticator.authenticator === loginAuthenticator
       ).authenticatorIndex,
     };
-      if (
-        !node || deepEqual(newNode, abstractAccount)
-      ) {
-        return;
-      }
-      setAbstractAccount(newNode);
-  }, [data])
+    if (!node || deepEqual(newNode, abstractAccount)) {
+      return;
+    }
+    setAbstractAccount(newNode);
+  }, [data]);
 
   // Functions
   function handleSwitch(authenticator: AuthenticatorStates) {
@@ -151,10 +149,7 @@ export function AddAuthenticatorsForm({
           },
         },
       };
-      const res = await client.addAbstractAccountAuthenticator(msg, "", {
-        amount: [{ amount: "0", denom: "uxion" }],
-        gas: "500000",
-      });
+      const res = await client.addAbstractAccountAuthenticator(msg, "");
 
       if (res.rawLog?.includes("failed")) {
         throw new Error(res.rawLog);
@@ -208,10 +203,7 @@ export function AddAuthenticatorsForm({
           },
         },
       };
-      const res = await client.addAbstractAccountAuthenticator(msg, "", {
-        amount: [{ amount: "0", denom: "uxion" }],
-        gas: "500000",
-      });
+      const res = await client.addAbstractAccountAuthenticator(msg, "");
 
       if (res.rawLog?.includes("failed")) {
         throw new Error(res.rawLog);
@@ -273,10 +265,7 @@ export function AddAuthenticatorsForm({
         },
       };
 
-      const res = await client.addAbstractAccountAuthenticator(msg, "", {
-        amount: [{ amount: "0", denom: "uxion" }],
-        gas: "500000",
-      });
+      const res = await client.addAbstractAccountAuthenticator(msg, "");
 
       if (res?.rawLog?.includes("failed")) {
         throw new Error("Transaction failed");
@@ -352,12 +341,7 @@ export function AddAuthenticatorsForm({
               onClick={() => handleSwitch("okx")}
               structure="outlined"
             >
-              <img
-                src="/okxWallet.png"
-                height={48}
-                width={48}
-                alt="OKX Logo"
-              />
+              <img src="/okxWallet.png" height={48} width={48} alt="OKX Logo" />
             </Button>
             {/* <Button disabled structure="outlined">
               <PasskeyIcon className="ui-w-12" />
