@@ -5,6 +5,9 @@ import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../AbstraxionContext";
+import { MsgMigrateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { Uint53 } from "@cosmjs/math";
+import { toUtf8 } from "@cosmjs/encoding";
 
 type AbstraxionMigrateProps = {
   currentCodeId: number;
@@ -33,16 +36,18 @@ export const AbstraxionMigrate = ({
     try {
       setInProgress(true);
 
-      await client.migrate(
-        account.id,
-        account.id,
-        targetCodeId,
-        {},
-        {
-          amount: [{ amount: "0", denom: "uxion" }],
-          gas: "500000",
-        },
-      );
+      const migrateMsg = {
+        typeUrl: "/cosmwasm.wasm.v1.MsgMigrateContract",
+        value: MsgMigrateContract.fromPartial({
+          sender: account.id,
+          contract: account.id,
+          codeId: BigInt(new Uint53(targetCodeId).toString()),
+          msg: toUtf8(JSON.stringify({})),
+        }),
+      };
+
+      const simResult = await client.simulate(account.id, [migrateMsg], "");
+      await client.signAndBroadcast(account.id, [migrateMsg], simResult);
 
       void updateContractCodeID();
     } catch (error) {
