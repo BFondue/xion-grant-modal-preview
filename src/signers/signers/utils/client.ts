@@ -112,11 +112,14 @@ export class AAClient extends SigningCosmWasmClient {
     messages: readonly EncodeObject[],
     memo: string | undefined
   ): Promise<StdFee> {
-    const {
-      gasPrice: gasPriceString,
-      gasAdjustment,
-      gasAdjustmentMargin,
-    } = xionGasValues;
+    const gasPriceString =
+      import.meta.env.VITE_GAS_PRICE || xionGasValues.gasPrice;
+    const gasAdjustment = import.meta.env.VITE_GAS_ADJUSTMENT
+      ? parseFloat(import.meta.env.VITE_GAS_ADJUSTMENT)
+      : xionGasValues.gasAdjustment;
+    const gasAdjustmentMargin = import.meta.env.VITE_GAS_MARGIN
+      ? parseInt(import.meta.env.VITE_GAS_MARGIN, 10)
+      : xionGasValues.gasAdjustmentMargin;
 
     const simmedGas = await this.simulate(sender, messages, memo);
     const gasPrice = GasPrice.fromString(gasPriceString);
