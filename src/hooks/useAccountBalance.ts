@@ -1,11 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../hooks";
 import { XION_TO_USDC_CONVERSION } from "../components/Overview";
+import { getGasCalculation } from "../utils/gas-utils";
+import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";
+import {
+  AbstraxionContext,
+  AbstraxionContextProps,
+} from "../components/AbstraxionContext";
 
 export const usdcSearchDenom =
   "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64";
 
 export function useAccountBalance() {
+  const { chainInfo } = useContext(AbstraxionContext) as AbstraxionContextProps;
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
   const [balanceInfo, setBalanceInfo] = useState<BalanceInfo>({
@@ -47,7 +54,7 @@ export function useAccountBalance() {
     senderAddress: string,
     sendAmount: number,
     denom: string,
-    memo: string,
+    memo: string
   ) {
     try {
       if (!account) {
@@ -60,16 +67,20 @@ export function useAccountBalance() {
 
       const convertedSendAmount = String(sendAmount * 1000000);
 
-      const res = await client.sendTokens(
-        account.id,
-        senderAddress,
-        [{ denom, amount: convertedSendAmount }],
-        {
-          amount: [{ denom: "uxion", amount: "0" }],
-          gas: "200000", // TODO: Dynamic?
-        },
-        memo,
-      );
+      const msg = {
+        typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+        value: MsgSend.fromPartial({
+          fromAddress: senderAddress,
+          toAddress: account.id,
+          amount: [{ denom, amount: convertedSendAmount }],
+        }),
+      };
+
+      const simmedGas = await client.simulate(account.id, [msg], `xion-send`);
+
+      const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+
+      const res = await client.signAndBroadcast(account.id, [msg], fee, memo);
 
       if (res.rawLog?.includes("failed")) {
         throw new Error(res.rawLog);
