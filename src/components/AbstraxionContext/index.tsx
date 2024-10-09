@@ -1,7 +1,7 @@
-import { ReactNode, createContext, useState } from "react";
+import { createContext, ReactNode, useState } from "react";
 import { getEnvStringOrThrow } from "../../utils";
 import { ChainInfo } from "@burnt-labs/constants";
-import {SelectedSmartAccount } from "../../indexer-strategies/types";
+import { SelectedSmartAccount } from "../../indexer-strategies/types";
 
 type ConnectionType = "stytch" | "graz" | "metamask" | "okx" | "none";
 
@@ -41,8 +41,8 @@ export const AbstraxionContextProvider = ({
   );
   const chainInfo = JSON.parse(serializedChainInfo);
   const apiUrl = getEnvStringOrThrow(
-    "VITE_DEFAULT_API_URL",
-    import.meta.env.VITE_DEFAULT_API_URL,
+    "VITE_NEW_CONTRACT_API_URL",
+    import.meta.env.VITE_NEW_CONTRACT_API_URL,
   );
   const isMainnet =
     getEnvStringOrThrow(

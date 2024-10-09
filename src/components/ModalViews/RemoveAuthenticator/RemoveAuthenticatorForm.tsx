@@ -1,11 +1,4 @@
-import {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { useQuery } from "@apollo/client";
+import { Dispatch, SetStateAction, useContext, useState } from "react";
 import {
   AccountWalletLogo,
   Button,
@@ -21,8 +14,7 @@ import {
   useAbstraxionAccount,
   useAbstraxionSigningClient,
 } from "../../../hooks";
-import { AllSmartWalletQuery } from "../../../utils/queries";
-import type { AuthenticatorNodes, authenticatorTypes } from "../../../types";
+import type { authenticatorTypes } from "../../../types";
 import { Authenticator } from "../../../indexer-strategies/types";
 
 export function RemoveAuthenticatorForm({
@@ -44,26 +36,6 @@ export function RemoveAuthenticatorForm({
   // Hooks
   const { loginAuthenticator } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-
-  const { data, previousData, startPolling, stopPolling } = useQuery(
-    AllSmartWalletQuery,
-    {
-      variables: {
-        authenticator: loginAuthenticator,
-      },
-      fetchPolicy: "network-only",
-      notifyOnNetworkStatusChange: true,
-    }
-  );
-
-  // Stop polling upon new data and update context
-  useEffect(() => {
-    if (previousData && data !== previousData) {
-      stopPolling();
-      setIsLoading(false);
-      setAbstractAccount(undefined); // set account to undefined to throw users back to account select screen
-    }
-  }, [data, previousData]);
 
   const handleAuthenticatorLabels = (type: authenticatorTypes) => {
     switch (type) {
@@ -162,7 +134,17 @@ export function RemoveAuthenticatorForm({
         throw new Error("Transaction failed");
       }
 
-      startPolling(3000);
+      setAbstractAccount({
+        ...abstractAccount,
+        authenticators: abstractAccount.authenticators.filter(
+          ({ id }) =>
+            id != `${abstractAccount.id}-${authenticator.authenticatorIndex}`,
+        ),
+      });
+
+      setIsLoading(false);
+      setIsOpen(false);
+
       return res;
     } catch (error) {
       console.warn(error);

@@ -1,12 +1,5 @@
-import {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { WalletType, useAccount, useSuggestChainAndConnect } from "graz";
-import { useStytchUser } from "@stytch/react";
+import { Dispatch, SetStateAction, useContext, useState } from "react";
+import { useAccount, useSuggestChainAndConnect, WalletType } from "graz";
 import { Button, MetamaskLogo, Spinner } from "@burnt-labs/ui";
 import {
   AbstraxionContext,
@@ -18,9 +11,8 @@ import {
 } from "../../../hooks";
 import { encodeHex } from "../../../utils";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
-import { useSubquerySmartAccounts } from "../../../hooks/useSubquerySmartAccounts";
-import { deepEqual } from "../../../utils/general";
 import { useNumiaSmartAccounts } from "../../../hooks/useNumiaSmartAccounts";
+import { AAAlgo } from "../../../signers";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
@@ -48,6 +40,7 @@ export function AddAuthenticatorsForm({
   // General UI state
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // Context state
   const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
@@ -63,26 +56,10 @@ export function AddAuthenticatorsForm({
     onError: () => setIsLoading(false),
     onLoading: () => setIsLoading(true),
   });
-  const { data, startPolling, isSuccess } = useNumiaSmartAccounts(true, () => {
+
+  const { data } = useNumiaSmartAccounts(true, () => {
     setIsLoading(false);
   });
-
-  useEffect(() => {
-    const node = data?.find(
-      (smartAccount) => smartAccount.id === abstractAccount.id
-    );
-    const newNode = {
-      authenticators: node.authenticators,
-      id: node.id,
-      currentAuthenticatorIndex: node.authenticators.find(
-        (authenticator) => authenticator.authenticator === loginAuthenticator
-      ).authenticatorIndex,
-    };
-    if (!node || deepEqual(newNode, abstractAccount)) {
-      return;
-    }
-    setAbstractAccount(newNode);
-  }, [data]);
 
   // Functions
   function handleSwitch(authenticator: AuthenticatorStates) {
@@ -113,8 +90,8 @@ export function AddAuthenticatorsForm({
   }
 
   function postAddFunction() {
-    setIsLoading(true);
-    startPolling(3000);
+    setIsSuccess(true);
+    setIsLoading(false);
   }
 
   async function addKeplrAuthenticator() {
@@ -131,11 +108,11 @@ export function AddAuthenticatorsForm({
       const signArbRes = await keplr.signArbitrary(
         chainInfo.chainId,
         grazAccount?.bech32Address,
-        signArbMessage
+        signArbMessage,
       );
 
       const accountIndex = findLowestMissingOrNextIndex(
-        abstractAccount?.authenticators
+        abstractAccount?.authenticators,
       );
 
       const msg = {
@@ -155,11 +132,24 @@ export function AddAuthenticatorsForm({
         throw new Error(res.rawLog);
       }
 
+      setAbstractAccount({
+        ...abstractAccount,
+        authenticators: [
+          ...abstractAccount.authenticators,
+          {
+            id: `${abstractAccount.id}-${accountIndex}`,
+            type: AAAlgo.secp256k1,
+            authenticator: signArbRes.pub_key.value,
+            authenticatorIndex: accountIndex,
+          },
+        ],
+      });
+
       postAddFunction();
       return res;
     } catch (error) {
       setErrorMessage(
-        "Something went wrong trying to add Keplr wallet as authenticator"
+        "Something went wrong trying to add Keplr wallet as authenticator",
       );
       setIsLoading(false);
     }
@@ -185,11 +175,11 @@ export function AddAuthenticatorsForm({
       const signArbRes = await window.okxwallet.keplr.signArbitrary(
         chainInfo.chainId,
         okxAccount.bech32Address,
-        signArbMessage
+        signArbMessage,
       );
 
       const accountIndex = findLowestMissingOrNextIndex(
-        abstractAccount?.authenticators
+        abstractAccount?.authenticators,
       );
 
       const msg = {
@@ -209,12 +199,25 @@ export function AddAuthenticatorsForm({
         throw new Error(res.rawLog);
       }
 
+      setAbstractAccount({
+        ...abstractAccount,
+        authenticators: [
+          ...abstractAccount.authenticators,
+          {
+            id: `${abstractAccount.id}-${accountIndex}`,
+            type: AAAlgo.secp256k1,
+            authenticator: okxAccount.bech32Address,
+            authenticatorIndex: accountIndex,
+          },
+        ],
+      });
+
       postAddFunction();
       return res;
     } catch (error) {
       console.log(error);
       setErrorMessage(
-        "Something went wrong trying to add OKX wallet as authenticator"
+        "Something went wrong trying to add OKX wallet as authenticator",
       );
       setIsLoading(false);
     }
@@ -245,12 +248,12 @@ export function AddAuthenticatorsForm({
       });
 
       const byteArray = new Uint8Array(
-        ethSignature.match(/[\da-f]{2}/gi).map((hex) => parseInt(hex, 16))
+        ethSignature.match(/[\da-f]{2}/gi).map((hex) => parseInt(hex, 16)),
       );
       const base64String = btoa(String.fromCharCode.apply(null, byteArray));
 
       const accountIndex = findLowestMissingOrNextIndex(
-        abstractAccount?.authenticators
+        abstractAccount?.authenticators,
       );
 
       const msg = {
@@ -271,11 +274,24 @@ export function AddAuthenticatorsForm({
         throw new Error("Transaction failed");
       }
 
+      setAbstractAccount({
+        ...abstractAccount,
+        authenticators: [
+          ...abstractAccount.authenticators,
+          {
+            id: `${abstractAccount.id}-${accountIndex}`,
+            type: AAAlgo.ETHWALLET,
+            authenticator: primaryAccount,
+            authenticatorIndex: accountIndex,
+          },
+        ],
+      });
+
       postAddFunction();
       return res;
     } catch (error) {
       setErrorMessage(
-        "Something went wrong trying to add Ethereum wallet as authenticator"
+        "Something went wrong trying to add Ethereum wallet as authenticator",
       );
       setIsLoading(false);
     }

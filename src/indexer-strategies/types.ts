@@ -10,7 +10,11 @@ export interface SmartAccount {
   authenticators: Authenticator[];
 }
 
-export interface SelectedSmartAccount extends SmartAccount {
+export interface SmartAccountWithCodeId extends SmartAccount {
+  codeId: number;
+}
+
+export interface SelectedSmartAccount extends SmartAccountWithCodeId {
   currentAuthenticatorIndex: number;
 }
 

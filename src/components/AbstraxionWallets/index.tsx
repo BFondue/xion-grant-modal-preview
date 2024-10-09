@@ -1,16 +1,12 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import { useStytch, useStytchUser } from "@stytch/react";
-import { Button, Spinner } from "@burnt-labs/ui";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../AbstraxionContext";
-import { truncateAddress } from "../../utils";
-import { useAbstraxionAccount } from "../../hooks";
-import { Loading } from "../Loading";
-import { WalletIcon } from "../Icons";
-import { useXionDisconnect } from "../../hooks/useXionDisconnect";
-import { useSubquerySmartAccounts } from "../../hooks/useSubquerySmartAccounts";
+import {useCallback, useContext, useState} from "react";
+import {useStytch} from "@stytch/react";
+import {Button, Spinner} from "@burnt-labs/ui";
+import {AbstraxionContext, AbstraxionContextProps,} from "../AbstraxionContext";
+import {truncateAddress} from "../../utils";
+import {useAbstraxionAccount} from "../../hooks";
+import {Loading} from "../Loading";
+import {WalletIcon} from "../Icons";
+import {useXionDisconnect} from "../../hooks/useXionDisconnect";
 import {useNumiaSmartAccounts} from "../../hooks/useNumiaSmartAccounts";
 
 export const AbstraxionWallets = () => {
@@ -106,6 +102,7 @@ export const AbstraxionWallets = () => {
                       setAbstractAccount({
                         authenticators: node.authenticators,
                         id: node.id,
+                        codeId: node.codeId,
                         currentAuthenticatorIndex:
                           node.authenticators.find(
                             (authenticator) =>

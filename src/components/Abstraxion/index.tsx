@@ -125,19 +125,3 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
     </>
   );
 };
-
-export const AbstraxionProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  return (
-    <AbstraxionContextProvider>
-      <StytchProvider stytch={stytchClient}>
-        <ApolloProvider client={apolloClient}>
-          <GrazProvider>{children}</GrazProvider>
-        </ApolloProvider>
-      </StytchProvider>
-    </AbstraxionContextProvider>
-  );
-};
