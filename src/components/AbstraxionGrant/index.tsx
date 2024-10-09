@@ -1,18 +1,25 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
   assertIsDeliverTxSuccess,
+  DeliverTxResponse,
 } from "@cosmjs/stargate/build/stargateclient";
+import { StdFee } from "@cosmjs/stargate";
+import { EncodeObject } from "@cosmjs/proto-signing";
 import { Button, Spinner } from "@burnt-labs/ui";
 import { CheckIcon } from "../Icons";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import { EncodeObject } from "@cosmjs/proto-signing";
 import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
 import { generateBankGrant } from "../../components/AbstraxionGrant/generateBankGrant";
 import { generateContractGrant } from "../../components/AbstraxionGrant/generateContractGrant";
 import { generateStakeGrant } from "../../components/AbstraxionGrant/generateStakeGrant";
 import { getEnvStringOrThrow } from "../../utils";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
+import { getGasCalculation } from "../../utils/gas-utils";
+import {
+  AbstraxionContext,
+  AbstraxionContextProps,
+} from "../AbstraxionContext";
 
 import burntAvatar from "../../assets/burntAvatarCircle.png";
 import { useQueryParams } from "../../hooks/useQueryParams";
@@ -33,12 +40,13 @@ export const AbstraxionGrant = ({
   grantee,
   stake,
   bank,
-  treasury
+  treasury,
 }: AbstraxionGrantProps) => {
   const { client } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
-  const {redirect_uri} = useQueryParams(["redirect_uri"]);
+  const { redirect_uri } = useQueryParams(["redirect_uri"]);
   const { xionDisconnect } = useXionDisconnect();
+  const { chainInfo } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
   const [inProgress, setInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -89,13 +97,18 @@ export const AbstraxionGrant = ({
           grantee
         );
 
+        const simmedGas = await client.simulate(
+          account.id,
+          grantMsgs,
+          `treasury-grant-${timestampThreeMonthsFromNow}`
+        );
+
+        const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+
         const deliverTxResponse = await client?.signAndBroadcast(
           account.id,
           grantMsgs,
-          {
-            amount: [{ amount: "0", denom: "uxion" }],
-            gas: "500000",
-          }
+          fee
         );
 
         assertIsDeliverTxSuccess({
@@ -160,41 +173,36 @@ export const AbstraxionGrant = ({
         throw new Error("No grants to send");
       }
 
+      let fee: StdFee;
+      let deliverTxResponse: DeliverTxResponse;
+
       try {
-        const deliverTxResponse = await client?.signAndBroadcast(
+        const simmedGas = await client.simulate(
           account.id,
           msgs,
-          {
-            amount: [{ amount: "0", denom: "uxion" }],
-            gas: "500000",
-            granter: getEnvStringOrThrow(
-              "VITE_FEE_GRANTER_ADDRESS",
-              import.meta.env.VITE_FEE_GRANTER_ADDRESS
-            ),
-          }
+          `grant-${timestampThreeMonthsFromNow}`
         );
 
-        assertIsDeliverTxSuccess({
-          ...deliverTxResponse,
-          gasUsed: BigInt(deliverTxResponse.gasUsed),
-          gasWanted: BigInt(deliverTxResponse.gasWanted),
+        fee = getGasCalculation(simmedGas, chainInfo.chainId);
+
+        // Attempt to sign and broadcast the transaction using the fee granter
+        deliverTxResponse = await client.signAndBroadcast(account.id, msgs, {
+          ...fee,
+          granter: getEnvStringOrThrow(
+            "VITE_FEE_GRANTER_ADDRESS",
+            import.meta.env.VITE_FEE_GRANTER_ADDRESS
+          ),
         });
       } catch (error) {
         // This account doesn't have the fee grant, trying without fee grant.
-        const deliverTxResponse = await client?.signAndBroadcast(
+        deliverTxResponse = await client.signAndBroadcast(
           account.id,
           msgs,
-          {
-            amount: [{ amount: "0", denom: "uxion" }],
-            gas: "500000",
-          }
+          fee
         );
 
-        assertIsDeliverTxSuccess({
-          ...deliverTxResponse,
-          gasUsed: BigInt(deliverTxResponse.gasUsed),
-          gasWanted: BigInt(deliverTxResponse.gasWanted),
-        });
+        // Assert that the transaction was successful
+        assertIsDeliverTxSuccess(deliverTxResponse);
       }
 
       setShowSuccess(true);
@@ -248,11 +256,11 @@ export const AbstraxionGrant = ({
       ) : (
         <>
           <div className="ui-mb-10 ui-flex ui-items-center ui-justify-center">
-          <img src={burntAvatar} alt="Burnt Avatar" />
+            <img src={burntAvatar} alt="Burnt Avatar" />
           </div>
           <div className="mb-4">
             <h1 className="ui-text-base ui-font-bold ui-leading-tight">
-            A 3rd party would like:
+              A 3rd party would like:
             </h1>
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mt-8" />
             <ul className="ui-my-8 ui-list-disc ui-list-none">
@@ -296,7 +304,9 @@ export const AbstraxionGrant = ({
               >
                 Allow and Continue
               </Button>
-              <Button structure="outlined" onClick={xionDisconnect}>Switch Account</Button>
+              <Button structure="outlined" onClick={xionDisconnect}>
+                Switch Account
+              </Button>
               <Button structure="naked">Deny Access</Button>
             </div>
           </div>
