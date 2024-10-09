@@ -70,8 +70,8 @@ export function useAccountBalance() {
       const msg = {
         typeUrl: "/cosmos.bank.v1beta1.MsgSend",
         value: MsgSend.fromPartial({
-          fromAddress: senderAddress,
-          toAddress: account.id,
+          fromAddress: account.id,
+          toAddress: senderAddress,
           amount: [{ denom, amount: convertedSendAmount }],
         }),
       };
