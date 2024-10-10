@@ -1,31 +1,25 @@
 "use client";
-import { useCallback, useContext, useEffect, useState } from "react";
-import {
-  assertIsDeliverTxSuccess,
-  DeliverTxResponse,
-} from "@cosmjs/stargate/build/stargateclient";
-import { StdFee } from "@cosmjs/stargate";
-import { EncodeObject } from "@cosmjs/proto-signing";
-import { Button, Spinner } from "@burnt-labs/ui";
-import { CheckIcon } from "../Icons";
-import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
-import { generateBankGrant } from "../../components/AbstraxionGrant/generateBankGrant";
-import { generateContractGrant } from "../../components/AbstraxionGrant/generateContractGrant";
-import { generateStakeGrant } from "../../components/AbstraxionGrant/generateStakeGrant";
-import { getEnvStringOrThrow } from "../../utils";
-import { useXionDisconnect } from "../../hooks/useXionDisconnect";
-import { getGasCalculation } from "../../utils/gas-utils";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../AbstraxionContext";
+import {useCallback, useContext, useEffect, useState} from "react";
+import {assertIsDeliverTxSuccess, DeliverTxResponse,} from "@cosmjs/stargate/build/stargateclient";
+import {StdFee} from "@cosmjs/stargate";
+import {EncodeObject} from "@cosmjs/proto-signing";
+import {Button, Spinner} from "@burnt-labs/ui";
+import {CheckIcon} from "../Icons";
+import {useAbstraxionAccount, useAbstraxionSigningClient} from "../../hooks";
+import type {ContractGrantDescription} from "@burnt-labs/abstraxion";
+import {generateBankGrant} from "../../components/AbstraxionGrant/generateBankGrant";
+import {generateContractGrant} from "../../components/AbstraxionGrant/generateContractGrant";
+import {generateStakeGrant} from "../../components/AbstraxionGrant/generateStakeGrant";
+import {getEnvStringOrThrow} from "../../utils";
+import {useXionDisconnect} from "../../hooks/useXionDisconnect";
+import {getGasCalculation} from "../../utils/gas-utils";
+import {AbstraxionContext, AbstraxionContextProps,} from "../AbstraxionContext";
 
 import burntAvatar from "../../assets/burntAvatarCircle.png";
-import { useQueryParams } from "../../hooks/useQueryParams";
-import { PermissionDescription } from "../../types/treasury-types";
-import { generateTreasuryGrants } from "../../utils/generate-treasury-grants";
-import { queryTreasuryContract } from "../../utils/query-treasury-contract";
+import {useQueryParams} from "../../hooks/useQueryParams";
+import {PermissionDescription} from "../../types/treasury-types";
+import {generateTreasuryGrants} from "../../utils/generate-treasury-grants";
+import {queryTreasuryContract} from "../../utils/query-treasury-contract";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -46,7 +40,7 @@ export const AbstraxionGrant = ({
   const { data: account } = useAbstraxionAccount();
   const { redirect_uri } = useQueryParams(["redirect_uri"]);
   const { xionDisconnect } = useXionDisconnect();
-  const { chainInfo } = useContext(AbstraxionContext) as AbstraxionContextProps;
+  const { chainInfo, setAbstraxionError } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
   const [inProgress, setInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -210,6 +204,7 @@ export const AbstraxionGrant = ({
     } catch (error) {
       setInProgress(false);
       console.log("something went wrong: ", error);
+      setAbstraxionError(error.message);
     }
   };
 

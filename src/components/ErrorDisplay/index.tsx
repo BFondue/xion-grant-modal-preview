@@ -15,7 +15,7 @@ export const ErrorDisplay = ({
   onClose?: VoidFunction;
 }) => {
   const { setAbstraxionError } = useContext(
-    AbstraxionContext,
+    AbstraxionContext
   ) as AbstraxionContextProps;
 
   return (
@@ -23,7 +23,9 @@ export const ErrorDisplay = ({
       <h1 className="ui-text-3xl ui-font-thin ui-uppercase ui-tracking-tighter ui-text-white">
         {title}
       </h1>
-      <p className="ui-tracking-tight ui-text-zinc-400">{message}</p>
+      <p className="ui-tracking-tight ui-text-zinc-400 ui-w-full ui-break-words">
+        {message}
+      </p>
       <Button
         fullWidth={true}
         onClick={() => {
