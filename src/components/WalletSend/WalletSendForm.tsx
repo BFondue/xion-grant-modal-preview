@@ -1,19 +1,13 @@
 import { ChangeEvent, useState } from "react";
 import { DeliverTxResponse } from "@cosmjs/stargate";
-import { Button, Input, ChevronDown } from "@burnt-labs/ui";
-import { XION_TO_USDC_CONVERSION } from "../Overview";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { useAbstraxionAccount } from "../../hooks";
-import { formatBalance, isValidWalletAddress } from "../../utils";
-import { USDCIcon } from "../Icons/USDC";
-import { XionIcon } from "../Icons/Xion";
+import { isValidWalletAddress } from "../../utils";
 import { usdcSearchDenom } from "../../hooks/useAccountBalance";
-
-interface SelectedCurrency {
-  type: "usdc" | "xion";
-  balance?: Coin;
-  denom: typeof usdcSearchDenom | "uxion";
-}
+import { SelectedCurrency } from "./WalletSendTypes";
+import { WalletSendInput } from "./WalletSendInput";
+import { WalletSendReview } from "./WalletSendReview";
+import { WalletSendSuccess } from "./WalletSendSuccess";
 
 export function WalletSendForm({
   sendTokens,
@@ -24,7 +18,7 @@ export function WalletSendForm({
     senderAddress: string,
     sendAmount: number,
     denom: string,
-    memo: string
+    memo: string,
   ) => Promise<DeliverTxResponse>;
   balanceInfo: BalanceInfo;
   setIsOpen: any;
@@ -32,10 +26,10 @@ export function WalletSendForm({
   const { data: account } = useAbstraxionAccount();
 
   const xionBalance = balanceInfo.balances.find(
-    (coin) => coin.denom === "uxion"
+    (coin) => coin.denom === "uxion",
   );
   const usdcBalance = balanceInfo.balances.find(
-    (coin) => coin.denom === usdcSearchDenom
+    (coin) => coin.denom === usdcSearchDenom,
   );
 
   const [selectedCurrency, setSelectedCurrency] = useState<SelectedCurrency>({
@@ -59,12 +53,24 @@ export function WalletSendForm({
 
   function handleAmountChange(event: ChangeEvent<HTMLInputElement>) {
     setAmountError("");
+    let inputValue = event.target.value;
+
+    // replace commas in favor of zero.
+    inputValue = inputValue.replace(/,/g, ".");
+
+    // replace minus sign, negative values aren't allowed
+    inputValue = inputValue.replace(/-/g, "");
+
     if (sendAmount === "0" && event.target.value === "00") return;
     if (!event.target.value) {
       setSendAmount("0");
       return;
     }
-    setSendAmount(event.target.value.replace(/^0+/, ""));
+
+    // remove leading zeros, but allow for one before a decimal point
+    inputValue = inputValue.replace(/^0+(?=\d)/, "");
+
+    setSendAmount(inputValue);
   }
 
   function handleStart() {
@@ -103,7 +109,7 @@ export function WalletSendForm({
         recipientAddress,
         Number(sendAmount),
         selectedCurrency.denom,
-        userMemo
+        userMemo,
       );
       setIsSuccess(true);
     } catch (error) {
@@ -114,120 +120,6 @@ export function WalletSendForm({
     }
   }
 
-  function switchSelectedCurrency(type: typeof selectedCurrency.type) {
-    switch (type) {
-      case "xion":
-        setSelectedCurrency({
-          type: "xion",
-          balance: xionBalance,
-          denom: "uxion",
-        });
-        break;
-      case "usdc":
-        setSelectedCurrency({
-          type: "usdc",
-          balance: usdcBalance,
-          denom: usdcSearchDenom,
-        });
-        break;
-    }
-    setShowDropdown(false);
-    return;
-  }
-
-  const currencyDropdown = () => {
-    return (
-      <div className="ui-relative">
-        <div
-          className={`ui-flex ui-items-center ui-justify-between ui-p-4 ui-bg-black ${
-            showDropdown ? "ui-rounded-tr-lg ui-rounded-tl-lg" : "ui-rounded-lg"
-          }`}
-          onClick={() => setShowDropdown(!showDropdown)}
-        >
-          <div className="ui-flex ui-items-center">
-            <div className="ui-mr-2">
-              {selectedCurrency.type === "usdc" ? (
-                <USDCIcon color="white" />
-              ) : (
-                <XionIcon />
-              )}
-            </div>
-
-            <div className="ui-flex ui-flex-col ui-items-start">
-              <p className="ui-text-md ui-font-bold ui-text-white">
-                {selectedCurrency.type.toUpperCase()}
-              </p>
-              <p className="ui-text-md ui-text-white">
-                Balance:{" "}
-                {formatBalance(Number(selectedCurrency.balance?.amount))}{" "}
-                {selectedCurrency.type.toUpperCase()}{" "}
-                <span className="ui-text-white/50 ui-pl-2">
-                  $
-                  {formatBalance(
-                    Number(selectedCurrency.balance?.amount) *
-                      (selectedCurrency.type === "xion"
-                        ? XION_TO_USDC_CONVERSION
-                        : 1)
-                  )}{" "}
-                  USD
-                </span>
-              </p>
-            </div>
-          </div>
-          <ChevronDown isUp={showDropdown} />
-        </div>
-
-        <div
-          className={`${
-            showDropdown ? "ui-absolute ui-left-0" : "ui-hidden"
-          } ui-w-full ui-rounded-bl-lg ui-rounded-br-lg ui-bg-black ui-border-t ui-border-white/20`}
-        >
-          <div
-            className="ui-flex ui-items-center ui-p-4 ui-bg-black ui-rounded-lg"
-            onClick={() => switchSelectedCurrency("xion")}
-          >
-            <div className="ui-mr-2">
-              <XionIcon />
-            </div>
-
-            <div className="ui-flex ui-flex-col ui-items-start">
-              <p className="ui-text-md ui-font-bold ui-text-white">XION</p>
-              <p className="ui-text-md ui-text-white">
-                Balance: {formatBalance(Number(xionBalance?.amount))} XION{" "}
-                <span className="ui-text-white/50 ui-pl-2">
-                  $
-                  {formatBalance(
-                    Number(xionBalance?.amount) * XION_TO_USDC_CONVERSION
-                  )}{" "}
-                  USD
-                </span>
-              </p>
-            </div>
-          </div>
-
-          <div
-            className="ui-flex ui-items-center ui-p-4 ui-bg-black ui-rounded-lg ui-mt-1"
-            onClick={() => switchSelectedCurrency("usdc")}
-          >
-            <div className="ui-mr-2">
-              <USDCIcon color="white" />
-            </div>
-
-            <div className="ui-flex ui-flex-col ui-items-start">
-              <p className="ui-text-md ui-font-bold ui-text-white">USDC</p>
-              <p className="ui-text-md ui-text-white">
-                Balance: {formatBalance(Number(usdcBalance?.amount))} USDC{" "}
-                <span className="ui-text-white/50 ui-pl-2">
-                  ${formatBalance(Number(usdcBalance?.amount))} USD
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
       {sendTokensError ? (
@@ -237,191 +129,49 @@ export function WalletSendForm({
           onClose={() => setIsOpen(false)}
         />
       ) : isSuccess ? (
-        <>
-          <div className="ui-p-0 ui-flex ui-flex-col ui-gap-4">
-            <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
-              SUCCESS!
-            </h1>
-            <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
-              You have initiated the transaction below.
-            </p>
-            <div className="ui-my-6 ui-h-[1px] ui-w-full ui-bg-white/20" />
-            <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
-              Transfer Amount
-            </p>
-            <p className="ui-w-full ui-text-center ui-text-4xl ui-font-akkuratLL ui-text-white ui-font-semibold">
-              {sendAmount}{" "}
-              <span className="ui-text-white/40">
-                {selectedCurrency.type.toUpperCase()}
-              </span>
-            </p>
-            <p className="ui-w-full ui-text-center ui-text-md ui-font-akkuratLL ui-text-white/40">
-              $
-              {formatBalance(
-                Number(sendAmount) *
-                  1000000 *
-                  (selectedCurrency.type === "xion"
-                    ? XION_TO_USDC_CONVERSION
-                    : 1)
-              )}{" "}
-              USD
-            </p>
-            <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/70 ui-italic">
-              {userMemo}
-            </p>
-            <div className="ui-my-6 ui-h-[1px] ui-w-full ui-bg-white/20" />
-            <div>
-              <p className="ui-w-full ui-text-center ui-text-xs ui-font-akkuratLL ui-text-white/40">
-                From
-              </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
-                {account.id}
-              </p>
-            </div>
-            <div className="ui-mb-4">
-              <p className="ui-w-full ui-text-center ui-text-xs ui-font-akkuratLL ui-text-white/40">
-                To
-              </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
-                {recipientAddress}
-              </p>
-            </div>
-            <Button onClick={() => setIsOpen(false)}>GOTCHA</Button>
-          </div>
-        </>
+        <WalletSendSuccess
+          account={account}
+          onFinish={() => setIsOpen(false)}
+          recipientAddress={recipientAddress}
+          selectedCurrency={selectedCurrency}
+          sendAmount={sendAmount}
+          userMemo={userMemo}
+        />
       ) : isOnReviewStep ? (
-        <>
-          <div className="ui-p-0 ui-flex ui-flex-col ui-gap-4">
-            <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
-              REVIEW
-            </h1>
-            <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
-              You are about to make the transaction below.
-            </p>
-            <div className="ui-my-6 ui-h-[1px] ui-w-full ui-bg-white/20" />
-            <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
-              Transfer Amount
-            </p>
-            <p className="ui-w-full ui-text-center ui-text-4xl ui-font-akkuratLL ui-text-white ui-font-semibold">
-              {sendAmount}{" "}
-              <span className="ui-text-white/40">
-                {selectedCurrency.type.toUpperCase()}
-              </span>
-            </p>
-            <p className="ui-w-full ui-text-center ui-text-md ui-font-akkuratLL ui-text-white/40">
-              $
-              {formatBalance(
-                Number(sendAmount) *
-                  1000000 *
-                  (selectedCurrency.type === "xion"
-                    ? XION_TO_USDC_CONVERSION
-                    : 1)
-              )}{" "}
-              USD
-            </p>
-            <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/70 ui-italic">
-              {userMemo}
-            </p>
-            <div className="ui-my-6 ui-h-[1px] ui-w-full ui-bg-white/20" />
-            <div>
-              <p className="ui-w-full ui-text-center ui-text-xs ui-font-akkuratLL ui-text-white/40">
-                From
-              </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
-                {account.id}
-              </p>
-            </div>
-            <div className="ui-mb-4">
-              <p className="ui-w-full ui-text-center ui-text-xs ui-font-akkuratLL ui-text-white/40">
-                To
-              </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
-                {recipientAddress}
-              </p>
-            </div>
-            <Button disabled={isLoading} onClick={triggerSend}>
-              {isLoading ? "Loading..." : "CONFIRM"}
-            </Button>
-            <Button
-              disabled={isLoading}
-              onClick={() => setIsOnReviewStep(false)}
-              structure="naked"
-            >
-              GO BACK
-            </Button>
-          </div>
-        </>
+        <WalletSendReview
+          isLoading={isLoading}
+          account={account}
+          recipientAddress={recipientAddress}
+          selectedCurrency={selectedCurrency}
+          sendAmount={sendAmount}
+          userMemo={userMemo}
+          triggerSend={triggerSend}
+          onBack={() => {
+            setIsOnReviewStep(false);
+          }}
+        />
       ) : (
-        <>
-          <div className="ui-flex ui-flex-col ui-p-0 ui-gap-8 ui-max-h-full ui-overflow-y-auto ui-mt-2">
-            <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
-              SEND
-            </h1>
-            <div className="ui-flex ui-flex-col">
-              {currencyDropdown()}
-              <div className="ui-font-akkuratLL ui-flex ui-justify-between ui-mb-4 ui-mt-8">
-                <p className="ui-text-white ui-font-semibold">Amount</p>
-                <p className="ui-text-white/50 ui-font-semibold">
-                  =$
-                  {formatBalance(
-                    Number(sendAmount) *
-                      1000000 *
-                      (selectedCurrency.type === "xion"
-                        ? XION_TO_USDC_CONVERSION
-                        : 1)
-                  )}{" "}
-                  USD
-                </p>
-              </div>
-              <div
-                className={`ui-flex ui-items-center ui-justify-between ui-p-6 ui-border ${
-                  amountError ? "ui-border-red-500" : "ui-border-white/50"
-                } ui-rounded-lg`}
-              >
-                <input
-                  className={`ui-w-full ui-bg-transparent ${
-                    sendAmount === "0" && "!ui-text-[#6C6A6A]"
-                  } ui-text-white ui-font-bold ui-text-5xl placeholder:ui-text-white/50 focus:ui-outline-none`}
-                  onChange={handleAmountChange}
-                  placeholder="Amount"
-                  type="number"
-                  value={sendAmount}
-                />
-                <p className="ui-text-5xl ui-font-bold ui-text-white/50">
-                  {selectedCurrency.type.toUpperCase()}
-                </p>
-              </div>
-              {amountError ? (
-                <p className="ui-text-red-500 ui-text-sm">{amountError}</p>
-              ) : null}
-            </div>
-            <div className="ui-flex ui-flex-col">
-              <label className="ui-font-akkuratLL ui-text-xs ui-text-white/50">
-                From:
-              </label>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white ui-break-words">
-                {account.id}
-              </p>
-            </div>
-            <Input
-              data-testid="recipient-input"
-              error={recipientAddressError}
-              onChange={(e) => {
-                setRecipientAddressError("");
-                setRecipientAddress(e.target.value);
-              }}
-              placeholder="Recipient Address"
-              value={recipientAddress}
-            />
-            <Input
-              data-testid="memo-input"
-              onChange={(e) => setUserMemo(e.target.value)}
-              placeholder="Memo (Optional)"
-              value={userMemo}
-            />
-            <Button onClick={handleStart}>REVIEW</Button>
-          </div>
-        </>
+        <WalletSendInput
+          account={account}
+          amountError={amountError}
+          onChangeCurrency={setSelectedCurrency}
+          onCloseDropdown={setShowDropdown}
+          onAmountChange={handleAmountChange}
+          onUpdateRecipientAddress={(e) => {
+            setRecipientAddressError("");
+            setRecipientAddress(e);
+          }}
+          onUpdateUserMemo={setUserMemo}
+          recipientAddress={recipientAddress}
+          recipientAddressError={recipientAddressError}
+          selectedCurrency={selectedCurrency}
+          sendAmount={sendAmount}
+          showDropdown={showDropdown}
+          usdcBalance={usdcBalance}
+          userMemo={userMemo}
+          xionBalance={xionBalance}
+          onStart={handleStart}
+        />
       )}
     </>
   );
