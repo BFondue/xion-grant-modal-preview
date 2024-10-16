@@ -55,6 +55,7 @@ export const AbstraxionMigrate = ({
       void updateContractCodeID();
     } catch (error) {
       console.log("something went wrong: ", error);
+      setAbstraxionError("Failed to migrate account.");
       setFailed(true);
     } finally {
       setInProgress(false);
@@ -64,7 +65,6 @@ export const AbstraxionMigrate = ({
   if (currentCodeId === targetCodeId) return null;
 
   if (failed) {
-    setAbstraxionError("Failed to migrate account.");
     return null;
   }
 
