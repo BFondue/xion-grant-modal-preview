@@ -12,14 +12,17 @@ interface NumiaSmartAccountResp {
   authenticators: NumiaAuthenticatorResp[];
 }
 
-
 export class NumiaIndexerStrategy implements IndexerStrategy {
-  constructor(private readonly baseURL: string, private readonly authToken) {}
+  constructor(
+    private readonly baseURL: string,
+    private readonly authToken,
+  ) {}
 
   async fetchSmartAccounts(
-    loginAuthenticator: string
+    loginAuthenticator: string,
   ): Promise<SmartAccount[]> {
-    const url = `${this.baseURL}authenticators/${loginAuthenticator}/smartAccounts/details`;
+    const encodedAuthenticator = encodeURIComponent(loginAuthenticator);
+    const url = `${this.baseURL}authenticators/${encodedAuthenticator}/smartAccounts/details`;
     const { data } = await axios.get<NumiaSmartAccountResp[]>(url, {
       headers: {
         Accept: "application/json",
@@ -29,12 +32,14 @@ export class NumiaIndexerStrategy implements IndexerStrategy {
 
     return data?.map(({ smart_account, authenticators }) => ({
       id: smart_account,
-      authenticators: authenticators.map(({authenticator, authenticator_index, type}) => ({
-        id: `${smart_account}-${authenticator_index}`,
-        authenticator,
-        authenticatorIndex: authenticator_index,
-        type
-      })),
+      authenticators: authenticators.map(
+        ({ authenticator, authenticator_index, type }) => ({
+          id: `${smart_account}-${authenticator_index}`,
+          authenticator,
+          authenticatorIndex: authenticator_index,
+          type,
+        }),
+      ),
     }));
   }
 }

@@ -76,7 +76,7 @@ export function App() {
                     <AccountInfo account={account} />
                   </div>
                   {/* Right Tiles */}
-                  <div className="ui-hidden sm:ui-flex sm:ui-flex-1 sm:ui-flex-col"></div>
+                  {/* <div className="ui-hidden sm:ui-flex sm:ui-flex-1 sm:ui-flex-col"></div> */}
                 </div>
               </div>
             </div>

@@ -28,9 +28,12 @@ export function WalletSend({
         className="ui-text-white"
         onPointerDownOutside={(e: any) => e.preventDefault()}
       >
-        <DialogClose className="ui-absolute ui-top-5 ui-right-10">
-          <CloseIcon className="ui-stroke-white/50" />
-        </DialogClose>
+        <div className="ui-flex ui-justify-end ui-mt-8">
+          <DialogClose className="ui-inline-flex">
+            <CloseIcon className="ui-stroke-white/50" />
+          </DialogClose>
+        </div>
+
         <WalletSendForm
           balanceInfo={balanceInfo}
           sendTokens={sendTokens}

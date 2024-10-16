@@ -44,7 +44,7 @@ export function AddAuthenticatorsForm({
 
   // Context state
   const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
-    AbstraxionContext,
+    AbstraxionContext
   ) as AbstraxionContextProps;
 
   // Hooks
@@ -56,6 +56,7 @@ export function AddAuthenticatorsForm({
     onError: () => setIsLoading(false),
     onLoading: () => setIsLoading(true),
   });
+
   const { data } = useNumiaSmartAccounts(true, () => {
     setIsLoading(false);
   });
@@ -125,10 +126,7 @@ export function AddAuthenticatorsForm({
           },
         },
       };
-      const res = await client.addAbstractAccountAuthenticator(msg, "", {
-        amount: [{ amount: "0", denom: "uxion" }],
-        gas: "500000",
-      });
+      const res = await client.addAbstractAccountAuthenticator(msg, "");
 
       if (res.rawLog?.includes("failed")) {
         throw new Error(res.rawLog);
@@ -195,10 +193,7 @@ export function AddAuthenticatorsForm({
           },
         },
       };
-      const res = await client.addAbstractAccountAuthenticator(msg, "", {
-        amount: [{ amount: "0", denom: "uxion" }],
-        gas: "500000",
-      });
+      const res = await client.addAbstractAccountAuthenticator(msg, "");
 
       if (res.rawLog?.includes("failed")) {
         throw new Error(res.rawLog);
@@ -273,10 +268,7 @@ export function AddAuthenticatorsForm({
         },
       };
 
-      const res = await client.addAbstractAccountAuthenticator(msg, "", {
-        amount: [{ amount: "0", denom: "uxion" }],
-        gas: "500000",
-      });
+      const res = await client.addAbstractAccountAuthenticator(msg, "");
 
       if (res?.rawLog?.includes("failed")) {
         throw new Error("Transaction failed");
