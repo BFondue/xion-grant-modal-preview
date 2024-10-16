@@ -31,7 +31,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             <Link
               to={option.path}
               className={`${
-                pathname === option.path ? "ui-text-white" : "ui-text-slate-400"
+                pathname === option.path ? "ui-text-white" : "ui-text-neutral-500"
               } ui-font-akkuratLL ui-block ui-mt-8 first:ui-mt-0 ui-leading-3 ui-uppercase ui-tracking-widest ui-text-4xl ui-font-thin`}
             >
               {option.text}
@@ -49,7 +49,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           key={option.text}
           to={option.path}
           className={`${
-            pathname === option.path ? "ui-text-white" : "ui-text-slate-400"
+            pathname === option.path ? "ui-text-white" : "ui-text-neutral-500"
           } ui-font-akkuratLL ui-block ui-px-8 ui-mt-8 first:ui-mt-0 ui-leading-3 ui-uppercase ui-tracking-widest ui-text-4xl ui-font-thin`}
         >
           {option.text}
@@ -82,12 +82,12 @@ export function Sidebar({ onClose }: SidebarProps) {
         <a
           href={"https://explorer.burnt.com/xion-testnet-1/"}
           target="_blank"
-          className={`${"ui-text-slate-400 ui-font-regular"} ui-font-akkuratLL ui-block ui-px-8 ui-mt-16 first:ui-mt-0 ui-font-thin ui-leading-3 ui-text-4xl ui-uppercase ui-tracking-widest`}
+          className={`${"ui-text-neutral-500 ui-font-regular"} ui-font-akkuratLL ui-block ui-px-8 ui-mt-16 first:ui-mt-0 ui-font-thin ui-leading-3 ui-text-4xl ui-uppercase ui-tracking-widest`}
         >
           History
         </a>
       </div>
-      <div className="ui-flex ui-justify-between ui-px-4 ui-h-12 ui-w-full ui-items-center ui-rounded ui-bg-black ui-mx-auto ui-my-0">
+      <div className="ui-flex ui-justify-between ui-px-4 ui-h-12 ui-w-full ui-items-center ui-rounded ui-bg-black ui-mx-auto ui-my-2">
         <div className="ui-flex ui-items-center">
           <div className="ui-flex ui-mr-1 ui-h-8 ui-w-8 ui-items-center ui-justify-center ui-rounded-full ui-bg-black">
             <WalletIcon color="white" backgroundColor="black" />
