@@ -76,7 +76,7 @@ export function LegacyGrantPermissions({
           <div>
             Permission to send tokens with a spend limit of{" "}
             {bank.map(({ denom, amount }, index) => (
-              <span key={index}>
+              <span className="ui-max-w-xs ui-break-words" key={index}>
                 {`${amount} ${denom}`}
                 {index < bank.length - 1 ? ", " : ""}
               </span>
