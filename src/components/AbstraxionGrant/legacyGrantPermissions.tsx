@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { ContractGrantDescription } from "@burnt-labs/abstraxion";
-import { CheckIcon } from "../Icons";
+import { CheckIcon, ChevronDownIcon } from "../Icons";
 
 interface LegacyGrantPermissionsArgs {
   contracts?: ContractGrantDescription[];
@@ -12,6 +13,10 @@ export function LegacyGrantPermissions({
   stake,
   bank,
 }: LegacyGrantPermissionsArgs) {
+  const [isContractsOpen, setContractsOpen] = useState(false);
+
+  const toggleContractsList = () => setContractsOpen(!isContractsOpen);
+
   return (
     <>
       {contracts && contracts.length >= 1 ? (
@@ -20,16 +25,31 @@ export function LegacyGrantPermissions({
             <CheckIcon color="white" />
           </span>
           <div className="ui-flex ui-flex-col">
-            Permission to execute smart contracts
-            <ul className="ui-list-disc ui-mt-2 ui-ml-4">
-              {contracts.map((contract, index) => (
-                <li key={index}>
-                  <p className="ui-break-words ui-max-w-xs">
-                    {typeof contract === "string" ? contract : contract.address}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div className="ui-flex ui-items-center">
+              <span>Permission to execute smart contracts</span>
+
+              <button
+                onClick={toggleContractsList}
+                className="ui-ml-2 ui-cursor-pointer"
+              >
+                <ChevronDownIcon isUp={isContractsOpen} />
+              </button>
+            </div>
+            <div className="ui-max-h-96 ui-overflow-y-scroll">
+              {isContractsOpen && (
+                <ul className="ui-list-disc ui-mt-2 ui-ml-4 ui-transition-all">
+                  {contracts.map((contract, index) => (
+                    <li key={index}>
+                      <p className="ui-break-words ui-max-w-xs">
+                        {typeof contract === "string"
+                          ? contract
+                          : contract.address}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </li>
       ) : null}
