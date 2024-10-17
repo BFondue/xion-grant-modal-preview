@@ -1,0 +1,75 @@
+import { ContractGrantDescription } from "@burnt-labs/abstraxion";
+import { CheckIcon } from "../Icons";
+
+interface LegacyGrantPermissionsArgs {
+  contracts?: ContractGrantDescription[];
+  stake?: boolean;
+  bank?: { denom: string; amount: string }[];
+}
+
+export function LegacyGrantPermissions({
+  contracts,
+  stake,
+  bank,
+}: LegacyGrantPermissionsArgs) {
+  return (
+    <>
+      {contracts && contracts.length >= 1 ? (
+        <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
+          <span className="ui-mr-2">
+            <CheckIcon color="white" />
+          </span>
+          <div className="ui-flex ui-flex-col">
+            Permission to execute smart contracts
+            <ul className="ui-list-disc ui-mt-2 ui-ml-4">
+              {contracts.map((contract, index) => (
+                <li key={index}>
+                  <p className="ui-break-words ui-max-w-xs">
+                    {typeof contract === "string" ? contract : contract.address}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ) : null}
+      {stake ? (
+        <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
+          <span className="ui-mr-2">
+            <CheckIcon color="white" />
+          </span>
+          <div className="ui-flex ui-flex-col">
+            Permission to manage staking operations
+            <ul className="ui-list-disc ui-mt-2 ui-ml-4">
+              <li>Stake Tokens</li>
+              <li>Withdraw Staking Rewards</li>
+              <li>Manage Unbonding</li>
+            </ul>
+          </div>
+        </li>
+      ) : null}
+      {bank && bank.length >= 1 ? (
+        <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
+          <span className="ui-mr-2">
+            <CheckIcon color="white" />
+          </span>
+          <div>
+            Permission to send tokens with a spend limit of{" "}
+            {bank.map(({ denom, amount }, index) => (
+              <span key={index}>
+                {`${amount} ${denom}`}
+                {index < bank.length - 1 ? ", " : ""}
+              </span>
+            ))}
+          </div>
+        </li>
+      ) : null}
+      <li className="ui-flex ui-items-baseline ui-text-sm">
+        <span className="ui-mr-2">
+          <CheckIcon color="white" />
+        </span>
+        Log you in to their app
+      </li>
+    </>
+  );
+}

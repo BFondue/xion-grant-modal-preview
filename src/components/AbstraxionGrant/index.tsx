@@ -20,6 +20,7 @@ import {useQueryParams} from "../../hooks/useQueryParams";
 import {PermissionDescription} from "../../types/treasury-types";
 import {generateTreasuryGrants} from "../../utils/generate-treasury-grants";
 import {queryTreasuryContract} from "../../utils/query-treasury-contract";
+import { LegacyGrantPermissions } from "./legacyGrantPermissions";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -273,20 +274,11 @@ export const AbstraxionGrant = ({
                   </li>
                 ))
               ) : (
-                <>
-                  <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
-                    <span className="ui-mr-2">
-                      <CheckIcon color="white" />
-                    </span>
-                    Have access to your account
-                  </li>
-                  <li className="ui-flex ui-items-baseline ui-text-sm">
-                    <span className="ui-mr-2">
-                      <CheckIcon color="white" />
-                    </span>
-                    Log you in to their app
-                  </li>
-                </>
+                <LegacyGrantPermissions
+                  contracts={contracts}
+                  bank={bank}
+                  stake={stake}
+                />
               )}
             </ul>
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mb-8" />
