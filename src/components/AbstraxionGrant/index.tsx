@@ -1,25 +1,32 @@
 "use client";
-import {useCallback, useContext, useEffect, useState} from "react";
-import {assertIsDeliverTxSuccess, DeliverTxResponse,} from "@cosmjs/stargate/build/stargateclient";
-import {StdFee} from "@cosmjs/stargate";
-import {EncodeObject} from "@cosmjs/proto-signing";
-import {Button, Spinner} from "@burnt-labs/ui";
-import {CheckIcon} from "../Icons";
-import {useAbstraxionAccount, useAbstraxionSigningClient} from "../../hooks";
-import type {ContractGrantDescription} from "@burnt-labs/abstraxion";
-import {generateBankGrant} from "../../components/AbstraxionGrant/generateBankGrant";
-import {generateContractGrant} from "../../components/AbstraxionGrant/generateContractGrant";
-import {generateStakeGrant} from "../../components/AbstraxionGrant/generateStakeGrant";
-import {getEnvStringOrThrow} from "../../utils";
-import {useXionDisconnect} from "../../hooks/useXionDisconnect";
-import {getGasCalculation} from "../../utils/gas-utils";
-import {AbstraxionContext, AbstraxionContextProps,} from "../AbstraxionContext";
+import { useCallback, useContext, useEffect, useState } from "react";
+import {
+  assertIsDeliverTxSuccess,
+  DeliverTxResponse,
+} from "@cosmjs/stargate/build/stargateclient";
+import { StdFee } from "@cosmjs/stargate";
+import { EncodeObject } from "@cosmjs/proto-signing";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { Button, Spinner } from "@burnt-labs/ui";
+import { CheckIcon } from "../Icons";
+import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
+import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
+import { generateBankGrant } from "../../components/AbstraxionGrant/generateBankGrant";
+import { generateContractGrant } from "../../components/AbstraxionGrant/generateContractGrant";
+import { generateStakeGrant } from "../../components/AbstraxionGrant/generateStakeGrant";
+import { getEnvStringOrThrow } from "../../utils";
+import { useXionDisconnect } from "../../hooks/useXionDisconnect";
+import { getGasCalculation } from "../../utils/gas-utils";
+import {
+  AbstraxionContext,
+  AbstraxionContextProps,
+} from "../AbstraxionContext";
 
 import burntAvatar from "../../assets/burntAvatarCircle.png";
-import {useQueryParams} from "../../hooks/useQueryParams";
-import {PermissionDescription} from "../../types/treasury-types";
-import {generateTreasuryGrants} from "../../utils/generate-treasury-grants";
-import {queryTreasuryContract} from "../../utils/query-treasury-contract";
+import { useQueryParams } from "../../hooks/useQueryParams";
+import { PermissionDescription } from "../../types/treasury-types";
+import { generateTreasuryGrants } from "../../utils/generate-treasury-grants";
+import { queryTreasuryContract } from "../../utils/query-treasury-contract";
 import { LegacyGrantPermissions } from "./legacyGrantPermissions";
 
 interface AbstraxionGrantProps {
@@ -41,7 +48,9 @@ export const AbstraxionGrant = ({
   const { data: account } = useAbstraxionAccount();
   const { redirect_uri } = useQueryParams(["redirect_uri"]);
   const { xionDisconnect } = useXionDisconnect();
-  const { chainInfo, setAbstraxionError } = useContext(AbstraxionContext) as AbstraxionContextProps;
+  const { chainInfo, setAbstraxionError } = useContext(
+    AbstraxionContext,
+  ) as AbstraxionContextProps;
 
   const [inProgress, setInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -50,7 +59,7 @@ export const AbstraxionGrant = ({
   useEffect(function redirectToDapp() {
     if (showSuccess && redirect_uri) {
       let redirectUri = new URLSearchParams(window.location.search).get(
-        "redirect_uri"
+        "redirect_uri",
       );
       let url: URL | null = null;
       if (redirectUri) {
@@ -79,8 +88,8 @@ export const AbstraxionGrant = ({
     const timestampThreeMonthsFromNow = BigInt(
       Math.floor(
         new Date(new Date().setMonth(new Date().getMonth() + 3)).getTime() /
-          1000
-      )
+          1000,
+      ),
     );
 
     if (treasury) {
@@ -89,28 +98,8 @@ export const AbstraxionGrant = ({
           treasury,
           client,
           granter,
-          grantee
+          grantee,
         );
-
-        const simmedGas = await client.simulate(
-          account.id,
-          grantMsgs,
-          `treasury-grant-${timestampThreeMonthsFromNow}`
-        );
-
-        const fee = getGasCalculation(simmedGas, chainInfo.chainId);
-
-        const deliverTxResponse = await client?.signAndBroadcast(
-          account.id,
-          grantMsgs,
-          fee
-        );
-
-        assertIsDeliverTxSuccess({
-          ...deliverTxResponse,
-          gasUsed: BigInt(deliverTxResponse.gasUsed),
-          gasWanted: BigInt(deliverTxResponse.gasWanted),
-        });
 
         const deployFeeGrantMsg = {
           deploy_fee_grant: {
@@ -119,15 +108,38 @@ export const AbstraxionGrant = ({
           },
         };
 
-        const deployFeeGrantTx = await client.execute(
-          account.id,
-          treasury,
-          deployFeeGrantMsg,
+        const batchedMsgs = [
+          ...grantMsgs,
           {
-            amount: [{ amount: "0", denom: "uxion" }],
-            gas: "500000",
-          }
+            typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+            value: MsgExecuteContract.fromPartial({
+              sender: account.id,
+              contract: treasury,
+              msg: Buffer.from(JSON.stringify(deployFeeGrantMsg)),
+              funds: [],
+            }),
+          },
+        ];
+
+        const simmedGas = await client.simulate(
+          account.id,
+          batchedMsgs,
+          `treasury-grant-${timestampThreeMonthsFromNow}`,
         );
+
+        const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+
+        const deliverTxResponse = await client.signAndBroadcast(
+          account.id,
+          batchedMsgs,
+          fee,
+        );
+
+        assertIsDeliverTxSuccess({
+          ...deliverTxResponse,
+          gasUsed: BigInt(deliverTxResponse.gasUsed),
+          gasWanted: BigInt(deliverTxResponse.gasWanted),
+        });
 
         setShowSuccess(true);
       } catch (error) {
@@ -146,20 +158,20 @@ export const AbstraxionGrant = ({
           timestampThreeMonthsFromNow,
           grantee,
           granter,
-          contracts
-        )
+          contracts,
+        ),
       );
     }
 
     if (stake) {
       msgs.push(
-        ...generateStakeGrant(timestampThreeMonthsFromNow, grantee, granter)
+        ...generateStakeGrant(timestampThreeMonthsFromNow, grantee, granter),
       );
     }
 
     if (bank.length > 0) {
       msgs.push(
-        generateBankGrant(timestampThreeMonthsFromNow, grantee, granter, bank)
+        generateBankGrant(timestampThreeMonthsFromNow, grantee, granter, bank),
       );
     }
 
@@ -175,7 +187,7 @@ export const AbstraxionGrant = ({
         const simmedGas = await client.simulate(
           account.id,
           msgs,
-          `grant-${timestampThreeMonthsFromNow}`
+          `grant-${timestampThreeMonthsFromNow}`,
         );
 
         fee = getGasCalculation(simmedGas, chainInfo.chainId);
@@ -185,7 +197,7 @@ export const AbstraxionGrant = ({
           ...fee,
           granter: getEnvStringOrThrow(
             "VITE_FEE_GRANTER_ADDRESS",
-            import.meta.env.VITE_FEE_GRANTER_ADDRESS
+            import.meta.env.VITE_FEE_GRANTER_ADDRESS,
           ),
         });
       } catch (error) {
@@ -193,7 +205,7 @@ export const AbstraxionGrant = ({
         deliverTxResponse = await client.signAndBroadcast(
           account.id,
           msgs,
-          fee
+          fee,
         );
 
         // Assert that the transaction was successful
@@ -213,7 +225,7 @@ export const AbstraxionGrant = ({
     try {
       const permissionDescriptions = await queryTreasuryContract(
         treasury,
-        client
+        client,
       );
 
       setPermissions(permissionDescriptions);
