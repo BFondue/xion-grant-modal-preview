@@ -4,18 +4,11 @@
  * I hate the name of this hook, should workshop a better one.
  *
  * */
-import { QueryKey, useQuery } from "@tanstack/react-query";
-import { useAbstraxionAccount } from "./useAbstraxionAccount";
-import {
-  IndexerStrategy,
-  SmartAccountWithCodeId,
-} from "../indexer-strategies/types";
-import { useContext, useEffect, useState } from "react";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../components/AbstraxionContext";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import {QueryKey, useQuery} from "@tanstack/react-query";
+import {useAbstraxionAccount} from "./useAbstraxionAccount";
+import {IndexerStrategy, SmartAccountWithCodeId,} from "../indexer-strategies/types";
+import {useContext, useEffect, useState} from "react";
+import {AbstraxionContext, AbstraxionContextProps,} from "../components/AbstraxionContext";
 
 const POLL_INTERVAL_DEFAULT = 3000;
 
@@ -33,7 +26,7 @@ export const useBaseSmartAccounts = (
   const { loginAuthenticator } = useAbstraxionAccount();
   const [shouldFetch, setShouldFetch] = useState(!waitToFetch);
   const [pollInterval, setPollInterval] = useState(POLL_INTERVAL_DEFAULT);
-  const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
+  const { abstractAccount, setAbstractAccount } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
   const [isSuccess, setIsSuccess] = useState(false);
@@ -46,21 +39,7 @@ export const useBaseSmartAccounts = (
   >({
     queryKey,
     queryFn: async () => {
-      const client = await CosmWasmClient.connect(chainInfo.rpc);
-      const smartAccounts =
-        await indexerStrategy.fetchSmartAccounts(loginAuthenticator);
-
-      const results: Array<SmartAccountWithCodeId> = [];
-      // Doing this in serial as some might have a large number of accounts and want to avoid request limits
-      for (const smartAccount of smartAccounts) {
-        const { codeId } = await client.getContract(smartAccount.id);
-        results.push({
-          ...smartAccount,
-          codeId,
-        });
-      }
-
-      return results;
+      return await indexerStrategy.fetchSmartAccounts(loginAuthenticator);
     },
     refetchInterval: pollInterval,
     enabled: shouldFetch,
