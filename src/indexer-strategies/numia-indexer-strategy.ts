@@ -1,5 +1,5 @@
 import axios from "axios";
-import {IndexerStrategy, SmartAccountWithCodeId} from "./types";
+import { IndexerStrategy, SmartAccount } from "./types";
 
 interface NumiaAuthenticatorResp {
   type: string;
@@ -9,7 +9,6 @@ interface NumiaAuthenticatorResp {
 
 interface NumiaSmartAccountResp {
   smart_account: string;
-  code_id: number;
   authenticators: NumiaAuthenticatorResp[];
 }
 
@@ -21,10 +20,9 @@ export class NumiaIndexerStrategy implements IndexerStrategy {
 
   async fetchSmartAccounts(
     loginAuthenticator: string,
-  ): Promise<SmartAccountWithCodeId[]> {
-    // Code id is only available with version 2 of the api
+  ): Promise<SmartAccount[]> {
     const encodedAuthenticator = encodeURIComponent(loginAuthenticator);
-    const url = `${this.baseURL}v2/authenticators/${encodedAuthenticator}/smartAccounts/details`;
+    const url = `${this.baseURL}authenticators/${encodedAuthenticator}/smartAccounts/details`;
     const { data } = await axios.get<NumiaSmartAccountResp[]>(url, {
       headers: {
         Accept: "application/json",
@@ -32,9 +30,8 @@ export class NumiaIndexerStrategy implements IndexerStrategy {
       },
     });
 
-    return data?.map(({ smart_account, code_id, authenticators }) => ({
+    return data?.map(({ smart_account, authenticators }) => ({
       id: smart_account,
-      codeId: code_id,
       authenticators: authenticators.map(
         ({ authenticator, authenticator_index, type }) => ({
           id: `${smart_account}-${authenticator_index}`,
