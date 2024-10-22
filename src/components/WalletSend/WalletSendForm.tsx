@@ -51,9 +51,8 @@ export function WalletSendForm({
 
   const [showDropdown, setShowDropdown] = useState(false);
 
-  function handleAmountChange(event: ChangeEvent<HTMLInputElement>) {
+  function updateSendAmount(inputValue: string) {
     setAmountError("");
-    let inputValue = event.target.value;
 
     // replace commas in favor of zero.
     inputValue = inputValue.replace(/,/g, ".");
@@ -61,16 +60,20 @@ export function WalletSendForm({
     // replace minus sign, negative values aren't allowed
     inputValue = inputValue.replace(/-/g, "");
 
-    if (sendAmount === "0" && event.target.value === "00") return;
-    if (!event.target.value) {
+    if (!inputValue) {
       setSendAmount("0");
-      return;
+    } else {
+      setSendAmount(inputValue);
     }
+  }
 
-    // remove leading zeros, but allow for one before a decimal point
-    inputValue = inputValue.replace(/^0+(?=\d)/, "");
+  function handleAmountChange(event: ChangeEvent<HTMLInputElement>) {
+    const inputValue = event.target.value;
 
-    setSendAmount(inputValue);
+    if (sendAmount === "0" && inputValue === "00") return;
+
+    // Call the new function with the event value
+    updateSendAmount(inputValue);
   }
 
   function handleStart() {
@@ -171,6 +174,7 @@ export function WalletSendForm({
           userMemo={userMemo}
           xionBalance={xionBalance}
           onStart={handleStart}
+          updateSendAmount={updateSendAmount}
         />
       )}
     </>

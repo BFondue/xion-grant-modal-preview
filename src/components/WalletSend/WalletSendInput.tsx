@@ -25,6 +25,7 @@ interface WalletSendInputProps {
   onUpdateRecipientAddress: (address: string) => void;
   onUpdateUserMemo: (memo: string) => void;
   onStart: () => void;
+  updateSendAmount: (amount: string) => void;
 }
 
 export function WalletSendInput({
@@ -44,6 +45,7 @@ export function WalletSendInput({
   onUpdateUserMemo,
   onChangeCurrency,
   onStart,
+  updateSendAmount,
 }: WalletSendInputProps) {
   function switchSelectedCurrency(type: typeof selectedCurrency.type) {
     switch (type) {
@@ -62,6 +64,7 @@ export function WalletSendInput({
         });
         break;
     }
+    updateSendAmount("0");
     setShowDropdown(false);
     return;
   }
@@ -190,7 +193,19 @@ export function WalletSendInput({
               className={`ui-w-full ui-bg-transparent ${
                 sendAmount === "0" && "!ui-text-[#6C6A6A]"
               } ui-text-white ui-font-bold ui-text-5xl placeholder:ui-text-white/50 focus:ui-outline-none`}
-              onChange={handleAmountChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (selectedCurrency?.type === "xion") {
+                  // Check if input is a number with up to 6 decimal places
+                  const regex = /^\d*\.?\d{0,6}$/;
+
+                  if (regex.test(value)) {
+                    handleAmountChange(e);
+                  }
+                } else {
+                  handleAmountChange(e);
+                }
+              }}
               placeholder="Amount"
               type="number"
               value={sendAmount}

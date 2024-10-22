@@ -18,6 +18,7 @@ const config: Config = {
         testnet: "#FFAA4A",
         "testnet-bg": "rgba(255, 170, 74, 0.2)",
         inactive: "#BDBDBD",
+        inputError: "#D74506",
       },
       flexGrow: {
         "2": "2",
