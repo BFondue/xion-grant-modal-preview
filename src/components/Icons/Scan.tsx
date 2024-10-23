@@ -1,3 +1,5 @@
+import React from "react";
+
 export const ScanIcon = ({ color }: { color: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none">
     <path

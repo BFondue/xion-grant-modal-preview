@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import { DeliverTxResponse } from "@cosmjs/stargate";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { useAbstraxionAccount } from "../../hooks";
@@ -8,6 +8,7 @@ import { SelectedCurrency } from "./WalletSendTypes";
 import { WalletSendInput } from "./WalletSendInput";
 import { WalletSendReview } from "./WalletSendReview";
 import { WalletSendSuccess } from "./WalletSendSuccess";
+import { BalanceInfo } from "../../types";
 
 export function WalletSendForm({
   sendTokens,
@@ -21,7 +22,7 @@ export function WalletSendForm({
     memo: string,
   ) => Promise<DeliverTxResponse>;
   balanceInfo: BalanceInfo;
-  setIsOpen: any;
+  setIsOpen: (boolean) => void;
 }) {
   const { data: account } = useAbstraxionAccount();
 

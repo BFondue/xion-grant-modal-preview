@@ -4,11 +4,8 @@ import { useStytch } from "@stytch/react";
 import { disconnect } from "graz";
 
 export function useXionDisconnect() {
-  const {
-    connectionType,
-    setConnectionType,
-    setAbstractAccount,
-  } = useContext(AbstraxionContext);
+  const { connectionType, setConnectionType, setAbstractAccount } =
+    useContext(AbstraxionContext);
 
   const stytch = useStytch();
 

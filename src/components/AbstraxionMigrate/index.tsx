@@ -1,6 +1,6 @@
+import React, { useContext, useState } from "react";
 import { Button, Spinner } from "@burnt-labs/ui";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import { useContext, useState } from "react";
 import {
   AbstraxionContext,
   AbstraxionContextProps,

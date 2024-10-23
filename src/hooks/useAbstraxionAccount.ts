@@ -1,13 +1,32 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useAccount } from "graz";
 import { useStytch, useStytchSession } from "@stytch/react";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
+  ConnectionType,
 } from "../components/AbstraxionContext";
 import { decodeJwt } from "jose";
 import { getHumanReadablePubkey } from "../utils";
-import type { AbstraxionAccount } from "../types";
+
+interface OkxAccount {
+  account: {
+    juno: string;
+    iris: string;
+    axl: string;
+    stars: string;
+    kava: string;
+    kuji: string;
+    sei: string;
+    inj: string;
+    cosmoshub: string;
+    osmosis: string;
+    dydx: string;
+    tia: string;
+    XION_TEST: string;
+  };
+  name: string;
+}
 
 export const useAbstraxionAccount = () => {
   const { session } = useStytchSession();
@@ -19,9 +38,10 @@ export const useAbstraxionAccount = () => {
     setAbstractAccount,
   } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
-  const loginType = localStorage.getItem("loginType");
+  // Should we confirm the value is indeed a ConnectionType?
+  const loginType = localStorage.getItem("loginType") as ConnectionType;
   const [loginAuthenticator, setLoginAuthenticator] = useState(
-    localStorage.getItem("loginAuthenticator")
+    localStorage.getItem("loginAuthenticator"),
   );
 
   const { data: grazAccount, isConnected } = useAccount();
@@ -31,12 +51,13 @@ export const useAbstraxionAccount = () => {
   function getAuthenticator() {
     let authenticator = "";
     switch (connectionType) {
-      case "stytch":
+      case "stytch": {
         const { aud, sub } = session_jwt
           ? decodeJwt(session_jwt)
           : { aud: undefined, sub: undefined };
         authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
         break;
+      }
       case "graz":
         authenticator = getHumanReadablePubkey(grazAccount?.pubKey);
         break;
@@ -54,12 +75,14 @@ export const useAbstraxionAccount = () => {
     return authenticator;
   }
 
-  const loginAuthenticatorMemo = useMemo(() => getAuthenticator(), [connectionType, session_jwt, grazAccount, loginAuthenticator]);
-
+  const loginAuthenticatorMemo = useMemo(
+    () => getAuthenticator(),
+    [connectionType, session_jwt, grazAccount, loginAuthenticator],
+  );
 
   useEffect(() => {
     const refreshConnectionType = () => {
-      setConnectionType((loginType as any) || "none");
+      setConnectionType(loginType || "none");
     };
 
     if (connectionType === "none") {
@@ -86,7 +109,7 @@ export const useAbstraxionAccount = () => {
 
   // OKX account detection
   useEffect(() => {
-    const handleAccountsChanged = async (accounts: any) => {
+    const handleAccountsChanged = async (accounts: OkxAccount) => {
       if (connectionType === "okx") {
         const okxXionAddress = localStorage.getItem("okxXionAddress");
         const okxWalletName = localStorage.getItem("okxWalletName");
@@ -139,11 +162,11 @@ export const useAbstraxionAccount = () => {
       connectionType === "stytch"
         ? !!session
         : connectionType === "graz"
-        ? isConnected
-        : connectionType === "metamask"
-        ? window.ethereum.isConnected()
-        : connectionType === "okx"
-        ? localStorage.getItem("loginAuthenticator")
-        : false,
+          ? isConnected
+          : connectionType === "metamask"
+            ? window.ethereum.isConnected()
+            : connectionType === "okx"
+              ? localStorage.getItem("loginAuthenticator")
+              : false,
   };
 };

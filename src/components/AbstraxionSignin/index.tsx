@@ -1,5 +1,4 @@
-"use client";
-import { useContext, useEffect, useRef, useState } from "react";
+import React, { UIEvent, useContext, useEffect, useRef, useState } from "react";
 import { useStytch } from "@stytch/react";
 import { Button, Input, MetamaskLogo, ModalSection } from "@burnt-labs/ui";
 import {
@@ -137,7 +136,7 @@ export const AbstraxionSignin = () => {
     }
   };
 
-  const handleEmail = async (event: any) => {
+  const handleEmail = async (event) => {
     event.preventDefault();
 
     if (!email) {
@@ -152,7 +151,7 @@ export const AbstraxionSignin = () => {
       setMethodId(emailRes.method_id);
       setIsOnOtpStep(true);
       setTimeLeft(60);
-    } catch (error) {
+    } catch {
       setEmailError("Error sending email");
       setConnectionType("none");
     }
@@ -163,7 +162,7 @@ export const AbstraxionSignin = () => {
     return otp.join("");
   };
 
-  const handleOtp = async (event: any) => {
+  const handleOtp = async (event: UIEvent) => {
     event.preventDefault();
 
     try {
@@ -171,7 +170,7 @@ export const AbstraxionSignin = () => {
         session_duration_minutes: 60,
       });
       localStorage.setItem("loginType", "stytch");
-    } catch (error) {
+    } catch {
       setOtpError("Error Verifying OTP Code");
     }
   };
@@ -190,7 +189,7 @@ export const AbstraxionSignin = () => {
       localStorage.setItem("loginAuthenticator", authenticator);
       localStorage.setItem("okxXionAddress", okxAccount.bech32Address);
       localStorage.setItem("okxWalletName", okxAccount.name);
-    } catch (error) {
+    } catch {
       setAbstraxionError("OKX wallet connect error");
     }
   }
@@ -208,7 +207,7 @@ export const AbstraxionSignin = () => {
       setConnectionType("metamask");
       localStorage.setItem("loginType", "metamask");
       localStorage.setItem("loginAuthenticator", primaryAccount);
-    } catch (error) {
+    } catch {
       setAbstraxionError("Metamask connect error");
     }
   }

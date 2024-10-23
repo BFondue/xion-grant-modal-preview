@@ -1,8 +1,8 @@
 import { MsgGrant } from "cosmjs-types/cosmos/authz/v1beta1/tx";
 import type {
+  GeneratedAuthzGrantMessage,
   GrantConfigByTypeUrl,
   GrantConfigTypeUrlsResponse,
-  GeneratedAuthzGrantMessage,
 } from "../types/treasury-types";
 import type { AAClient } from "../signers";
 
@@ -14,12 +14,13 @@ import type { AAClient } from "../signers";
  * @returns {GeneratedAuthzGrantMessage} - The constructed authz grant message
  */
 const constructGrantMessage = (
-  grantConfig: any,
+  grantConfig: GrantConfigByTypeUrl,
   granter: string,
-  grantee: string
+  grantee: string,
 ): GeneratedAuthzGrantMessage => {
-
-  const authorizationByteArray = new Uint8Array(Buffer.from(grantConfig.authorization.value, "base64"))
+  const authorizationByteArray = new Uint8Array(
+    Buffer.from(grantConfig.authorization.value, "base64"),
+  );
   const authorization = {
     typeUrl: grantConfig.authorization.type_url,
     value: authorizationByteArray,
@@ -32,8 +33,8 @@ const constructGrantMessage = (
         seconds: BigInt(
           Math.floor(
             new Date(new Date().setMonth(new Date().getMonth() + 3)).getTime() /
-              1000
-          )
+              1000,
+          ),
         ),
         nanos: 0,
       },
@@ -60,7 +61,7 @@ export const generateTreasuryGrants = async (
   contractAddress: string,
   client: AAClient,
   granter: string,
-  grantee: string
+  grantee: string,
 ): Promise<GeneratedAuthzGrantMessage[]> => {
   if (!contractAddress) {
     throw new Error("Missing contract address");
@@ -79,11 +80,11 @@ export const generateTreasuryGrants = async (
 
   if (!queryResponse) {
     throw new Error(
-      "Something went wrong querying the treasury contract for grants"
+      "Something went wrong querying the treasury contract for grants",
     );
   }
 
-  const grantMsgs: any[] = await Promise.all(
+  const grantMsgs: GeneratedAuthzGrantMessage[] = await Promise.all(
     queryResponse.map(async (grant) => {
       const queryByMsg = {
         grant_config_by_type_url: {
@@ -96,18 +97,12 @@ export const generateTreasuryGrants = async (
 
       if (!queryByResponse || !queryByResponse.description) {
         throw new Error(
-          "Something went wrong querying the treasury contract by type url"
+          "Something went wrong querying the treasury contract by type url",
         );
       }
 
-      const grantMessage = constructGrantMessage(
-        queryByResponse,
-        granter,
-        grantee
-      );
-
-      return grantMessage;
-    })
+      return constructGrantMessage(queryByResponse, granter, grantee);
+    }),
   );
 
   return grantMsgs;

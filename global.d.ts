@@ -1,20 +1,13 @@
 /// <reference types="vite/client" />
+import type { Window as KeplrWindow } from "@keplr-wallet/types";
+import type { MetaMaskInpageProvider } from "@metamask/providers";
+import type EventEmitter from "node:events";
 
-interface Coin {
-  readonly denom: string;
-  readonly amount: string;
-}
-
-interface BalanceInfo {
-  // In USDC
-  total: number;
-  balances: Coin[];
-}
-
-interface Authenticators {
-  nodes: { type: string; id: string }[];
-}
-
-interface Window {
-  okxwallet: any; // TODO: Properly define
+declare global {
+  interface Window extends KeplrWindow {
+    ethereum?: MetaMaskInpageProvider;
+    okxwallet?: {
+      keplr: KeplrWindow["keplr"] & EventEmitter;
+    };
+  }
 }

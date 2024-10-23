@@ -1,9 +1,9 @@
-import { createContext, ReactNode, useState } from "react";
+import React, { createContext, ReactNode, useState } from "react";
 import { getEnvStringOrThrow } from "../../utils";
 import { ChainInfo } from "@burnt-labs/constants";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 
-type ConnectionType = "stytch" | "graz" | "metamask" | "okx" | "none";
+export type ConnectionType = "stytch" | "graz" | "metamask" | "okx" | "none";
 
 export interface AbstraxionContextProps {
   connectionType: ConnectionType;
@@ -29,9 +29,9 @@ export const AbstraxionContextProvider = ({
   children: ReactNode;
 }) => {
   const [connectionType, setConnectionType] = useState<ConnectionType>("none");
-  const [abstractAccount, setAbstractAccount] = useState<any | undefined>(
-    undefined,
-  );
+  const [abstractAccount, setAbstractAccount] = useState<
+    SelectedSmartAccount | undefined
+  >(undefined);
   const [abstraxionError, setAbstraxionError] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 

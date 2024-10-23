@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useContext, useState } from "react";
+import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import {
   AccountWalletLogo,
   Button,
@@ -10,10 +10,7 @@ import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../../AbstraxionContext";
-import {
-  useAbstraxionAccount,
-  useAbstraxionSigningClient,
-} from "../../../hooks";
+import { useAbstraxionSigningClient } from "../../../hooks";
 import type { authenticatorTypes } from "../../../types";
 import { Authenticator } from "../../../indexer-strategies/types";
 
@@ -30,11 +27,10 @@ export function RemoveAuthenticatorForm({
 
   // Context state
   const { abstractAccount, setAbstractAccount } = useContext(
-    AbstraxionContext
+    AbstraxionContext,
   ) as AbstraxionContextProps;
 
   // Hooks
-  const { loginAuthenticator } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
 
   const handleAuthenticatorLabels = (type: authenticatorTypes) => {
@@ -86,13 +82,13 @@ export function RemoveAuthenticatorForm({
       >
         <div className="ui-flex ui-w-10 ui-h-10 ui-bg-white/20 ui-items-center ui-justify-center ui-rounded-full">
           {handleAuthenticatorLogos(
-            authenticator.type.toUpperCase() as authenticatorTypes
+            authenticator.type.toUpperCase() as authenticatorTypes,
           )}
         </div>
         <div className="ui-ml-4 ui-flex ui-flex-1 ui-items-center ui-justify-between">
           <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
             {handleAuthenticatorLabels(
-              authenticator.type.toUpperCase() as authenticatorTypes
+              authenticator.type.toUpperCase() as authenticatorTypes,
             )}
           </p>
         </div>
@@ -118,7 +114,7 @@ export function RemoveAuthenticatorForm({
 
       if (abstractAccount.authenticators.length <= 1) {
         throw new Error(
-          "You are trying to remove the only authenticator on the account and will lose all access. We cannot allow this operation."
+          "You are trying to remove the only authenticator on the account and will lose all access. We cannot allow this operation.",
         );
       }
 

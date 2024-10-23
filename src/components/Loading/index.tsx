@@ -1,3 +1,4 @@
+import React from "react";
 import { ModalSection, Spinner } from "@burnt-labs/ui";
 
 export const Loading = () => {

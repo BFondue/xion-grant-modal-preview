@@ -1,5 +1,5 @@
 import { xionGasValues } from "@burnt-labs/constants";
-import { GasPrice, StdFee, calculateFee } from "@cosmjs/stargate";
+import { calculateFee, GasPrice, StdFee } from "@cosmjs/stargate";
 
 export function getGasCalculation(simmedGas: number, chainId: string): StdFee {
   const gasPriceString =
@@ -15,8 +15,8 @@ export function getGasCalculation(simmedGas: number, chainId: string): StdFee {
   const calculatedFee: StdFee = calculateFee(simmedGas, gasPrice);
 
   let fee: StdFee;
-  let gas = Math.ceil(
-    parseInt(calculatedFee.gas) * gasAdjustment + gasAdjustmentMargin
+  const gas = Math.ceil(
+    parseInt(calculatedFee.gas) * gasAdjustment + gasAdjustmentMargin,
   ).toString();
 
   if (/testnet/.test(chainId)) {

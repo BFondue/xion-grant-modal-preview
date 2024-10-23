@@ -18,7 +18,7 @@ export function getHumanReadablePubkey(pubkey: Uint8Array | undefined) {
   return pubBase64;
 }
 
-export function encodeHex(bytes: any) {
+export function encodeHex(bytes: Buffer) {
   return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 

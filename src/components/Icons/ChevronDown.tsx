@@ -1,3 +1,5 @@
+import React from "react";
+
 export const ChevronDownIcon = ({ isUp = false }: { isUp?: boolean }) => {
   return (
     <svg

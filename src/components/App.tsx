@@ -1,5 +1,4 @@
-"use client";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { AccountInfo } from "./AccountInfo";
 import { AbstraxionContext } from "./AbstraxionContext";
 import { Overview } from "./Overview";
@@ -16,7 +15,7 @@ export function App() {
     "stake",
     "bank",
     "grantee",
-    "treasury"
+    "treasury",
   ]);
   const { data: account } = useAbstraxionAccount();
   const { isOpen, setIsOpen, isMainnet } = useContext(AbstraxionContext);

@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Input, ChevronDown } from "@burnt-labs/ui";
+import { Button, ChevronDown, Input } from "@burnt-labs/ui";
 import { SelectedCurrency } from "./WalletSendTypes";
 import { XION_TO_USDC_CONVERSION } from "../Overview";
 import { formatBalance } from "../../utils";
@@ -7,6 +7,7 @@ import { USDCIcon } from "../Icons/USDC";
 import { XionIcon } from "../Icons/Xion";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import { usdcSearchDenom } from "../../hooks/useAccountBalance";
+import { Coin } from "../../signers/types/generated/cosmos/base/v1beta1/coin";
 
 interface WalletSendInputProps {
   selectedCurrency: SelectedCurrency;
@@ -80,11 +81,7 @@ export function WalletSendInput({
         >
           <div className="ui-flex ui-items-center">
             <div className="ui-mr-2">
-              {selectedCurrency.type === "usdc" ? (
-                <USDCIcon color="white" />
-              ) : (
-                <XionIcon />
-              )}
+              {selectedCurrency.type === "usdc" ? <USDCIcon /> : <XionIcon />}
             </div>
 
             <div className="ui-flex ui-flex-col ui-items-start">
@@ -144,7 +141,7 @@ export function WalletSendInput({
             onClick={() => switchSelectedCurrency("usdc")}
           >
             <div className="ui-mr-2">
-              <USDCIcon color="white" />
+              <USDCIcon />
             </div>
 
             <div className="ui-flex ui-flex-col ui-items-start">

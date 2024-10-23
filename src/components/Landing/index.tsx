@@ -1,10 +1,11 @@
+import React from "react";
 import { useModal } from "@burnt-labs/abstraxion";
 import { Button } from "@burnt-labs/ui";
 
 import xionLogo from "../../assets/logo.png";
 
 export function Landing() {
-  const [showModal, setShowModal] = useModal();
+  const [, setShowModal] = useModal();
   return (
     <div
       className="ui-flex ui-flex-col ui-w-screen ui-h-screen ui-bg-cover ui-bg-center"

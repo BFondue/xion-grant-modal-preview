@@ -1,7 +1,6 @@
-import {findLowestMissingOrNextIndex} from "../utils/authenticator-util";
-import { describe, expect, test } from '@jest/globals';
+import { findLowestMissingOrNextIndex } from "../utils/authenticator-util";
+import { describe, expect, test } from "@jest/globals";
 import { Authenticator } from "../indexer-strategies/types";
-
 
 describe("findLowestMissingOrNextIndex", () => {
   test("should return 2 when there is a missing index 2", () => {

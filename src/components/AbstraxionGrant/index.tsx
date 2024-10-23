@@ -1,5 +1,4 @@
-"use client";
-import { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
   assertIsDeliverTxSuccess,
   DeliverTxResponse,
@@ -64,7 +63,7 @@ export const AbstraxionGrant = ({
       let url: URL | null = null;
       if (redirectUri) {
         url = new URL(redirectUri);
-        let params = new URLSearchParams(url.search);
+        const params = new URLSearchParams(url.search);
         params.append("granted", "true");
         params.append("granter", account.id);
         url.search = params.toString();
@@ -146,8 +145,9 @@ export const AbstraxionGrant = ({
         console.warn(error);
       } finally {
         setInProgress(false);
-        return;
       }
+
+      return;
     }
 
     const msgs: EncodeObject[] = [];
@@ -200,7 +200,7 @@ export const AbstraxionGrant = ({
             import.meta.env.VITE_FEE_GRANTER_ADDRESS,
           ),
         });
-      } catch (error) {
+      } catch {
         // This account doesn't have the fee grant, trying without fee grant.
         deliverTxResponse = await client.signAndBroadcast(
           account.id,
@@ -281,7 +281,7 @@ export const AbstraxionGrant = ({
                     <span className="ui-mr-2">
                       <CheckIcon color="white" />
                     </span>
-                    "{permission.dappDescription}" -{" "}
+                    &quot;{permission.dappDescription}&quot; -{" "}
                     {permission.authorizationDescription}
                   </li>
                 ))

@@ -1,15 +1,15 @@
 import { bech32 } from "bech32";
 import {
-  TxRaw,
   AuthInfo,
-  SignDoc,
   Fee,
+  SignDoc,
+  TxRaw,
 } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import {
+  DirectSignResponse,
+  EncodeObject,
   GeneratedType,
   Registry,
-  EncodeObject,
-  DirectSignResponse,
 } from "@cosmjs/proto-signing";
 import {
   Account,
@@ -33,9 +33,9 @@ import {
 import { customAccountFromAny, makeAAuthInfo } from ".";
 import { AASigner } from "../../interfaces/AASigner";
 import {
+  MsgExecuteContractEncodeObject,
   SigningCosmWasmClient,
   wasmTypes,
-  MsgExecuteContractEncodeObject,
 } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
@@ -64,7 +64,7 @@ export class AAClient extends SigningCosmWasmClient {
   public static async connectWithSigner(
     endpoint: string,
     signer: AASigner,
-    options: SigningStargateClientOptions = {}
+    options: SigningStargateClientOptions = {},
   ): Promise<AAClient> {
     const tmClient = await Tendermint37Client.connect(endpoint);
     return new AAClient(tmClient, signer, {
@@ -77,7 +77,7 @@ export class AAClient extends SigningCosmWasmClient {
   protected constructor(
     tmClient: Tendermint37Client | undefined,
     signer: AASigner,
-    options: SigningStargateClientOptions
+    options: SigningStargateClientOptions,
   ) {
     super(tmClient, signer, options);
     this.abstractSigner = signer;
@@ -89,7 +89,7 @@ export class AAClient extends SigningCosmWasmClient {
    * @returns
    */
   public async registerAbstractAccount(
-    msg: MsgRegisterAccount
+    msg: MsgRegisterAccount,
   ): Promise<DeliverTxResponse> {
     const { sender } = msg;
     const createMsg: MsgRegisterAccountEncodeObject = {
@@ -110,7 +110,7 @@ export class AAClient extends SigningCosmWasmClient {
   private async simulateDefaultFee(
     sender: string,
     messages: readonly EncodeObject[],
-    memo: string | undefined
+    memo: string | undefined,
   ): Promise<StdFee> {
     const gasPriceString =
       import.meta.env.VITE_GAS_PRICE || xionGasValues.gasPrice;
@@ -125,12 +125,12 @@ export class AAClient extends SigningCosmWasmClient {
     const gasPrice = GasPrice.fromString(gasPriceString);
     const calculatedFee: StdFee = calculateFee(
       Math.ceil(simmedGas * gasAdjustment),
-      gasPrice
+      gasPrice,
     );
 
     let defaultFee: StdFee;
-    let gas = Math.ceil(
-      parseInt(calculatedFee.gas) * gasAdjustment + gasAdjustmentMargin
+    const gas = Math.ceil(
+      parseInt(calculatedFee.gas) * gasAdjustment + gasAdjustmentMargin,
     ).toString();
 
     const chainId = await this.getChainId();
@@ -152,7 +152,7 @@ export class AAClient extends SigningCosmWasmClient {
   public async addAbstractAccountAuthenticator(
     msg: AddAuthenticator,
     memo = "",
-    fee?: StdFee
+    fee?: StdFee,
   ): Promise<DeliverTxResponse> {
     if (!this.abstractSigner.abstractAccount) {
       throw new Error("Abstract account address not set in signer");
@@ -182,7 +182,7 @@ export class AAClient extends SigningCosmWasmClient {
   public async removeAbstractAccountAuthenticator(
     msg: RemoveAuthenticator,
     memo = "",
-    fee?: StdFee
+    fee?: StdFee,
   ): Promise<DeliverTxResponse> {
     if (!this.abstractSigner.abstractAccount) {
       throw new Error("Abstract account address not set in signer");
@@ -216,11 +216,11 @@ export class AAClient extends SigningCosmWasmClient {
   public async simulate(
     signerAddress: string,
     messages: readonly EncodeObject[],
-    memo: string | undefined
+    memo: string | undefined,
   ): Promise<number> {
     const { sequence } = await this.getSequence(signerAddress);
     const accountFromSigner = (await this.abstractSigner.getAccounts()).find(
-      (account) => account.address === signerAddress
+      (account) => account.address === signerAddress,
     );
 
     if (!accountFromSigner) {
@@ -228,7 +228,7 @@ export class AAClient extends SigningCosmWasmClient {
     }
 
     const pubKeyBytes = bech32.fromWords(
-      bech32.decode(accountFromSigner.address).words
+      bech32.decode(accountFromSigner.address).words,
     );
 
     const pubkey = Uint8Array.from(pubKeyBytes);
@@ -289,9 +289,8 @@ export class AAClient extends SigningCosmWasmClient {
   }
 
   public async getAccount(searchAddress: string): Promise<Account | null> {
-    const account = await this.forceGetQueryClient().auth.account(
-      searchAddress
-    );
+    const account =
+      await this.forceGetQueryClient().auth.account(searchAddress);
     if (!account) {
       return null;
     }
@@ -316,7 +315,7 @@ export class AAClient extends SigningCosmWasmClient {
     messages: readonly EncodeObject[],
     fee: StdFee,
     memo: string,
-    explicitSignerData?: SignerData
+    explicitSignerData?: SignerData,
   ): Promise<TxRaw> {
     const aaAcount = await this.getAccount(signerAddress);
     // we want to use the normal signingstargate client sign method if the signer is not an AASigner
@@ -335,7 +334,7 @@ export class AAClient extends SigningCosmWasmClient {
     const accountFromSigner = accounts.find(
       (account) =>
         account.authenticatorId ===
-        this.abstractSigner.accountAuthenticatorIndex
+        this.abstractSigner.accountAuthenticatorIndex,
     );
 
     if (!accountFromSigner) {
@@ -359,7 +358,7 @@ export class AAClient extends SigningCosmWasmClient {
     }
 
     const pubKeyBytes = bech32.fromWords(
-      bech32.decode(accountFromSigner.address).words
+      bech32.decode(accountFromSigner.address).words,
     );
 
     const txBodyEncodeObject = {
@@ -387,7 +386,7 @@ export class AAClient extends SigningCosmWasmClient {
           new Uint8Array([
             accountFromSigner.authenticatorId,
             ...Buffer.from(sig.signature.signature, "base64"),
-          ])
+          ]),
         ).toString("base64");
       });
 

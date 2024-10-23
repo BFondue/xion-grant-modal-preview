@@ -1,13 +1,8 @@
-import { useContext, useEffect } from "react";
-import { GrazProvider } from "graz";
-import { StytchProvider } from "@stytch/react";
-import { ApolloProvider } from "@apollo/client";
+import React, { useContext, useEffect } from "react";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
-  AbstraxionContextProvider,
 } from "../../components/AbstraxionContext";
-import { apolloClient, stytchClient } from "../../lib";
 import { Dialog, DialogContent } from "@burnt-labs/ui";
 import { AbstraxionSignin } from "../../components/AbstraxionSignin";
 import { useAbstraxionAccount } from "../../hooks";
@@ -29,7 +24,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
     "stake",
     "bank",
     "grantee",
-    "treasury"
+    "treasury",
   ]);
 
   const { abstraxionError, isMainnet } = useContext(
@@ -41,7 +36,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
   let bankArray;
   try {
     bankArray = JSON.parse(bank || "");
-  } catch (e) {
+  } catch {
     // If the bank is not a valid JSON, we split it by comma. Dapp using old version of the library.
     bankArray = [];
   }
@@ -49,13 +44,14 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
   let contractsArray;
   try {
     contractsArray = JSON.parse(contracts || "");
-  } catch (e) {
+  } catch {
     // If the contracts are not a valid JSON, we split them by comma. Dapp using old version of the library.
     contractsArray = contracts?.split(",") || [];
   }
 
   useEffect(() => {
-    const closeOnEscKey = (e: any) => (e.key === "Escape" ? onClose() : null);
+    const closeOnEscKey = (e: KeyboardEvent) =>
+      e.key === "Escape" ? onClose() : null;
     document.addEventListener("keydown", closeOnEscKey);
     return () => {
       document.removeEventListener("keydown", closeOnEscKey);
@@ -73,7 +69,10 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
           ) : account?.id &&
             grantee &&
             // We support granting any combunation of
-            (contractsArray.length > 0 || stake || bankArray.length > 0 || treasury) ? (
+            (contractsArray.length > 0 ||
+              stake ||
+              bankArray.length > 0 ||
+              treasury) ? (
             <AbstraxionGrant
               bank={bankArray}
               contracts={contractsArray}
@@ -96,7 +95,10 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
               By continuing, you agree to and acknowledge that you have read and
               understand the
             </span>
-            <a href="https://burnt.com/terms-and-conditions" className="ui-pl-1 ui-text-white">
+            <a
+              href="https://burnt.com/terms-and-conditions"
+              className="ui-pl-1 ui-text-white"
+            >
               Disclaimer
             </a>
             <span className="ui-text-neutral-400">.</span>
@@ -116,7 +118,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
                 {isMainnet ? "MAINNET" : "TESTNET"}
               </div>
               <a href="https://burnt.com/terms-and-conditions">
-              <img src={xionLogo} alt="XION Logo" width="108" height="48" />
+                <img src={xionLogo} alt="XION Logo" width="108" height="48" />
               </a>
             </div>
           </div>

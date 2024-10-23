@@ -1,9 +1,14 @@
-import { ReactElement, useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@burnt-labs/ui";
+import React, { ReactElement, useState } from "react";
+import {
+  CloseIcon,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+} from "@burnt-labs/ui";
 import { DeliverTxResponse } from "@cosmjs/stargate";
-import { DialogClose } from "@burnt-labs/ui";
-import { CloseIcon } from "@burnt-labs/ui";
 import { WalletSendForm } from "./WalletSendForm";
+import { BalanceInfo } from "../../types";
 
 export function WalletSend({
   trigger,
@@ -26,7 +31,7 @@ export function WalletSend({
       <DialogTrigger>{trigger}</DialogTrigger>
       <DialogContent
         className="ui-text-white"
-        onPointerDownOutside={(e: any) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
       >
         <div className="ui-flex ui-justify-end ui-mt-8">
           <DialogClose className="ui-inline-flex">

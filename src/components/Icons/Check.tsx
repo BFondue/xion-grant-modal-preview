@@ -1,3 +1,5 @@
+import React from "react";
+
 export const CheckIcon = ({ color = "black" }: { color?: string }) => (
   <svg
     width="15"

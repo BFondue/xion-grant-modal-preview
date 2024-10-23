@@ -13,7 +13,6 @@ export const generateContractGrant = (
   granter: string,
   contracts: ContractGrantDescription[],
 ) => {
-
   const validGrants = contracts.filter((contractGrantDescription) => {
     if (typeof contractGrantDescription === "string") {
       return true;

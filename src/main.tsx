@@ -14,15 +14,15 @@ import { BrowserRouter } from "react-router-dom";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-    <AbstraxionContextProvider>
-      <StytchProvider stytch={stytchClient}>
-        <ApolloProvider client={apolloClient}>
-          <GrazProvider>
-            <App />
-          </GrazProvider>
-        </ApolloProvider>
-      </StytchProvider>
-    </AbstraxionContextProvider>
+      <AbstraxionContextProvider>
+        <StytchProvider stytch={stytchClient}>
+          <ApolloProvider client={apolloClient}>
+            <GrazProvider>
+              <App />
+            </GrazProvider>
+          </ApolloProvider>
+        </StytchProvider>
+      </AbstraxionContextProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );

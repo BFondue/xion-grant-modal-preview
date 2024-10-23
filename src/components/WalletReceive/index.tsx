@@ -1,7 +1,12 @@
-import { ReactElement, useState } from "react";
-import { Button, Dialog, DialogContent, DialogTrigger } from "@burnt-labs/ui";
-import { DialogClose } from "@burnt-labs/ui";
-import { CloseIcon } from "@burnt-labs/ui";
+import React, { ReactElement, useState } from "react";
+import {
+  Button,
+  CloseIcon,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+} from "@burnt-labs/ui";
 import { truncateAddress } from "../../utils";
 import { CopyIcon } from "../Icons";
 import { QRCodeSVG } from "qrcode.react";
@@ -26,7 +31,7 @@ export function WalletReceive({
       <DialogTrigger>{trigger}</DialogTrigger>
       <DialogContent
         className="ui-text-white"
-        onPointerDownOutside={(e: any) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
       >
         <div className="ui-flex ui-justify-end ui-mt-8">
           <DialogClose className="ui-inline-flex">

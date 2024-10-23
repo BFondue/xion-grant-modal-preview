@@ -1,17 +1,13 @@
-import { Dispatch, SetStateAction, useContext, useState } from "react";
+import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import { useAccount, useSuggestChainAndConnect, WalletType } from "graz";
 import { Button, MetamaskLogo, Spinner } from "@burnt-labs/ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../../AbstraxionContext";
-import {
-  useAbstraxionAccount,
-  useAbstraxionSigningClient,
-} from "../../../hooks";
+import { useAbstraxionSigningClient } from "../../../hooks";
 import { encodeHex } from "../../../utils";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
-import { useNumiaSmartAccounts } from "../../../hooks/useNumiaSmartAccounts";
 import { AAAlgo } from "../../../signers";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
@@ -44,21 +40,16 @@ export function AddAuthenticatorsForm({
 
   // Context state
   const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
-    AbstraxionContext
+    AbstraxionContext,
   ) as AbstraxionContextProps;
 
   // Hooks
   const { client } = useAbstraxionSigningClient();
   const { data: grazAccount } = useAccount();
-  const { loginAuthenticator } = useAbstraxionAccount();
   const { suggestAndConnect } = useSuggestChainAndConnect({
     onSuccess: async () => await addKeplrAuthenticator(),
     onError: () => setIsLoading(false),
     onLoading: () => setIsLoading(true),
-  });
-
-  const { data } = useNumiaSmartAccounts(true, () => {
-    setIsLoading(false);
   });
 
   // Functions
@@ -104,8 +95,7 @@ export function AddAuthenticatorsForm({
 
       const encoder = new TextEncoder();
       const signArbMessage = Buffer.from(encoder.encode(abstractAccount?.id));
-      // @ts-ignore - function exists in keplr extension
-      const signArbRes = await keplr.signArbitrary(
+      const signArbRes = await window.keplr.signArbitrary(
         chainInfo.chainId,
         grazAccount?.bech32Address,
         signArbMessage,
@@ -147,7 +137,7 @@ export function AddAuthenticatorsForm({
 
       postAddFunction();
       return res;
-    } catch (error) {
+    } catch {
       setErrorMessage(
         "Something went wrong trying to add Keplr wallet as authenticator",
       );
@@ -242,7 +232,7 @@ export function AddAuthenticatorsForm({
       const encoder = new TextEncoder();
       const ten = encodeHex(Buffer.from(encoder.encode(abstractAccount?.id)));
 
-      const ethSignature = await window.ethereum.request({
+      const ethSignature = await window.ethereum.request<string>({
         method: "personal_sign",
         params: [ten, primaryAccount],
       });
@@ -289,7 +279,7 @@ export function AddAuthenticatorsForm({
 
       postAddFunction();
       return res;
-    } catch (error) {
+    } catch {
       setErrorMessage(
         "Something went wrong trying to add Ethereum wallet as authenticator",
       );

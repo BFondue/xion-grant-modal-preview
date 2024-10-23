@@ -2,8 +2,6 @@ import { SubqueryIndexerStrategy } from "../indexer-strategies/subquery-indexer-
 import { getEnvStringOrThrow } from "../utils";
 import { useBaseSmartAccounts } from "./baseSmartAccount";
 
-const POLL_INTERVAL_DEFAULT = 3000; // 3 seconds
-
 const subqueryIndexerStrategy = new SubqueryIndexerStrategy(
   getEnvStringOrThrow(
     "VITE_DEFAULT_INDEXER_URL",

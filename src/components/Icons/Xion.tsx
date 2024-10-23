@@ -1,3 +1,5 @@
+import React from "react";
+
 export const XionIcon = () => (
   <svg
     width="40"

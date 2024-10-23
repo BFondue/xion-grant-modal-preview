@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { CloseIcon, Dialog, DialogClose, DialogContent } from "@burnt-labs/ui";
 import { AddAuthenticatorsForm } from "./AddAuthenticatorsForm";
 

@@ -55,7 +55,7 @@ const CosmosAuthzPermission: { [key: string]: string } = {
  */
 export const queryTreasuryContract = async (
   contractAddress: string,
-  client: AAClient
+  client: AAClient,
 ): Promise<PermissionDescription[]> => {
   if (!contractAddress) {
     throw new Error("Missing contract address");
@@ -75,7 +75,7 @@ export const queryTreasuryContract = async (
 
   if (!queryAllTypeUrlsResponse) {
     throw new Error(
-      "Something went wrong querying the treasury contract for grants"
+      "Something went wrong querying the treasury contract for grants",
     );
   }
   // For each grant type url, query grant config and construct a human readable description
@@ -95,29 +95,39 @@ export const queryTreasuryContract = async (
       }
       let description: string;
       switch (queryGrantConfigResponse.authorization.type_url) {
-        case "/cosmos.authz.v1beta1.GenericAuthorization":
-          const genericAuthByteArray = new Uint8Array(Buffer.from(queryGrantConfigResponse.authorization.value, "base64"))
-          const decodedGenericAuth = GenericAuthorization.decode(genericAuthByteArray)
+        case "/cosmos.authz.v1beta1.GenericAuthorization": {
+          const genericAuthByteArray = new Uint8Array(
+            Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
+          );
+          const decodedGenericAuth =
+            GenericAuthorization.decode(genericAuthByteArray);
           description = `Permission to ${
-            CosmosAuthzPermission[
-              decodedGenericAuth.msg
-            ]
+            CosmosAuthzPermission[decodedGenericAuth.msg]
           }`;
           break;
-        case "/cosmos.bank.v1beta1.SendAuthorization":
-          const sendAuthByteArray = new Uint8Array(Buffer.from(queryGrantConfigResponse.authorization.value, "base64"))
-          const decodedSendAuth = SendAuthorization.decode(sendAuthByteArray)
+        }
+        case "/cosmos.bank.v1beta1.SendAuthorization": {
+          const sendAuthByteArray = new Uint8Array(
+            Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
+          );
+          const decodedSendAuth = SendAuthorization.decode(sendAuthByteArray);
           const spendLimit = decodedSendAuth.spendLimit
             .map((limit: Coin) => `${limit.amount} ${limit.denom}`)
             .join(", ");
           const allowList = decodedSendAuth.allowList.join(", ");
           description = `Permission to send tokens with spend limit: ${spendLimit} and allow list: ${allowList}`;
           break;
-        case "/cosmos.staking.v1beta1.StakeAuthorization":
-          const stakeAuthByteArray =  new Uint8Array(Buffer.from(queryGrantConfigResponse.authorization.value, "base64"))
-          const decodedStakeAuth = StakeAuthorization.decode(stakeAuthByteArray)
-          const allowedValidators = decodedStakeAuth.allowList?.address?.join(", ");
-          const deniedValidators = decodedStakeAuth.denyList?.address?.join(", "); // TODO: Impl
+        }
+        case "/cosmos.staking.v1beta1.StakeAuthorization": {
+          const stakeAuthByteArray = new Uint8Array(
+            Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
+          );
+          const decodedStakeAuth =
+            StakeAuthorization.decode(stakeAuthByteArray);
+          const allowedValidators =
+            decodedStakeAuth.allowList?.address?.join(", ");
+          const deniedValidators =
+            decodedStakeAuth.denyList?.address?.join(", "); // TODO: Impl
           const maxTokens = `${decodedStakeAuth.maxTokens.amount} ${decodedStakeAuth.maxTokens.denom}`;
           description = `Permission to stake tokens ${
             allowedValidators
@@ -129,6 +139,7 @@ export const queryTreasuryContract = async (
               : "without denied validators"
           } and max tokens: ${maxTokens}`;
           break;
+        }
         default:
           description = `Unknown Authorization Type: ${queryGrantConfigResponse.authorization["@type"]}`;
       }
@@ -136,7 +147,7 @@ export const queryTreasuryContract = async (
         authorizationDescription: description,
         dappDescription: queryGrantConfigResponse.description,
       };
-    })
+    }),
   );
 
   return permissionDescriptions;

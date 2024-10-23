@@ -1,11 +1,11 @@
+import React from "react";
+
 export const WalletIcon = ({
   color,
   backgroundColor,
-  outlineColor,
 }: {
   color: string;
   backgroundColor: string;
-  outlineColor?: string;
 }) => (
   <svg
     width="21"

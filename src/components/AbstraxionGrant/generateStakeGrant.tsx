@@ -1,4 +1,4 @@
-import { MsgGrant, MsgExec } from "cosmjs-types/cosmos/authz/v1beta1/tx";
+import { MsgExec, MsgGrant } from "cosmjs-types/cosmos/authz/v1beta1/tx";
 import { GenericAuthorization } from "cosmjs-types/cosmos/authz/v1beta1/authz";
 import { MsgWithdrawDelegatorReward } from "cosmjs-types/cosmos/distribution/v1beta1/tx";
 import {

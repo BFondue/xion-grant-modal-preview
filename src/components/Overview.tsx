@@ -1,10 +1,10 @@
+import React from "react";
 import { formatBalance, getCommaSeperatedNumber } from "../utils";
 import { usdcSearchDenom, useAccountBalance } from "../hooks/useAccountBalance";
 import { RightArrowIcon, ScanIcon } from "./Icons";
 import { WalletSend } from "./WalletSend/WalletSend";
 import { WalletReceive } from "./WalletReceive";
-import type { AbstraxionAccount } from "../types";
-import {SmartAccount} from "../indexer-strategies/types";
+import { SmartAccount } from "../indexer-strategies/types";
 
 export const XION_TO_USDC_CONVERSION = 50;
 

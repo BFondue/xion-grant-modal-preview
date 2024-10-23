@@ -1,4 +1,4 @@
-import {Authenticator} from "../indexer-strategies/types";
+import { Authenticator } from "../indexer-strategies/types";
 
 /**
  * Returns the lowest missing or next index
@@ -7,14 +7,14 @@ import {Authenticator} from "../indexer-strategies/types";
  * @throws {Error} - If authenticators array is null or undefined.
  */
 export function findLowestMissingOrNextIndex(
-  authenticators?: Authenticator[]
+  authenticators?: Authenticator[],
 ): number {
   if (!authenticators) {
     throw new Error("Missing authenticators");
   }
 
   const indexSet = new Set(
-    authenticators.map((authenticator) => authenticator.authenticatorIndex)
+    authenticators.map((authenticator) => authenticator.authenticatorIndex),
   );
 
   for (let i = 0; i <= indexSet.size; i++) {

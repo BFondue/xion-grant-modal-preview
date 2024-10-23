@@ -1,7 +1,5 @@
-"use client";
-
-import {Link, useLocation} from "react-router-dom";
-import { useContext } from "react";
+import { Link, useLocation } from "react-router-dom";
+import React, { useContext } from "react";
 import { AbstraxionContext, AbstraxionContextProps } from "./AbstraxionContext";
 import { CloseIcon, WalletIcon } from "./Icons";
 
@@ -17,7 +15,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   const location = useLocation();
   const pathname = location.pathname;
   const { isMainnet, setIsOpen } = useContext(
-    AbstraxionContext
+    AbstraxionContext,
   ) as AbstraxionContextProps;
 
   const renderNavOptions = () => {
@@ -31,7 +29,9 @@ export function Sidebar({ onClose }: SidebarProps) {
             <Link
               to={option.path}
               className={`${
-                pathname === option.path ? "ui-text-white" : "ui-text-neutral-500"
+                pathname === option.path
+                  ? "ui-text-white"
+                  : "ui-text-neutral-500"
               } ui-font-akkuratLL ui-block ui-mt-8 first:ui-mt-0 ui-leading-3 ui-uppercase ui-tracking-widest ui-text-4xl ui-font-thin`}
             >
               {option.text}
@@ -83,6 +83,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           href={"https://explorer.burnt.com/xion-testnet-1/"}
           target="_blank"
           className={`${"ui-text-neutral-500 ui-font-regular"} ui-font-akkuratLL ui-block ui-px-8 ui-mt-16 first:ui-mt-0 ui-font-thin ui-leading-3 ui-text-4xl ui-uppercase ui-tracking-widest`}
+          rel="noreferrer"
         >
           History
         </a>

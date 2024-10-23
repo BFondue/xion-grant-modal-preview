@@ -1,4 +1,4 @@
-import { Button } from "@burnt-labs/ui";
+import React, { Button } from "@burnt-labs/ui";
 import { SelectedCurrency } from "./WalletSendTypes";
 import { XION_TO_USDC_CONVERSION } from "../Overview";
 import { formatBalance } from "../../utils";

@@ -1,3 +1,5 @@
+import { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
+
 export type authenticatorTypes = "SECP256K1" | "ETHWALLET" | "JWT";
 
 export interface AuthenticatorNodes {
@@ -29,4 +31,10 @@ export interface useAbstraxionAccountProps {
   isConnected: boolean;
   isConnecting?: boolean;
   isReconnecting?: boolean;
+}
+
+export interface BalanceInfo {
+  // In USDC
+  total: number;
+  balances: Coin[];
 }

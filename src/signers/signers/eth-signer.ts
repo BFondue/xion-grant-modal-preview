@@ -5,6 +5,20 @@ import { encodeHex } from "./utils";
 import { AAAlgo } from "../interfaces";
 
 /**
+ * Interface for a personalSign function.
+ * This function signs a message using an Ethereum account's private key and returns a signature.
+ */
+export interface PersonalSignFn {
+  /**
+   * Signs a given message with the provided address.
+   *
+   * @param message - The message to be signed as a hex string.
+   * @returns A promise that resolves to the signature as a hex string.
+   */
+  (message: string): Promise<string>;
+}
+
+/**
  * This class is an implementation of the AASigner interface using the DirectSecp256k1HdWallet
  * or any other signer that implements the AASigner interface
  * This class use would generally be with a wallet since it's method of signing is the same as the
@@ -17,18 +31,14 @@ import { AAAlgo } from "../interfaces";
  * @personalSign callback to the Ethereum signing function
  * @implements AASigner
  */
-export class AAEthSigner extends AASigner {
-  accountAuthenticatorIndex: number;
-  personalSign: any;
 
+export class AAEthSigner extends AASigner {
   constructor(
     abstractAccount: string,
-    accountAuthenticatorIndex: number,
-    personalSign: any,
+    public accountAuthenticatorIndex: number,
+    public personalSign: PersonalSignFn,
   ) {
     super(abstractAccount);
-    this.accountAuthenticatorIndex = accountAuthenticatorIndex;
-    this.personalSign = personalSign;
   }
 
   async signDirect(
@@ -40,11 +50,9 @@ export class AAEthSigner extends AASigner {
     const signature = await this.personalSign(signBytesHex);
 
     const byteArray = new Uint8Array(
-      signature.match(/[\da-f]{2}/gi).map((hex: any) => parseInt(hex, 16)),
+      signature.match(/[\da-f]{2}/gi).map((hex) => parseInt(hex, 16)),
     );
-    const base64String = btoa(
-      String.fromCharCode.apply(null, byteArray as any),
-    );
+    const base64String = btoa(String.fromCharCode.apply(null, byteArray));
 
     return {
       signed: signDoc,

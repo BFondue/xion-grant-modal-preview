@@ -1,6 +1,12 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useStytch } from "@stytch/react";
-import {AAClient, AADirectSigner, AAEthSigner, AbstractAccountJWTSigner, GasPrice} from "../signers";
+import {
+  AAClient,
+  AADirectSigner,
+  AAEthSigner,
+  AbstractAccountJWTSigner,
+  GasPrice,
+} from "../signers";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -38,11 +44,11 @@ export const useAbstraxionSigningClient = () => {
     return window.okxwallet.keplr.signArbitrary(chainId, account, signDataNew);
   }
 
-  async function ethSigningFn(msg: any) {
+  async function ethSigningFn(msg) {
     const accounts = await window.ethereum?.request({
       method: "eth_requestAccounts",
     });
-    return window.ethereum?.request({
+    return window.ethereum?.request<string>({
       method: "personal_sign",
       params: [msg, accounts[0]],
     });
@@ -62,26 +68,27 @@ export const useAbstraxionSigningClient = () => {
           abstractAccount.currentAuthenticatorIndex,
           sessionToken,
           //  @TODO Will need to find a better pattern eventually
-          abstractAccount.codeId === 21 ?
-          getEnvStringOrThrow(
-            "VITE_DEFAULT_API_URL",
-            import.meta.env.VITE_DEFAULT_API_URL,
-          ):
-          getEnvStringOrThrow(
-            "VITE_NEW_CONTRACT_API_URL",
-            import.meta.env.VITE_NEW_CONTRACT_API_URL,
-          ),
+          abstractAccount.codeId === 21
+            ? getEnvStringOrThrow(
+                "VITE_DEFAULT_API_URL",
+                import.meta.env.VITE_DEFAULT_API_URL,
+              )
+            : getEnvStringOrThrow(
+                "VITE_NEW_CONTRACT_API_URL",
+                import.meta.env.VITE_NEW_CONTRACT_API_URL,
+              ),
         );
         break;
       case "graz":
-        if (keplr) {
-          const offlineSigner = window.keplr.getOfflineSigner(chainInfo.chainId);
+        if (window.keplr) {
+          const offlineSigner = window.keplr.getOfflineSigner(
+            chainInfo.chainId,
+          );
           signer = new AADirectSigner(
             offlineSigner,
             abstractAccount.id,
             abstractAccount.currentAuthenticatorIndex,
-            // @ts-ignore - signArbitrary function exists on Keplr although it doesn't show
-            keplr.signArbitrary,
+            window.keplr.signArbitrary,
             getEnvStringOrThrow(
               "VITE_DEFAULT_INDEXER_URL",
               import.meta.env.VITE_DEFAULT_INDEXER_URL,
@@ -91,8 +98,9 @@ export const useAbstraxionSigningClient = () => {
         break;
       case "okx":
         if (window.okxwallet) {
-          const okxOfflineSigner =
-            await window.okxwallet.keplr.getOfflineSigner(chainInfo.chainId);
+          const okxOfflineSigner = window.okxwallet.keplr.getOfflineSigner(
+            chainInfo.chainId,
+          );
           signer = new AADirectSigner(
             okxOfflineSigner,
             abstractAccount.id,

@@ -1,13 +1,16 @@
-import {useCallback, useContext, useState} from "react";
-import {useStytch} from "@stytch/react";
-import {Button, Spinner} from "@burnt-labs/ui";
-import {AbstraxionContext, AbstraxionContextProps,} from "../AbstraxionContext";
-import {truncateAddress} from "../../utils";
-import {useAbstraxionAccount} from "../../hooks";
-import {Loading} from "../Loading";
-import {WalletIcon} from "../Icons";
-import {useXionDisconnect} from "../../hooks/useXionDisconnect";
-import {useNumiaSmartAccounts} from "../../hooks/useNumiaSmartAccounts";
+import React, { useCallback, useContext, useState } from "react";
+import { useStytch } from "@stytch/react";
+import { Button, Spinner } from "@burnt-labs/ui";
+import {
+  AbstraxionContext,
+  AbstraxionContextProps,
+} from "../AbstraxionContext";
+import { truncateAddress } from "../../utils";
+import { useAbstraxionAccount } from "../../hooks";
+import { Loading } from "../Loading";
+import { WalletIcon } from "../Icons";
+import { useXionDisconnect } from "../../hooks/useXionDisconnect";
+import { useNumiaSmartAccounts } from "../../hooks/useNumiaSmartAccounts";
 
 export const AbstraxionWallets = () => {
   const {
@@ -24,10 +27,13 @@ export const AbstraxionWallets = () => {
   const session_token = stytchClient.session.getTokens()?.session_token;
 
   const { loginAuthenticator } = useAbstraxionAccount();
-  const {data, loading, error, startPolling} = useNumiaSmartAccounts(false, () => {
-    setIsGeneratingNewWallet(false);
-  });
-  const {xionDisconnect} = useXionDisconnect();
+  const { data, loading, error, startPolling } = useNumiaSmartAccounts(
+    false,
+    () => {
+      setIsGeneratingNewWallet(false);
+    },
+  );
+  const { xionDisconnect } = useXionDisconnect();
 
   const [isGeneratingNewWallet, setIsGeneratingNewWallet] = useState(false);
 
@@ -103,12 +109,10 @@ export const AbstraxionWallets = () => {
                         authenticators: node.authenticators,
                         id: node.id,
                         codeId: node.codeId,
-                        currentAuthenticatorIndex:
-                          node.authenticators.find(
-                            (authenticator) =>
-                              authenticator.authenticator ===
-                              loginAuthenticator,
-                          ).authenticatorIndex,
+                        currentAuthenticatorIndex: node.authenticators.find(
+                          (authenticator) =>
+                            authenticator.authenticator === loginAuthenticator,
+                        ).authenticatorIndex,
                       });
                       setIsOpen(false);
                     }}
@@ -138,9 +142,7 @@ export const AbstraxionWallets = () => {
             </div>
           </div>
           <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
-            {!loading &&
-            data?.length < 1 &&
-            connectionType === "stytch" ? (
+            {!loading && data?.length < 1 && connectionType === "stytch" ? (
               <Button
                 structure="outlined"
                 fullWidth={true}

@@ -3,8 +3,8 @@ import { Account } from "@cosmjs/stargate";
 import { Any } from "../../types/generated/google/protobuf/any";
 import { BaseAccount } from "cosmjs-types/cosmos/auth/v1beta1/auth";
 import { AuthInfo, SignerInfo } from "cosmjs-types/cosmos/tx/v1beta1/tx";
-import { decodePubkey, AccountData, Algo } from "@cosmjs/proto-signing";
-import { coins, StdFee, type Pubkey } from "@cosmjs/amino";
+import { AccountData, Algo, decodePubkey } from "@cosmjs/proto-signing";
+import { coins, type Pubkey, StdFee } from "@cosmjs/amino";
 import { Uint64 } from "@cosmjs/math";
 import { AbstractAccount } from "../../types/generated/abstractaccount/v1/account";
 import { assert } from "@cosmjs/utils";
@@ -12,15 +12,11 @@ import { accountFromAny } from "@cosmjs/stargate/build/accounts";
 import { AAccountData } from "../../interfaces/AASigner";
 import {
   AAAlgo,
-  AddAuthenticator,
   IQueryAAResponse,
   ISmartAccountAuthenticator,
   ISmartAccounts,
 } from "../../interfaces/smartAccount";
-import {
-  AllSmartWalletQueryByIdAndTypeAndAuthenticator,
-} from "../../interfaces/queries";
-import { OTPsAuthenticateResponse } from "stytch";
+import { AllSmartWalletQueryByIdAndTypeAndAuthenticator } from "../../interfaces/queries";
 import {
   ApolloClient,
   InMemoryCache,
