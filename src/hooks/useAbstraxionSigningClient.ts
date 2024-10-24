@@ -89,10 +89,6 @@ export const useAbstraxionSigningClient = () => {
             abstractAccount.id,
             abstractAccount.currentAuthenticatorIndex,
             window.keplr.signArbitrary,
-            getEnvStringOrThrow(
-              "VITE_DEFAULT_INDEXER_URL",
-              import.meta.env.VITE_DEFAULT_INDEXER_URL,
-            ),
           );
         }
         break;
@@ -106,10 +102,6 @@ export const useAbstraxionSigningClient = () => {
             abstractAccount.id,
             abstractAccount.currentAuthenticatorIndex,
             okxSignArb,
-            getEnvStringOrThrow(
-              "VITE_DEFAULT_INDEXER_URL",
-              import.meta.env.VITE_DEFAULT_INDEXER_URL,
-            ),
           );
         }
         break;

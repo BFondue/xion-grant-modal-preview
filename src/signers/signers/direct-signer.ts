@@ -4,8 +4,7 @@ import {
   OfflineDirectSigner,
 } from "@cosmjs/proto-signing";
 import { SignDoc } from "cosmjs-types/cosmos/tx/v1beta1/tx";
-import { AAccountData, AASigner } from "../interfaces";
-import { getAAccounts } from "./utils";
+import { AAAlgo, AAccountData, AASigner } from "../interfaces";
 import { StdSignature } from "@cosmjs/amino";
 
 export type SignArbitraryFn = (
@@ -32,7 +31,6 @@ export class AADirectSigner extends AASigner {
     abstractAccount: string,
     public accountAuthenticatorIndex: number,
     public signArbFn: SignArbitraryFn,
-    public indexerUrl = "https://api.subquery.network/sq/burnt-labs/xion-indexer",
   ) {
     super(abstractAccount);
   }
@@ -60,20 +58,27 @@ export class AADirectSigner extends AASigner {
   }
 
   async getAccounts(): Promise<readonly AAccountData[]> {
+    if (this.abstractAccount === undefined) {
+      return [];
+    }
+
     const accounts = await this.signer.getAccounts();
     if (accounts.length === 0) {
       return [];
+    } else if (accounts.length > 1) {
+      // @TODO How to handle this case?
+      console.log("Signer returned more than 1 account");
     }
-    if (this.abstractAccount === undefined) {
-      // we treat this class a a normal signer not an AA signer
-      return accounts.map((account) => {
-        return {
-          ...account,
-          authenticatorId: 0,
-          accountAddress: account.address,
-        };
-      });
-    }
-    return await getAAccounts(accounts, this.abstractAccount, this.indexerUrl);
+
+    return [
+      {
+        address: this.abstractAccount,
+        algo: "secp256k1", // we don't really care about this
+        pubkey: new Uint8Array(),
+        authenticatorId: this.accountAuthenticatorIndex,
+        accountAddress: accounts[0].address,
+        aaalgo: AAAlgo.Secp256K1,
+      },
+    ];
   }
 }

@@ -3,20 +3,12 @@ import { Account } from "@cosmjs/stargate";
 import { Any } from "../../types/generated/google/protobuf/any";
 import { BaseAccount } from "cosmjs-types/cosmos/auth/v1beta1/auth";
 import { AuthInfo, SignerInfo } from "cosmjs-types/cosmos/tx/v1beta1/tx";
-import { AccountData, Algo, decodePubkey } from "@cosmjs/proto-signing";
+import { decodePubkey } from "@cosmjs/proto-signing";
 import { coins, type Pubkey, StdFee } from "@cosmjs/amino";
 import { Uint64 } from "@cosmjs/math";
 import { AbstractAccount } from "../../types/generated/abstractaccount/v1/account";
 import { assert } from "@cosmjs/utils";
 import { accountFromAny } from "@cosmjs/stargate/build/accounts";
-import { AAccountData } from "../../interfaces/AASigner";
-import {
-  AAAlgo,
-  IQueryAAResponse,
-  ISmartAccountAuthenticator,
-  ISmartAccounts,
-} from "../../interfaces/smartAccount";
-import { AllSmartWalletQueryByIdAndTypeAndAuthenticator } from "../../interfaces/queries";
 import {
   ApolloClient,
   InMemoryCache,
@@ -114,70 +106,6 @@ export function makeAAuthInfo(
       payer: fee.payer || "",
     },
   });
-}
-
-/**
- * This method gets all the AA accounts in which the signers in the accountData
- * are authenticators for
- *  @param accounts the account data of the signer
- *  @param abstractAccount the abstract account address
- **/
-export async function getAAccounts(
-  accounts: readonly AccountData[],
-  abstractAccount: string,
-  indexerUrl: string,
-): Promise<AAccountData[]> {
-  const defaultData: AAccountData = {
-    address: "",
-    accountAddress: "",
-    algo: AAAlgo.Secp256K1,
-    pubkey: new Uint8Array(),
-    authenticatorId: 0,
-  };
-  const allAAAcounts: AAccountData[] = [];
-  // here we get all the accounts of the super DirectSecp256k1HdWallet
-  // class then we use the public key and algo type to query the xion-indexer
-  // for the abstract account authenticators matching the public key and algo type
-  const apolloClient = getApolloClient(indexerUrl);
-  if (!apolloClient || !accounts || accounts.length === 0) {
-    return [defaultData];
-  }
-  for (const account of accounts) {
-    const { data } = await apolloClient.query<IQueryAAResponse>({
-      query: AllSmartWalletQueryByIdAndTypeAndAuthenticator,
-      variables: {
-        id: abstractAccount,
-        type: AAAlgo[account.algo],
-        authenticator: Buffer.from(account.pubkey).toString("base64"),
-      },
-    });
-    if (data) {
-      const smartAccounts: ISmartAccounts = data.smartAccounts;
-      if (!smartAccounts.nodes.length) {
-        // No smart account found for this account
-        continue;
-      }
-      for (const node of smartAccounts.nodes) {
-        const smartAccountAuthenticators: INodes<ISmartAccountAuthenticator> =
-          node.authenticators;
-        if (!smartAccountAuthenticators.nodes.length) {
-          // No authenticator found for this account
-          continue;
-        }
-        for (const authenticator of smartAccountAuthenticators.nodes) {
-          const splitAuthenticatorId = authenticator.id.split("-");
-          allAAAcounts.push({
-            address: splitAuthenticatorId[0],
-            accountAddress: account.address,
-            algo: authenticator.type.toLowerCase() as Algo,
-            pubkey: new Uint8Array(), // to signify an AA account
-            authenticatorId: Number(splitAuthenticatorId[1]),
-          });
-        }
-      }
-    }
-  }
-  return allAAAcounts;
 }
 
 export function encodeHex(bytes: Uint8Array) {
