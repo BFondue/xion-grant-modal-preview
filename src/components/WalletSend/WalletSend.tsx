@@ -8,22 +8,8 @@ import {
 } from "@burnt-labs/ui";
 import { DeliverTxResponse } from "@cosmjs/stargate";
 import { WalletSendForm } from "./WalletSendForm";
-import { BalanceInfo } from "../../types";
 
-export function WalletSend({
-  trigger,
-  sendTokens,
-  balanceInfo,
-}: {
-  trigger: ReactElement;
-  sendTokens: (
-    senderAddress: string,
-    sendAmount: number,
-    denom: string,
-    memo: string,
-  ) => Promise<DeliverTxResponse>;
-  balanceInfo: BalanceInfo;
-}) {
+export function WalletSend({ trigger }: { trigger: ReactElement }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -39,11 +25,7 @@ export function WalletSend({
           </DialogClose>
         </div>
 
-        <WalletSendForm
-          balanceInfo={balanceInfo}
-          sendTokens={sendTokens}
-          setIsOpen={setIsOpen}
-        />
+        <WalletSendForm setIsOpen={setIsOpen} />
       </DialogContent>
     </Dialog>
   );

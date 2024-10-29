@@ -2,6 +2,8 @@ import { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
 
 export type authenticatorTypes = "SECP256K1" | "ETHWALLET" | "JWT";
 
+export type Network = "testnet" | "mainnet";
+
 export interface AuthenticatorNodes {
   __typename: string;
   id: string;

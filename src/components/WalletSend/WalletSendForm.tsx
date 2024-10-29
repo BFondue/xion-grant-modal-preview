@@ -3,43 +3,22 @@ import { DeliverTxResponse } from "@cosmjs/stargate";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { useAbstraxionAccount } from "../../hooks";
 import { isValidWalletAddress } from "../../utils";
-import { usdcSearchDenom } from "../../hooks/useAccountBalance";
-import { SelectedCurrency } from "./WalletSendTypes";
 import { WalletSendInput } from "./WalletSendInput";
 import { WalletSendReview } from "./WalletSendReview";
 import { WalletSendSuccess } from "./WalletSendSuccess";
-import { BalanceInfo } from "../../types";
+import { useAccountBalance } from "../../hooks/useAccountBalance";
+import { isMainnet } from "../../utils";
 
-export function WalletSendForm({
-  sendTokens,
-  balanceInfo,
-  setIsOpen,
-}: {
-  sendTokens: (
-    senderAddress: string,
-    sendAmount: number,
-    denom: string,
-    memo: string,
-  ) => Promise<DeliverTxResponse>;
-  balanceInfo: BalanceInfo;
-  setIsOpen: (boolean) => void;
-}) {
+export function WalletSendForm({ setIsOpen }: { setIsOpen: any }) {
   const { data: account } = useAbstraxionAccount();
-
-  const xionBalance = balanceInfo.balances.find(
-    (coin) => coin.denom === "uxion",
-  );
-  const usdcBalance = balanceInfo.balances.find(
-    (coin) => coin.denom === usdcSearchDenom,
+  const { balances, sendTokens, getBalanceByDenom } = useAccountBalance(
+    isMainnet ? "mainnet" : "testnet",
   );
 
-  const [selectedCurrency, setSelectedCurrency] = useState<SelectedCurrency>({
-    type: "usdc",
-    balance: usdcBalance,
-    denom: usdcSearchDenom,
-  });
+  const [selectedCurrencyDenom, setSelectedCurrencyDenom] = useState("uxion");
+  const selectedCurrency = getBalanceByDenom(selectedCurrencyDenom);
 
-  const [sendAmount, setSendAmount] = useState("0");
+  const [sendAmount, setSendAmount] = useState("");
   const [amountError, setAmountError] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
   const [recipientAddressError, setRecipientAddressError] = useState("");
@@ -50,19 +29,24 @@ export function WalletSendForm({
   const [isSuccess, setIsSuccess] = useState(false);
   const [sendTokensError, setSendTokensError] = useState(false);
 
-  const [showDropdown, setShowDropdown] = useState(false);
-
   function updateSendAmount(inputValue: string) {
     setAmountError("");
 
-    // replace commas in favor of zero.
+    // replace commas with periods for decimal input
     inputValue = inputValue.replace(/,/g, ".");
 
-    // replace minus sign, negative values aren't allowed
-    inputValue = inputValue.replace(/-/g, "");
+    // remove any non-numeric characters except for the decimal point
+    inputValue = inputValue.replace(/[^0-9.]/g, "");
 
+    // ensure only one decimal point is present
+    const parts = inputValue.split(".");
+    if (parts.length > 2) {
+      inputValue = parts[0] + "." + parts.slice(1).join("");
+    }
+
+    // If input is empty, set sendAmount to an empty string
     if (!inputValue) {
-      setSendAmount("0");
+      setSendAmount("");
     } else {
       setSendAmount(inputValue);
     }
@@ -71,9 +55,6 @@ export function WalletSendForm({
   function handleAmountChange(event: ChangeEvent<HTMLInputElement>) {
     const inputValue = event.target.value;
 
-    if (sendAmount === "0" && inputValue === "00") return;
-
-    // Call the new function with the event value
     updateSendAmount(inputValue);
   }
 
@@ -83,18 +64,9 @@ export function WalletSendForm({
       return;
     }
 
-    if (selectedCurrency.type === "xion") {
-      if (Number(xionBalance?.amount) < Number(sendAmount) * 1000000) {
-        setAmountError("Input is greater than your current balance");
-        return;
-      }
-    }
-
-    if (selectedCurrency.type === "usdc") {
-      if (Number(usdcBalance?.amount) < Number(sendAmount) * 1000000) {
-        setAmountError("Input is greater than your current balance");
-        return;
-      }
+    if (Number(sendAmount) > selectedCurrency.value) {
+      setAmountError("Input is greater than your current balance");
+      return;
     }
 
     if (!isValidWalletAddress(recipientAddress)) {
@@ -112,7 +84,7 @@ export function WalletSendForm({
       await sendTokens(
         recipientAddress,
         Number(sendAmount),
-        selectedCurrency.denom,
+        selectedCurrency.asset.base,
         userMemo,
       );
       setIsSuccess(true);
@@ -157,9 +129,9 @@ export function WalletSendForm({
       ) : (
         <WalletSendInput
           account={account}
+          balances={balances}
           amountError={amountError}
-          onChangeCurrency={setSelectedCurrency}
-          onCloseDropdown={setShowDropdown}
+          onChangeCurrency={setSelectedCurrencyDenom}
           onAmountChange={handleAmountChange}
           onUpdateRecipientAddress={(e) => {
             setRecipientAddressError("");
@@ -170,10 +142,7 @@ export function WalletSendForm({
           recipientAddressError={recipientAddressError}
           selectedCurrency={selectedCurrency}
           sendAmount={sendAmount}
-          showDropdown={showDropdown}
-          usdcBalance={usdcBalance}
           userMemo={userMemo}
-          xionBalance={xionBalance}
           onStart={handleStart}
           updateSendAmount={updateSendAmount}
         />

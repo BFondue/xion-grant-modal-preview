@@ -1,13 +1,11 @@
 import React from "react";
 import { Button } from "@burnt-labs/ui";
-import { SelectedCurrency } from "./WalletSendTypes";
-import { XION_TO_USDC_CONVERSION } from "../Overview";
-import { formatBalance } from "../../utils";
+import type { FormattedAssetAmount } from "../../types/assets";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 
 interface WalletSendSuccessProps {
   sendAmount: string;
-  selectedCurrency: SelectedCurrency;
+  selectedCurrency: FormattedAssetAmount;
   userMemo: string;
   account: SelectedSmartAccount;
   recipientAddress: string;
@@ -42,17 +40,11 @@ export function WalletSendSuccess({
         <p className="ui-w-full ui-text-center ui-text-4xl ui-font-akkuratLL ui-text-white ui-font-semibold">
           {sendAmount}{" "}
           <span className="ui-text-white/40">
-            {selectedCurrency.type.toUpperCase()}
+            {selectedCurrency.asset.display.toUpperCase()}
           </span>
         </p>
         <p className="ui-w-full ui-text-center ui-text-md ui-font-akkuratLL ui-text-white/40">
-          $
-          {formatBalance(
-            Number(sendAmount) *
-              1000000 *
-              (selectedCurrency.type === "xion" ? XION_TO_USDC_CONVERSION : 1),
-          )}{" "}
-          USD
+          ${selectedCurrency.dollarValue.toFixed(2)} USD
         </p>
         <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/70 ui-italic">
           {userMemo}

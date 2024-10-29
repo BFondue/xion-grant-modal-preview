@@ -1,12 +1,10 @@
-import React, { Button } from "@burnt-labs/ui";
-import { SelectedCurrency } from "./WalletSendTypes";
-import { XION_TO_USDC_CONVERSION } from "../Overview";
-import { formatBalance } from "../../utils";
+import { Button } from "@burnt-labs/ui";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
+import { FormattedAssetAmount } from "../../types/assets";
 
 interface WalletSendReviewProps {
   sendAmount: string;
-  selectedCurrency: SelectedCurrency;
+  selectedCurrency: FormattedAssetAmount;
   account: SelectedSmartAccount;
   userMemo: string;
   recipientAddress: string;
@@ -49,17 +47,11 @@ export function WalletSendReview({
         <p className="ui-w-full ui-text-center ui-text-4xl ui-font-akkuratLL ui-text-white ui-font-semibold">
           {sendAmount}{" "}
           <span className="ui-text-white/40">
-            {selectedCurrency.type.toUpperCase()}
+            {selectedCurrency.symbol.toUpperCase()}
           </span>
         </p>
         <p className="ui-w-full ui-text-center ui-text-md ui-font-akkuratLL ui-text-white/40">
-          $
-          {formatBalance(
-            Number(sendAmount) *
-              1000000 *
-              (selectedCurrency.type === "xion" ? XION_TO_USDC_CONVERSION : 1),
-          )}{" "}
-          USD
+          ${Number(sendAmount) * selectedCurrency.price} USD
         </p>
         <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/70 ui-italic">
           {userMemo}

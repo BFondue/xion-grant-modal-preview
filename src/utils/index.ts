@@ -61,13 +61,12 @@ export function formatBalance(
   locale: string = "en-US",
   currency: string = "USD",
 ) {
-  const millionthPart = removeTrailingDigits(number);
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     currencyDisplay: "code",
   })
-    .format(millionthPart)
+    .format(number)
     .replace(currency, "")
     .trim();
 }
@@ -88,3 +87,9 @@ export function isValidWalletAddress(address: string) {
 
   return true;
 }
+
+export const isMainnet =
+  getEnvStringOrThrow(
+    "VITE_DEPLOYMENT_ENV",
+    import.meta.env.VITE_DEPLOYMENT_ENV,
+  ) === "mainnet";

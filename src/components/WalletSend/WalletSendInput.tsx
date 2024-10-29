@@ -1,21 +1,12 @@
-import React from "react";
-import { Button, ChevronDown, Input } from "@burnt-labs/ui";
-import { SelectedCurrency } from "./WalletSendTypes";
-import { XION_TO_USDC_CONVERSION } from "../Overview";
-import { formatBalance } from "../../utils";
-import { USDCIcon } from "../Icons/USDC";
-import { XionIcon } from "../Icons/Xion";
+import React, { useState } from "react";
+import { Button, Input, ChevronDown } from "@burnt-labs/ui";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
-import { usdcSearchDenom } from "../../hooks/useAccountBalance";
-import { Coin } from "../../signers/types/generated/cosmos/base/v1beta1/coin";
+import type { FormattedAssetAmount } from "../../types/assets";
 
 interface WalletSendInputProps {
-  selectedCurrency: SelectedCurrency;
-  onChangeCurrency: React.Dispatch<React.SetStateAction<SelectedCurrency>>;
-  xionBalance: Coin;
-  usdcBalance: Coin;
-  onCloseDropdown: React.Dispatch<React.SetStateAction<boolean>>;
-  showDropdown: boolean;
+  selectedCurrency: FormattedAssetAmount;
+  balances: FormattedAssetAmount[];
+  onChangeCurrency: React.Dispatch<React.SetStateAction<string>>;
   sendAmount: string;
   amountError: string;
   onAmountChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -30,11 +21,8 @@ interface WalletSendInputProps {
 }
 
 export function WalletSendInput({
+  balances,
   selectedCurrency,
-  usdcBalance,
-  onCloseDropdown: setShowDropdown,
-  xionBalance,
-  showDropdown,
   sendAmount,
   amountError,
   onAmountChange: handleAmountChange,
@@ -48,24 +36,11 @@ export function WalletSendInput({
   onStart,
   updateSendAmount,
 }: WalletSendInputProps) {
-  function switchSelectedCurrency(type: typeof selectedCurrency.type) {
-    switch (type) {
-      case "xion":
-        onChangeCurrency({
-          type: "xion",
-          balance: xionBalance,
-          denom: "uxion",
-        });
-        break;
-      case "usdc":
-        onChangeCurrency({
-          type: "usdc",
-          balance: usdcBalance,
-          denom: usdcSearchDenom,
-        });
-        break;
-    }
-    updateSendAmount("0");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  function switchSelectedCurrency(selectedDenom: string) {
+    onChangeCurrency(selectedDenom);
+    updateSendAmount("");
     setShowDropdown(false);
     return;
   }
@@ -74,33 +49,28 @@ export function WalletSendInput({
     return (
       <div className="ui-relative">
         <div
-          className={`ui-flex ui-items-center ui-justify-between ui-p-4 ui-bg-black ${
+          className={`ui-flex ui-items-center ui-justify-between ui-p-4 ui-bg-black hover:ui-cursor-pointer hover:ui-bg-white/10 ${
             showDropdown ? "ui-rounded-tr-lg ui-rounded-tl-lg" : "ui-rounded-lg"
           }`}
           onClick={() => setShowDropdown(!showDropdown)}
         >
           <div className="ui-flex ui-items-center">
             <div className="ui-mr-2">
-              {selectedCurrency.type === "usdc" ? <USDCIcon /> : <XionIcon />}
+              <img
+                className="ui-w-[40px] ui-h-[40px] ui-mr-3"
+                src={selectedCurrency.imageUrl}
+              />
             </div>
 
             <div className="ui-flex ui-flex-col ui-items-start">
               <p className="ui-text-md ui-font-bold ui-text-white">
-                {selectedCurrency.type.toUpperCase()}
+                {selectedCurrency.symbol.toUpperCase()}
               </p>
               <p className="ui-text-md ui-text-white">
-                Balance:{" "}
-                {formatBalance(Number(selectedCurrency.balance?.amount))}{" "}
-                {selectedCurrency.type.toUpperCase()}{" "}
+                Balance: {selectedCurrency.value}{" "}
+                {selectedCurrency.symbol.toUpperCase()}
                 <span className="ui-text-white/50 ui-pl-2">
-                  $
-                  {formatBalance(
-                    Number(selectedCurrency.balance?.amount) *
-                      (selectedCurrency.type === "xion"
-                        ? XION_TO_USDC_CONVERSION
-                        : 1),
-                  )}{" "}
-                  USD
+                  ${selectedCurrency.dollarValue.toFixed(2)} USD
                 </span>
               </p>
             </div>
@@ -108,53 +78,42 @@ export function WalletSendInput({
           <ChevronDown isUp={showDropdown} />
         </div>
 
+        {/* Dropdown Values - iterate over balances that are not the selected currency */}
         <div
           className={`${
             showDropdown ? "ui-absolute ui-left-0" : "ui-hidden"
           } ui-w-full ui-rounded-bl-lg ui-rounded-br-lg ui-bg-black ui-border-t ui-border-white/20`}
         >
-          <div
-            className="ui-flex ui-items-center ui-p-4 ui-bg-black ui-rounded-lg"
-            onClick={() => switchSelectedCurrency("xion")}
-          >
-            <div className="ui-mr-2">
-              <XionIcon />
-            </div>
+          {balances.map((balance) => {
+            if (balance.symbol === selectedCurrency.symbol) return null;
+            return (
+              <div
+                className="ui-flex ui-items-center ui-p-4 ui-bg-black ui-rounded-lg hover:ui-cursor-pointer hover:ui-bg-white/10"
+                onClick={() => switchSelectedCurrency(balance.asset.base)}
+              >
+                <div className="ui-mr-2">
+                  <img
+                    className="ui-w-[40px] ui-h-[40px] ui-mr-3"
+                    src={balance.imageUrl}
+                  />
+                </div>
 
-            <div className="ui-flex ui-flex-col ui-items-start">
-              <p className="ui-text-md ui-font-bold ui-text-white">XION</p>
-              <p className="ui-text-md ui-text-white">
-                Balance: {formatBalance(Number(xionBalance?.amount))} XION{" "}
-                <span className="ui-text-white/50 ui-pl-2">
-                  $
-                  {formatBalance(
-                    Number(xionBalance?.amount) * XION_TO_USDC_CONVERSION,
-                  )}{" "}
-                  USD
-                </span>
-              </p>
-            </div>
-          </div>
-
-          <div
-            className="ui-flex ui-items-center ui-p-4 ui-bg-black ui-rounded-lg ui-mt-1"
-            onClick={() => switchSelectedCurrency("usdc")}
-          >
-            <div className="ui-mr-2">
-              <USDCIcon />
-            </div>
-
-            <div className="ui-flex ui-flex-col ui-items-start">
-              <p className="ui-text-md ui-font-bold ui-text-white">USDC</p>
-              <p className="ui-text-md ui-text-white">
-                Balance: {formatBalance(Number(usdcBalance?.amount))} USDC{" "}
-                <span className="ui-text-white/50 ui-pl-2">
-                  ${formatBalance(Number(usdcBalance?.amount))} USD
-                </span>
-              </p>
-            </div>
-          </div>
+                <div className="ui-flex ui-flex-col ui-items-start">
+                  <p className="ui-text-md ui-font-bold ui-text-white">
+                    {balance.symbol.toUpperCase()}
+                  </p>
+                  <p className="ui-text-md ui-text-white">
+                    Balance: {balance.value} {balance.symbol.toUpperCase()}
+                    <span className="ui-text-white/50 ui-pl-2">
+                      ${balance.dollarValue.toFixed(2)} USD
+                    </span>
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
+        {/* End Dropdown Values */}
       </div>
     );
   };
@@ -171,14 +130,7 @@ export function WalletSendInput({
             <p className="ui-text-white ui-font-semibold">Amount</p>
             <p className="ui-text-white/50 ui-font-semibold">
               =$
-              {formatBalance(
-                Number(sendAmount) *
-                  1000000 *
-                  (selectedCurrency.type === "xion"
-                    ? XION_TO_USDC_CONVERSION
-                    : 1),
-              )}{" "}
-              USD
+              {Number(sendAmount) * selectedCurrency.price} USD
             </p>
           </div>
           <div
@@ -192,23 +144,14 @@ export function WalletSendInput({
               } ui-text-white ui-font-bold ui-text-5xl placeholder:ui-text-white/50 focus:ui-outline-none`}
               onChange={(e) => {
                 const value = e.target.value;
-                if (selectedCurrency?.type === "xion") {
-                  // Check if input is a number with up to 6 decimal places
-                  const regex = /^\d*\.?\d{0,6}$/;
-
-                  if (regex.test(value)) {
-                    handleAmountChange(e);
-                  }
-                } else {
-                  handleAmountChange(e);
-                }
+                handleAmountChange(e);
               }}
-              placeholder="Amount"
+              placeholder="0"
               type="number"
               value={sendAmount}
             />
             <p className="ui-text-5xl ui-font-bold ui-text-white/50">
-              {selectedCurrency.type.toUpperCase()}
+              {selectedCurrency.symbol.toUpperCase()}
             </p>
           </div>
           {amountError ? (

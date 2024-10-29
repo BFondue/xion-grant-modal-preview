@@ -1,27 +1,41 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo } from "react";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../hooks";
-import { XION_TO_USDC_CONVERSION } from "../components/Overview";
 import { getGasCalculation } from "../utils/gas-utils";
 import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../components/AbstraxionContext";
-import { BalanceInfo } from "../types";
+import { useBalances } from "./useBalances";
+import { useAssetList } from "./useAssetList";
+import type { Network } from "../types";
 
-export const usdcSearchDenom =
-  "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64";
-
-export function useAccountBalance() {
+export function useAccountBalance(network: Network = "testnet") {
   const { chainInfo } = useContext(AbstraxionContext) as AbstraxionContextProps;
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
-  const [balanceInfo, setBalanceInfo] = useState<BalanceInfo>({
-    total: 0,
-    balances: [],
-  });
+  const { data: balances, refetch: refetchBalances } = useBalances(account?.id);
+  const { data: assetList } = useAssetList(network);
 
-  async function fetchBalances() {
+  const { processedBalances, totalDollarValue } = useMemo(() => {
+    if (!assetList || !balances)
+      return { processedBalances: [], totalDollarValue: 0 };
+
+    const processed = assetList.processBalances(balances);
+    const total = processed.reduce(
+      (sum, balance) => sum + (balance.dollarValue || 0),
+      0,
+    );
+
+    return { processedBalances: processed, totalDollarValue: total };
+  }, [assetList, balances]);
+
+  async function sendTokens(
+    recipientAddress: string,
+    sendAmount: number,
+    denom: string,
+    memo: string,
+  ) {
     try {
       if (!account) {
         throw new Error("No account");
@@ -30,67 +44,57 @@ export function useAccountBalance() {
       if (!client) {
         throw new Error("No signing client");
       }
-      // TODO: Can we optimize balance fetching
-      const uxionBalance = await client.getBalance(account.id, "uxion");
-      const usdcBalance = await client.getBalance(account.id, usdcSearchDenom);
 
-      const uxionToUsd = Number(uxionBalance.amount) * XION_TO_USDC_CONVERSION;
+      if (!assetList) {
+        throw new Error("Asset list not available");
+      }
 
-      setBalanceInfo({
-        total: uxionToUsd + Number(usdcBalance.amount),
-        balances: [uxionBalance, usdcBalance],
-      });
+      const asset = assetList.getAssetByDenom(denom);
+      if (!asset) {
+        throw new Error(`Asset not found for denom: ${denom}`);
+      }
+
+      const convertedSendAmount = assetList.convertToBaseAmount(
+        sendAmount.toString(),
+        denom,
+      );
+
+      const msg = {
+        typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+        value: MsgSend.fromPartial({
+          fromAddress: account.id,
+          toAddress: recipientAddress,
+          amount: [{ denom, amount: convertedSendAmount }],
+        }),
+      };
+
+      const simmedGas = await client.simulate(account.id, [msg], `xion-send`);
+
+      const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+
+      const res = await client.signAndBroadcast(account.id, [msg], fee, memo);
+
+      if (res.rawLog?.includes("failed")) {
+        throw new Error(res.rawLog);
+      }
+
+      refetchBalances();
+      return res;
     } catch (error) {
-      console.error("Error fetching balances:", error);
+      throw error;
     }
   }
 
-  useEffect(() => {
-    if (account && client) {
-      fetchBalances();
-    }
-  }, [account, client]);
+  const getBalanceByDenom = (denom: string) => {
+    return processedBalances.find((balance) => balance.asset.base === denom);
+  };
 
-  async function sendTokens(
-    senderAddress: string,
-    sendAmount: number,
-    denom: string,
-    memo: string,
-  ) {
-    if (!account) {
-      throw new Error("No account");
-    }
-
-    if (!client) {
-      throw new Error("No signing client");
-    }
-
-    const convertedSendAmount = String(sendAmount * 1000000);
-
-    const msg = {
-      typeUrl: "/cosmos.bank.v1beta1.MsgSend",
-      value: MsgSend.fromPartial({
-        fromAddress: account.id,
-        toAddress: senderAddress,
-        amount: [{ denom, amount: convertedSendAmount }],
-      }),
-    };
-
-    const simmedGas = await client.simulate(account.id, [msg], `xion-send`);
-
-    const fee = getGasCalculation(simmedGas, chainInfo.chainId);
-
-    const res = await client.signAndBroadcast(account.id, [msg], fee, memo);
-
-    if (res.rawLog?.includes("failed")) {
-      throw new Error(res.rawLog);
-    }
-
-    fetchBalances(); // Update balances after successful token send
-    return res;
-  }
-
-  const memoizedBalanceInfo = useMemo(() => balanceInfo, [balanceInfo]);
-
-  return { balanceInfo: memoizedBalanceInfo, sendTokens };
+  return {
+    balances: processedBalances,
+    totalDollarValue,
+    sendTokens,
+    assetList,
+    refetchBalances,
+    getBalanceByDenom,
+  };
 }

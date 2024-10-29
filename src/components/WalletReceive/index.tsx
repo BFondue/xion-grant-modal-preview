@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@burnt-labs/ui";
 import { truncateAddress } from "../../utils";
-import { CopyIcon } from "../Icons";
+import { CopyIcon, CheckIcon } from "../Icons";
 import { QRCodeSVG } from "qrcode.react";
 
 export function WalletReceive({
@@ -19,10 +19,13 @@ export function WalletReceive({
   xionAddress: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const copyXionAddress = () => {
     if (xionAddress) {
       navigator.clipboard.writeText(xionAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 500);
     }
   };
 
@@ -53,7 +56,7 @@ export function WalletReceive({
             <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
               {truncateAddress(xionAddress)}
             </p>
-            <CopyIcon color="white" />
+            {copied ? <CheckIcon color="white" /> : <CopyIcon color="white" />}
           </div>
           <div className="ui-flex ui-items-center ui-justify-center ui-my-6 ui-p-6 ui-w-full ui-bg-black ui-rounded-lg">
             <QRCodeSVG value={"uxion:" + xionAddress} />
