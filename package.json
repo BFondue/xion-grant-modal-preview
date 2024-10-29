@@ -7,7 +7,9 @@
     "build": "vite build",
     "check-types": "tsc --noEmit",
     "preview": "vite preview",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format:check": "prettier . --check",
+    "format:fix": "prettier . --write"
   },
   "dependencies": {
     "@apollo/client": "^3.8.8",

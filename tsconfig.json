@@ -7,11 +7,7 @@
     "jsx": "preserve",
     "skipLibCheck": true,
     "types": ["vite/client"],
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "strict": false,
     "incremental": true,
@@ -24,10 +20,6 @@
       }
     ]
   },
-  "include": [
-    "**/*",
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["**/*"],
+  "exclude": ["node_modules"]
 }
