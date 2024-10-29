@@ -12,7 +12,7 @@ import { getGasCalculation } from "../../utils/gas-utils";
 
 type AbstraxionMigrateProps = {
   currentCodeId: number;
-  updateContractCodeID: () => Promise<void>;
+  updateContractCodeID: (codeId: number) => void;
 };
 
 /*
@@ -52,7 +52,7 @@ export const AbstraxionMigrate = ({
       const fee = getGasCalculation(simmedGas, chainInfo.chainId);
       await client.signAndBroadcast(account.id, [migrateMsg], fee);
 
-      void updateContractCodeID();
+      void updateContractCodeID(targetCodeId);
     } catch (error) {
       console.log("something went wrong: ", error);
       setAbstraxionError("Failed to migrate account.");

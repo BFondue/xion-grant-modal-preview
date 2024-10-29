@@ -23,8 +23,10 @@ import { AbstraxionMigrate } from "./AbstraxionMigrate";
 
 export const AccountInfo = ({
   account,
+  updateContractCodeID,
 }: {
   account?: SelectedSmartAccount;
+  updateContractCodeID: (codeId: number) => void;
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
@@ -150,9 +152,7 @@ export const AccountInfo = ({
       </div>
       <AbstraxionMigrate
         currentCodeId={account.codeId}
-        updateContractCodeID={async () => {
-          window.location.reload();
-        }}
+        updateContractCodeID={updateContractCodeID}
       />
       <RemoveAuthenticatorModal
         isOpen={isRemoveModalOpen}

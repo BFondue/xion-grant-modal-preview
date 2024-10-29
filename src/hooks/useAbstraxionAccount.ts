@@ -44,6 +44,13 @@ export const useAbstraxionAccount = () => {
     localStorage.getItem("loginAuthenticator"),
   );
 
+  const updateAbstractAccountCodeId = (codeId: number) => {
+    setAbstractAccount({
+      ...abstractAccount,
+      codeId,
+    });
+  };
+
   const { data: grazAccount, isConnected } = useAccount();
   const stytchClient = useStytch();
   const session_jwt = stytchClient.session.getTokens()?.session_jwt;
@@ -155,6 +162,7 @@ export const useAbstraxionAccount = () => {
   }, []);
 
   return {
+    updateAbstractAccountCodeId,
     data: abstractAccount || undefined,
     connectionType,
     loginAuthenticator: loginAuthenticatorMemo,

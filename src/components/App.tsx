@@ -17,7 +17,7 @@ export function App() {
     "grantee",
     "treasury",
   ]);
-  const { data: account } = useAbstraxionAccount();
+  const { data: account, updateAbstractAccountCodeId } = useAbstraxionAccount();
   const { isOpen, setIsOpen, isMainnet } = useContext(AbstraxionContext);
 
   const [showMobileSiderbar, setShowMobileSiderbar] = useState(false);
@@ -72,7 +72,10 @@ export function App() {
                     <h3 className="ui-font-akkuratLL ui-mb-4 ui-mt-8 ui-text-2xl ui-font-bold ui-text-white">
                       Account Info
                     </h3>
-                    <AccountInfo account={account} />
+                    <AccountInfo
+                      account={account}
+                      updateContractCodeID={updateAbstractAccountCodeId}
+                    />
                   </div>
                   {/* Right Tiles */}
                   {/* <div className="ui-hidden sm:ui-flex sm:ui-flex-1 sm:ui-flex-col"></div> */}
