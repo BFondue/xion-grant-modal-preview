@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite --port 3000",
+    "dev:mobile": "vite --port 3000 --host",
     "build": "vite build",
     "check-types": "tsc --noEmit",
     "preview": "vite preview",
@@ -15,7 +16,7 @@
     "@apollo/client": "^3.8.8",
     "@burnt-labs/abstraxion": "^1.0.0-alpha.48",
     "@burnt-labs/constants": "^0.1.0-alpha.11",
-    "@burnt-labs/ui": "^0.1.0-alpha.13",
+    "@burnt-labs/ui": "^0.1.0-alpha.15",
     "@cosmjs/crypto": "^0.32.2",
     "@cosmjs/proto-signing": "^0.32.2",
     "@cosmjs/stargate": "^0.32.2",

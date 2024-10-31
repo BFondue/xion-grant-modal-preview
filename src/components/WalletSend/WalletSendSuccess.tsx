@@ -66,7 +66,7 @@ export function WalletSendSuccess({
             {recipientAddress}
           </p>
         </div>
-        <Button onClick={() => handleConfirmClick()}>GOTCHA</Button>
+        <Button onClick={() => handleConfirmClick()}>CLOSE</Button>
       </div>
     </>
   );

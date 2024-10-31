@@ -59,7 +59,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   };
 
   return (
-    <div className="ui-h-screen ui-bg-primary ui-border-[#6C6A6A] ui-border-r-[1px] ui-text-white ui-flex ui-flex-col ui-w-64">
+    <div className="ui-min-h-dvh ui-bg-primary ui-border-[#6C6A6A] ui-border-r-[1px] ui-text-white ui-flex ui-flex-col ui-w-64">
       <div className="ui-flex ui-items-center ui-justify-between ui-px-8 ui-pt-8">
         <img src={xionLogo} alt="XION Logo" width="90" height="32" />
         {!onClose ? (

@@ -272,14 +272,15 @@ export const AbstraxionSignin = () => {
                 <input
                   key={index}
                   ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
                   maxLength={1}
                   value={digit}
                   autoFocus={index === 0}
                   onChange={(e) => handleInputChange(e.target.value, index)}
                   onPaste={(e) => handlePaste(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
-                  className={`ui-w-full ui-h-12 ui-text-center ui-text-white ui-border ui-rounded-md ui-outline-none ui-border-gray-500 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-text-lg ${
+                  className={`ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-base ui-border ui-rounded-md ui-outline-none ui-border-gray-500 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-text-lg ${
                     digit
                       ? "ui-bg-[rgba(255,255,255,0.1)]"
                       : "ui-bg-transparent"
@@ -350,7 +351,7 @@ export const AbstraxionSignin = () => {
             Log in / Sign up
           </Button>
           {shouldEnableOkx || shouldEnableMetamask ? (
-            <div className="ui-w-full">
+            <div className="ui-hidden ui-w-full md:ui-block">
               <button
                 className="ui-flex ui-text-white ui-text-sm ui-w-full ui-items-center ui-gap-3"
                 onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}

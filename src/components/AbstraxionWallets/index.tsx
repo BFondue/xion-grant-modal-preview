@@ -79,7 +79,7 @@ export const AbstraxionWallets = () => {
       {isGeneratingNewWallet ? (
         <Loading />
       ) : (
-        <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-start ui-justify-between ui-gap-8 sm:ui-p-10 ui-text-white">
+        <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-8 sm:ui-p-10 ui-text-white">
           <div className="ui-flex ui-flex-col ui-w-full ui-text-center">
             <h1 className="ui-font-akkuratLL ui-w-full ui-leading-[38.40px] ui-tracking-tighter ui-text-3xl ui-font-light ui-text-white ui-uppercase ui-mb-3">
               Welcome
@@ -92,7 +92,7 @@ export const AbstraxionWallets = () => {
             <div className="ui-text-white ui-text-base ui-font-bold ui-font-akkuratLL ui-leading-tight">
               Accounts
             </div>
-            <div className="ui-flex ui-max-h-64 ui-w-full ui-flex-col ui-items-center ui-gap-4 ui-overflow-auto">
+            <div className="ui-flex ui-max-h-[19rem] ui-w-full ui-flex-col ui-items-center ui-gap-4 ui-overflow-auto">
               {loading ? (
                 <Spinner />
               ) : data?.length >= 1 ? (
@@ -117,7 +117,10 @@ export const AbstraxionWallets = () => {
                       setIsOpen(false);
                     }}
                   >
-                    <WalletIcon color="white" backgroundColor="#363635" />
+                    <div className="ui-h-10 ui-w-10 ui-flex ui-justify-center ui-items-center ui-rounded-full ui-bg-black/30">
+                      <WalletIcon color="white" backgroundColor="#363635" />
+                    </div>
+
                     <div className="ui-flex ui-flex-col ui-gap-1">
                       <h1 className="ui-text-sm ui-font-bold ui-font-akkuratLL ui-leading-none">
                         Personal Account {i + 1}

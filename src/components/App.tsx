@@ -25,13 +25,13 @@ export function App() {
   return (
     <>
       {!account?.id || (grantee && (contracts || stake || bank || treasury)) ? (
-        <div className="ui-flex ui-h-screen ui-flex-1 ui-items-center ui-justify-center ui-overflow-y-auto ui-p-6">
+        <div className="ui-flex ui-w-full ui-h-svh ui-z-[10000] ui-fixed ui-flex-1 ui-items-center ui-justify-center ui-overflow-y-auto ui-p-6">
           <Abstraxion onClose={() => null} isOpen={true} />
         </div>
       ) : (
-        <div className="ui-flex ui-relative ui-h-screen">
+        <div className="ui-flex ui-relative ui-max-h-dvh">
           {showMobileSiderbar ? (
-            <div className="ui-absolute ui-h-screen ui-w-screen ui-bg-black ui-bg-opacity-20 ui-backdrop-blur-md ui-z-50">
+            <div className="ui-absolute ui-min-h-dvh ui-w-screen ui-bg-black ui-bg-opacity-20 ui-backdrop-blur-md ui-z-50">
               <Sidebar onClose={() => setShowMobileSiderbar(false)} />
             </div>
           ) : null}
@@ -80,6 +80,8 @@ export function App() {
                   {/* Right Tiles */}
                   {/* <div className="ui-hidden sm:ui-flex sm:ui-flex-1 sm:ui-flex-col"></div> */}
                 </div>
+                {/* Right Tiles */}
+                {/* <div className="ui-hidden sm:ui-flex sm:ui-flex-1 sm:ui-flex-col"></div> */}
               </div>
             </div>
           </div>

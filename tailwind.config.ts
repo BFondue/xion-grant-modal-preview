@@ -26,6 +26,9 @@ const config: Config = {
       fontFamily: {
         akkuratLL: ["var(--font-akkuratLL)"],
       },
+      padding: {
+        safe: "env(safe-area-inset-bottom)",
+      },
       typography: {
         navigation: {
           css: {

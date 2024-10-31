@@ -8,7 +8,7 @@ export function Landing() {
   const [, setShowModal] = useModal();
   return (
     <div
-      className="ui-flex ui-flex-col ui-w-screen ui-h-screen ui-bg-cover ui-bg-center"
+      className="ui-flex ui-flex-col ui-w-screen ui-min-h-dvh ui-bg-cover ui-bg-center"
       style={{ backgroundImage: `url('/landingBackground.png')` }}
     >
       <div className="ui-p-6">
