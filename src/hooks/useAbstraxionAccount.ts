@@ -74,6 +74,9 @@ export const useAbstraxionAccount = () => {
       case "okx":
         authenticator = loginAuthenticator || "";
         break;
+      case "passkey":
+        authenticator = loginAuthenticator || "";
+        break;
       case "none":
         authenticator = "";
         break;
@@ -175,6 +178,8 @@ export const useAbstraxionAccount = () => {
             ? window.ethereum.isConnected()
             : connectionType === "okx"
               ? localStorage.getItem("loginAuthenticator")
-              : false,
+              : connectionType === "passkey"
+                ? localStorage.getItem("loginAuthenticator")
+                : false,
   };
 };

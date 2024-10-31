@@ -1,6 +1,7 @@
 import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import { useAccount, useSuggestChainAndConnect, WalletType } from "graz";
-import { Button, MetamaskLogo, Spinner } from "@burnt-labs/ui";
+import { create } from "@github/webauthn-json/browser-ponyfill";
+import { Button, PasskeyIcon, Spinner } from "@burnt-labs/ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -9,9 +10,15 @@ import { useAbstraxionSigningClient } from "../../../hooks";
 import { encodeHex } from "../../../utils";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
 import { AAAlgo } from "../../../signers";
+import {
+  registeredCredentials,
+  saveRegistration,
+} from "../../../utils/webauthn-utils";
+import { MetamaskLogo } from "../../Icons";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
+const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
@@ -21,8 +28,7 @@ const shouldEnableOkx =
 const shouldEnableMetamask =
   deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && metamaskFlag);
 
-// TODO: Add webauthn to this and remove "disable" prop from button when implemented
-type AuthenticatorStates = "none" | "keplr" | "metamask" | "okx";
+type AuthenticatorStates = "none" | "keplr" | "metamask" | "okx" | "passkey";
 
 export function AddAuthenticatorsForm({
   setIsOpen,
@@ -74,6 +80,9 @@ export function AddAuthenticatorsForm({
         break;
       case "okx":
         await addOkxAuthenticator();
+        break;
+      case "passkey":
+        await addPasskeyAuthenticator();
         break;
       default:
         break;
@@ -287,6 +296,96 @@ export function AddAuthenticatorsForm({
     }
   }
 
+  async function addPasskeyAuthenticator() {
+    try {
+      setIsLoading(true);
+
+      const challenge = Buffer.from(abstractAccount?.id);
+      let RP_URL = window.location.href;
+      // Contract throws if there is a trailing "/" in the RP url
+      if (RP_URL.endsWith("/")) {
+        RP_URL = RP_URL.slice(0, -1);
+      }
+
+      const options: CredentialCreationOptions = {
+        publicKey: {
+          rp: {
+            name: RP_URL,
+          },
+          user: {
+            name: abstractAccount.id,
+            displayName: abstractAccount.id,
+            id: new Uint8Array(challenge),
+          },
+          pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+          challenge,
+          authenticatorSelection: { userVerification: "preferred" },
+          timeout: 300000, // 5 minutes,
+          excludeCredentials: registeredCredentials(abstractAccount.id),
+        },
+      };
+
+      const publicKeyCredential = await create(options);
+      if (publicKeyCredential === null) {
+        console.log("null credential");
+        return;
+      }
+      // stringify the credential
+      const publicKeyCredentialJSON = JSON.stringify(publicKeyCredential);
+
+      // base64 encode it
+      const base64EncodedCredential = Buffer.from(
+        publicKeyCredentialJSON,
+      ).toString("base64");
+
+      const accountIndex = findLowestMissingOrNextIndex(
+        abstractAccount?.authenticators,
+      );
+
+      const msg = {
+        add_auth_method: {
+          add_authenticator: {
+            Passkey: {
+              id: accountIndex,
+              url: RP_URL,
+              credential: base64EncodedCredential,
+            },
+          },
+        },
+      };
+
+      const res = await client?.addAbstractAccountAuthenticator(msg, "");
+
+      if (!res) {
+        throw new Error("something went wrong with the tx");
+      }
+
+      if (res?.rawLog?.includes("failed")) {
+        throw new Error(res.rawLog);
+      }
+
+      saveRegistration(abstractAccount.id, publicKeyCredential);
+      postAddFunction();
+      return res;
+    } catch (error) {
+      console.warn(error);
+      if (error instanceof DOMException) {
+        if (
+          error.message.includes(
+            "The user attempted to register an authenticator that contains one of the credentials already registered with the relying party.",
+          )
+        ) {
+          alert("Authenticator already registered");
+        }
+      } else {
+        // Handle non-DOMExceptions
+        console.error("An unexpected error occurred:", error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
       <div className="ui-flex ui-flex-col ui-gap-2">
@@ -337,7 +436,7 @@ export function AddAuthenticatorsForm({
               onClick={() => handleSwitch("metamask")}
               structure="outlined"
             >
-              <MetamaskLogo />
+              <MetamaskLogo className="ui-w-12" />
             </Button>
             <Button
               className={
@@ -349,9 +448,17 @@ export function AddAuthenticatorsForm({
             >
               <img src="/okxWallet.png" height={48} width={48} alt="OKX Logo" />
             </Button>
-            {/* <Button disabled structure="outlined">
+            <Button
+              className={`ui-relative ${selectedAuthenticator === "passkey" ? "!ui-border-white" : ""}`}
+              disabled={!shouldEnablePasskey}
+              onClick={() => handleSwitch("passkey")}
+              structure="outlined"
+            >
+              <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-xs ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[.28rem]">
+                BETA
+              </span>
               <PasskeyIcon className="ui-w-12" />
-            </Button> */}
+            </Button>
           </div>
         </>
       ) : null}

@@ -14,6 +14,7 @@ import {
 import { getKeplr, useOfflineSigners } from "graz";
 import { testnetChainInfo } from "@burnt-labs/constants";
 import { getEnvStringOrThrow } from "../utils";
+import { AAPasskeySigner } from "../signers/signers/passkey-signer";
 
 export const useAbstraxionSigningClient = () => {
   const { connectionType, abstractAccount, chainInfo } = useContext(
@@ -59,6 +60,7 @@ export const useAbstraxionSigningClient = () => {
       | AbstractAccountJWTSigner
       | AADirectSigner
       | AAEthSigner
+      | AAPasskeySigner
       | undefined = undefined;
 
     switch (connectionType) {
@@ -113,6 +115,12 @@ export const useAbstraxionSigningClient = () => {
             ethSigningFn,
           );
         }
+        break;
+      case "passkey":
+        signer = new AAPasskeySigner(
+          abstractAccount.id,
+          abstractAccount.currentAuthenticatorIndex,
+        );
         break;
       case "none":
         signer = undefined;

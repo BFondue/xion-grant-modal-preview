@@ -1,6 +1,6 @@
 import { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
 
-export type authenticatorTypes = "SECP256K1" | "ETHWALLET" | "JWT";
+export type authenticatorTypes = "SECP256K1" | "ETHWALLET" | "JWT" | "PASSKEY";
 
 export type Network = "testnet" | "mainnet";
 

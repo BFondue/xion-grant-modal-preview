@@ -3,7 +3,13 @@ import { getEnvStringOrThrow } from "../../utils";
 import { ChainInfo } from "@burnt-labs/constants";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 
-export type ConnectionType = "stytch" | "graz" | "metamask" | "okx" | "none";
+export type ConnectionType =
+  | "stytch"
+  | "graz"
+  | "metamask"
+  | "okx"
+  | "passkey"
+  | "none";
 
 export interface AbstraxionContextProps {
   connectionType: ConnectionType;

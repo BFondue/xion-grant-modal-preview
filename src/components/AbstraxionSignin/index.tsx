@@ -1,6 +1,6 @@
 import React, { UIEvent, useContext, useEffect, useRef, useState } from "react";
 import { useStytch } from "@stytch/react";
-import { Button, Input, MetamaskLogo, ModalSection } from "@burnt-labs/ui";
+import { Button, Input, ModalSection, PasskeyIcon } from "@burnt-labs/ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -8,11 +8,18 @@ import {
 import { getHumanReadablePubkey } from "../../utils";
 
 import okxLogo from "../../assets/okx-logo.png";
+import {
+  convertToStandardBase64,
+  registeredCredentials,
+} from "../../utils/webauthn-utils";
+import { MetamaskLogo } from "../Icons";
+import { get } from "@github/webauthn-json/browser-ponyfill";
 
 type OtpCode = [string, string, string, string, string, string];
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
-const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
+const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
+const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
@@ -212,6 +219,29 @@ export const AbstraxionSignin = () => {
     }
   }
 
+  const getPasskey = async () => {
+    try {
+      const options: CredentialRequestOptions = {
+        publicKey: {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          allowCredentials: registeredCredentials(),
+          userVerification: "preferred",
+        },
+      };
+
+      const publicKeyCredential = await get(options);
+      if (!publicKeyCredential) throw new Error("Error getting webauthn key");
+      setConnectionType("passkey");
+      localStorage.setItem(
+        "loginAuthenticator",
+        convertToStandardBase64(publicKeyCredential.id),
+      );
+      localStorage.setItem("loginType", "passkey");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // For the "resend otp" countdown
   useEffect(() => {
     if (timeLeft === 0) {
@@ -358,9 +388,21 @@ export const AbstraxionSignin = () => {
                       fullWidth={true}
                       onClick={handleMetamask}
                       structure="outlined"
-                      className="ui-mb-16 sm:ui-mb-0"
                     >
                       <MetamaskLogo />
+                    </Button>
+                  ) : null}
+                  {shouldEnablePasskey ? (
+                    <Button
+                      className="ui-relative ui-rounded-md"
+                      fullWidth={true}
+                      onClick={getPasskey}
+                      structure="outlined"
+                    >
+                      <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-xs ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[.28rem]">
+                        BETA
+                      </span>
+                      <PasskeyIcon />
                     </Button>
                   ) : null}
                 </div>

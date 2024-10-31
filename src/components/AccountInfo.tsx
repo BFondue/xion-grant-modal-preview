@@ -4,6 +4,7 @@ import {
   Button,
   EmailIcon,
   EthereumLogo,
+  PasskeyIcon,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -48,6 +49,8 @@ export const AccountInfo = ({
         return "EVM WALLET";
       case "JWT":
         return "EMAIL";
+      case "PASSKEY":
+        return "PASSKEY";
       default:
         return "";
     }
@@ -69,6 +72,8 @@ export const AccountInfo = ({
         return <EthereumLogo />;
       case "JWT":
         return <EmailIcon />;
+      case "PASSKEY":
+        return <PasskeyIcon />;
       default:
         return <AccountWalletLogo />;
     }

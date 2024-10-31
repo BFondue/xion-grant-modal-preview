@@ -4,6 +4,7 @@ import {
   Button,
   EmailIcon,
   EthereumLogo,
+  PasskeyIcon,
   Spinner,
 } from "@burnt-labs/ui";
 import {
@@ -13,6 +14,8 @@ import {
 import { useAbstraxionSigningClient } from "../../../hooks";
 import type { authenticatorTypes } from "../../../types";
 import { Authenticator } from "../../../indexer-strategies/types";
+import { AAAlgo } from "../../../signers";
+import { removeRegistration } from "../../../utils/webauthn-utils";
 
 export function RemoveAuthenticatorForm({
   authenticator,
@@ -41,6 +44,8 @@ export function RemoveAuthenticatorForm({
         return "EVM WALLET";
       case "JWT":
         return "EMAIL";
+      case "PASSKEY":
+        return "PASSKEY";
       default:
         return "";
     }
@@ -62,6 +67,8 @@ export function RemoveAuthenticatorForm({
         return <EthereumLogo />;
       case "JWT":
         return <EmailIcon />;
+      case "PASSKEY":
+        return <PasskeyIcon />;
       default:
         return <AccountWalletLogo />;
     }
@@ -137,6 +144,10 @@ export function RemoveAuthenticatorForm({
             id != `${abstractAccount.id}-${authenticator.authenticatorIndex}`,
         ),
       });
+
+      if (authenticator.type === AAAlgo.Passkey) {
+        removeRegistration(abstractAccount.id, authenticator.authenticator);
+      }
 
       setIsLoading(false);
       setIsOpen(false);
