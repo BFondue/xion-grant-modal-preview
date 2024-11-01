@@ -255,7 +255,7 @@ export const AbstraxionSignin = () => {
   }, [timeLeft]);
 
   return (
-    <ModalSection className="!ui-justify-center sm:ui-py-5 sm:ui-px-7">
+    <ModalSection className="!ui-justify-center ui-mb-20 sm:ui-mb-0">
       {isOnOtpStep ? (
         <>
           <div className="ui-flex ui-flex-col ui-w-full ui-text-center">
@@ -296,19 +296,13 @@ export const AbstraxionSignin = () => {
               {otpError}
             </p>
           </div>
-
           <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
-            <Button
-              className="ui-mt-7"
-              fullWidth={true}
-              onClick={handleOtp}
-              disabled={!isOtpValid}
-            >
+            <Button fullWidth={true} onClick={handleOtp} disabled={!isOtpValid}>
               Confirm
             </Button>
 
             {timeLeft ? (
-              <div className="ui-text-sm ui-pt-3 ui-mt-3 ui-text-inactive">
+              <div className="ui-text-sm ui-text-inactive">
                 RESEND {`IN ${timeLeft}S`}
               </div>
             ) : (

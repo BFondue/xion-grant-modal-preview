@@ -120,7 +120,7 @@ export function WalletSendInput({
 
   return (
     <>
-      <div className="ui-flex ui-flex-col ui-p-0 ui-gap-y-4 ui-max-h-full ui-overflow-y-auto ui-mt-2">
+      <div className="ui-flex ui-flex-col ui-p-0 ui-gap-y-4 ui-max-h-full ui-overflow-y-auto">
         <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
           SEND
         </h1>
@@ -148,6 +148,7 @@ export function WalletSendInput({
               }}
               placeholder="0"
               type="number"
+              inputMode="numeric"
               value={sendAmount}
             />
             <p className="ui-text-5xl ui-font-bold ui-text-white/50">

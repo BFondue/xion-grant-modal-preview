@@ -271,7 +271,11 @@ export const AbstraxionGrant = ({
               A 3rd party would like:
             </h1>
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mt-8" />
-            <ul className="ui-my-8 ui-list-disc ui-list-none">
+            <ul
+              // TailwindCSS does not have a utility for this behavior.
+              style={{ overflowWrap: "anywhere" }}
+              className="ui-my-8 ui-list-disc ui-list-none"
+            >
               {treasury ? (
                 permissions.map((permission, i) => (
                   <li
