@@ -103,7 +103,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
             </a>
             <span className="ui-text-neutral-400">.</span>
           </div>
-          <div className="ui-flex ui-gap-2 ui-justify-center ui-items-end ui-my-6 sm:ui-my-0">
+          <div className="ui-flex ui-gap-2 ui-justify-center ui-items-end ui-mt-2 sm:ui-my-0">
             <p className="ui-font-akkuratLL ui-text-sm ui-text-zinc-100 ui-opacity-50 leading-tight">
               Powered by
             </p>
