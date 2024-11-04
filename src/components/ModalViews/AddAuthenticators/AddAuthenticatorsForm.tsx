@@ -7,7 +7,6 @@ import {
   AbstraxionContextProps,
 } from "../../AbstraxionContext";
 import { useAbstraxionSigningClient } from "../../../hooks";
-import { encodeHex } from "../../../utils";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
 import { AAAlgo } from "../../../signers";
 import {
@@ -238,18 +237,17 @@ export function AddAuthenticatorsForm({
       });
       const primaryAccount = accounts[0];
 
-      const encoder = new TextEncoder();
-      const ten = encodeHex(Buffer.from(encoder.encode(abstractAccount?.id)));
+      const challenge = `0x${Buffer.from(abstractAccount?.id, "utf8").toString("hex")}`;
 
       const ethSignature = await window.ethereum.request<string>({
         method: "personal_sign",
-        params: [ten, primaryAccount],
+        params: [challenge, primaryAccount],
       });
 
-      const byteArray = new Uint8Array(
-        ethSignature.match(/[\da-f]{2}/gi).map((hex) => parseInt(hex, 16)),
-      );
-      const base64String = btoa(String.fromCharCode.apply(null, byteArray));
+      const base64Signature = Buffer.from(
+        ethSignature.slice(2),
+        "hex",
+      ).toString("base64");
 
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount?.authenticators,
@@ -261,7 +259,7 @@ export function AddAuthenticatorsForm({
             EthWallet: {
               id: accountIndex,
               address: primaryAccount,
-              signature: base64String,
+              signature: base64Signature,
             },
           },
         },
