@@ -345,7 +345,7 @@ export const AbstraxionSignin = () => {
             Log in / Sign up
           </Button>
           {shouldEnableOkx || shouldEnableMetamask ? (
-            <div className="ui-hidden ui-w-full md:ui-block">
+            <div className="ui-w-full ui-mb-12 sm:ui-mb-0">
               <button
                 className="ui-flex ui-text-white ui-text-sm ui-w-full ui-items-center ui-gap-3"
                 onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
