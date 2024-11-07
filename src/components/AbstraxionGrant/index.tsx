@@ -192,13 +192,30 @@ export const AbstraxionGrant = ({
 
         fee = getGasCalculation(simmedGas, chainInfo.chainId);
 
+        // Check if fee grant exists
+        const feeGranter = getEnvStringOrThrow(
+          "VITE_FEE_GRANTER_ADDRESS",
+          import.meta.env.VITE_FEE_GRANTER_ADDRESS,
+        );
+        const baseUrl = `${chainInfo.rest}/cosmos/feegrant/v1beta1/allowance/${feeGranter}/${grantee}`;
+        let isFeegranted = false;
+        await fetch(baseUrl, {
+          cache: "no-store",
+        }).then((res) => {
+          if (res.ok) {
+            isFeegranted = true;
+          }
+        });
+
+        if (!isFeegranted) {
+          // Throw user into catch block to perform tx without fee granter
+          throw new Error("No feegrant exists for this account");
+        }
+
         // Attempt to sign and broadcast the transaction using the fee granter
         deliverTxResponse = await client.signAndBroadcast(account.id, msgs, {
           ...fee,
-          granter: getEnvStringOrThrow(
-            "VITE_FEE_GRANTER_ADDRESS",
-            import.meta.env.VITE_FEE_GRANTER_ADDRESS,
-          ),
+          granter: feeGranter,
         });
       } catch {
         // This account doesn't have the fee grant, trying without fee grant.
