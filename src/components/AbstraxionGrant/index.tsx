@@ -197,7 +197,7 @@ export const AbstraxionGrant = ({
           "VITE_FEE_GRANTER_ADDRESS",
           import.meta.env.VITE_FEE_GRANTER_ADDRESS,
         );
-        const baseUrl = `${chainInfo.rest}/cosmos/feegrant/v1beta1/allowance/${feeGranter}/${grantee}`;
+        const baseUrl = `${chainInfo.rest}/cosmos/feegrant/v1beta1/allowance/${feeGranter}/${granter}`;
         let isFeegranted = false;
         await fetch(baseUrl, {
           cache: "no-store",
