@@ -60,7 +60,6 @@ export const AbstraxionSignin = () => {
   };
 
   const handleInputChange = (value: string, index: number) => {
-    console.log("input changed");
     setOtpError(null);
 
     if (value === "") {

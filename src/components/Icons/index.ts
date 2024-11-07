@@ -9,3 +9,5 @@ export { WalletIcon } from "./Wallet";
 export { CloseIcon } from "./Close";
 export { XionIcon } from "./Xion";
 export { MetamaskLogo } from "./Metamask";
+export { EyeIcon } from "./Eye";
+export { EyeOffIcon } from "./EyeOff";

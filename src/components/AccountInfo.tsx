@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   AccountWalletLogo,
   Button,
@@ -10,10 +10,12 @@ import {
   PopoverTrigger,
   TrashIcon,
 } from "@burnt-labs/ui";
-import { CopyIcon } from "../components/Icons";
+import { CopyIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import { truncateAddress } from "../utils";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
 import type { authenticatorTypes } from "../types";
+
+import { useStytchUser } from "@stytch/react";
 
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
 import {
@@ -21,6 +23,7 @@ import {
   SelectedSmartAccount,
 } from "../indexer-strategies/types";
 import { AbstraxionMigrate } from "./AbstraxionMigrate";
+import { AbstraxionContext } from "./AbstraxionContext";
 
 export const AccountInfo = ({
   account,
@@ -34,6 +37,9 @@ export const AccountInfo = ({
   const [authenticatorToRemove, setAuthenticatorToRemove] = useState<
     Authenticator | undefined
   >();
+  const [showUserEmail, setShowUserEmail] = useState(false);
+  const { isMainnet } = useContext(AbstraxionContext);
+  const { user } = useStytchUser();
 
   const copyXIONAddress = () => {
     if (account?.id) {
@@ -44,13 +50,13 @@ export const AccountInfo = ({
   const handleAuthenticatorLabels = (type: authenticatorTypes) => {
     switch (type) {
       case "SECP256K1":
-        return "OKX WALLET";
+        return "OKX Wallet";
       case "ETHWALLET":
-        return "EVM WALLET";
+        return "EVM Wallet";
       case "JWT":
-        return "EMAIL";
+        return "Email";
       case "PASSKEY":
-        return "PASSKEY";
+        return "Passkey";
       default:
         return "";
     }
@@ -81,32 +87,75 @@ export const AccountInfo = ({
 
   const renderAuthenticators = () => {
     return account?.authenticators.map((authenticator) => {
+      const currentAuthenticator =
+        account?.currentAuthenticatorIndex === authenticator.authenticatorIndex;
+      let email = "";
+      if (authenticator.type === "Jwt") {
+        email = user.emails[0].email;
+      }
       return (
         <div
           key={authenticator.id}
-          className="ui-flex ui-items-center ui-px-4 ui-mb-3 ui-h-16 ui-bg-black ui-rounded-lg"
+          className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-mb-3 ui-h-16 ui-bg-black ui-rounded-lg"
         >
-          <div className="ui-flex ui-w-10 ui-h-10 ui-bg-white/20 ui-items-center ui-justify-center ui-rounded-full">
-            {handleAuthenticatorLogos(
-              authenticator.type.toUpperCase() as authenticatorTypes,
-            )}
-          </div>
-          <div className="ui-ml-4 ui-flex ui-flex-1 ui-items-center ui-justify-between">
-            <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
-              {handleAuthenticatorLabels(
+          <div className="ui-flex ui-items-center">
+            <div className="ui-flex ui-w-10 ui-h-10 ui-bg-white/20 ui-items-center ui-justify-center ui-rounded-full">
+              {handleAuthenticatorLogos(
                 authenticator.type.toUpperCase() as authenticatorTypes,
               )}
-            </p>
+            </div>
+            <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
+              <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
+                {handleAuthenticatorLabels(
+                  authenticator.type.toUpperCase() as authenticatorTypes,
+                )}
+              </p>
+            </div>
+            {showUserEmail && (
+              <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
+                <p className="ui-text-[#6C6A6A] ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
+                  {email}
+                </p>
+              </div>
+            )}
+            {currentAuthenticator && (
+              <div
+                className={`ui-ml-4 ui-p-1 ui-rounded ui-flex ui-border ${
+                  isMainnet ? "ui-border-mainnet-bg" : "ui-border-testnet-bg"
+                }`}
+              >
+                <p
+                  className={`${
+                    isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
+                  } ui-text-xs ui-font-normal ui-font-akkuratLL ui-leading-normal`}
+                >
+                  Active Session
+                </p>
+              </div>
+            )}
           </div>
-          <button
-            className="ui-text-white"
-            onClick={() => {
-              setAuthenticatorToRemove(authenticator);
-              setIsRemoveModalOpen(true);
-            }}
-          >
-            <TrashIcon />
-          </button>
+
+          <div className="ui-flex ui-items-center">
+            {authenticator.type === "Jwt" && (
+              <button
+                className="ui-text-white ui-mr-4"
+                onClick={() => {
+                  setShowUserEmail(!showUserEmail);
+                }}
+              >
+                {showUserEmail ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            )}
+            <button
+              className="ui-text-white"
+              onClick={() => {
+                setAuthenticatorToRemove(authenticator);
+                setIsRemoveModalOpen(true);
+              }}
+            >
+              <TrashIcon />
+            </button>
+          </div>
         </div>
       );
     });
