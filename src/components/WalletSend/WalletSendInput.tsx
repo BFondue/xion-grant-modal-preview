@@ -84,11 +84,19 @@ export function WalletSendInput({
             showDropdown ? "ui-absolute ui-left-0" : "ui-hidden"
           } ui-w-full ui-rounded-bl-lg ui-rounded-br-lg ui-bg-black ui-border-t ui-border-white/20`}
         >
-          {balances.map((balance) => {
+          {balances.map((balance, index) => {
             if (balance.symbol === selectedCurrency.symbol) return null;
+            const isLast =
+              index ===
+              balances.filter((b) => b.symbol !== selectedCurrency.symbol)
+                .length;
+
             return (
               <div
-                className="ui-flex ui-items-center ui-p-4 ui-bg-black ui-rounded-lg hover:ui-cursor-pointer hover:ui-bg-white/10"
+                className={`ui-flex ui-items-center ui-p-4 ui-bg-black hover:ui-cursor-pointer hover:ui-bg-white/20 ${
+                  isLast ? "ui-rounded-b-lg" : ""
+                }`}
+                key={index + balance.symbol}
                 onClick={() => switchSelectedCurrency(balance.asset.base)}
               >
                 <div className="ui-mr-2">
