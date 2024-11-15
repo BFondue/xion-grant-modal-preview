@@ -26,6 +26,7 @@ import { useQueryParams } from "../../hooks/useQueryParams";
 import { PermissionDescription } from "../../types/treasury-types";
 import { generateTreasuryGrants } from "../../utils/generate-treasury-grants";
 import { queryTreasuryContract } from "../../utils/query-treasury-contract";
+import { isContractGrantConfigValid } from "../../utils/contract-grant-check";
 import { LegacyGrantPermissions } from "./legacyGrantPermissions";
 
 interface AbstraxionGrantProps {
@@ -52,6 +53,7 @@ export const AbstraxionGrant = ({
   ) as AbstraxionContextProps;
 
   const [inProgress, setInProgress] = useState(false);
+  const [inCheckProgress, setInCheckProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [permissions, setPermissions] = useState<PermissionDescription[]>([]);
 
@@ -257,6 +259,28 @@ export const AbstraxionGrant = ({
     }
   }, [client]);
 
+  useEffect(() => {
+    const validateContracts = () => {
+      setInCheckProgress(true);
+
+      try {
+        if (contracts.length > 0) {
+          const isValid = isContractGrantConfigValid(contracts, account);
+
+          if (!isValid) {
+            setAbstraxionError(
+              "Invalid contract grant configuration detected. Please reach out to the DAPP team to resolve this issue.",
+            );
+          }
+        }
+      } finally {
+        setInCheckProgress(false);
+      }
+    };
+
+    validateContracts();
+  }, [contracts, account]);
+
   if (inProgress) {
     return (
       <div className="ui-w-full ui-h-full ui-min-h-[500px] ui-flex ui-items-center ui-justify-center ui-text-white">
@@ -317,7 +341,7 @@ export const AbstraxionGrant = ({
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mb-8" />
             <div className="ui-w-full ui-flex ui-flex-col ui-gap-4">
               <Button
-                disabled={inProgress || !client}
+                disabled={inProgress || inCheckProgress || !client}
                 structure="base"
                 fullWidth={true}
                 onClick={grant}
