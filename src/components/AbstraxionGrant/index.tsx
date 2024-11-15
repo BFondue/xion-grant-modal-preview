@@ -6,8 +6,7 @@ import {
 import { StdFee } from "@cosmjs/stargate";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Button, Spinner } from "@burnt-labs/ui";
-import { CheckIcon } from "../Icons";
+import { Button, CheckIcon, Spinner } from "../ui";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
 import { generateBankGrant } from "../../components/AbstraxionGrant/generateBankGrant";

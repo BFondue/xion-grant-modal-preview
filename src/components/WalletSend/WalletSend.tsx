@@ -1,13 +1,12 @@
 import React, { ReactElement, useState } from "react";
+import { WalletSendForm } from "./WalletSendForm";
 import {
   CloseIcon,
   Dialog,
   DialogClose,
   DialogContent,
   DialogTrigger,
-} from "@burnt-labs/ui";
-import { DeliverTxResponse } from "@cosmjs/stargate";
-import { WalletSendForm } from "./WalletSendForm";
+} from "../ui";
 
 export function WalletSend({ trigger }: { trigger: ReactElement }) {
   const [isOpen, setIsOpen] = useState(false);

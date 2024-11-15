@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   AccountWalletLogo,
   Button,
+  CopyIcon,
   EmailIcon,
   EthereumLogo,
   PasskeyIcon,
@@ -9,12 +10,10 @@ import {
   PopoverContent,
   PopoverTrigger,
   TrashIcon,
-} from "@burnt-labs/ui";
-import { CopyIcon } from "../components/Icons";
+} from "./ui";
 import { truncateAddress } from "../utils";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
 import type { authenticatorTypes } from "../types";
-
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
 import {
   Authenticator,

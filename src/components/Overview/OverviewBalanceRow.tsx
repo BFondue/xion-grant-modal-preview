@@ -1,3 +1,4 @@
+import React from "react";
 import { FormattedAssetAmount } from "../../types/assets";
 
 export const OverviewBalanceRow = ({
@@ -7,9 +8,6 @@ export const OverviewBalanceRow = ({
   label: string;
   asset: FormattedAssetAmount;
 }) => {
-  const userLocales = navigator.languages || [navigator.language];
-  const userLocale = userLocales[0];
-
   return (
     <div className="ui-flex ui-items-center ui-justify-between ui-mb-3">
       <p className="ui-font-akkuratLL ui-text-base ui-font-normal ui-leading-normal ui-text-white">

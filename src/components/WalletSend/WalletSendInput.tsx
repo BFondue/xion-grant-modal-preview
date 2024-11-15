@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input, ChevronDown } from "@burnt-labs/ui";
+import { Button, ChevronDownIcon, Input } from "../ui";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import type { FormattedAssetAmount } from "../../types/assets";
 
@@ -75,7 +75,7 @@ export function WalletSendInput({
               </p>
             </div>
           </div>
-          <ChevronDown isUp={showDropdown} />
+          <ChevronDownIcon isUp={showDropdown} />
         </div>
 
         {/* Dropdown Values - iterate over balances that are not the selected currency */}
@@ -151,7 +151,6 @@ export function WalletSendInput({
                 sendAmount === "0" && "!ui-text-[#6C6A6A]"
               } ui-text-white ui-font-bold ui-text-5xl placeholder:ui-text-white/50 focus:ui-outline-none`}
               onChange={(e) => {
-                const value = e.target.value;
                 handleAmountChange(e);
               }}
               placeholder="0"

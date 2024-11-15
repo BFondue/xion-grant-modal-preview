@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@burnt-labs/ui";
+import { Button } from "../ui";
 import type { FormattedAssetAmount } from "../../types/assets";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 

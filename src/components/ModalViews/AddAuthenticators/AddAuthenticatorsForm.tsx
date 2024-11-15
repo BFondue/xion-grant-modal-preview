@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import { useAccount, useSuggestChainAndConnect, WalletType } from "graz";
 import { create } from "@github/webauthn-json/browser-ponyfill";
-import { Button, PasskeyIcon, Spinner } from "@burnt-labs/ui";
+import { Button, MetamaskLogo, PasskeyIcon, Spinner } from "../../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -13,7 +13,6 @@ import {
   registeredCredentials,
   saveRegistration,
 } from "../../../utils/webauthn-utils";
-import { MetamaskLogo } from "../../Icons";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";

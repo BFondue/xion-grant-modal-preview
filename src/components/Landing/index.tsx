@@ -1,6 +1,6 @@
 import React from "react";
 import { useModal } from "@burnt-labs/abstraxion";
-import { Button } from "@burnt-labs/ui";
+import { Button } from "../ui";
 
 import xionLogo from "../../assets/logo.png";
 

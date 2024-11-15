@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useState } from "react";
-import { DeliverTxResponse } from "@cosmjs/stargate";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { useAbstraxionAccount } from "../../hooks";
 import { isValidWalletAddress } from "../../utils";
@@ -9,7 +8,11 @@ import { WalletSendSuccess } from "./WalletSendSuccess";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
 import { isMainnet } from "../../utils";
 
-export function WalletSendForm({ setIsOpen }: { setIsOpen: any }) {
+export function WalletSendForm({
+  setIsOpen,
+}: {
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const { data: account } = useAbstraxionAccount();
   const { balances, sendTokens, getBalanceByDenom } = useAccountBalance(
     isMainnet ? "mainnet" : "testnet",

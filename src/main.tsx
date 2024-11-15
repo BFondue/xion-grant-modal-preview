@@ -8,7 +8,6 @@ import { AbstraxionContextProvider } from "./components/AbstraxionContext";
 import { App } from "./components/App";
 
 import "./index.css";
-import "@burnt-labs/ui/dist/index.css";
 import { BrowserRouter } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

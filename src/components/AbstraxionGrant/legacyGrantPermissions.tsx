@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ContractGrantDescription } from "@burnt-labs/abstraxion";
-import { CheckIcon, ChevronDownIcon } from "../Icons";
+import { CheckIcon, ChevronDownIcon } from "../ui";
 
 interface LegacyGrantPermissionsArgs {
   contracts?: ContractGrantDescription[];
