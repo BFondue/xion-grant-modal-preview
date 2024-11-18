@@ -12,6 +12,7 @@ import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
 import { generateBankGrant } from "../../components/AbstraxionGrant/generateBankGrant";
 import { generateContractGrant } from "../../components/AbstraxionGrant/generateContractGrant";
 import { generateStakeGrant } from "../../components/AbstraxionGrant/generateStakeGrant";
+import { generateGovernanceGrant } from "../../components/AbstraxionGrant/generateGovernanceGrant";
 import { getEnvStringOrThrow } from "../../utils";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { getGasCalculation } from "../../utils/gas-utils";
@@ -167,6 +168,9 @@ export const AbstraxionGrant = ({
     if (stake) {
       msgs.push(
         ...generateStakeGrant(timestampThreeMonthsFromNow, grantee, granter),
+      );
+
+      msgs.push( ...generateGovernanceGrant( timestampThreeMonthsFromNow, grantee, granter),
       );
     }
 
