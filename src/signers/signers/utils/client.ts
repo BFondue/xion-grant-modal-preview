@@ -163,7 +163,7 @@ export class AAClient extends SigningCosmWasmClient {
       value: MsgExecuteContract.fromPartial({
         sender,
         contract: sender,
-        msg: Buffer.from(JSON.stringify(msg), "utf-8"),
+        msg: new Uint8Array(Buffer.from(JSON.stringify(msg), "utf-8")),
         funds: [],
       }),
     };
@@ -193,7 +193,7 @@ export class AAClient extends SigningCosmWasmClient {
       value: MsgExecuteContract.fromPartial({
         sender,
         contract: sender,
-        msg: Buffer.from(JSON.stringify(msg), "utf-8"),
+        msg: new Uint8Array(Buffer.from(JSON.stringify(msg), "utf-8")),
         funds: [],
       }),
     };
@@ -393,7 +393,7 @@ export class AAClient extends SigningCosmWasmClient {
     return TxRaw.fromPartial({
       bodyBytes,
       authInfoBytes,
-      signatures: [Buffer.from(signature, "base64")],
+      signatures: [new Uint8Array(Buffer.from(signature, "base64"))],
     });
   }
 }

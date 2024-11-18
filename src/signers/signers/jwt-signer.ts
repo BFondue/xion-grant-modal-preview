@@ -103,7 +103,7 @@ export class AbstractAccountJWTSigner extends AASigner {
     if (this.sessionToken === undefined) {
       throw new Error("stytch session token is undefined");
     }
-    const hashSignBytes = sha256(Buffer.from(message, "utf-8"));
+    const hashSignBytes = sha256(new Uint8Array(Buffer.from(message, "utf-8")));
     const hashedMessage = Buffer.from(hashSignBytes).toString("base64");
 
     const authResponse = await fetch(

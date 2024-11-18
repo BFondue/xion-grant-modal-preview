@@ -105,7 +105,7 @@ export function AddAuthenticatorsForm({
       const signArbRes = await window.keplr.signArbitrary(
         chainInfo.chainId,
         grazAccount?.bech32Address,
-        signArbMessage,
+        new Uint8Array(signArbMessage),
       );
 
       const accountIndex = findLowestMissingOrNextIndex(
@@ -172,7 +172,7 @@ export function AddAuthenticatorsForm({
       const signArbRes = await window.okxwallet.keplr.signArbitrary(
         chainInfo.chainId,
         okxAccount.bech32Address,
-        signArbMessage,
+        new Uint8Array(signArbMessage),
       );
 
       const accountIndex = findLowestMissingOrNextIndex(

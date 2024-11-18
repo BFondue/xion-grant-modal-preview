@@ -8,10 +8,12 @@ import { EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { Button, CheckIcon, Spinner } from "../ui";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
-import { generateBankGrant } from "../../components/AbstraxionGrant/generateBankGrant";
-import { generateContractGrant } from "../../components/AbstraxionGrant/generateContractGrant";
-import { generateStakeGrant } from "../../components/AbstraxionGrant/generateStakeGrant";
+import { generateBankGrant } from "./generateBankGrant";
+import {
+  ContractGrantDescription,
+  generateContractGrant,
+} from "./generateContractGrant";
+import { generateStakeGrant } from "./generateStakeGrant";
 import { generateGovernanceGrant } from "../../components/AbstraxionGrant/generateGovernanceGrant";
 import { getEnvStringOrThrow } from "../../utils";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
@@ -116,7 +118,9 @@ export const AbstraxionGrant = ({
             value: MsgExecuteContract.fromPartial({
               sender: account.id,
               contract: treasury,
-              msg: Buffer.from(JSON.stringify(deployFeeGrantMsg)),
+              msg: new Uint8Array(
+                Buffer.from(JSON.stringify(deployFeeGrantMsg)),
+              ),
               funds: [],
             }),
           },
@@ -170,7 +174,12 @@ export const AbstraxionGrant = ({
         ...generateStakeGrant(timestampThreeMonthsFromNow, grantee, granter),
       );
 
-      msgs.push( ...generateGovernanceGrant( timestampThreeMonthsFromNow, grantee, granter),
+      msgs.push(
+        ...generateGovernanceGrant(
+          timestampThreeMonthsFromNow,
+          grantee,
+          granter,
+        ),
       );
     }
 
