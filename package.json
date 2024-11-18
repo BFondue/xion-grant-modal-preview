@@ -13,7 +13,6 @@
     "format:fix": "prettier . --write"
   },
   "dependencies": {
-    "@apollo/client": "^3.8.8",
     "@burnt-labs/abstraxion": "^1.0.0-alpha.48",
     "@burnt-labs/constants": "^0.1.0-alpha.11",
     "@cosmjs/crypto": "^0.32.2",
