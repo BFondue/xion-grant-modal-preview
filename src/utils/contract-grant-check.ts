@@ -1,5 +1,5 @@
-import { ContractGrantDescription } from "@burnt-labs/abstraxion";
 import { SelectedSmartAccount } from "../indexer-strategies/types";
+import { ContractGrantDescription } from "../components/AbstraxionGrant/generateContractGrant";
 
 /**
  * Checks if any of the contract grant configurations are the current smart account (granter)
