@@ -13,8 +13,7 @@ import {
   ContractGrantDescription,
   generateContractGrant,
 } from "./generateContractGrant";
-import { generateStakeGrant } from "./generateStakeGrant";
-import { generateGovernanceGrant } from "../../components/AbstraxionGrant/generateGovernanceGrant";
+import { generateStakeAndGovGrant } from "./generateStakeAndGovGrant";
 import { getEnvStringOrThrow } from "../../utils";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { getGasCalculation } from "../../utils/gas-utils";
@@ -171,11 +170,7 @@ export const AbstraxionGrant = ({
 
     if (stake) {
       msgs.push(
-        ...generateStakeGrant(timestampThreeMonthsFromNow, grantee, granter),
-      );
-
-      msgs.push(
-        ...generateGovernanceGrant(
+        ...generateStakeAndGovGrant(
           timestampThreeMonthsFromNow,
           grantee,
           granter,
