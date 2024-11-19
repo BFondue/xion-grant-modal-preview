@@ -96,43 +96,47 @@ export const AccountInfo = ({
       return (
         <div
           key={authenticator.id}
-          className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-mb-3 ui-h-16 ui-bg-black ui-rounded-lg"
+          className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-2 ui-mb-3 ui-min-h-16 ui-bg-black ui-rounded-lg"
         >
-          <div className="ui-flex ui-items-center">
+          <div className="ui-flex ui-flex-1 ui-items-center">
             <div className="ui-flex ui-w-10 ui-h-10 ui-bg-white/20 ui-items-center ui-justify-center ui-rounded-full">
               {handleAuthenticatorLogos(
                 authenticator.type.toUpperCase() as authenticatorTypes,
               )}
             </div>
-            <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
-              <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
-                {handleAuthenticatorLabels(
-                  authenticator.type.toUpperCase() as authenticatorTypes,
-                )}
-              </p>
-            </div>
-            {showUserEmail && (
-              <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
-                <p className="ui-text-[#6C6A6A] ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
-                  {email}
-                </p>
-              </div>
-            )}
-            {currentAuthenticator && (
-              <div
-                className={`ui-ml-4 ui-p-1 ui-rounded ui-flex ui-border ${
-                  isMainnet ? "ui-border-mainnet-bg" : "ui-border-testnet-bg"
-                }`}
-              >
-                <p
-                  className={`${
-                    isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
-                  } ui-text-xs ui-font-normal ui-font-akkuratLL ui-leading-normal`}
+            <div className="ui-flex ui-flex-1 ui-pr-1 ui-items-start md:!ui-items-center ui-flex-col-reverse md:!ui-flex-row">
+              {authenticator.type === "Jwt" && showUserEmail ? null : (
+                <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
+                  <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
+                    {handleAuthenticatorLabels(
+                      authenticator.type.toUpperCase() as authenticatorTypes,
+                    )}
+                  </p>
+                </div>
+              )}
+              {showUserEmail && (
+                <div className="ui-ml-4 ui-flex ui-items-center ui-max-w-full ui-justify-between">
+                  <p className="ui-text-[#6C6A6A] ui-break-all ui-max-w-full ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
+                    {email}
+                  </p>
+                </div>
+              )}
+              {currentAuthenticator && (
+                <div
+                  className={`ui-ml-4 ui-p-1 ui-rounded ui-flex ui-border ${
+                    isMainnet ? "ui-border-mainnet-bg" : "ui-border-testnet-bg"
+                  }`}
                 >
-                  Active Session
-                </p>
-              </div>
-            )}
+                  <p
+                    className={`${
+                      isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
+                    } ui-text-xs ui-whitespace-nowrap ui-font-normal ui-font-akkuratLL ui-leading-normal`}
+                  >
+                    Active Session
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="ui-flex ui-items-center">

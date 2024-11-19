@@ -39,7 +39,7 @@ export function App() {
             <Sidebar />
           </div>
 
-          <div className="ui-flex ui-flex-1 ui-flex-col">
+          <div className="ui-flex ui-flex-1 ui-max-w-full ui-flex-col">
             <div className="ui-flex sm:!ui-hidden  ui-justify-between ui-items-center ui-bg-black ui-p-6 ui-border-b-[1px] ui-border-[#6C6A6A]">
               <div className="ui-flex ui-items-center">
                 <img src={xionLogo} alt="XION Logo" width="90" height="32" />
@@ -64,7 +64,7 @@ export function App() {
                 {/* Tiles */}
                 <div className="ui-mx-auto ui-flex ui-max-w-7xl">
                   {/* Left Tiles */}
-                  <div className="ui-flex-grow-2 ui-flex ui-flex-col">
+                  <div className="ui-flex-grow-2 ui-flex ui-flex-col ui-max-w-full">
                     <h3 className="ui-font-akkuratLL ui-mb-4 ui-text-2xl ui-text-white ui-font-bold">
                       Overview
                     </h3>
