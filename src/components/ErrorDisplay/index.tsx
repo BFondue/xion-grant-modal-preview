@@ -1,9 +1,9 @@
 import React, { useContext } from "react";
+import { Button } from "../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../AbstraxionContext";
-import { Button } from "@burnt-labs/ui";
 
 export const ErrorDisplay = ({
   title = "OOPS! Something went wrong...",

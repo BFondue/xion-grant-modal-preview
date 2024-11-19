@@ -2,21 +2,21 @@ import React, { useContext, useState } from "react";
 import {
   AccountWalletLogo,
   Button,
+  CopyIcon,
   EmailIcon,
   EthereumLogo,
   PasskeyIcon,
   Popover,
+  EyeIcon,
+  EyeOffIcon,
   PopoverContent,
   PopoverTrigger,
   TrashIcon,
-} from "@burnt-labs/ui";
-import { CopyIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
+} from "./ui";
+import { useStytchUser } from "@stytch/react";
 import { truncateAddress } from "../utils";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
 import type { authenticatorTypes } from "../types";
-
-import { useStytchUser } from "@stytch/react";
-
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
 import {
   Authenticator,

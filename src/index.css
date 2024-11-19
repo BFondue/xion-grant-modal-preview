@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .ui-no-spinner {
+    -moz-appearance: textfield;
+  }
+  .ui-no-spinner::-webkit-outer-spin-button,
+  .ui-no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+
 @font-face {
   font-family: "AkkuratLL";
   src: url("/fonts/AkkuratLLWeb-Thin.woff2") format("woff2");

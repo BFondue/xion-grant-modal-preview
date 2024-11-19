@@ -1,4 +1,3 @@
-import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
 import {
   AllowAllMessagesFilter,
   CombinedLimit,
@@ -6,6 +5,15 @@ import {
   MaxCallsLimit,
 } from "cosmjs-types/cosmwasm/wasm/v1/authz";
 import { MsgGrant } from "cosmjs-types/cosmos/authz/v1beta1/tx";
+
+export type SpendLimit = { denom: string; amount: string };
+
+export type ContractGrantDescription =
+  | string
+  | {
+      address: string;
+      amounts: SpendLimit[];
+    };
 
 export const generateContractGrant = (
   expiration: bigint,

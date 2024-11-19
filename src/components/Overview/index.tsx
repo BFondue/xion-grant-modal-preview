@@ -1,7 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { RightArrowIcon, ScanIcon } from "../ui";
 import type { SmartAccount } from "../../indexer-strategies/types";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
-import { RightArrowIcon, ScanIcon } from "../Icons";
 import { WalletSend } from "../WalletSend/WalletSend";
 import { WalletReceive } from "../WalletReceive";
 import { Divider } from "./Divider";
@@ -11,7 +11,7 @@ import { isMainnet } from "../../utils";
 
 export const Overview = ({ account }: { account?: SmartAccount }) => {
   const [showAllBalances, setShowAllBalances] = useState(false);
-  const { balances, totalDollarValue, sendTokens } = useAccountBalance(
+  const { balances, totalDollarValue } = useAccountBalance(
     isMainnet ? "mainnet" : "testnet",
   );
 

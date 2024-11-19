@@ -3,7 +3,7 @@ import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../../components/AbstraxionContext";
-import { Dialog, DialogContent } from "@burnt-labs/ui";
+import { Dialog, DialogContent } from "../ui";
 import { AbstraxionSignin } from "../../components/AbstraxionSignin";
 import { useAbstraxionAccount } from "../../hooks";
 import { AbstraxionWallets } from "../../components/AbstraxionWallets";

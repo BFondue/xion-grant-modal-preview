@@ -6,13 +6,14 @@ import {
 import { StdFee } from "@cosmjs/stargate";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Button, Spinner } from "@burnt-labs/ui";
-import { CheckIcon } from "../Icons";
+import { Button, CheckIcon, Spinner } from "../ui";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import type { ContractGrantDescription } from "@burnt-labs/abstraxion";
-import { generateBankGrant } from "../../components/AbstraxionGrant/generateBankGrant";
-import { generateContractGrant } from "../../components/AbstraxionGrant/generateContractGrant";
-import { generateStakeGrant } from "../../components/AbstraxionGrant/generateStakeGrant";
+import { generateBankGrant } from "./generateBankGrant";
+import {
+  ContractGrantDescription,
+  generateContractGrant,
+} from "./generateContractGrant";
+import { generateStakeAndGovGrant } from "./generateStakeAndGovGrant";
 import { getEnvStringOrThrow } from "../../utils";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { getGasCalculation } from "../../utils/gas-utils";
@@ -26,6 +27,7 @@ import { useQueryParams } from "../../hooks/useQueryParams";
 import { PermissionDescription } from "../../types/treasury-types";
 import { generateTreasuryGrants } from "../../utils/generate-treasury-grants";
 import { queryTreasuryContract } from "../../utils/query-treasury-contract";
+import { isContractGrantConfigValid } from "../../utils/contract-grant-check";
 import { LegacyGrantPermissions } from "./legacyGrantPermissions";
 
 interface AbstraxionGrantProps {
@@ -52,6 +54,7 @@ export const AbstraxionGrant = ({
   ) as AbstraxionContextProps;
 
   const [inProgress, setInProgress] = useState(false);
+  const [inCheckProgress, setInCheckProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [permissions, setPermissions] = useState<PermissionDescription[]>([]);
 
@@ -114,7 +117,9 @@ export const AbstraxionGrant = ({
             value: MsgExecuteContract.fromPartial({
               sender: account.id,
               contract: treasury,
-              msg: Buffer.from(JSON.stringify(deployFeeGrantMsg)),
+              msg: new Uint8Array(
+                Buffer.from(JSON.stringify(deployFeeGrantMsg)),
+              ),
               funds: [],
             }),
           },
@@ -165,7 +170,11 @@ export const AbstraxionGrant = ({
 
     if (stake) {
       msgs.push(
-        ...generateStakeGrant(timestampThreeMonthsFromNow, grantee, granter),
+        ...generateStakeAndGovGrant(
+          timestampThreeMonthsFromNow,
+          grantee,
+          granter,
+        ),
       );
     }
 
@@ -192,13 +201,30 @@ export const AbstraxionGrant = ({
 
         fee = getGasCalculation(simmedGas, chainInfo.chainId);
 
+        // Check if fee grant exists
+        const feeGranter = getEnvStringOrThrow(
+          "VITE_FEE_GRANTER_ADDRESS",
+          import.meta.env.VITE_FEE_GRANTER_ADDRESS,
+        );
+        const baseUrl = `${chainInfo.rest}/cosmos/feegrant/v1beta1/allowance/${feeGranter}/${granter}`;
+        let isFeegranted = false;
+        await fetch(baseUrl, {
+          cache: "no-store",
+        }).then((res) => {
+          if (res.ok) {
+            isFeegranted = true;
+          }
+        });
+
+        if (!isFeegranted) {
+          // Throw user into catch block to perform tx without fee granter
+          throw new Error("No feegrant exists for this account");
+        }
+
         // Attempt to sign and broadcast the transaction using the fee granter
         deliverTxResponse = await client.signAndBroadcast(account.id, msgs, {
           ...fee,
-          granter: getEnvStringOrThrow(
-            "VITE_FEE_GRANTER_ADDRESS",
-            import.meta.env.VITE_FEE_GRANTER_ADDRESS,
-          ),
+          granter: feeGranter,
         });
       } catch {
         // This account doesn't have the fee grant, trying without fee grant.
@@ -239,6 +265,28 @@ export const AbstraxionGrant = ({
       query();
     }
   }, [client]);
+
+  useEffect(() => {
+    const validateContracts = () => {
+      setInCheckProgress(true);
+
+      try {
+        if (contracts.length > 0) {
+          const isValid = isContractGrantConfigValid(contracts, account);
+
+          if (!isValid) {
+            setAbstraxionError(
+              "Invalid contract grant configuration detected. Please reach out to the DAPP team to resolve this issue.",
+            );
+          }
+        }
+      } finally {
+        setInCheckProgress(false);
+      }
+    };
+
+    validateContracts();
+  }, [contracts, account]);
 
   if (inProgress) {
     return (
@@ -300,7 +348,7 @@ export const AbstraxionGrant = ({
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mb-8" />
             <div className="ui-w-full ui-flex ui-flex-col ui-gap-4">
               <Button
-                disabled={inProgress || !client}
+                disabled={inProgress || inCheckProgress || !client}
                 structure="base"
                 fullWidth={true}
                 onClick={grant}

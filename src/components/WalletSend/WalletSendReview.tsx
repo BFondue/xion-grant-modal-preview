@@ -1,4 +1,5 @@
-import { Button } from "@burnt-labs/ui";
+import React from "react";
+import { Button } from "../ui";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import { FormattedAssetAmount } from "../../types/assets";
 

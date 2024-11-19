@@ -1,15 +1,16 @@
 import React, { ReactElement, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import {
   Button,
+  CheckIcon,
   CloseIcon,
+  CopyIcon,
   Dialog,
   DialogClose,
   DialogContent,
   DialogTrigger,
-} from "@burnt-labs/ui";
+} from "../ui";
 import { truncateAddress } from "../../utils";
-import { CopyIcon, CheckIcon } from "../Icons";
-import { QRCodeSVG } from "qrcode.react";
 
 export function WalletReceive({
   trigger,

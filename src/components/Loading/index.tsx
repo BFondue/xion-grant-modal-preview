@@ -1,5 +1,5 @@
 import React from "react";
-import { ModalSection, Spinner } from "@burnt-labs/ui";
+import { ModalSection, Spinner } from "../ui";
 
 export const Loading = () => {
   return (

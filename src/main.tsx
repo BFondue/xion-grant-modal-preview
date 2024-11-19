@@ -1,14 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { StytchProvider } from "@stytch/react";
-import { ApolloProvider } from "@apollo/client";
 import { GrazProvider } from "graz";
-import { apolloClient, stytchClient } from "./lib";
+import { stytchClient } from "./lib";
 import { AbstraxionContextProvider } from "./components/AbstraxionContext";
 import { App } from "./components/App";
 
 import "./index.css";
-import "@burnt-labs/ui/dist/index.css";
 import { BrowserRouter } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -16,11 +14,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AbstraxionContextProvider>
         <StytchProvider stytch={stytchClient}>
-          <ApolloProvider client={apolloClient}>
-            <GrazProvider>
-              <App />
-            </GrazProvider>
-          </ApolloProvider>
+          <GrazProvider>
+            <App />
+          </GrazProvider>
         </StytchProvider>
       </AbstraxionContextProvider>
     </BrowserRouter>

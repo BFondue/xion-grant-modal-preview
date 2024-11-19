@@ -1,16 +1,15 @@
 import React, { useCallback, useContext, useState } from "react";
 import { useStytch } from "@stytch/react";
-import { Button, Spinner } from "@burnt-labs/ui";
+import { Loading } from "../Loading";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../AbstraxionContext";
 import { truncateAddress } from "../../utils";
 import { useAbstraxionAccount } from "../../hooks";
-import { Loading } from "../Loading";
-import { WalletIcon } from "../Icons";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { useNumiaSmartAccounts } from "../../hooks/useNumiaSmartAccounts";
+import { Button, Spinner, WalletIcon } from "../ui";
 
 export const AbstraxionWallets = () => {
   const {

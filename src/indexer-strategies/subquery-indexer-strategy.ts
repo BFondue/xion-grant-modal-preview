@@ -1,7 +1,35 @@
 import axios from "axios";
-import {IndexerStrategy, SmartAccountWithCodeId} from "./types";
-import {AllSmartWalletQueryResponse} from "../utils/queries";
-import {CosmWasmClient} from "@cosmjs/cosmwasm-stargate";
+import { IndexerStrategy, SmartAccountWithCodeId } from "./types";
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+
+interface SmartAccountAuthenticator {
+  id: string;
+  type: string;
+  authenticator: string;
+  authenticatorIndex: number;
+  version: string;
+  __typename: string;
+}
+
+interface SmartAccountAuthenticatorsConnection {
+  nodes: SmartAccountAuthenticator[];
+  __typename: string;
+}
+
+interface SmartAccount {
+  id: string;
+  authenticators: SmartAccountAuthenticatorsConnection;
+  __typename: string;
+}
+
+interface SmartAccountsConnection {
+  nodes: SmartAccount[];
+  __typename: string;
+}
+
+export interface AllSmartWalletQueryResponse {
+  smartAccounts: SmartAccountsConnection;
+}
 
 export class SubqueryIndexerStrategy implements IndexerStrategy {
   constructor(private readonly indexerUrl: string) {}
@@ -9,7 +37,7 @@ export class SubqueryIndexerStrategy implements IndexerStrategy {
   private _rpcUrl: string;
 
   set rpcUrl(url: string) {
-    if(url && url.length > 0) {
+    if (url && url.length > 0) {
       this._rpcUrl = url;
     } else {
       throw new Error("rpcUrl must be a non-empty string.");
@@ -17,17 +45,19 @@ export class SubqueryIndexerStrategy implements IndexerStrategy {
   }
 
   async fetchSmartAccounts(
-    loginAuthenticator: string
+    loginAuthenticator: string,
   ): Promise<SmartAccountWithCodeId[]> {
-    if(!this._rpcUrl || this._rpcUrl.length === 0) {
+    if (!this._rpcUrl || this._rpcUrl.length === 0) {
       throw new Error("rpcUrl must be a non-empty string.");
     }
 
     const client = await CosmWasmClient.connect(this._rpcUrl);
 
     console.log("fetching smart accounts from subquery indexer");
-    const { data } = await axios.post<{ data: AllSmartWalletQueryResponse}>(this.indexerUrl, {
-      query: `fragment SmartAccountFragment on SmartAccountAuthenticator {
+    const { data } = await axios.post<{ data: AllSmartWalletQueryResponse }>(
+      this.indexerUrl,
+      {
+        query: `fragment SmartAccountFragment on SmartAccountAuthenticator {
                     id
                     type
                     authenticator
@@ -50,10 +80,11 @@ export class SubqueryIndexerStrategy implements IndexerStrategy {
                       }
                     }
                   }`,
-      variables: {
-        authenticator: loginAuthenticator,
+        variables: {
+          authenticator: loginAuthenticator,
+        },
       },
-    });
+    );
 
     const smartAccounts = data.data.smartAccounts.nodes.map((node) => {
       return {
@@ -65,7 +96,7 @@ export class SubqueryIndexerStrategy implements IndexerStrategy {
             authenticator: node.authenticator,
             authenticatorIndex: node.authenticatorIndex,
           };
-        })
+        }),
       };
     });
 
@@ -79,6 +110,6 @@ export class SubqueryIndexerStrategy implements IndexerStrategy {
       });
     }
 
-    return results
+    return results;
   }
 }

@@ -9,24 +9,6 @@ import { Uint64 } from "@cosmjs/math";
 import { AbstractAccount } from "../../types/generated/abstractaccount/v1/account";
 import { assert } from "@cosmjs/utils";
 import { accountFromAny } from "@cosmjs/stargate/build/accounts";
-import {
-  ApolloClient,
-  InMemoryCache,
-  NormalizedCacheObject,
-} from "@apollo/client";
-
-let apolloClientInstance: ApolloClient<NormalizedCacheObject>;
-
-export const getApolloClient = (url?: string) => {
-  if (!apolloClientInstance) {
-    apolloClientInstance = new ApolloClient({
-      uri: url || "https://api.subquery.network/sq/burnt-labs/xion-indexer",
-      cache: new InMemoryCache(),
-      assumeImmutableResults: true,
-    });
-  }
-  return apolloClientInstance;
-};
 
 export type INodes<T> = {
   nodes: Array<T>;

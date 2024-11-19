@@ -6,7 +6,7 @@ import {
   EthereumLogo,
   PasskeyIcon,
   Spinner,
-} from "@burnt-labs/ui";
+} from "../../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,

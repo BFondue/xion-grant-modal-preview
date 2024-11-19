@@ -1,7 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
 import React, { useContext } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { AbstraxionContext, AbstraxionContextProps } from "./AbstraxionContext";
-import { CloseIcon, WalletIcon } from "./Icons";
+import { CloseIcon, WalletIcon } from "./ui";
 
 import xionLogo from "../assets/logo.png";
 
@@ -73,7 +73,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             {isMainnet ? "MAINNET" : "TESTNET"}
           </div>
         ) : (
-          <CloseIcon color="#6C6A6A" onClick={onClose} />
+          <CloseIcon onClick={onClose} />
         )}
       </div>
 

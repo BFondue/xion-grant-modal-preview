@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Input, ChevronDown } from "@burnt-labs/ui";
+import { Button, ChevronDownIcon, Input } from "../ui";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import type { FormattedAssetAmount } from "../../types/assets";
 
@@ -75,7 +75,7 @@ export function WalletSendInput({
               </p>
             </div>
           </div>
-          <ChevronDown isUp={showDropdown} />
+          <ChevronDownIcon isUp={showDropdown} />
         </div>
 
         {/* Dropdown Values - iterate over balances that are not the selected currency */}
@@ -84,11 +84,19 @@ export function WalletSendInput({
             showDropdown ? "ui-absolute ui-left-0" : "ui-hidden"
           } ui-w-full ui-rounded-bl-lg ui-rounded-br-lg ui-bg-black ui-border-t ui-border-white/20`}
         >
-          {balances.map((balance) => {
+          {balances.map((balance, index) => {
             if (balance.symbol === selectedCurrency.symbol) return null;
+            const isLast =
+              index ===
+              balances.filter((b) => b.symbol !== selectedCurrency.symbol)
+                .length;
+
             return (
               <div
-                className="ui-flex ui-items-center ui-p-4 ui-bg-black ui-rounded-lg hover:ui-cursor-pointer hover:ui-bg-white/10"
+                className={`ui-flex ui-items-center ui-p-4 ui-bg-black hover:ui-cursor-pointer hover:ui-bg-white/20 ${
+                  isLast ? "ui-rounded-b-lg" : ""
+                }`}
+                key={index + balance.symbol}
                 onClick={() => switchSelectedCurrency(balance.asset.base)}
               >
                 <div className="ui-mr-2">
@@ -143,7 +151,6 @@ export function WalletSendInput({
                 sendAmount === "0" && "!ui-text-[#6C6A6A]"
               } ui-text-white ui-font-bold ui-text-5xl placeholder:ui-text-white/50 focus:ui-outline-none`}
               onChange={(e) => {
-                const value = e.target.value;
                 handleAmountChange(e);
               }}
               placeholder="0"

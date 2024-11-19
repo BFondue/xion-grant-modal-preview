@@ -1,13 +1,13 @@
 import React, { useContext, useState } from "react";
-import { Button, Spinner } from "@burnt-labs/ui";
-import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
+import { MsgMigrateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { Uint53 } from "@cosmjs/math";
+import { toUtf8 } from "@cosmjs/encoding";
+import { Button, Spinner } from "../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../AbstraxionContext";
-import { MsgMigrateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Uint53 } from "@cosmjs/math";
-import { toUtf8 } from "@cosmjs/encoding";
+import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { getGasCalculation } from "../../utils/gas-utils";
 
 type AbstraxionMigrateProps = {

@@ -1,19 +1,17 @@
 import React, { UIEvent, useContext, useEffect, useRef, useState } from "react";
 import { useStytch } from "@stytch/react";
-import { Button, Input, ModalSection, PasskeyIcon } from "@burnt-labs/ui";
+import { get } from "@github/webauthn-json/browser-ponyfill";
+import { Button, Input, MetamaskLogo, ModalSection, PasskeyIcon } from "../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../AbstraxionContext";
 import { getHumanReadablePubkey } from "../../utils";
-
-import okxLogo from "../../assets/okx-logo.png";
 import {
   convertToStandardBase64,
   registeredCredentials,
 } from "../../utils/webauthn-utils";
-import { MetamaskLogo } from "../Icons";
-import { get } from "@github/webauthn-json/browser-ponyfill";
+import okxLogo from "../../assets/okx-logo.png";
 
 type OtpCode = [string, string, string, string, string, string];
 
@@ -279,7 +277,7 @@ export const AbstraxionSignin = () => {
                   onChange={(e) => handleInputChange(e.target.value, index)}
                   onPaste={(e) => handlePaste(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
-                  className={`ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-base ui-border ui-rounded-md ui-outline-none ui-border-gray-500 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-text-lg ${
+                  className={`ui-no-spinner ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-base ui-border ui-rounded-md ui-outline-none ui-border-gray-500 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-text-lg ${
                     digit
                       ? "ui-bg-[rgba(255,255,255,0.1)]"
                       : "ui-bg-transparent"
