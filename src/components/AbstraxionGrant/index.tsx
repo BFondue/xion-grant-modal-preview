@@ -6,7 +6,7 @@ import {
 import { StdFee } from "@cosmjs/stargate";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Button, CheckIcon, Spinner } from "../ui";
+import { Button, CheckIcon, Spinner, ChevronDownIcon } from "../ui";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { generateBankGrant } from "./generateBankGrant";
 import {
@@ -49,14 +49,17 @@ export const AbstraxionGrant = ({
   const { data: account } = useAbstraxionAccount();
   const { redirect_uri } = useQueryParams(["redirect_uri"]);
   const { xionDisconnect } = useXionDisconnect();
-  const { chainInfo, setAbstraxionError } = useContext(
+  const { chainInfo, abstraxionError, setAbstraxionError } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
   const [inProgress, setInProgress] = useState(false);
+  const [isTreasuryQueryLoading, setIsTreasuryQueryLoading] = useState(false);
   const [inCheckProgress, setInCheckProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [permissions, setPermissions] = useState<PermissionDescription[]>([]);
+  const [isContractsOpen, setContractsOpen] = useState(false);
+  const toggleContractsList = () => setContractsOpen(!isContractsOpen);
 
   useEffect(function redirectToDapp() {
     if (showSuccess && redirect_uri) {
@@ -77,25 +80,30 @@ export const AbstraxionGrant = ({
   });
 
   const grant = async () => {
-    setInProgress(true);
-    if (!client) {
-      throw new Error("no client");
-    }
+    try {
+      setInProgress(true);
+      // Extra check for security
+      if (abstraxionError) {
+        throw new Error("There's been an error. Cannot continue.");
+      }
 
-    if (!account) {
-      throw new Error("no account");
-    }
+      if (!client) {
+        throw new Error("no client");
+      }
 
-    const granter = account.id;
-    const timestampThreeMonthsFromNow = BigInt(
-      Math.floor(
-        new Date(new Date().setMonth(new Date().getMonth() + 3)).getTime() /
-          1000,
-      ),
-    );
+      if (!account) {
+        throw new Error("no account");
+      }
 
-    if (treasury) {
-      try {
+      const granter = account.id;
+      const timestampThreeMonthsFromNow = BigInt(
+        Math.floor(
+          new Date(new Date().setMonth(new Date().getMonth() + 3)).getTime() /
+            1000,
+        ),
+      );
+
+      if (treasury) {
         const grantMsgs = await generateTreasuryGrants(
           treasury,
           client,
@@ -146,27 +154,21 @@ export const AbstraxionGrant = ({
         });
 
         setShowSuccess(true);
-      } catch (error) {
-        console.warn(error);
-      } finally {
-        setInProgress(false);
+        return;
       }
 
-      return;
-    }
+      const msgs: EncodeObject[] = [];
 
-    const msgs: EncodeObject[] = [];
-
-    if (contracts.length > 0) {
-      msgs.push(
-        generateContractGrant(
-          timestampThreeMonthsFromNow,
-          grantee,
-          granter,
-          contracts,
-        ),
-      );
-    }
+      if (contracts.length > 0) {
+        msgs.push(
+          generateContractGrant(
+            timestampThreeMonthsFromNow,
+            grantee,
+            granter,
+            contracts,
+          ),
+        );
+      }
 
     if (stake) {
       msgs.push(
@@ -178,13 +180,17 @@ export const AbstraxionGrant = ({
       );
     }
 
-    if (bank.length > 0) {
-      msgs.push(
-        generateBankGrant(timestampThreeMonthsFromNow, grantee, granter, bank),
-      );
-    }
+      if (bank.length > 0) {
+        msgs.push(
+          generateBankGrant(
+            timestampThreeMonthsFromNow,
+            grantee,
+            granter,
+            bank,
+          ),
+        );
+      }
 
-    try {
       if (msgs.length === 0) {
         throw new Error("No grants to send");
       }
@@ -239,24 +245,30 @@ export const AbstraxionGrant = ({
       }
 
       setShowSuccess(true);
-      setInProgress(false);
     } catch (error) {
-      setInProgress(false);
       console.log("something went wrong: ", error);
       setAbstraxionError(error.message);
+    } finally {
+      setInProgress(false);
     }
   };
 
   const query = useCallback(async () => {
     try {
+      setIsTreasuryQueryLoading(true);
       const permissionDescriptions = await queryTreasuryContract(
         treasury,
         client,
+        account.id,
       );
 
       setPermissions(permissionDescriptions);
-    } catch (error) {
-      console.warn(error);
+    } catch {
+      setAbstraxionError(
+        "Invalid contract grant configuration detected. Please reach out to the DAPP team to resolve this issue.",
+      );
+    } finally {
+      setIsTreasuryQueryLoading(false);
     }
   }, [client, permissions]);
 
@@ -333,8 +345,35 @@ export const AbstraxionGrant = ({
                     <span className="ui-mr-2">
                       <CheckIcon color="white" />
                     </span>
-                    &quot;{permission.dappDescription}&quot; -{" "}
-                    {permission.authorizationDescription}
+                    <div className="ui-flex ui-flex-col">
+                      <div className="ui-flex ui-items-center">
+                        <span>
+                          &quot;{permission.dappDescription}&quot; -{" "}
+                          {permission.authorizationDescription}
+                        </span>
+                        {permission.contracts.length > 0 ? (
+                          <button
+                            onClick={toggleContractsList}
+                            className="ui-ml-2 ui-cursor-pointer"
+                          >
+                            <ChevronDownIcon isUp={isContractsOpen} />
+                          </button>
+                        ) : null}
+                      </div>
+                      <div className="ui-max-h-96 ui-overflow-y-scroll">
+                        {isContractsOpen ? (
+                          <ul className="ui-list-disc ui-mt-2 ui-ml-4 ui-transition-all">
+                            {permission.contracts.map((contract, index) => (
+                              <li key={index}>
+                                <p className="ui-break-words ui-max-w-xs">
+                                  {contract}
+                                </p>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                    </div>
                   </li>
                 ))
               ) : (
@@ -348,7 +387,7 @@ export const AbstraxionGrant = ({
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mb-8" />
             <div className="ui-w-full ui-flex ui-flex-col ui-gap-4">
               <Button
-                disabled={inProgress || inCheckProgress || !client}
+                disabled={inProgress || !client || isTreasuryQueryLoading || inCheckProgress}
                 structure="base"
                 fullWidth={true}
                 onClick={grant}

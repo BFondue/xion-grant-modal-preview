@@ -2,6 +2,7 @@ import type { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
 import { GenericAuthorization } from "cosmjs-types/cosmos/authz/v1beta1/authz";
 import { StakeAuthorization } from "cosmjs-types/cosmos/staking/v1beta1/authz";
 import { SendAuthorization } from "cosmjs-types/cosmos/bank/v1beta1/authz";
+import { ContractExecutionAuthorization } from "cosmjs-types/cosmwasm/wasm/v1/authz";
 import type {
   GrantConfigByTypeUrl,
   GrantConfigTypeUrlsResponse,
@@ -51,11 +52,13 @@ const CosmosAuthzPermission: { [key: string]: string } = {
  * Queries the DAPP treasury contract to parse and display requested permissions to end user
  * @param {string} contractAddress - The address for the deployed treasury contract instance
  * @param {AAClient} client - Client to query RPC
+ * @param {string} account - Users account address
  * @returns {PermissionDescription[]} - The human-readable permission descriptions
  */
 export const queryTreasuryContract = async (
   contractAddress: string,
   client: AAClient,
+  account: string,
 ): Promise<PermissionDescription[]> => {
   if (!contractAddress) {
     throw new Error("Missing contract address");
@@ -94,8 +97,21 @@ export const queryTreasuryContract = async (
         throw new Error("Something went wrong querying the grant config");
       }
       let description: string;
+      const contracts = [];
       switch (queryGrantConfigResponse.authorization.type_url) {
         case "/cosmos.authz.v1beta1.GenericAuthorization": {
+          // These msg type urls combined with a GenericAuthorization are dangerous. Prevent flow
+          // TODO - Uncomment when proxy contract integrated, or find a solution for DevPortal
+          // if (
+          //   grant === "/cosmwasm.wasm.v1.MsgExecuteContract" ||
+          //   grant === "/cosmwasm.wasm.v1.MsgMigrateContract" ||
+          //   grant === "/cosmos.authz.v1beta1.MsgExec" ||
+          //   grant === "/cosmwasm.wasm.v1.MsgStoreCode" ||
+          //   grant === "/cosmwasm.wasm.v1.MsgUpdateAdmin" ||
+          //   grant === "/cosmwasm.wasm.v1.MsgClearAdmin"
+          // ) {
+          //   throw new Error("Misconfigured grant config");
+          // }
           const genericAuthByteArray = new Uint8Array(
             Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
           );
@@ -115,7 +131,7 @@ export const queryTreasuryContract = async (
             .map((limit: Coin) => `${limit.amount} ${limit.denom}`)
             .join(", ");
           const allowList = decodedSendAuth.allowList.join(", ");
-          description = `Permission to send tokens with spend limit: ${spendLimit} and allow list: ${allowList}`;
+          description = `Permission to send tokens with spend limit: ${spendLimit} ${allowList && `and allow list: ${allowList}`}`;
           break;
         }
         case "/cosmos.staking.v1beta1.StakeAuthorization": {
@@ -140,12 +156,29 @@ export const queryTreasuryContract = async (
           } and max tokens: ${maxTokens}`;
           break;
         }
+        case "/cosmwasm.wasm.v1.ContractExecutionAuthorization": {
+          const contractExecAuthByteArray = new Uint8Array(
+            Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
+          );
+          const decodedContractExecAuth = ContractExecutionAuthorization.decode(
+            contractExecAuthByteArray,
+          );
+          description = "Permission to execute smart contracts";
+          decodedContractExecAuth.grants.map((grant) => {
+            if (grant.contract === account) {
+              throw new Error("Misconfigured treasury contract");
+            }
+            contracts.push(grant.contract);
+          });
+          break;
+        }
         default:
           description = `Unknown Authorization Type: ${queryGrantConfigResponse.authorization["@type"]}`;
       }
       return {
         authorizationDescription: description,
         dappDescription: queryGrantConfigResponse.description,
+        contracts,
       };
     }),
   );

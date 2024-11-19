@@ -12,6 +12,7 @@ export interface GrantConfigByTypeUrl {
 export interface PermissionDescription {
   authorizationDescription: string;
   dappDescription?: string;
+  contracts?: string[];
 }
 
 export interface FormattedDescriptions {
