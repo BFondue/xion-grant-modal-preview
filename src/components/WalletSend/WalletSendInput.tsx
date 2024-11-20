@@ -147,7 +147,7 @@ export function WalletSendInput({
             } ui-rounded-lg`}
           >
             <input
-              className={`ui-w-full ui-bg-transparent ${
+              className={`ui-w-full ui-no-spinner ui-bg-transparent ${
                 sendAmount === "0" && "!ui-text-[#6C6A6A]"
               } ui-text-white ui-font-bold ui-text-5xl placeholder:ui-text-white/50 focus:ui-outline-none`}
               onChange={(e) => {
@@ -155,7 +155,7 @@ export function WalletSendInput({
               }}
               placeholder="0"
               type="number"
-              inputMode="numeric"
+              inputMode="decimal"
               value={sendAmount}
             />
             <p className="ui-text-5xl ui-font-bold ui-text-white/50">
