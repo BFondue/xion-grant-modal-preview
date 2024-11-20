@@ -5,10 +5,10 @@ import {
   CopyIcon,
   EmailIcon,
   EthereumLogo,
-  PasskeyIcon,
-  Popover,
   EyeIcon,
   EyeOffIcon,
+  PasskeyIcon,
+  Popover,
   PopoverContent,
   PopoverTrigger,
   TrashIcon,
@@ -90,8 +90,8 @@ export const AccountInfo = ({
       const currentAuthenticator =
         account?.currentAuthenticatorIndex === authenticator.authenticatorIndex;
       let email = "";
-      if (authenticator.type === "Jwt") {
-        email = user.emails[0].email;
+      if (authenticator.type === "Jwt" && user) {
+        email = user.emails[0]?.email;
       }
       return (
         <div
