@@ -5,7 +5,6 @@ import {
   EmailIcon,
   EthereumLogo,
   PasskeyIcon,
-  Spinner,
 } from "../../ui";
 import {
   AbstraxionContext,
@@ -16,6 +15,7 @@ import type { authenticatorTypes } from "../../../types";
 import { Authenticator } from "../../../indexer-strategies/types";
 import { AAAlgo } from "../../../signers";
 import { removeRegistration } from "../../../utils/webauthn-utils";
+import { Loading } from "../../Loading";
 
 export function RemoveAuthenticatorForm({
   authenticator,
@@ -160,6 +160,15 @@ export function RemoveAuthenticatorForm({
     }
   }
 
+  if (isLoading) {
+    return (
+      <Loading
+        header="REMOVING AUTHENTICATOR..."
+        message="We are removing an authenticator from your account. Don't leave the page or close the window. This will take a few seconds..."
+      />
+    );
+  }
+
   return (
     <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
       <div className="ui-flex ui-flex-col ui-gap-4 ui-w-full">
@@ -189,8 +198,8 @@ export function RemoveAuthenticatorForm({
           CONTINUE
         </Button>
       ) : (
-        <Button fullWidth disabled={isLoading} onClick={removeAuthenticator}>
-          {isLoading ? <Spinner /> : "CONFIRM"}
+        <Button fullWidth onClick={removeAuthenticator}>
+          CONFIRM
         </Button>
       )}
     </div>
