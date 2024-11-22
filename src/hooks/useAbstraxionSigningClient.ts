@@ -137,7 +137,7 @@ export const useAbstraxionSigningClient = () => {
       chainInfo.rpc || testnetChainInfo.rpc,
       signer,
       {
-        gasPrice: GasPrice.fromString("0uxion"),
+        gasPrice: GasPrice.fromString("2uxion"),
       },
     );
 

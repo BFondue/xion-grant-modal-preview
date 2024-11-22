@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, ChevronDownIcon, Input } from "../ui";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import type { FormattedAssetAmount } from "../../types/assets";
+
+import { useAccountBalance } from "../../hooks/useAccountBalance";
+import { isMainnet } from "../../utils";
 
 interface WalletSendInputProps {
   selectedCurrency: FormattedAssetAmount;
   balances: FormattedAssetAmount[];
   onChangeCurrency: React.Dispatch<React.SetStateAction<string>>;
+  selectedCurrencyDenom: string;
   sendAmount: string;
   amountError: string;
   onAmountChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -23,6 +27,7 @@ interface WalletSendInputProps {
 export function WalletSendInput({
   balances,
   selectedCurrency,
+  selectedCurrencyDenom,
   sendAmount,
   amountError,
   onAmountChange: handleAmountChange,
@@ -37,13 +42,83 @@ export function WalletSendInput({
   updateSendAmount,
 }: WalletSendInputProps) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const { getEstimatedSendFee } = useAccountBalance(
+    isMainnet ? "mainnet" : "testnet",
+  );
+  const [estimatedFee, setEstimatedFee] = useState(null);
+  const [isCalculatingFee, setIsCalculatingFee] = useState(false);
+  const [estimatingError, setEstimatingError] = useState(null);
+  // const [debouncedRecipientAddress, setDebouncedRecipientAddress] =
+  //   useState(recipientAddress);
+  // const [debouncedSendAmount, setDebouncedSendAmount] = useState(sendAmount);
+  // const [debouncedCurrencyDenom, setDebouncedCurrencyDenom] = useState(
+  //   selectedCurrencyDenom,
+  // );
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      getFee();
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [recipientAddress, sendAmount, selectedCurrencyDenom]);
 
   function switchSelectedCurrency(selectedDenom: string) {
     onChangeCurrency(selectedDenom);
     updateSendAmount("");
+    setEstimatedFee(null);
     setShowDropdown(false);
     return;
   }
+
+  const getFee = useCallback(async () => {
+    if (!recipientAddress) {
+      return;
+    }
+    let estimatedFee;
+
+    try {
+      if (sendAmount) {
+        setIsCalculatingFee(true);
+        estimatedFee = await getEstimatedSendFee(
+          recipientAddress,
+          sendAmount,
+          selectedCurrencyDenom,
+        );
+      } else {
+        setEstimatedFee(null);
+      }
+
+      if (estimatedFee) {
+        const xionBalance = balances.find(
+          (balance) => balance.symbol === "XION",
+        );
+        if (
+          selectedCurrency.symbol !== "XION" &&
+          estimatedFee &&
+          estimatedFee.fee.amount[0].amount > xionBalance.baseAmount
+        ) {
+          setEstimatingError(`Insufficient XION balance`);
+          setIsCalculatingFee(false);
+          return;
+        }
+
+        setEstimatedFee(estimatedFee.fee.amount[0]);
+      }
+
+      setEstimatingError(null);
+    } catch (error) {
+      if (error.message.includes("insufficient funds")) {
+        setEstimatingError(
+          `Insufficient ${selectedCurrency.symbol.toUpperCase()} balance`,
+        );
+      } else setEstimatingError("Error estimating fee");
+    }
+
+    setIsCalculatingFee(false);
+  }, [recipientAddress, sendAmount, selectedCurrencyDenom]);
 
   const currencyDropdown = () => {
     return (
@@ -126,6 +201,27 @@ export function WalletSendInput({
     );
   };
 
+  function renderEstimatedFee() {
+    if (isCalculatingFee) {
+      return <div className="ui-text-white/50">Calculating Gas Fee...</div>;
+    }
+    if (estimatingError) {
+      return <div className="ui-text-inputError">{estimatingError}</div>;
+    }
+    if (!estimatedFee) return;
+
+    return (
+      <>
+        <div className="ui-text-white/50">Estimated fee</div>
+        <div className="ui-text-white/50">
+          {estimatedFee.amount}
+          <span className="ui-mx-0.5" />
+          {estimatedFee.denom}
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="ui-flex ui-flex-col ui-p-0 ui-gap-y-4 ui-max-h-full ui-overflow-y-auto">
@@ -189,7 +285,16 @@ export function WalletSendInput({
           placeholder="Memo (Optional)"
           value={userMemo}
         />
-        <Button onClick={onStart}>REVIEW</Button>
+        <div className="ui-flex ui-items-center ui-justify-between">
+          {renderEstimatedFee()}
+        </div>
+
+        <Button
+          disabled={estimatingError || isCalculatingFee}
+          onClick={onStart}
+        >
+          REVIEW
+        </Button>
       </div>
     </>
   );
