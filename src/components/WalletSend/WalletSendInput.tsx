@@ -6,6 +6,8 @@ import type { FormattedAssetAmount } from "../../types/assets";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
 import { isMainnet } from "../../utils";
 
+const XION_CONVERSION = 1000000;
+
 interface WalletSendInputProps {
   selectedCurrency: FormattedAssetAmount;
   balances: FormattedAssetAmount[];
@@ -214,9 +216,7 @@ export function WalletSendInput({
       <>
         <div className="ui-text-white/50">Estimated fee</div>
         <div className="ui-text-white/50">
-          {estimatedFee.amount}
-          <span className="ui-mx-0.5" />
-          {estimatedFee.denom}
+          {(estimatedFee.amount / XION_CONVERSION).toFixed(6)} XION
         </div>
       </>
     );
