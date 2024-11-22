@@ -20,7 +20,7 @@ export function getGasCalculation(simmedGas: number, chainId: string): StdFee {
   ).toString();
 
   if (/testnet/.test(chainId)) {
-    fee = { amount: [{ amount: "2", denom: "uxion" }], gas };
+    fee = { amount: [{ amount: "0", denom: "uxion" }], gas };
   } else {
     fee = { amount: calculatedFee.amount, gas };
   }
