@@ -36,7 +36,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       aria-describedby={undefined}
       className={cn(
-        "ui-z-50 ui-fixed ui-grid ui-w-full ui-max-w-lg ui-gap-4 ui-p-10 ui-duration-200 sm:ui-rounded-[48px] ui-left-[50%] ui-top-[50%] sm:ui-bg-black/20 !ui-flex ui-justify-center ui-flex-col sm:ui-block sm:ui-flex-none ui-h-screen sm:ui-h-auto sm:ui-backdrop-blur-2xl ui-data-[state=open]:ui-animate-in ui-data-[state=closed]:ui-animate-out ui-data-[state=closed]:ui-fade-out-0 ui-data-[state=open]:ui-fade-in-0 ui-data-[state=closed]:ui-zoom-out-95 ui-data-[state=open]:ui-zoom-in-95 ui-data-[state=closed]:ui-slide-out-to-left-1/2 ui-data-[state=closed]:ui-slide-out-to-top-[48%] ui-data-[state=open]:ui-slide-in-from-left-1/2 ui-data-[state=open]:ui-slide-in-from-top-[48%] ui-translate-x-[-50%] ui-translate-y-[-50%]",
+        "ui-z-50 md:ui-min-w-[560px] ui-fixed ui-grid ui-w-full ui-max-w-lg ui-gap-4 ui-p-10 ui-duration-200 sm:ui-rounded-[48px] ui-left-[50%] ui-top-[50%] sm:ui-bg-black/20 !ui-flex ui-justify-center ui-flex-col sm:ui-block sm:ui-flex-none ui-h-screen sm:ui-h-auto sm:ui-backdrop-blur-2xl ui-data-[state=open]:ui-animate-in ui-data-[state=closed]:ui-animate-out ui-data-[state=closed]:ui-fade-out-0 ui-data-[state=open]:ui-fade-in-0 ui-data-[state=closed]:ui-zoom-out-95 ui-data-[state=open]:ui-zoom-in-95 ui-data-[state=closed]:ui-slide-out-to-left-1/2 ui-data-[state=closed]:ui-slide-out-to-top-[48%] ui-data-[state=open]:ui-slide-in-from-left-1/2 ui-data-[state=open]:ui-slide-in-from-top-[48%] ui-translate-x-[-50%] ui-translate-y-[-50%]",
         className,
       )}
       ref={ref}

@@ -6,7 +6,7 @@ import {
 import { StdFee } from "@cosmjs/stargate";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Button, CheckIcon, Spinner, ChevronDownIcon } from "../ui";
+import { Button, CheckIcon, ChevronDownIcon } from "../ui";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { generateBankGrant } from "./generateBankGrant";
 import {
@@ -170,15 +170,15 @@ export const AbstraxionGrant = ({
         );
       }
 
-    if (stake) {
-      msgs.push(
-        ...generateStakeAndGovGrant(
-          timestampThreeMonthsFromNow,
-          grantee,
-          granter,
-        ),
-      );
-    }
+      if (stake) {
+        msgs.push(
+          ...generateStakeAndGovGrant(
+            timestampThreeMonthsFromNow,
+            grantee,
+            granter,
+          ),
+        );
+      }
 
       if (bank.length > 0) {
         msgs.push(
@@ -300,14 +300,6 @@ export const AbstraxionGrant = ({
     validateContracts();
   }, [contracts, account]);
 
-  if (inProgress) {
-    return (
-      <div className="ui-w-full ui-h-full ui-min-h-[500px] ui-flex ui-items-center ui-justify-center ui-text-white">
-        <Spinner />
-      </div>
-    );
-  }
-
   return (
     <div className="ui-flex ui-font-akkuratLL ui-flex-col ui-justify-center sm:ui-min-w-[380px] ui-text-white">
       {showSuccess ? (
@@ -387,15 +379,20 @@ export const AbstraxionGrant = ({
             <div className="ui-w-full ui-bg-white ui-opacity-20 ui-h-[1px] ui-mb-8" />
             <div className="ui-w-full ui-flex ui-flex-col ui-gap-4">
               <Button
-                disabled={inProgress || !client || isTreasuryQueryLoading || inCheckProgress}
+                disabled={
+                  inProgress ||
+                  !client ||
+                  isTreasuryQueryLoading ||
+                  inCheckProgress
+                }
                 structure="base"
                 fullWidth={true}
                 onClick={grant}
               >
-                Allow and Continue
+                {inProgress ? "GRANT PERMISSION NOW..." : "ALLOW AND CONTINUE"}
               </Button>
               <Button structure="outlined" onClick={xionDisconnect}>
-                Switch Account
+                SWITCH ACCOUNT
               </Button>
               <Button structure="naked">Deny Access</Button>
             </div>

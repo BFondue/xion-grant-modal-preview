@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import { useAccount, useSuggestChainAndConnect, WalletType } from "graz";
 import { create } from "@github/webauthn-json/browser-ponyfill";
-import { Button, MetamaskLogo, PasskeyIcon, Spinner } from "../../ui";
+import { Button, MetamaskLogo, PasskeyIcon } from "../../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -13,6 +13,7 @@ import {
   registeredCredentials,
   saveRegistration,
 } from "../../../utils/webauthn-utils";
+import { Loading } from "../../Loading";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
@@ -383,6 +384,15 @@ export function AddAuthenticatorsForm({
     }
   }
 
+  if (isLoading) {
+    return (
+      <Loading
+        header="ADDING AUTHENTICATOR..."
+        message="We are adding an authenticator to your account. Don't leave the page or close the window. This will take a few seconds..."
+      />
+    );
+  }
+
   return (
     <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
       <div className="ui-flex ui-flex-col ui-gap-2">
@@ -466,10 +476,10 @@ export function AddAuthenticatorsForm({
       ) : (
         <Button
           className="ui-mt-4 ui-w-full"
-          disabled={selectedAuthenticator === "none" || isLoading}
+          disabled={selectedAuthenticator === "none"}
           onClick={handleSelection}
         >
-          {isLoading ? <Spinner /> : "SET UP AUTHENTICATOR"}
+          SET UP AUTHENTICATOR
         </Button>
       )}
     </div>

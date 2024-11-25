@@ -1,11 +1,17 @@
 import React from "react";
 
-export const Spinner = () => {
+interface SpinnerProps {
+  size?: "default" | "large";
+}
+
+export const Spinner = ({ size = "default" }: SpinnerProps) => {
+  const dimensions = size === "large" ? "4rem" : "1.25rem";
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="1.25rem"
-      height="1.25rem"
+      width={dimensions}
+      height={dimensions}
       viewBox="0 0 100 100"
       preserveAspectRatio="xMidYMid"
     >
