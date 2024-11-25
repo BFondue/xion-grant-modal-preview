@@ -8,7 +8,7 @@ import {
 import { truncateAddress } from "../../utils";
 import { useAbstraxionAccount } from "../../hooks";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
-import { useNumiaSmartAccounts } from "../../hooks/useNumiaSmartAccounts";
+import { useGetSmartAccountsStrategy } from "../../hooks/useGetSmartAccountsStrategy";
 import { Button, Spinner, WalletIcon } from "../ui";
 
 export const AbstraxionWallets = () => {
@@ -26,7 +26,7 @@ export const AbstraxionWallets = () => {
   const session_token = stytchClient.session.getTokens()?.session_token;
 
   const { loginAuthenticator } = useAbstraxionAccount();
-  const { data, loading, error, startPolling } = useNumiaSmartAccounts(
+  const { data, loading, error, startPolling } = useGetSmartAccountsStrategy(
     false,
     () => {
       setIsGeneratingNewWallet(false);
