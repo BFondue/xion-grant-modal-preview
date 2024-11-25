@@ -31,7 +31,7 @@ export const Button: React.FC<ButtonProps> = ({
         case "destructive":
           return "ui-bg-red-500/60 ui-text-white hover:ui-bg-red-600 ui-pointer-events-none";
         default:
-          return "ui-bg-white/60 ui-text-black ui-pointer-events-none";
+          return "ui-bg-disabled-bg ui-text-disabled-text ui-pointer-events-none";
       }
     }
 

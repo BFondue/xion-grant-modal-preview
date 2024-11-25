@@ -389,7 +389,9 @@ export const AbstraxionGrant = ({
                 fullWidth={true}
                 onClick={grant}
               >
-                {inProgress ? "GRANT PERMISSION NOW..." : "ALLOW AND CONTINUE"}
+                {inProgress
+                  ? "GRANTING PERMISSION NOW..."
+                  : "ALLOW AND CONTINUE"}
               </Button>
               <Button structure="outlined" onClick={xionDisconnect}>
                 SWITCH ACCOUNT
