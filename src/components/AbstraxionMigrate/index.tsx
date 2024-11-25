@@ -9,6 +9,7 @@ import {
 } from "../AbstraxionContext";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { getGasCalculation } from "../../utils/gas-utils";
+import { getEnvNumberOrThrow } from "../../utils";
 
 type AbstraxionMigrateProps = {
   currentCodeId: number;
@@ -18,7 +19,10 @@ type AbstraxionMigrateProps = {
 /*
  * This component will need to become more intelligent as we develop and deploy more account contracts.
  * */
-const targetCodeId = 793;
+const targetCodeId = getEnvNumberOrThrow(
+  "VITE_DEFAULT_ACCOUNT_CONTRACT_CODE_ID",
+  import.meta.env.VITE_DEFAULT_ACCOUNT_CONTRACT_CODE_ID,
+);
 export const AbstraxionMigrate = ({
   currentCodeId,
   updateContractCodeID,
