@@ -16,7 +16,7 @@ import {
 import { Loading } from "../../Loading";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
-const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
+const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
