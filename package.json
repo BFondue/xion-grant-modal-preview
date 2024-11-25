@@ -6,11 +6,14 @@
     "dev": "vite --port 3000",
     "dev:mobile": "vite --port 3000 --host",
     "build": "vite build",
+    "build:mainnet": "vite build --mode mainnet",
     "check-types": "tsc --noEmit",
     "preview": "vite preview",
     "lint": "eslint",
     "format:check": "prettier . --check",
-    "format:fix": "prettier . --write"
+    "format:fix": "prettier . --write",
+    "wrangler-dev": "wrangler pages dev ./dist",
+    "deploy:mainnet": "cd .deploy/mainnet && wrangler pages deploy"
   },
   "dependencies": {
     "bech32": "^2.0.0",
