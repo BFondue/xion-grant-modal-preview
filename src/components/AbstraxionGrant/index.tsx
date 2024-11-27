@@ -232,6 +232,8 @@ export const AbstraxionGrant = ({
           ...fee,
           granter: feeGranter,
         });
+
+        assertIsDeliverTxSuccess(deliverTxResponse);
       } catch {
         // This account doesn't have the fee grant, trying without fee grant.
         deliverTxResponse = await client.signAndBroadcast(
