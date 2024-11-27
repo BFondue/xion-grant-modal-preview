@@ -435,37 +435,48 @@ export function AddAuthenticatorsForm({
                 <KeplrLogo />
               </Button>
             */}
-            <Button
-              className={
-                selectedAuthenticator === "metamask" ? "!ui-border-white" : ""
-              }
-              disabled={!shouldEnableMetamask}
-              onClick={() => handleSwitch("metamask")}
-              structure="outlined"
-            >
-              <MetamaskLogo className="ui-w-12" />
-            </Button>
-            <Button
-              className={
-                selectedAuthenticator === "okx" ? "!ui-border-white" : ""
-              }
-              disabled={!shouldEnableOkx}
-              onClick={() => handleSwitch("okx")}
-              structure="outlined"
-            >
-              <img src="/okxWallet.png" height={48} width={48} alt="OKX Logo" />
-            </Button>
-            <Button
-              className={`ui-relative ${selectedAuthenticator === "passkey" ? "!ui-border-white" : ""}`}
-              disabled={!shouldEnablePasskey}
-              onClick={() => handleSwitch("passkey")}
-              structure="outlined"
-            >
-              <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-xs ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[.28rem]">
-                BETA
-              </span>
-              <PasskeyIcon className="ui-w-12" />
-            </Button>
+            {shouldEnableMetamask ? (
+              <Button
+                className={
+                  selectedAuthenticator === "metamask" ? "!ui-border-white" : ""
+                }
+                disabled={!shouldEnableMetamask}
+                onClick={() => handleSwitch("metamask")}
+                structure="outlined"
+              >
+                <MetamaskLogo className="ui-w-12" />
+              </Button>
+            ) : null}
+            {shouldEnableOkx ? (
+              <Button
+                className={
+                  selectedAuthenticator === "okx" ? "!ui-border-white" : ""
+                }
+                disabled={!shouldEnableOkx}
+                onClick={() => handleSwitch("okx")}
+                structure="outlined"
+              >
+                <img
+                  src="/okxWallet.png"
+                  height={48}
+                  width={48}
+                  alt="OKX Logo"
+                />
+              </Button>
+            ) : null}
+            {shouldEnablePasskey ? (
+              <Button
+                className={`ui-relative ${selectedAuthenticator === "passkey" ? "!ui-border-white" : ""}`}
+                disabled={!shouldEnablePasskey}
+                onClick={() => handleSwitch("passkey")}
+                structure="outlined"
+              >
+                <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-xs ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[.28rem]">
+                  BETA
+                </span>
+                <PasskeyIcon className="ui-w-12" />
+              </Button>
+            ) : null}
           </div>
         </>
       ) : null}
