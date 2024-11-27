@@ -29,6 +29,7 @@ import { generateTreasuryGrants } from "../../utils/generate-treasury-grants";
 import { queryTreasuryContract } from "../../utils/query-treasury-contract";
 import { isContractGrantConfigValid } from "../../utils/contract-grant-check";
 import { LegacyGrantPermissions } from "./legacyGrantPermissions";
+import { validateFeeGrant } from "../../utils/validate-fee-grant";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -79,6 +80,112 @@ export const AbstraxionGrant = ({
     }
   });
 
+  const grantTreasuryPermissions = async (
+    granter: string,
+    expiration: bigint,
+    feeGranter?: string,
+  ) => {
+    const grantMsgs = await generateTreasuryGrants(
+      treasury,
+      client,
+      granter,
+      grantee,
+    );
+
+    const deployFeeGrantMsg = {
+      deploy_fee_grant: {
+        authz_granter: granter,
+        authz_grantee: grantee,
+      },
+    };
+
+    const batchedMsgs = [
+      ...grantMsgs,
+      {
+        typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+        value: MsgExecuteContract.fromPartial({
+          sender: account.id,
+          contract: treasury,
+          msg: new Uint8Array(Buffer.from(JSON.stringify(deployFeeGrantMsg))),
+          funds: [],
+        }),
+      },
+    ];
+
+    const simmedGas = await client.simulate(
+      account.id,
+      batchedMsgs,
+      `treasury-grant-${expiration}`,
+    );
+
+    const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+
+    const deliverTxResponse = await client.signAndBroadcast(
+      account.id,
+      batchedMsgs,
+      feeGranter
+        ? {
+            ...fee,
+            granter: feeGranter,
+          }
+        : fee,
+    );
+
+    assertIsDeliverTxSuccess({
+      ...deliverTxResponse,
+      gasUsed: BigInt(deliverTxResponse.gasUsed),
+      gasWanted: BigInt(deliverTxResponse.gasWanted),
+    });
+
+    return;
+  };
+
+  const grantLegacyPermisssions = async (
+    granter: string,
+    expiration: bigint,
+    feeGranter?: string,
+  ) => {
+    const msgs: EncodeObject[] = [];
+
+    if (contracts.length > 0) {
+      msgs.push(generateContractGrant(expiration, grantee, granter, contracts));
+    }
+
+    if (stake) {
+      msgs.push(...generateStakeAndGovGrant(expiration, grantee, granter));
+    }
+
+    if (bank.length > 0) {
+      msgs.push(generateBankGrant(expiration, grantee, granter, bank));
+    }
+
+    if (msgs.length === 0) {
+      throw new Error("No grants to send");
+    }
+
+    const simmedGas = await client.simulate(
+      account.id,
+      msgs,
+      `grant-${expiration}`,
+    );
+
+    const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+
+    const deliverTxResponse = await client.signAndBroadcast(
+      account.id,
+      msgs,
+      feeGranter
+        ? {
+            ...fee,
+            granter: feeGranter,
+          }
+        : fee,
+    );
+
+    assertIsDeliverTxSuccess(deliverTxResponse);
+    return;
+  };
+
   const grant = async () => {
     try {
       setInProgress(true);
@@ -103,147 +210,33 @@ export const AbstraxionGrant = ({
         ),
       );
 
+      // Check if fee grant exists
+      const feeGranterAddress = getEnvStringOrThrow(
+        "VITE_FEE_GRANTER_ADDRESS",
+        import.meta.env.VITE_FEE_GRANTER_ADDRESS,
+      );
+      const isValidFeeGrant = await validateFeeGrant(
+        chainInfo.rest,
+        feeGranterAddress,
+        granter,
+        "/cosmos.authz.v1beta1.MsgGrant",
+        account.id,
+      );
+
+      const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
+
       if (treasury) {
-        const grantMsgs = await generateTreasuryGrants(
-          treasury,
-          client,
+        await grantTreasuryPermissions(
           granter,
-          grantee,
+          timestampThreeMonthsFromNow,
+          validFeeGranter,
         );
-
-        const deployFeeGrantMsg = {
-          deploy_fee_grant: {
-            authz_granter: granter,
-            authz_grantee: grantee,
-          },
-        };
-
-        const batchedMsgs = [
-          ...grantMsgs,
-          {
-            typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
-            value: MsgExecuteContract.fromPartial({
-              sender: account.id,
-              contract: treasury,
-              msg: new Uint8Array(
-                Buffer.from(JSON.stringify(deployFeeGrantMsg)),
-              ),
-              funds: [],
-            }),
-          },
-        ];
-
-        const simmedGas = await client.simulate(
-          account.id,
-          batchedMsgs,
-          `treasury-grant-${timestampThreeMonthsFromNow}`,
+      } else {
+        await grantLegacyPermisssions(
+          granter,
+          timestampThreeMonthsFromNow,
+          validFeeGranter,
         );
-
-        const fee = getGasCalculation(simmedGas, chainInfo.chainId);
-
-        const deliverTxResponse = await client.signAndBroadcast(
-          account.id,
-          batchedMsgs,
-          fee,
-        );
-
-        assertIsDeliverTxSuccess({
-          ...deliverTxResponse,
-          gasUsed: BigInt(deliverTxResponse.gasUsed),
-          gasWanted: BigInt(deliverTxResponse.gasWanted),
-        });
-
-        setShowSuccess(true);
-        return;
-      }
-
-      const msgs: EncodeObject[] = [];
-
-      if (contracts.length > 0) {
-        msgs.push(
-          generateContractGrant(
-            timestampThreeMonthsFromNow,
-            grantee,
-            granter,
-            contracts,
-          ),
-        );
-      }
-
-      if (stake) {
-        msgs.push(
-          ...generateStakeAndGovGrant(
-            timestampThreeMonthsFromNow,
-            grantee,
-            granter,
-          ),
-        );
-      }
-
-      if (bank.length > 0) {
-        msgs.push(
-          generateBankGrant(
-            timestampThreeMonthsFromNow,
-            grantee,
-            granter,
-            bank,
-          ),
-        );
-      }
-
-      if (msgs.length === 0) {
-        throw new Error("No grants to send");
-      }
-
-      let fee: StdFee;
-      let deliverTxResponse: DeliverTxResponse;
-
-      try {
-        const simmedGas = await client.simulate(
-          account.id,
-          msgs,
-          `grant-${timestampThreeMonthsFromNow}`,
-        );
-
-        fee = getGasCalculation(simmedGas, chainInfo.chainId);
-
-        // Check if fee grant exists
-        const feeGranter = getEnvStringOrThrow(
-          "VITE_FEE_GRANTER_ADDRESS",
-          import.meta.env.VITE_FEE_GRANTER_ADDRESS,
-        );
-        const baseUrl = `${chainInfo.rest}/cosmos/feegrant/v1beta1/allowance/${feeGranter}/${granter}`;
-        let isFeegranted = false;
-        await fetch(baseUrl, {
-          cache: "no-store",
-        }).then((res) => {
-          if (res.ok) {
-            isFeegranted = true;
-          }
-        });
-
-        if (!isFeegranted) {
-          // Throw user into catch block to perform tx without fee granter
-          throw new Error("No feegrant exists for this account");
-        }
-
-        // Attempt to sign and broadcast the transaction using the fee granter
-        deliverTxResponse = await client.signAndBroadcast(account.id, msgs, {
-          ...fee,
-          granter: feeGranter,
-        });
-
-        assertIsDeliverTxSuccess(deliverTxResponse);
-      } catch {
-        // This account doesn't have the fee grant, trying without fee grant.
-        deliverTxResponse = await client.signAndBroadcast(
-          account.id,
-          msgs,
-          fee,
-        );
-
-        // Assert that the transaction was successful
-        assertIsDeliverTxSuccess(deliverTxResponse);
       }
 
       setShowSuccess(true);
