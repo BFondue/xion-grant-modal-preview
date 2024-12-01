@@ -67,7 +67,7 @@ function isMultiAnyAllowance(
   return allowance["@type"] === "/xion.v1.MultiAnyAllowance";
 }
 
-function validateAction(
+export function validateAction(
   action: string,
   allowance: Allowance,
   userAddress?: string,
@@ -85,8 +85,9 @@ function validateAction(
 
   if (isMultiAnyAllowance(allowance)) {
     for (const subAllowance of allowance.allowances) {
-      if (!validateAction(action, subAllowance, userAddress)) {
-        return false;
+      // Grant is true if ANY child grant is true
+      if (validateAction(action, subAllowance, userAddress)) {
+        return true;
       }
     }
     return true;
