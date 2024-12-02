@@ -1,0 +1,11 @@
+# deploy production from `main` branch with:
+# wrangler pages deploy
+# use the same command from other branches to deploy preview
+# run locally with:
+# wrangler pages dev
+name = "dashboard-mainnet"
+compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2024-07-16"
+pages_build_output_dir = "../../dist"
+
+# Env vars used at build time are in .env.mainnet at the root of this repo

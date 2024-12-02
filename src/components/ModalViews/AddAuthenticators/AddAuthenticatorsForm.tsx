@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import { useAccount, useSuggestChainAndConnect, WalletType } from "graz";
 import { create } from "@github/webauthn-json/browser-ponyfill";
-import { Button, MetamaskLogo, PasskeyIcon, Spinner } from "../../ui";
+import { Button, MetamaskLogo, PasskeyIcon } from "../../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -13,9 +13,10 @@ import {
   registeredCredentials,
   saveRegistration,
 } from "../../../utils/webauthn-utils";
+import { Loading } from "../../Loading";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
-const metamaskFlag = process.env.VITE_METAMASK_FLAG === "true";
+const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
@@ -383,6 +384,15 @@ export function AddAuthenticatorsForm({
     }
   }
 
+  if (isLoading) {
+    return (
+      <Loading
+        header="ADDING AUTHENTICATOR..."
+        message="We are adding an authenticator to your account. Don't leave the page or close the window. This will take a few seconds..."
+      />
+    );
+  }
+
   return (
     <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
       <div className="ui-flex ui-flex-col ui-gap-2">
@@ -425,37 +435,48 @@ export function AddAuthenticatorsForm({
                 <KeplrLogo />
               </Button>
             */}
-            <Button
-              className={
-                selectedAuthenticator === "metamask" ? "!ui-border-white" : ""
-              }
-              disabled={!shouldEnableMetamask}
-              onClick={() => handleSwitch("metamask")}
-              structure="outlined"
-            >
-              <MetamaskLogo className="ui-w-12" />
-            </Button>
-            <Button
-              className={
-                selectedAuthenticator === "okx" ? "!ui-border-white" : ""
-              }
-              disabled={!shouldEnableOkx}
-              onClick={() => handleSwitch("okx")}
-              structure="outlined"
-            >
-              <img src="/okxWallet.png" height={48} width={48} alt="OKX Logo" />
-            </Button>
-            <Button
-              className={`ui-relative ${selectedAuthenticator === "passkey" ? "!ui-border-white" : ""}`}
-              disabled={!shouldEnablePasskey}
-              onClick={() => handleSwitch("passkey")}
-              structure="outlined"
-            >
-              <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-xs ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[.28rem]">
-                BETA
-              </span>
-              <PasskeyIcon className="ui-w-12" />
-            </Button>
+            {shouldEnableMetamask ? (
+              <Button
+                className={
+                  selectedAuthenticator === "metamask" ? "!ui-border-white" : ""
+                }
+                disabled={!shouldEnableMetamask}
+                onClick={() => handleSwitch("metamask")}
+                structure="outlined"
+              >
+                <MetamaskLogo className="ui-w-12" />
+              </Button>
+            ) : null}
+            {shouldEnableOkx ? (
+              <Button
+                className={
+                  selectedAuthenticator === "okx" ? "!ui-border-white" : ""
+                }
+                disabled={!shouldEnableOkx}
+                onClick={() => handleSwitch("okx")}
+                structure="outlined"
+              >
+                <img
+                  src="/okxWallet.png"
+                  height={48}
+                  width={48}
+                  alt="OKX Logo"
+                />
+              </Button>
+            ) : null}
+            {shouldEnablePasskey ? (
+              <Button
+                className={`ui-relative ${selectedAuthenticator === "passkey" ? "!ui-border-white" : ""}`}
+                disabled={!shouldEnablePasskey}
+                onClick={() => handleSwitch("passkey")}
+                structure="outlined"
+              >
+                <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-xs ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[.28rem]">
+                  BETA
+                </span>
+                <PasskeyIcon className="ui-w-12" />
+              </Button>
+            ) : null}
           </div>
         </>
       ) : null}
@@ -466,10 +487,10 @@ export function AddAuthenticatorsForm({
       ) : (
         <Button
           className="ui-mt-4 ui-w-full"
-          disabled={selectedAuthenticator === "none" || isLoading}
+          disabled={selectedAuthenticator === "none"}
           onClick={handleSelection}
         >
-          {isLoading ? <Spinner /> : "SET UP AUTHENTICATOR"}
+          SET UP AUTHENTICATOR
         </Button>
       )}
     </div>

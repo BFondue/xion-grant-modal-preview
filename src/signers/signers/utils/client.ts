@@ -272,7 +272,7 @@ export class AAClient extends SigningCosmWasmClient {
     const tx = TxRaw.fromPartial({
       bodyBytes,
       authInfoBytes,
-      signatures: [new Uint8Array()],
+      signatures: [new Uint8Array([10])],
     });
 
     const request = SimulateRequest.fromPartial({

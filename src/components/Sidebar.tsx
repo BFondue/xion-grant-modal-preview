@@ -5,8 +5,6 @@ import { CloseIcon, WalletIcon } from "./ui";
 
 import xionLogo from "../assets/logo.png";
 
-const NAV_OPTIONS = [{ text: "home", path: "/" }];
-
 interface SidebarProps {
   onClose?: VoidFunction;
 }
@@ -18,9 +16,42 @@ export function Sidebar({ onClose }: SidebarProps) {
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
+  const NAV_OPTIONS = React.useMemo(
+    () => [
+      { text: "home", path: "/" },
+      {
+        text: "history",
+        path: isMainnet
+          ? "https://explorer.mainnet.burnt.com/xion-mainnet-1/"
+          : "https://explorer.burnt.com/xion-testnet-1/",
+        external: true,
+      },
+      {
+        text: "staking",
+        path: isMainnet
+          ? "https://staking.burnt.com"
+          : "https://staking.testnet.burnt.com",
+        external: true,
+      },
+    ],
+    [isMainnet],
+  );
+
   const renderNavOptions = () => {
     return NAV_OPTIONS.map((option) => {
-      if (option.text === "home") {
+      if (option.external) {
+        return (
+          <a
+            key={option.text}
+            href={option.path}
+            target="_blank"
+            className={`ui-text-neutral-500 ui-font-regular ui-font-akkuratLL ui-px-8 ui-mt-8 first:ui-mt-0 ui-font-thin ui-leading-3 ui-uppercase ui-tracking-widest ui-text-4xl`}
+            rel="noreferrer"
+          >
+            <p>{option.text}</p>
+          </a>
+        );
+      } else {
         return (
           <div
             key={option.text}
@@ -44,17 +75,6 @@ export function Sidebar({ onClose }: SidebarProps) {
           </div>
         );
       }
-      return (
-        <Link
-          key={option.text}
-          to={option.path}
-          className={`${
-            pathname === option.path ? "ui-text-white" : "ui-text-neutral-500"
-          } ui-font-akkuratLL ui-block ui-px-8 ui-mt-8 first:ui-mt-0 ui-leading-3 ui-uppercase ui-tracking-widest ui-text-4xl ui-font-thin`}
-        >
-          {option.text}
-        </Link>
-      );
     });
   };
 
@@ -79,14 +99,6 @@ export function Sidebar({ onClose }: SidebarProps) {
 
       <div className="ui-flex ui-justify-center ui-flex-col ui-flex-grow ">
         {renderNavOptions()}
-        <a
-          href={"https://explorer.burnt.com/xion-testnet-1/"}
-          target="_blank"
-          className={`${"ui-text-neutral-500 ui-font-regular"} ui-font-akkuratLL ui-block ui-px-8 ui-mt-16 first:ui-mt-0 ui-font-thin ui-leading-3 ui-text-4xl ui-uppercase ui-tracking-widest`}
-          rel="noreferrer"
-        >
-          History
-        </a>
       </div>
       <div className="ui-flex ui-justify-between ui-px-4 ui-h-12 ui-w-full ui-items-center ui-rounded ui-bg-black ui-mx-auto ui-my-2">
         <div className="ui-flex ui-items-center">
