@@ -1,9 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import {
-  assertIsDeliverTxSuccess,
-  DeliverTxResponse,
-} from "@cosmjs/stargate/build/stargateclient";
-import { StdFee } from "@cosmjs/stargate";
+import { assertIsDeliverTxSuccess } from "@cosmjs/stargate/build/stargateclient";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { Button, CheckIcon, ChevronDownIcon } from "../ui";
@@ -118,7 +114,7 @@ export const AbstraxionGrant = ({
       `treasury-grant-${expiration}`,
     );
 
-    const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+    const fee = getGasCalculation(simmedGas);
 
     const deliverTxResponse = await client.signAndBroadcast(
       account.id,
@@ -169,7 +165,7 @@ export const AbstraxionGrant = ({
       `grant-${expiration}`,
     );
 
-    const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+    const fee = getGasCalculation(simmedGas);
 
     const deliverTxResponse = await client.signAndBroadcast(
       account.id,

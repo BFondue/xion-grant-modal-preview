@@ -70,7 +70,7 @@ export function useAccountBalance(network: Network = "testnet") {
 
       const simmedGas = await client.simulate(account.id, [msg], `xion-send`);
 
-      const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+      const fee = getGasCalculation(simmedGas);
 
       const res = await client.signAndBroadcast(account.id, [msg], fee, memo);
 

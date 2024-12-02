@@ -53,7 +53,7 @@ export const AbstraxionMigrate = ({
 
       const simmedGas = await client.simulate(account.id, [migrateMsg], "");
 
-      const fee = getGasCalculation(simmedGas, chainInfo.chainId);
+      const fee = getGasCalculation(simmedGas);
       await client.signAndBroadcast(account.id, [migrateMsg], fee);
 
       void updateContractCodeID(targetCodeId);
