@@ -215,7 +215,12 @@ export const AbstraxionGrant = ({
         chainInfo.rest,
         feeGranterAddress,
         granter,
-        "/cosmos.authz.v1beta1.MsgGrant",
+        [
+          "/cosmos.authz.v1beta1.MsgGrant",
+          "/cosmos.feegrant.v1beta1.MsgGrantAllowance",
+          "/cosmwasm.wasm.v1.MsgExecuteContract",
+          "/cosmwasm.wasm.v1.MsgMigrateContract",
+        ],
         account.id,
       );
 
