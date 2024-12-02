@@ -50,12 +50,6 @@ export function WalletSendInput({
   const [estimatedFee, setEstimatedFee] = useState(null);
   const [isCalculatingFee, setIsCalculatingFee] = useState(false);
   const [estimatingError, setEstimatingError] = useState(null);
-  // const [debouncedRecipientAddress, setDebouncedRecipientAddress] =
-  //   useState(recipientAddress);
-  // const [debouncedSendAmount, setDebouncedSendAmount] = useState(sendAmount);
-  // const [debouncedCurrencyDenom, setDebouncedCurrencyDenom] = useState(
-  //   selectedCurrencyDenom,
-  // );
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -102,7 +96,9 @@ export function WalletSendInput({
           estimatedFee &&
           estimatedFee.fee.amount[0].amount > xionBalance.baseAmount
         ) {
-          setEstimatingError(`Insufficient XION balance`);
+            setEstimatingError(
+              `Insufficient XION balance to cover the transaction fee.`,
+            );
           setIsCalculatingFee(false);
           return;
         }
