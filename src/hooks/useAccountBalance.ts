@@ -1,17 +1,12 @@
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../hooks";
 import { getGasCalculation } from "../utils/gas-utils";
 import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../components/AbstraxionContext";
 import { useBalances } from "./useBalances";
 import { useAssetList } from "./useAssetList";
 import type { Network } from "../types";
 
 export function useAccountBalance(network: Network = "testnet") {
-  const { chainInfo } = useContext(AbstraxionContext) as AbstraxionContextProps;
   const { data: account } = useAbstraxionAccount();
   const { client } = useAbstraxionSigningClient();
   const { data: balances, refetch: refetchBalances } = useBalances(account?.id);
@@ -26,9 +21,29 @@ export function useAccountBalance(network: Network = "testnet") {
       (sum, balance) => sum + (balance.dollarValue || 0),
       0,
     );
-
     return { processedBalances: processed, totalDollarValue: total };
   }, [assetList, balances]);
+
+  async function getEstimatedSendFee(recipientAddress, sendAmount, denom) {
+    const convertedSendAmount = assetList.convertToBaseAmount(
+      sendAmount.toString(),
+      denom,
+    );
+
+    const msg = {
+      typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+      value: MsgSend.fromPartial({
+        fromAddress: account.id,
+        toAddress: recipientAddress,
+        amount: [{ denom, amount: convertedSendAmount }],
+      }),
+    };
+
+    const simmedGas = await client.simulate(account.id, [msg], `xion-send`);
+
+    const fee = getGasCalculation(simmedGas);
+    return { fee, msg };
+  }
 
   async function sendTokens(
     recipientAddress: string,
@@ -54,23 +69,11 @@ export function useAccountBalance(network: Network = "testnet") {
         throw new Error(`Asset not found for denom: ${denom}`);
       }
 
-      const convertedSendAmount = assetList.convertToBaseAmount(
-        sendAmount.toString(),
+      const { fee, msg } = await getEstimatedSendFee(
+        recipientAddress,
+        sendAmount,
         denom,
       );
-
-      const msg = {
-        typeUrl: "/cosmos.bank.v1beta1.MsgSend",
-        value: MsgSend.fromPartial({
-          fromAddress: account.id,
-          toAddress: recipientAddress,
-          amount: [{ denom, amount: convertedSendAmount }],
-        }),
-      };
-
-      const simmedGas = await client.simulate(account.id, [msg], `xion-send`);
-
-      const fee = getGasCalculation(simmedGas);
 
       const res = await client.signAndBroadcast(account.id, [msg], fee, memo);
 
@@ -81,6 +84,7 @@ export function useAccountBalance(network: Network = "testnet") {
       refetchBalances();
       return res;
     } catch (error) {
+      console.error("Error sending tokens", error);
       throw error;
     }
   }
@@ -96,5 +100,6 @@ export function useAccountBalance(network: Network = "testnet") {
     assetList,
     refetchBalances,
     getBalanceByDenom,
+    getEstimatedSendFee,
   };
 }

@@ -135,6 +135,7 @@ export function WalletSendForm({
           balances={balances}
           amountError={amountError}
           onChangeCurrency={setSelectedCurrencyDenom}
+          selectedCurrencyDenom={selectedCurrencyDenom}
           onAmountChange={handleAmountChange}
           onUpdateRecipientAddress={(e) => {
             setRecipientAddressError("");
