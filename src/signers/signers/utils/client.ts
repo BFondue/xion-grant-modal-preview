@@ -210,6 +210,7 @@ export class AAClient extends SigningCosmWasmClient {
    * @param {string} signerAddress - The address of the signer.
    * @param {readonly EncodeObject[]} messages - An array of messages to include in the transaction.
    * @param {string | undefined} memo - An optional memo to include in the transaction.
+   * @param {string | undefined} feeGranter - An optional fee granter to include in the simulation.
    * @returns {Promise<number>} - The gas used by the simulated transaction.
    * @throws Will throw an error if the account is not found or if the query client cannot be retrieved.
    */
@@ -217,6 +218,7 @@ export class AAClient extends SigningCosmWasmClient {
     signerAddress: string,
     messages: readonly EncodeObject[],
     memo: string | undefined,
+    feeGranter?: string,
   ): Promise<number> {
     const { sequence } = await this.getSequence(signerAddress);
     const accountFromSigner = (await this.abstractSigner.getAccounts()).find(
@@ -242,7 +244,7 @@ export class AAClient extends SigningCosmWasmClient {
     const queryService = new ServiceClientImpl(rpc);
 
     const authInfo = AuthInfo.fromPartial({
-      fee: Fee.fromPartial({}),
+      fee: Fee.fromPartial({ granter: feeGranter }),
       signerInfos: [
         {
           publicKey: {

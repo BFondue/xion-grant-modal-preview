@@ -1,6 +1,9 @@
 import React, { Dispatch, SetStateAction, useContext, useState } from "react";
 import { useAccount, useSuggestChainAndConnect, WalletType } from "graz";
 import { create } from "@github/webauthn-json/browser-ponyfill";
+import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
+import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { Button, MetamaskLogo, PasskeyIcon } from "../../ui";
 import {
   AbstraxionContext,
@@ -14,6 +17,10 @@ import {
   saveRegistration,
 } from "../../../utils/webauthn-utils";
 import { Loading } from "../../Loading";
+import { AddAuthenticator } from "../../../signers/interfaces";
+import { getGasCalculation } from "../../../utils/gas-utils";
+import { getEnvStringOrThrow } from "../../../utils";
+import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -93,16 +100,90 @@ export function AddAuthenticatorsForm({
     setIsLoading(false);
   }
 
+  interface AuthenticatorStateData {
+    id: string;
+    type: string;
+    authenticator: string;
+    authenticatorIndex: number;
+  }
+
+  async function handleAddAuthenticator(
+    msg: AddAuthenticator,
+    authenticatorStateData: AuthenticatorStateData,
+  ): Promise<void> {
+    if (!client) {
+      throw new Error("No client");
+    }
+
+    const addMsg: MsgExecuteContractEncodeObject = {
+      typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+      value: MsgExecuteContract.fromPartial({
+        sender: abstractAccount.id,
+        contract: abstractAccount.id,
+        msg: new Uint8Array(Buffer.from(JSON.stringify(msg))),
+        funds: [],
+      }),
+    };
+
+    // Check if fee grant exists
+    const feeGranterAddress = getEnvStringOrThrow(
+      "VITE_FEE_GRANTER_ADDRESS",
+      import.meta.env.VITE_FEE_GRANTER_ADDRESS,
+    );
+    const isValidFeeGrant = await validateFeeGrant(
+      chainInfo.rest,
+      feeGranterAddress,
+      abstractAccount.id,
+      [
+        "/cosmos.authz.v1beta1.MsgGrant",
+        "/cosmos.feegrant.v1beta1.MsgGrantAllowance",
+        "/cosmwasm.wasm.v1.MsgExecuteContract",
+        "/cosmwasm.wasm.v1.MsgMigrateContract",
+      ],
+      abstractAccount.id,
+    );
+
+    const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
+
+    const simmedGas = await client.simulate(
+      abstractAccount.id,
+      [addMsg],
+      "add-authenticator",
+      validFeeGranter,
+    );
+    const fee = getGasCalculation(simmedGas);
+
+    const deliverTxResponse = await client.signAndBroadcast(
+      abstractAccount.id,
+      [addMsg],
+      validFeeGranter ? { ...fee, granter: validFeeGranter } : fee,
+    );
+
+    assertIsDeliverTxSuccess(deliverTxResponse);
+
+    setAbstractAccount({
+      ...abstractAccount,
+      authenticators: [
+        ...abstractAccount.authenticators,
+        authenticatorStateData,
+      ],
+    });
+
+    postAddFunction();
+    return;
+  }
+
   async function addKeplrAuthenticator() {
     try {
       setIsLoading(true);
 
-      if (!client) {
-        throw new Error("No client found.");
+      if (!window.keplr) {
+        return alert("Please install Keplr extension and try again");
       }
 
       const encoder = new TextEncoder();
       const signArbMessage = Buffer.from(encoder.encode(abstractAccount?.id));
+
       const signArbRes = await window.keplr.signArbitrary(
         chainInfo.chainId,
         grazAccount?.bech32Address,
@@ -124,45 +205,29 @@ export function AddAuthenticatorsForm({
           },
         },
       };
-      const res = await client.addAbstractAccountAuthenticator(msg, "");
 
-      if (res.rawLog?.includes("failed")) {
-        throw new Error(res.rawLog);
-      }
+      const authenticatorStateData = {
+        id: `${abstractAccount.id}-${accountIndex}`,
+        type: AAAlgo.secp256k1,
+        authenticator: signArbRes.pub_key.value,
+        authenticatorIndex: accountIndex,
+      };
 
-      setAbstractAccount({
-        ...abstractAccount,
-        authenticators: [
-          ...abstractAccount.authenticators,
-          {
-            id: `${abstractAccount.id}-${accountIndex}`,
-            type: AAAlgo.secp256k1,
-            authenticator: signArbRes.pub_key.value,
-            authenticatorIndex: accountIndex,
-          },
-        ],
-      });
-
-      postAddFunction();
-      return res;
-    } catch {
-      setErrorMessage(
-        "Something went wrong trying to add Keplr wallet as authenticator",
-      );
+      await handleAddAuthenticator(msg, authenticatorStateData);
+    } catch (error) {
+      console.warn(error);
+      setErrorMessage("Something went wrong trying to add authenticator");
+    } finally {
       setIsLoading(false);
     }
   }
 
   async function addOkxAuthenticator() {
     try {
-      if (!window.okxwallet) {
-        alert("Install OKX Wallet");
-        return;
-      }
       setIsLoading(true);
 
-      if (!client) {
-        throw new Error("No client found.");
+      if (!window.okxwallet) {
+        return alert("Install OKX Wallet");
       }
 
       const encoder = new TextEncoder();
@@ -191,45 +256,29 @@ export function AddAuthenticatorsForm({
           },
         },
       };
-      const res = await client.addAbstractAccountAuthenticator(msg, "");
 
-      if (res.rawLog?.includes("failed")) {
-        throw new Error(res.rawLog);
-      }
+      const authenticatorStateData = {
+        id: `${abstractAccount.id}-${accountIndex}`,
+        type: AAAlgo.secp256k1,
+        authenticator: okxAccount.bech32Address,
+        authenticatorIndex: accountIndex,
+      };
 
-      setAbstractAccount({
-        ...abstractAccount,
-        authenticators: [
-          ...abstractAccount.authenticators,
-          {
-            id: `${abstractAccount.id}-${accountIndex}`,
-            type: AAAlgo.secp256k1,
-            authenticator: okxAccount.bech32Address,
-            authenticatorIndex: accountIndex,
-          },
-        ],
-      });
-
-      postAddFunction();
-      return res;
+      await handleAddAuthenticator(msg, authenticatorStateData);
     } catch (error) {
-      console.log(error);
-      setErrorMessage(
-        "Something went wrong trying to add OKX wallet as authenticator",
-      );
+      console.warn(error);
+      setErrorMessage("Something went wrong trying to add authenticator");
+    } finally {
       setIsLoading(false);
     }
   }
 
   async function addEthAuthenticator() {
-    if (!window.ethereum) {
-      alert("Please install wallet extension");
-      return;
-    }
     try {
       setIsLoading(true);
-      if (!client) {
-        throw new Error("No client found.");
+
+      if (!window.ethereum) {
+        return alert("Please install wallet extension");
       }
 
       const accounts = await window.ethereum.request({
@@ -265,31 +314,18 @@ export function AddAuthenticatorsForm({
         },
       };
 
-      const res = await client.addAbstractAccountAuthenticator(msg, "");
+      const authenticatorStateData = {
+        id: `${abstractAccount.id}-${accountIndex}`,
+        type: AAAlgo.ETHWALLET,
+        authenticator: primaryAccount,
+        authenticatorIndex: accountIndex,
+      };
 
-      if (res?.rawLog?.includes("failed")) {
-        throw new Error("Transaction failed");
-      }
-
-      setAbstractAccount({
-        ...abstractAccount,
-        authenticators: [
-          ...abstractAccount.authenticators,
-          {
-            id: `${abstractAccount.id}-${accountIndex}`,
-            type: AAAlgo.ETHWALLET,
-            authenticator: primaryAccount,
-            authenticatorIndex: accountIndex,
-          },
-        ],
-      });
-
-      postAddFunction();
-      return res;
-    } catch {
-      setErrorMessage(
-        "Something went wrong trying to add Ethereum wallet as authenticator",
-      );
+      await handleAddAuthenticator(msg, authenticatorStateData);
+    } catch (error) {
+      console.warn(error);
+      setErrorMessage("Something went wrong trying to add authenticator");
+    } finally {
       setIsLoading(false);
     }
   }
@@ -352,19 +388,15 @@ export function AddAuthenticatorsForm({
         },
       };
 
-      const res = await client?.addAbstractAccountAuthenticator(msg, "");
+      const authenticatorStateData = {
+        id: `${abstractAccount.id}-${accountIndex}`,
+        type: AAAlgo.ETHWALLET,
+        authenticator: base64EncodedCredential,
+        authenticatorIndex: accountIndex,
+      };
 
-      if (!res) {
-        throw new Error("something went wrong with the tx");
-      }
-
-      if (res?.rawLog?.includes("failed")) {
-        throw new Error(res.rawLog);
-      }
-
+      await handleAddAuthenticator(msg, authenticatorStateData);
       saveRegistration(abstractAccount.id, publicKeyCredential);
-      postAddFunction();
-      return res;
     } catch (error) {
       console.warn(error);
       if (error instanceof DOMException) {

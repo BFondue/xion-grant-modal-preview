@@ -1,4 +1,7 @@
 import React, { Dispatch, SetStateAction, useContext, useState } from "react";
+import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import {
   AccountWalletLogo,
   Button,
@@ -16,6 +19,9 @@ import { Authenticator } from "../../../indexer-strategies/types";
 import { AAAlgo } from "../../../signers";
 import { removeRegistration } from "../../../utils/webauthn-utils";
 import { Loading } from "../../Loading";
+import { getGasCalculation } from "../../../utils/gas-utils";
+import { getEnvStringOrThrow } from "../../../utils";
+import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 
 export function RemoveAuthenticatorForm({
   authenticator,
@@ -29,7 +35,7 @@ export function RemoveAuthenticatorForm({
   const [isLoading, setIsLoading] = useState(false);
 
   // Context state
-  const { abstractAccount, setAbstractAccount } = useContext(
+  const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
@@ -131,11 +137,50 @@ export function RemoveAuthenticatorForm({
         },
       };
 
-      const res = await client.removeAbstractAccountAuthenticator(msg, "");
+      const removeMsg: MsgExecuteContractEncodeObject = {
+        typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+        value: MsgExecuteContract.fromPartial({
+          sender: abstractAccount.id,
+          contract: abstractAccount.id,
+          msg: new Uint8Array(Buffer.from(JSON.stringify(msg), "utf-8")),
+          funds: [],
+        }),
+      };
+      // Check if fee grant exists
+      const feeGranterAddress = getEnvStringOrThrow(
+        "VITE_FEE_GRANTER_ADDRESS",
+        import.meta.env.VITE_FEE_GRANTER_ADDRESS,
+      );
+      const isValidFeeGrant = await validateFeeGrant(
+        chainInfo.rest,
+        feeGranterAddress,
+        abstractAccount.id,
+        [
+          "/cosmos.authz.v1beta1.MsgGrant",
+          "/cosmos.feegrant.v1beta1.MsgGrantAllowance",
+          "/cosmwasm.wasm.v1.MsgExecuteContract",
+          "/cosmwasm.wasm.v1.MsgMigrateContract",
+        ],
+        abstractAccount.id,
+      );
 
-      if (res?.rawLog?.includes("failed")) {
-        throw new Error("Transaction failed");
-      }
+      const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
+
+      const simmedGas = await client.simulate(
+        abstractAccount.id,
+        [removeMsg],
+        "add-authenticator",
+        validFeeGranter,
+      );
+      const fee = getGasCalculation(simmedGas);
+
+      const deliverTxResponse = await client.signAndBroadcast(
+        abstractAccount.id,
+        [removeMsg],
+        validFeeGranter ? { ...fee, granter: validFeeGranter } : fee,
+      );
+
+      assertIsDeliverTxSuccess(deliverTxResponse);
 
       setAbstractAccount({
         ...abstractAccount,
@@ -152,7 +197,7 @@ export function RemoveAuthenticatorForm({
       setIsLoading(false);
       setIsOpen(false);
 
-      return res;
+      return deliverTxResponse;
     } catch (error) {
       console.warn(error);
       setErrorMessage("Something went wrong trying to remove authenticator");

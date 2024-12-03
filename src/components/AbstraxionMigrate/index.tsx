@@ -9,7 +9,9 @@ import {
 } from "../AbstraxionContext";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { getGasCalculation } from "../../utils/gas-utils";
-import { getEnvNumberOrThrow } from "../../utils";
+import { getEnvNumberOrThrow, getEnvStringOrThrow } from "../../utils";
+import { validateFeeGrant } from "../../utils/validate-fee-grant";
+import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 
 type AbstraxionMigrateProps = {
   currentCodeId: number;
@@ -51,10 +53,41 @@ export const AbstraxionMigrate = ({
         }),
       };
 
-      const simmedGas = await client.simulate(account.id, [migrateMsg], "");
+      // Check if fee grant exists
+      const feeGranterAddress = getEnvStringOrThrow(
+        "VITE_FEE_GRANTER_ADDRESS",
+        import.meta.env.VITE_FEE_GRANTER_ADDRESS,
+      );
+      const isValidFeeGrant = await validateFeeGrant(
+        chainInfo.rest,
+        feeGranterAddress,
+        account.id,
+        [
+          "/cosmos.authz.v1beta1.MsgGrant",
+          "/cosmos.feegrant.v1beta1.MsgGrantAllowance",
+          "/cosmwasm.wasm.v1.MsgExecuteContract",
+          "/cosmwasm.wasm.v1.MsgMigrateContract",
+        ],
+        account.id,
+      );
 
+      const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
+
+      const simmedGas = await client.simulate(
+        account.id,
+        [migrateMsg],
+        "",
+        validFeeGranter,
+      );
       const fee = getGasCalculation(simmedGas);
-      await client.signAndBroadcast(account.id, [migrateMsg], fee);
+
+      const deliverTxRes = await client.signAndBroadcast(
+        account.id,
+        [migrateMsg],
+        validFeeGranter ? { ...fee, granter: validFeeGranter } : fee,
+      );
+
+      assertIsDeliverTxSuccess(deliverTxRes);
 
       void updateContractCodeID(targetCodeId);
     } catch (error) {

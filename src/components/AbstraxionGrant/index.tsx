@@ -112,6 +112,7 @@ export const AbstraxionGrant = ({
       account.id,
       batchedMsgs,
       `treasury-grant-${expiration}`,
+      feeGranter,
     );
 
     const fee = getGasCalculation(simmedGas);
@@ -163,6 +164,7 @@ export const AbstraxionGrant = ({
       account.id,
       msgs,
       `grant-${expiration}`,
+      feeGranter,
     );
 
     const fee = getGasCalculation(simmedGas);
