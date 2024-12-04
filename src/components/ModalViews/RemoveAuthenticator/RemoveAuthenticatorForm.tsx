@@ -39,7 +39,9 @@ export function RemoveAuthenticatorForm({
   // General UI state
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showEmailWarning, setShowEmailWarning] = useState(false);
+  const [showEmailWarning, setShowEmailWarning] = useState(
+    authenticator?.type.toUpperCase() === "JWT" ? true : false,
+  );
 
   // Context state
   const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
@@ -211,15 +213,6 @@ export function RemoveAuthenticatorForm({
       setIsLoading(false);
     }
   }
-
-  useEffect(() => {
-    if (
-      authenticator &&
-      (authenticator?.type.toUpperCase() as authenticatorTypes) === "JWT"
-    ) {
-      setShowEmailWarning(true);
-    }
-  }, [authenticator]);
 
   if (isLoading) {
     return (
