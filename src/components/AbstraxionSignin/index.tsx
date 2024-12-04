@@ -1,7 +1,14 @@
 import React, { UIEvent, useContext, useEffect, useRef, useState } from "react";
 import { useStytch } from "@stytch/react";
 import { get } from "@github/webauthn-json/browser-ponyfill";
-import { Button, Input, MetamaskLogo, ModalSection, PasskeyIcon } from "../ui";
+import {
+  Button,
+  Input,
+  KeplrLogo,
+  MetamaskLogo,
+  ModalSection,
+  PasskeyIcon,
+} from "../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -12,12 +19,14 @@ import {
   registeredCredentials,
 } from "../../utils/webauthn-utils";
 import okxLogo from "../../assets/okx-logo.png";
+import { useSuggestChainAndConnect, WalletType } from "graz";
 
 type OtpCode = [string, string, string, string, string, string];
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
+const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
@@ -26,6 +35,9 @@ const shouldEnableOkx =
 
 const shouldEnableMetamask =
   deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && metamaskFlag);
+
+const shouldEnableKeplr =
+  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && keplrFlag);
 
 export const AbstraxionSignin = () => {
   const stytchClient = useStytch();
@@ -39,6 +51,14 @@ export const AbstraxionSignin = () => {
   const [otpError, setOtpError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const { suggestAndConnect } = useSuggestChainAndConnect({
+    onError: (error) => console.log("connection error: ", error),
+    onSuccess: () => {
+      localStorage.setItem("loginType", "");
+      setConnectionType("graz");
+    },
+  });
 
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -182,6 +202,17 @@ export const AbstraxionSignin = () => {
       setOtpError("Error Verifying OTP Code");
     }
   };
+
+  function handleKeplr() {
+    if (!window.keplr) {
+      alert("Please install the Keplr wallet extension");
+      return;
+    }
+    suggestAndConnect({
+      chainInfo,
+      walletType: WalletType.KEPLR,
+    });
+  }
 
   async function handleOkx() {
     if (!window.okxwallet) {
@@ -377,6 +408,15 @@ export const AbstraxionSignin = () => {
                         width={50}
                         alt="OKX Logo"
                       />
+                    </Button>
+                  ) : null}
+                  {shouldEnableKeplr ? (
+                    <Button
+                      fullWidth={true}
+                      onClick={handleKeplr}
+                      structure="outlined"
+                    >
+                      <KeplrLogo />
                     </Button>
                   ) : null}
                   {shouldEnableMetamask ? (
