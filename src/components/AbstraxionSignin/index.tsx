@@ -151,7 +151,11 @@ export const AbstraxionSignin = () => {
     try {
       setIsSendingEmail(true);
       setConnectionType("stytch");
-      const emailRes = await stytchClient.otps.email.loginOrCreate(email);
+      const emailRes = await stytchClient.otps.email.loginOrCreate(email, {
+        login_template_id: "xion_otp",
+        signup_template_id: "xion_otp_signup",
+        expiration_minutes: 2,
+      });
       setMethodId(emailRes.method_id);
       setIsOnOtpStep(true);
       setTimeLeft(60);
