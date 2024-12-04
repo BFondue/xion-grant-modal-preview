@@ -91,14 +91,23 @@ export function WalletSendInput({
         const xionBalance = balances.find(
           (balance) => balance.symbol === "XION",
         );
-        if (
-          selectedCurrency.symbol !== "XION" &&
-          estimatedFee &&
-          estimatedFee.fee.amount[0].amount > xionBalance.baseAmount
-        ) {
-            setEstimatingError(
-              `Insufficient XION balance to cover the transaction fee.`,
-            );
+
+        let amountRequiredToSend: number;
+        // When sending XION, we need to be sure there is enough balance to cover gas + amount remitted
+        if (selectedCurrency.symbol === "XION") {
+          const sendAmountWithoutDecimals =
+            parseFloat(sendAmount) * Math.pow(10, xionBalance.decimals);
+          amountRequiredToSend =
+            parseInt(estimatedFee.fee.amount[0].amount) +
+            sendAmountWithoutDecimals;
+        } else {
+          amountRequiredToSend = estimatedFee.fee.amount[0].amount;
+        }
+
+        if (amountRequiredToSend > parseInt(xionBalance.baseAmount)) {
+          setEstimatingError(
+            `Insufficient XION balance to cover the transaction fee.`,
+          );
           setIsCalculatingFee(false);
           return;
         }
