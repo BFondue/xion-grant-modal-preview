@@ -1,4 +1,10 @@
-import React, { Dispatch, SetStateAction, useContext, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
@@ -33,6 +39,7 @@ export function RemoveAuthenticatorForm({
   // General UI state
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailWarning, setShowEmailWarning] = useState(false);
 
   // Context state
   const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
@@ -205,12 +212,54 @@ export function RemoveAuthenticatorForm({
     }
   }
 
+  useEffect(() => {
+    if (
+      authenticator &&
+      (authenticator?.type.toUpperCase() as authenticatorTypes) === "JWT"
+    ) {
+      setShowEmailWarning(true);
+    }
+  }, [authenticator]);
+
   if (isLoading) {
     return (
       <Loading
         header="REMOVING AUTHENTICATOR..."
         message="We are removing an authenticator from your account. Don't leave the page or close the window. This will take a few seconds..."
       />
+    );
+  }
+
+  if (showEmailWarning) {
+    return (
+      <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
+        <div className="ui-flex ui-flex-col ui-gap-4 ui-w-full">
+          <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
+            WARNING
+          </h1>
+          {errorMessage ? (
+            <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-red-500">
+              {errorMessage}
+            </p>
+          ) : (
+            <>
+              <div>
+                <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
+                  Once you delete your email authenticator, you won&apos;t be
+                  able to add it back. That feature is coming soon.
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+        <Button
+          fullWidth
+          onClick={() => setShowEmailWarning(false)}
+          structure="destructive"
+        >
+          I ACKNOWLEDGE & WISH TO PROCEED
+        </Button>
+      </div>
     );
   }
 
