@@ -1,10 +1,9 @@
 import { isMainnet } from "../utils";
 
 export const ASSET_ENDPOINTS = {
+  mainnet: "https://assets.xion.burnt.com/chain-registry/xion/assetlist.json",
   testnet:
-    "https://raw.githubusercontent.com/burnt-labs/burnt-networks/main/testnets/xion-testnet-1/chain-registry/assetlist.json",
-  mainnet:
-    "https://raw.githubusercontent.com/burnt-labs/burnt-networks/main/mainnet/xion-mainnet-1/chain-registry/assetlist.json",
+    "https://assets.xion.burnt.com/chain-registry/testnets/xiontestnet/assetlist.json",
 } as const;
 
 export const COINGECKO_API_URL =

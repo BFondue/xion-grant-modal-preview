@@ -10,6 +10,8 @@ import type {
   PriceData,
 } from "../types/assets";
 import { ASSET_ENDPOINTS, COINGECKO_API_URL } from "../config";
+import mainnetAssets from "../data/mainnet/assetlist.json";
+import testnetAssets from "../data/testnet/assetlist.json";
 
 /**
  * Fetches the asset list from the chain registry
@@ -22,10 +24,13 @@ export const fetchAssetList = async (network: Network): Promise<AssetList> => {
     if (response.status !== 200) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+
     return response.data;
   } catch (error) {
     console.error("Error fetching asset list:", error);
-    throw error;
+    return network === "mainnet"
+      ? (mainnetAssets as AssetList)
+      : (testnetAssets as AssetList);
   }
 };
 
@@ -127,7 +132,7 @@ export const useAssetList = (network: Network = "testnet") => {
   const { data: priceData } = usePrices(assetList?.assets ?? []);
 
   const assets = useMemo(() => {
-    if (!assetList) return null;
+    if (!assetList || !assetList.assets) return null;
 
     // helper to find matching denom including IBC handling
     const getAssetByDenom = (denom: string): Asset | undefined => {
