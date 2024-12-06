@@ -4,7 +4,7 @@ import { create } from "@github/webauthn-json/browser-ponyfill";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Button, MetamaskLogo, PasskeyIcon } from "../../ui";
+import { Button, KeplrLogo, MetamaskLogo, PasskeyIcon } from "../../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -25,6 +25,7 @@ import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
+const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
@@ -33,6 +34,9 @@ const shouldEnableOkx =
 
 const shouldEnableMetamask =
   deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && metamaskFlag);
+
+const shouldEnableKeplr =
+  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && keplrFlag);
 
 type AuthenticatorStates = "none" | "keplr" | "metamask" | "okx" | "passkey";
 
@@ -457,7 +461,8 @@ export function AddAuthenticatorsForm({
             SKIP FOR NOW
           </Button> */}
           <div className="ui-flex ui-gap-4 ui-w-full ui-justify-center">
-            {/* <Button
+            {shouldEnableKeplr ? (
+              <Button
                 className={
                   selectedAuthenticator === "keplr" ? "!ui-border-white" : ""
                 }
@@ -466,7 +471,7 @@ export function AddAuthenticatorsForm({
               >
                 <KeplrLogo />
               </Button>
-            */}
+            ) : null}
             {shouldEnableMetamask ? (
               <Button
                 className={
