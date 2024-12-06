@@ -191,6 +191,11 @@ export const AbstraxionSignin = () => {
       return;
     }
 
+    if (googleOAuthFlag && email.endsWith("@gmail.com")) {
+      await loginWithGoogle();
+      return;
+    }
+
     try {
       setIsSendingEmail(true);
       setConnectionType("stytch");
