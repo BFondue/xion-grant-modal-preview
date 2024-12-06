@@ -1,4 +1,11 @@
-import React, { UIEvent, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  UIEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useStytch } from "@stytch/react";
 import { get } from "@github/webauthn-json/browser-ponyfill";
 import {
@@ -27,6 +34,7 @@ const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
 const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
+const googleOAuthFlag = import.meta.env.VITE_GOOGLE_OAUTH_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
 // Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
@@ -160,6 +168,16 @@ export const AbstraxionSignin = () => {
     }
   };
 
+  const loginWithGoogle = useCallback(async () => {
+    const redirectUrl = window.location.origin;
+
+    await stytchClient.oauth.google.start({
+      login_redirect_url: redirectUrl,
+      signup_redirect_url: redirectUrl,
+      // custom_scopes: (?)
+    });
+  }, [stytchClient]);
+
   const handleEmail = async (event) => {
     event.preventDefault();
 
@@ -274,6 +292,28 @@ export const AbstraxionSignin = () => {
     }
   };
 
+  useEffect(() => {
+    const authenticateUser = async () => {
+      const token = new URLSearchParams(window.location.search).get("token");
+      if (token) {
+        try {
+          await stytchClient.oauth.authenticate(token, {
+            session_duration_minutes: 60,
+          });
+          localStorage.setItem("loginType", "stytch");
+        } catch {
+          setAbstraxionError("Google OAuth authentication failed");
+        } finally {
+          // Clear the URL after the origin
+          const origin = window.location.origin;
+          window.history.replaceState(null, "", origin);
+        }
+      }
+    };
+
+    authenticateUser();
+  }, [stytchClient]);
+
   // For the "resend otp" countdown
   useEffect(() => {
     if (timeLeft === 0) {
@@ -369,13 +409,24 @@ export const AbstraxionSignin = () => {
             onBlur={validateEmail}
             onKeyDown={(e) => e.key === "Enter" && handleEmail(e)}
           />
-          <Button
-            fullWidth={true}
-            onClick={handleEmail}
-            disabled={!!emailError || isSendingEmail}
-          >
-            Log in / Sign up
-          </Button>
+          <div className="ui-flex ui-flex-col ui-gap-1 ui-w-full">
+            <Button
+              fullWidth={true}
+              onClick={handleEmail}
+              disabled={!!emailError || isSendingEmail}
+            >
+              Log in / Sign up
+            </Button>
+            {googleOAuthFlag ? (
+              <Button
+                fullWidth={true}
+                onClick={loginWithGoogle}
+                structure="outlined"
+              >
+                Log in with Google
+              </Button>
+            ) : null}
+          </div>
           {shouldEnableOkx || shouldEnableMetamask ? (
             <div className="ui-w-full ui-mb-12 sm:ui-mb-0">
               <button
