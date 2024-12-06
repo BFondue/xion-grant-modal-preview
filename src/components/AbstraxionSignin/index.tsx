@@ -59,6 +59,7 @@ export const AbstraxionSignin = () => {
   const [otpError, setOtpError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const tokenProcessed = useRef(false);
 
   const { suggestAndConnect } = useSuggestChainAndConnect({
     onError: (error) => console.log("connection error: ", error),
@@ -169,7 +170,11 @@ export const AbstraxionSignin = () => {
   };
 
   const loginWithGoogle = useCallback(async () => {
-    const redirectUrl = window.location.origin;
+    const origin = window.location.origin;
+    const currentParams = window.location.search;
+    // Take url params into consideration on grant flow cases
+
+    const redirectUrl = `${origin}/${currentParams}`;
 
     await stytchClient.oauth.google.start({
       login_redirect_url: redirectUrl,
@@ -294,8 +299,10 @@ export const AbstraxionSignin = () => {
 
   useEffect(() => {
     const authenticateUser = async () => {
-      const token = new URLSearchParams(window.location.search).get("token");
-      if (token) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
+      if (token && !tokenProcessed.current) {
+        tokenProcessed.current = true;
         try {
           await stytchClient.oauth.authenticate(token, {
             session_duration_minutes: 60,
@@ -304,15 +311,20 @@ export const AbstraxionSignin = () => {
         } catch {
           setAbstraxionError("Google OAuth authentication failed");
         } finally {
-          // Clear the URL after the origin
-          const origin = window.location.origin;
-          window.history.replaceState(null, "", origin);
+          // Only delete oauth token related params
+          urlParams.delete("token");
+          urlParams.delete("stytch_token_type");
+          window.history.replaceState(
+            null,
+            "",
+            `${window.location.origin}?${urlParams.toString()}`,
+          );
         }
       }
     };
 
     authenticateUser();
-  }, [stytchClient]);
+  }, []);
 
   // For the "resend otp" countdown
   useEffect(() => {
