@@ -19,4 +19,5 @@ export { USDCIcon } from "./USDC";
 export { WalletIcon } from "./Wallet";
 export { XionIcon } from "./Xion";
 export { EyeIcon } from "./Eye";
-export { EyeOffIcon } from "./EyeOff";   
+export { EyeOffIcon } from "./EyeOff";
+export { CosmosLogo } from "./CosmosLogo";
