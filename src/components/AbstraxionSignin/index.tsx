@@ -319,11 +319,10 @@ export const AbstraxionSignin = () => {
           // Only delete oauth token related params
           urlParams.delete("token");
           urlParams.delete("stytch_token_type");
-          window.history.replaceState(
-            null,
-            "",
-            `${window.location.origin}?${urlParams.toString()}`,
-          );
+          const newUrl = urlParams.toString()
+            ? `${window.location.origin}?${urlParams.toString()}`
+            : `${window.location.origin}`;
+          window.history.replaceState(null, "", newUrl);
         }
       }
     };
