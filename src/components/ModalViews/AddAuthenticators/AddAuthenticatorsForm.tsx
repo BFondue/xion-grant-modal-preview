@@ -4,7 +4,13 @@ import { create } from "@github/webauthn-json/browser-ponyfill";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Button, KeplrLogo, MetamaskLogo, PasskeyIcon } from "../../ui";
+import {
+  Button,
+  EmailIcon,
+  KeplrLogo,
+  MetamaskLogo,
+  PasskeyIcon,
+} from "../../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -38,7 +44,20 @@ const shouldEnableMetamask =
 const shouldEnableKeplr =
   deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && keplrFlag);
 
-type AuthenticatorStates = "none" | "keplr" | "metamask" | "okx" | "passkey";
+type AuthenticatorStates =
+  | "none"
+  | "keplr"
+  | "metamask"
+  | "okx"
+  | "passkey"
+  | "email";
+
+interface AuthenticatorStateData {
+  id: string;
+  type: string;
+  authenticator: string;
+  authenticatorIndex: number;
+}
 
 export function AddAuthenticatorsForm({
   setIsOpen,
@@ -94,6 +113,9 @@ export function AddAuthenticatorsForm({
       case "passkey":
         await addPasskeyAuthenticator();
         break;
+      case "email":
+        await addEmailAuthenticator();
+        break;
       default:
         break;
     }
@@ -102,13 +124,6 @@ export function AddAuthenticatorsForm({
   function postAddFunction() {
     setIsSuccess(true);
     setIsLoading(false);
-  }
-
-  interface AuthenticatorStateData {
-    id: string;
-    type: string;
-    authenticator: string;
-    authenticatorIndex: number;
   }
 
   async function handleAddAuthenticator(
@@ -176,6 +191,8 @@ export function AddAuthenticatorsForm({
     postAddFunction();
     return;
   }
+
+  function addEmailAuthenticator() {}
 
   async function addKeplrAuthenticator() {
     try {
@@ -461,6 +478,15 @@ export function AddAuthenticatorsForm({
             SKIP FOR NOW
           </Button> */}
           <div className="ui-flex ui-gap-4 ui-w-full ui-justify-center">
+            <Button
+              className={
+                selectedAuthenticator === "email" ? "!ui-border-white" : ""
+              }
+              onClick={() => handleSwitch("email")}
+              structure="outlined"
+            >
+              <EmailIcon />
+            </Button>
             {shouldEnableKeplr ? (
               <Button
                 className={

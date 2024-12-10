@@ -27,6 +27,7 @@ import {
 } from "../../utils/webauthn-utils";
 import okxLogo from "../../assets/okx-logo.png";
 import { useSuggestChainAndConnect, WalletType } from "graz";
+import OtpInput from "../OtpInput";
 
 type OtpCode = [string, string, string, string, string, string];
 
@@ -355,36 +356,14 @@ export const AbstraxionSignin = () => {
               Please check your email for the verification code
             </h2>
           </div>
-          <div className="ui-flex ui-flex-col">
-            <div className="ui-grid ui-grid-cols-6 ui-gap-2 ui-w-full">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="number"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  autoFocus={index === 0}
-                  onChange={(e) => handleInputChange(e.target.value, index)}
-                  onPaste={(e) => handlePaste(e, index)}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                  className={`ui-no-spinner ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-base ui-border ui-rounded-md ui-outline-none ui-border-gray-500 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-text-lg ${
-                    digit
-                      ? "ui-bg-[rgba(255,255,255,0.1)]"
-                      : "ui-bg-transparent"
-                  }  ${
-                    otpError
-                      ? "ui-border-inputError !ui-text-inputError ui-bg-inherit focus:!ui-border-inputError"
-                      : ""
-                  }`}
-                />
-              ))}
-            </div>
-            <p className="ui-mt-2 ui-text-center ui-text-inputError">
-              {otpError}
-            </p>
-          </div>
+          <OtpInput
+            otp={otp}
+            otpError={otpError}
+            inputRefs={inputRefs}
+            handleInputChange={handleInputChange}
+            handlePaste={handlePaste}
+            handleKeyDown={handleKeyDown}
+          />
           <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
             <Button fullWidth={true} onClick={handleOtp} disabled={!isOtpValid}>
               Confirm
