@@ -1,5 +1,4 @@
 import React, { ReactElement, useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
 import {
   Button,
   CheckIcon,
@@ -58,9 +57,6 @@ export function WalletReceive({
               {truncateAddress(xionAddress)}
             </p>
             {copied ? <CheckIcon color="white" /> : <CopyIcon color="white" />}
-          </div>
-          <div className="ui-flex ui-items-center ui-justify-center ui-my-6 ui-p-6 ui-w-full ui-bg-black ui-rounded-lg">
-            <QRCodeSVG value={"uxion:" + xionAddress} />
           </div>
           <Button
             className="ui-mt-6"
