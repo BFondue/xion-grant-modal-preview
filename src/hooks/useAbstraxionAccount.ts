@@ -38,6 +38,8 @@ export const useAbstraxionAccount = () => {
     setAbstractAccount,
   } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
+  console.log({ abstractAccount });
+
   // Should we confirm the value is indeed a ConnectionType?
   const loginType = localStorage.getItem("loginType") as ConnectionType;
   const [loginAuthenticator, setLoginAuthenticator] = useState(
@@ -62,6 +64,7 @@ export const useAbstraxionAccount = () => {
         const { aud, sub } = session_jwt
           ? decodeJwt(session_jwt)
           : { aud: undefined, sub: undefined };
+        // console.log({ aud, sub });
         authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
         break;
       }

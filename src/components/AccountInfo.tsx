@@ -41,6 +41,8 @@ export const AccountInfo = ({
   const { isMainnet } = useContext(AbstraxionContext);
   const { user } = useStytchUser();
 
+  console.log({ user });
+
   const copyXIONAddress = () => {
     if (account?.id) {
       navigator.clipboard.writeText(account?.id);

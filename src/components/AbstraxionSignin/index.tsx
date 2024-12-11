@@ -1,5 +1,4 @@
 import React, {
-  UIEvent,
   useCallback,
   useContext,
   useEffect,
@@ -27,9 +26,7 @@ import {
 } from "../../utils/webauthn-utils";
 import okxLogo from "../../assets/okx-logo.png";
 import { useSuggestChainAndConnect, WalletType } from "graz";
-import OtpInput from "../OtpInput";
-
-type OtpCode = [string, string, string, string, string, string];
+import OtpForm from "../OtpForm";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -56,9 +53,6 @@ export const AbstraxionSignin = () => {
   const [emailError, setEmailError] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isOnOtpStep, setIsOnOtpStep] = useState(false);
-  const [otp, setOtp] = useState<OtpCode>(["", "", "", "", "", ""]);
-  const [otpError, setOtpError] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const tokenProcessed = useRef(false);
 
@@ -70,7 +64,7 @@ export const AbstraxionSignin = () => {
     },
   });
 
-  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  // const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const { setConnectionType, setAbstraxionError, chainInfo } = useContext(
     AbstraxionContext,
@@ -85,80 +79,6 @@ export const AbstraxionSignin = () => {
       newEmail = e.currentTarget.value.toLowerCase().trim();
     }
     setEmail(newEmail);
-  };
-
-  const handleInputChange = (value: string, index: number) => {
-    setOtpError(null);
-
-    if (value === "") {
-      const newOtp = [...otp];
-      newOtp[index] = "";
-      setOtp(newOtp as OtpCode);
-      return;
-    }
-
-    // Only allow digits
-    if (/^\d$/.test(value)) {
-      const newOtp = [...otp];
-      newOtp[index] = value;
-      setOtp(newOtp as OtpCode);
-
-      // Move focus to the next input if available
-      if (index < otp.length - 1) {
-        inputRefs.current[index + 1]?.focus();
-      }
-    }
-  };
-
-  const isOtpValid =
-    otp.every((digit) => /^\d$/.test(digit)) && otp.length === 6;
-
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    index: number,
-  ) => {
-    if (e.key === "Backspace") {
-      if (otp[index] === "" && index > 0) {
-        // Move to the previous input if the current input is empty
-        inputRefs.current[index - 1]?.focus();
-      } else {
-        handleInputChange("", index);
-      }
-    }
-
-    if (e.key === "Enter" && isOtpValid) {
-      handleOtp(e);
-    }
-  };
-
-  const handlePaste = async (
-    e: React.ClipboardEvent<HTMLInputElement>,
-    index: number,
-  ) => {
-    e.preventDefault();
-
-    const pastedData = await navigator.clipboard.readText();
-    // Only allow digits to be pasted
-    if (!/^\d+$/.test(pastedData)) {
-      return;
-    }
-
-    const newOtp = [...otp];
-    const pastedDigits = pastedData.split("").slice(0, otp.length - index);
-
-    pastedDigits.forEach((digit, i) => {
-      newOtp[index + i] = digit;
-      if (inputRefs.current[index + i]) {
-        inputRefs.current[index + i]!.value = digit;
-      }
-    });
-
-    setOtp(newOtp as OtpCode);
-
-    const nextIndex = index + pastedDigits.length;
-    if (nextIndex < otp.length) {
-      inputRefs.current[nextIndex]?.focus();
-    }
   };
 
   const EMAIL_REGEX = /\S+@\S+\.\S+/;
@@ -184,9 +104,7 @@ export const AbstraxionSignin = () => {
     });
   }, [stytchClient]);
 
-  const handleEmail = async (event) => {
-    event.preventDefault();
-
+  const handleEmail = async () => {
     if (!email) {
       setEmailError("Please enter your email");
       return;
@@ -207,7 +125,6 @@ export const AbstraxionSignin = () => {
       });
       setMethodId(emailRes.method_id);
       setIsOnOtpStep(true);
-      setTimeLeft(60);
     } catch {
       setEmailError("Error sending email");
       setConnectionType("none");
@@ -215,20 +132,14 @@ export const AbstraxionSignin = () => {
     setIsSendingEmail(false);
   };
 
-  const getOtp = () => {
-    return otp.join("");
-  };
-
-  const handleOtp = async (event: UIEvent) => {
-    event.preventDefault();
-
+  const handleOtp = async (otpCode: string) => {
     try {
-      await stytchClient.otps.authenticate(getOtp(), methodId, {
+      await stytchClient.otps.authenticate(otpCode, methodId, {
         session_duration_minutes: 60,
       });
       localStorage.setItem("loginType", "stytch");
     } catch {
-      setOtpError("Error Verifying OTP Code");
+      console.error("Error Verifying OTP Code");
     }
   };
 
@@ -332,18 +243,6 @@ export const AbstraxionSignin = () => {
     authenticateUser();
   }, []);
 
-  // For the "resend otp" countdown
-  useEffect(() => {
-    if (timeLeft === 0) {
-      setTimeLeft(null);
-    }
-    if (!timeLeft) return;
-    const intervalId = setInterval(() => {
-      setTimeLeft(timeLeft - 1);
-    }, 1000);
-    return () => clearInterval(intervalId);
-  }, [timeLeft]);
-
   return (
     <ModalSection className="!ui-justify-center ui-mb-20 sm:ui-mb-0">
       {isOnOtpStep ? (
@@ -356,35 +255,7 @@ export const AbstraxionSignin = () => {
               Please check your email for the verification code
             </h2>
           </div>
-          <OtpInput
-            otp={otp}
-            otpError={otpError}
-            inputRefs={inputRefs}
-            handleInputChange={handleInputChange}
-            handlePaste={handlePaste}
-            handleKeyDown={handleKeyDown}
-          />
-          <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
-            <Button fullWidth={true} onClick={handleOtp} disabled={!isOtpValid}>
-              Confirm
-            </Button>
-
-            {timeLeft ? (
-              <div className="ui-text-sm ui-text-inactive">
-                RESEND {`IN ${timeLeft}S`}
-              </div>
-            ) : (
-              <Button
-                className="ui-mt-2"
-                structure="outlined"
-                fullWidth={true}
-                onClick={handleEmail}
-                disabled={!!timeLeft}
-              >
-                Resend Code {timeLeft && `in ${timeLeft} seconds`}
-              </Button>
-            )}
-          </div>
+          <OtpForm handleOtp={handleOtp} handleResendCode={handleEmail} />
         </>
       ) : (
         <>
@@ -403,7 +274,7 @@ export const AbstraxionSignin = () => {
             onChange={handleEmailChange}
             error={emailError}
             onBlur={validateEmail}
-            onKeyDown={(e) => e.key === "Enter" && handleEmail(e)}
+            onKeyDown={(e) => e.key === "Enter" && handleEmail()}
           />
           <div className="ui-flex ui-flex-col ui-gap-1 ui-w-full">
             <Button

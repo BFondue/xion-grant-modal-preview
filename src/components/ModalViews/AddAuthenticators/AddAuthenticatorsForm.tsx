@@ -23,10 +23,15 @@ import {
   saveRegistration,
 } from "../../../utils/webauthn-utils";
 import { Loading } from "../../Loading";
-import { AddAuthenticator } from "../../../signers/interfaces";
+import {
+  AddAuthenticator,
+  AddJwtAuthenticator,
+} from "../../../signers/interfaces";
 import { getGasCalculation } from "../../../utils/gas-utils";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
+import { AddEmail } from "./AddEmail/AddEmail";
+import { decodeJwt } from "jose";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -50,7 +55,7 @@ type AuthenticatorStates =
   | "metamask"
   | "okx"
   | "passkey"
-  | "email";
+  | "jwt";
 
 interface AuthenticatorStateData {
   id: string;
@@ -72,6 +77,7 @@ export function AddAuthenticatorsForm({
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isAddingEmail, setIsAddingEmail] = useState(false);
 
   // Context state
   const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
@@ -113,8 +119,8 @@ export function AddAuthenticatorsForm({
       case "passkey":
         await addPasskeyAuthenticator();
         break;
-      case "email":
-        await addEmailAuthenticator();
+      case "jwt":
+        setIsAddingEmail(true);
         break;
       default:
         break;
@@ -192,7 +198,51 @@ export function AddAuthenticatorsForm({
     return;
   }
 
-  function addEmailAuthenticator() {}
+  async function addJwtAuthenticator(session_jwt: string) {
+    try {
+      setIsLoading(true);
+      const accountIndex = findLowestMissingOrNextIndex(
+        abstractAccount?.authenticators,
+      );
+
+      const { aud, sub } = decodeJwt(session_jwt);
+      console.log({ aud, sub });
+      const formattedAud = Array.isArray(aud) ? aud[0] : aud;
+
+      // const { signature } = await (
+      //   client.abstractSigner as AbstractAccountJWTSigner
+      // ).signDirectArb(session_jwt);
+
+      // console.log({ signature, originalSignature });
+
+      const msg: AddJwtAuthenticator = {
+        add_auth_method: {
+          add_authenticator: {
+            Jwt: {
+              id: accountIndex,
+              aud: formattedAud,
+              sub,
+              token: Buffer.from(session_jwt, "utf-8").toString("base64"),
+            },
+          },
+        },
+      };
+
+      const authenticatorStateData = {
+        id: `${abstractAccount.id}-${accountIndex}`,
+        type: AAAlgo.JWT,
+        authenticator: `${formattedAud}.${sub}`,
+        authenticatorIndex: accountIndex,
+      };
+      await handleAddAuthenticator(msg, authenticatorStateData);
+      // setIsAddingEmail(true);
+    } catch (error) {
+      console.warn(error);
+      setErrorMessage("Something went wrong trying to add authenticator");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   async function addKeplrAuthenticator() {
     try {
@@ -446,6 +496,18 @@ export function AddAuthenticatorsForm({
     );
   }
 
+  if (isAddingEmail) {
+    return (
+      <AddEmail
+        onSuccess={(session_jwt) => {
+          addJwtAuthenticator(session_jwt);
+          setIsAddingEmail(false);
+          setIsSuccess(true);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
       <div className="ui-flex ui-flex-col ui-gap-2">
@@ -480,9 +542,9 @@ export function AddAuthenticatorsForm({
           <div className="ui-flex ui-gap-4 ui-w-full ui-justify-center">
             <Button
               className={
-                selectedAuthenticator === "email" ? "!ui-border-white" : ""
+                selectedAuthenticator === "jwt" ? "!ui-border-white" : ""
               }
-              onClick={() => handleSwitch("email")}
+              onClick={() => handleSwitch("jwt")}
               structure="outlined"
             >
               <EmailIcon />
