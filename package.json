@@ -17,7 +17,6 @@
     "deploy:mainnet": "cd .deploy/mainnet && wrangler pages deploy"
   },
   "dependencies": {
-    "@aws-sdk/client-kms": "^3.709.0",
     "@burnt-labs/constants": "^0.1.0-alpha.11",
     "@cosmjs/cosmwasm-stargate": "^0.32.4",
     "@cosmjs/crypto": "^0.32.4",
