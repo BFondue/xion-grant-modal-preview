@@ -25,6 +25,10 @@ export function useAccountBalance(network: Network = "testnet") {
   }, [assetList, balances]);
 
   async function getEstimatedSendFee(recipientAddress, sendAmount, denom) {
+    if (!client) {
+      return null;
+    }
+
     const convertedSendAmount = assetList.convertToBaseAmount(
       sendAmount.toString(),
       denom,
