@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   AccountWalletLogo,
   Button,
@@ -18,18 +18,13 @@ import { truncateAddress } from "../utils";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
 import type { authenticatorTypes } from "../types";
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
-import {
-  Authenticator,
-  SelectedSmartAccount,
-} from "../indexer-strategies/types";
+import { Authenticator } from "../indexer-strategies/types";
 import { AbstraxionMigrate } from "./AbstraxionMigrate";
 import { AbstraxionContext } from "./AbstraxionContext";
 
 export const AccountInfo = ({
-  account,
   updateContractCodeID,
 }: {
-  account?: SelectedSmartAccount;
   updateContractCodeID: (codeId: number) => void;
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -38,14 +33,36 @@ export const AccountInfo = ({
     Authenticator | undefined
   >();
   const [showUserEmail, setShowUserEmail] = useState(false);
-  const { isMainnet } = useContext(AbstraxionContext);
+  const { isMainnet, abstractAccount, setAbstractAccount } =
+    useContext(AbstraxionContext);
   const { user } = useStytchUser();
 
-  console.log({ user });
+  // This effect is meant to handle the situation where the stytch session
+  // changes after adding a new JWT authenticator.
+  useEffect(() => {
+    if (user && abstractAccount) {
+      const activeJwtAuthenticator = abstractAccount.authenticators.find(
+        (authenticator) =>
+          authenticator.type === "Jwt" &&
+          user.user_id ===
+            pullUserIdFromAuthenticator(authenticator.authenticator),
+      );
+      if (
+        activeJwtAuthenticator &&
+        abstractAccount.currentAuthenticatorIndex !==
+          activeJwtAuthenticator.authenticatorIndex
+      ) {
+        setAbstractAccount({
+          ...abstractAccount,
+          currentAuthenticatorIndex: activeJwtAuthenticator.authenticatorIndex,
+        });
+      }
+    }
+  }, [user, abstractAccount, setAbstractAccount]);
 
   const copyXIONAddress = () => {
-    if (account?.id) {
-      navigator.clipboard.writeText(account?.id);
+    if (abstractAccount?.id) {
+      navigator.clipboard.writeText(abstractAccount?.id);
     }
   };
 
@@ -87,13 +104,24 @@ export const AccountInfo = ({
     }
   };
 
+  function pullUserIdFromAuthenticator(authenticator: string) {
+    const [, userId] = authenticator.split(".");
+    return userId;
+  }
+
   const renderAuthenticators = () => {
-    return account?.authenticators.map((authenticator) => {
+    return abstractAccount?.authenticators.map((authenticator) => {
       const currentAuthenticator =
-        account?.currentAuthenticatorIndex === authenticator.authenticatorIndex;
+        abstractAccount?.currentAuthenticatorIndex ===
+        authenticator.authenticatorIndex;
       let email = "";
       if (authenticator.type === "Jwt" && user) {
-        email = user.emails[0]?.email;
+        if (
+          user.user_id ===
+          pullUserIdFromAuthenticator(authenticator.authenticator)
+        ) {
+          email = user.emails[0]?.email;
+        }
       }
       return (
         <div
@@ -107,7 +135,9 @@ export const AccountInfo = ({
               )}
             </div>
             <div className="ui-flex ui-flex-1 ui-pr-1 ui-items-start md:!ui-items-center ui-flex-col-reverse md:!ui-flex-row">
-              {authenticator.type === "Jwt" && showUserEmail ? null : (
+              {authenticator.type === "Jwt" &&
+              showUserEmail &&
+              currentAuthenticator ? null : (
                 <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
                   <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
                     {handleAuthenticatorLabels(
@@ -116,7 +146,7 @@ export const AccountInfo = ({
                   </p>
                 </div>
               )}
-              {showUserEmail && (
+              {showUserEmail && currentAuthenticator && (
                 <div className="ui-ml-4 ui-flex ui-items-center ui-max-w-full ui-justify-between">
                   <p className="ui-text-[#6C6A6A] ui-break-all ui-max-w-full ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
                     {email}
@@ -142,7 +172,7 @@ export const AccountInfo = ({
           </div>
 
           <div className="ui-flex ui-items-center">
-            {authenticator.type === "Jwt" && (
+            {authenticator.type === "Jwt" && currentAuthenticator && (
               <button
                 className="ui-text-white ui-mr-4"
                 onClick={() => {
@@ -176,7 +206,7 @@ export const AccountInfo = ({
         className="ui-flex ui-cursor-pointer ui-items-center ui-justify-between ui-mb-10 ui-px-4 ui-w-full ui-h-16 ui-bg-black ui-rounded-lg"
       >
         <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
-          {truncateAddress(account?.id)}
+          {truncateAddress(abstractAccount?.id)}
         </p>
         <Popover>
           <PopoverTrigger>
@@ -211,7 +241,7 @@ export const AccountInfo = ({
         {/* <div className="flex flex-1 flex-col"></div> */}
       </div>
       <AbstraxionMigrate
-        currentCodeId={account.codeId}
+        currentCodeId={abstractAccount.codeId}
         updateContractCodeID={updateContractCodeID}
       />
       <RemoveAuthenticatorModal

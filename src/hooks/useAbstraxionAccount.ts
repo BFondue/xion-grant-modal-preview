@@ -38,8 +38,6 @@ export const useAbstraxionAccount = () => {
     setAbstractAccount,
   } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
-  console.log({ abstractAccount });
-
   // Should we confirm the value is indeed a ConnectionType?
   const loginType = localStorage.getItem("loginType") as ConnectionType;
   const [loginAuthenticator, setLoginAuthenticator] = useState(

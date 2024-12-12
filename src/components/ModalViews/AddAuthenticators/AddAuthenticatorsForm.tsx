@@ -17,7 +17,7 @@ import {
 } from "../../AbstraxionContext";
 import { useAbstraxionSigningClient } from "../../../hooks";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
-import { AAAlgo } from "../../../signers";
+import { AAAlgo, AbstractAccountJWTSigner } from "../../../signers";
 import {
   registeredCredentials,
   saveRegistration,
@@ -32,6 +32,7 @@ import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
 import { decodeJwt } from "jose";
+// import { useStytchUser } from "@stytch/react";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -198,7 +199,10 @@ export function AddAuthenticatorsForm({
     return;
   }
 
-  async function addJwtAuthenticator(session_jwt: string) {
+  async function addJwtAuthenticator(
+    session_jwt: string,
+    session_token: string,
+  ) {
     try {
       setIsLoading(true);
       const accountIndex = findLowestMissingOrNextIndex(
@@ -209,11 +213,9 @@ export function AddAuthenticatorsForm({
       console.log({ aud, sub });
       const formattedAud = Array.isArray(aud) ? aud[0] : aud;
 
-      // const { signature } = await (
-      //   client.abstractSigner as AbstractAccountJWTSigner
-      // ).signDirectArb(session_jwt);
-
-      // console.log({ signature, originalSignature });
+      const { signature } = await (
+        client.abstractSigner as AbstractAccountJWTSigner
+      ).signDirectArb(abstractAccount.id, session_token);
 
       const msg: AddJwtAuthenticator = {
         add_auth_method: {
@@ -222,7 +224,7 @@ export function AddAuthenticatorsForm({
               id: accountIndex,
               aud: formattedAud,
               sub,
-              token: Buffer.from(session_jwt, "utf-8").toString("base64"),
+              token: signature,
             },
           },
         },
@@ -230,7 +232,7 @@ export function AddAuthenticatorsForm({
 
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
-        type: AAAlgo.JWT,
+        type: "Jwt",
         authenticator: `${formattedAud}.${sub}`,
         authenticatorIndex: accountIndex,
       };
@@ -499,8 +501,8 @@ export function AddAuthenticatorsForm({
   if (isAddingEmail) {
     return (
       <AddEmail
-        onSuccess={(session_jwt) => {
-          addJwtAuthenticator(session_jwt);
+        onSuccess={(session_jwt, session_token) => {
+          addJwtAuthenticator(session_jwt, session_token);
           setIsAddingEmail(false);
           setIsSuccess(true);
         }}
