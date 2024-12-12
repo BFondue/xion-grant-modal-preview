@@ -3,6 +3,7 @@ import {
   AccountWalletLogo,
   Button,
   CopyIcon,
+  CosmosLogo,
   EmailIcon,
   EthereumLogo,
   EyeIcon,
@@ -69,7 +70,7 @@ export const AccountInfo = ({
   const handleAuthenticatorLabels = (type: authenticatorTypes) => {
     switch (type) {
       case "SECP256K1":
-        return "OKX Wallet";
+        return "Cosmos Wallet";
       case "ETHWALLET":
         return "EVM Wallet";
       case "JWT":
@@ -84,15 +85,7 @@ export const AccountInfo = ({
   const handleAuthenticatorLogos = (type: authenticatorTypes) => {
     switch (type) {
       case "SECP256K1":
-        return (
-          <img
-            className="ui-invert"
-            src="https://www.okx.com/cdn/assets/imgs/239/4A66953783FC5452.png"
-            height={24}
-            width={24}
-            alt="OKX Logo"
-          />
-        );
+        return <CosmosLogo />;
       case "ETHWALLET":
         return <EthereumLogo />;
       case "JWT":
