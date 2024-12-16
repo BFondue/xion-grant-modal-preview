@@ -1,30 +1,34 @@
-import React, { useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Input } from "../../../ui";
 import { useStytch } from "@stytch/react";
 import OtpForm from "../../../OtpForm";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../../../AbstraxionContext";
+import { Loading } from "../../../Loading";
 // import { useStytchUser } from "@stytch/react";
 
 export function AddEmail({
-  onSuccess,
+  onSubmit,
+  error,
+  onError,
 }: {
-  onSuccess: (session_jwt: string, session_token: string) => void;
+  onSubmit: (otp: string, methodId: string) => void;
+  error: string | null;
+  onError: (error: string) => void;
 }) {
   const [email, setEmail] = useState("");
   const [methodId, setMethodId] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const stytch = useStytch();
   //   const session_jwt = stytch.session.getTokens()?.session_jwt;
   //   const session_token = stytch.session.getTokens()?.session_token;
 
   //   console.log({ session_jwt, session_token });
 
-  const { setConnectionType } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
+  useEffect(() => {
+    if (error && !isCodeSent) {
+      setIsCodeSent(true);
+    }
+  }, [error, isCodeSent]);
 
   const handleEmail = async () => {
     try {
@@ -35,27 +39,25 @@ export function AddEmail({
       });
       setMethodId(method_id);
       setIsCodeSent(true);
-    } catch (error) {
-      console.error("Error sending verification code:", error);
+    } catch {
+      onError("Error sending verification code");
     }
   };
 
-  const handleOtp = async (otp: string) => {
-    try {
-      const { session_jwt, session_token } = await stytch.otps.authenticate(
-        otp,
-        methodId,
-        {
-          session_duration_minutes: 60,
-        },
-      );
-      setConnectionType("stytch");
-      localStorage.setItem("loginType", "stytch");
-      onSuccess(session_jwt, session_token);
-    } catch {
-      console.error("Error Verifying OTP Code");
-    }
+  const handleSubmit = async (otp: string) => {
+    setIsLoading(true);
+    await onSubmit(otp, methodId);
+    setIsLoading(false);
   };
+
+  if (isLoading) {
+    return (
+      <Loading
+        header="ADDING AUTHENTICATOR..."
+        message="We are adding an authenticator to your account. Don't leave the page or close the window. This will take a few seconds..."
+      />
+    );
+  }
 
   return (
     <div className="ui-flex ui-flex-col ui-gap-8 ui-items-center">
@@ -84,7 +86,12 @@ export function AddEmail({
           </Button>
         </>
       ) : (
-        <OtpForm handleOtp={handleOtp} handleResendCode={handleEmail} />
+        <OtpForm
+          handleOtp={handleSubmit}
+          handleResendCode={handleEmail}
+          error={error}
+          setError={onError}
+        />
       )}
     </div>
   );

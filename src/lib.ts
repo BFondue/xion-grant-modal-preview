@@ -7,8 +7,6 @@ const stytchOptions = {
   },
 };
 
-console.log("public token", import.meta.env.VITE_DEFAULT_STYTCH_PUBLIC_TOKEN);
-
 export const stytchClient = new StytchHeadlessClient(
   getEnvStringOrThrow(
     "VITE_DEFAULT_STYTCH_PUBLIC_TOKEN",

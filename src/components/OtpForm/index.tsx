@@ -6,11 +6,18 @@ type OtpCode = [string, string, string, string, string, string];
 interface OtpFormProps {
   handleOtp: (string) => void;
   handleResendCode: () => void;
+  error: string | null;
+  setError: (error: string) => void;
 }
 
-const OtpForm: React.FC<OtpFormProps> = ({ handleOtp, handleResendCode }) => {
+const OtpForm: React.FC<OtpFormProps> = ({
+  handleOtp,
+  handleResendCode,
+  error,
+  setError,
+}) => {
   const [otp, setOtp] = useState<OtpCode>(["", "", "", "", "", ""]);
-  const [otpError, setOtpError] = useState<string | null>(null);
+  // const [otpError, setOtpError] = useState<string | null>(error);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -37,7 +44,7 @@ const OtpForm: React.FC<OtpFormProps> = ({ handleOtp, handleResendCode }) => {
       await handleOtp(getOtp());
     } catch {
       setIsSubmitted(false);
-      setOtpError("Error Verifying OTP Code");
+      setError("Error Verifying OTP Code");
     }
   }
 
@@ -47,7 +54,7 @@ const OtpForm: React.FC<OtpFormProps> = ({ handleOtp, handleResendCode }) => {
       await handleResendCode();
       setTimeLeft(60);
     } catch {
-      setOtpError("Error Resending OTP Code");
+      setError("Error Resending OTP Code");
     }
   }
 
@@ -55,7 +62,7 @@ const OtpForm: React.FC<OtpFormProps> = ({ handleOtp, handleResendCode }) => {
     otp.every((digit) => /^\d$/.test(digit)) && otp.length === 6;
 
   const handleInputChange = (value: string, index: number) => {
-    setOtpError(null);
+    setError(null);
 
     if (value === "") {
       const newOtp = [...otp];
@@ -143,14 +150,14 @@ const OtpForm: React.FC<OtpFormProps> = ({ handleOtp, handleResendCode }) => {
             className={`ui-no-spinner ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-base ui-border ui-rounded-md ui-outline-none ui-border-gray-500 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-text-lg ${
               digit ? "ui-bg-[rgba(255,255,255,0.1)]" : "ui-bg-transparent"
             }  ${
-              otpError
+              error
                 ? "ui-border-inputError !ui-text-inputError ui-bg-inherit focus:!ui-border-inputError"
                 : ""
             }`}
           />
         ))}
       </div>
-      <p className="ui-mt-2 ui-text-center ui-text-inputError">{otpError}</p>
+      <p className="ui-mt-2 ui-text-center ui-text-inputError">{error}</p>
       <Button
         fullWidth={true}
         onClick={submitOtp}

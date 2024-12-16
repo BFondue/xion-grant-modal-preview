@@ -54,6 +54,7 @@ export const AbstraxionSignin = () => {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isOnOtpStep, setIsOnOtpStep] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
   const tokenProcessed = useRef(false);
 
   const { suggestAndConnect } = useSuggestChainAndConnect({
@@ -139,7 +140,7 @@ export const AbstraxionSignin = () => {
       });
       localStorage.setItem("loginType", "stytch");
     } catch {
-      console.error("Error Verifying OTP Code");
+      setOtpError("Error Verifying OTP Code");
     }
   };
 
@@ -254,7 +255,12 @@ export const AbstraxionSignin = () => {
               Please check your email for the verification code
             </h2>
           </div>
-          <OtpForm handleOtp={handleOtp} handleResendCode={handleEmail} />
+          <OtpForm
+            error={otpError}
+            setError={setOtpError}
+            handleOtp={handleOtp}
+            handleResendCode={handleEmail}
+          />
         </>
       ) : (
         <>

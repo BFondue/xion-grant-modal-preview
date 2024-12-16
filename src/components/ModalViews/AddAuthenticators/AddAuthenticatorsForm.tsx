@@ -31,8 +31,7 @@ import { getGasCalculation } from "../../../utils/gas-utils";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
-import { decodeJwt } from "jose";
-// import { useStytchUser } from "@stytch/react";
+import { useStytch } from "@stytch/react";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -79,14 +78,16 @@ export function AddAuthenticatorsForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isAddingEmail, setIsAddingEmail] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   // Context state
-  const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
+  const { abstractAccount, setAbstractAccount, chainInfo, apiUrl } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
   // Hooks
   const { client } = useAbstraxionSigningClient();
+  const stytch = useStytch();
   const { data: grazAccount } = useAccount();
   const { suggestAndConnect } = useSuggestChainAndConnect({
     onSuccess: async () => await addKeplrAuthenticator(),
@@ -199,19 +200,35 @@ export function AddAuthenticatorsForm({
     return;
   }
 
-  async function addJwtAuthenticator(
-    session_jwt: string,
-    session_token: string,
-  ) {
+  async function addJwtAuthenticator(otp: string, methodId: string) {
     try {
-      setIsLoading(true);
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount?.authenticators,
       );
+      const { session_token } = await stytch.session.getTokens();
 
-      const { aud, sub } = decodeJwt(session_jwt);
-      console.log({ aud, sub });
-      const formattedAud = Array.isArray(aud) ? aud[0] : aud;
+      // Need to pass session_token to
+      const authResponse = await fetch(
+        `${apiUrl}/api/v1/sessions/authenticate-no-session`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            otp,
+            methodId,
+          }),
+        },
+      );
+      const authResponseData = await authResponse.json();
+      if (!authResponse.ok) {
+        setOtpError("Error Verifying OTP Code");
+        return;
+      }
+
+      const { user_id: sub, project_id: aud } = authResponseData.data;
+      console.log({ sub, aud, session_token });
 
       const { signature } = await (
         client.abstractSigner as AbstractAccountJWTSigner
@@ -222,7 +239,7 @@ export function AddAuthenticatorsForm({
           add_authenticator: {
             Jwt: {
               id: accountIndex,
-              aud: formattedAud,
+              aud,
               sub,
               token: signature,
             },
@@ -233,11 +250,11 @@ export function AddAuthenticatorsForm({
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
         type: "Jwt",
-        authenticator: `${formattedAud}.${sub}`,
+        authenticator: `${aud}.${sub}`,
         authenticatorIndex: accountIndex,
       };
       await handleAddAuthenticator(msg, authenticatorStateData);
-      // setIsAddingEmail(true);
+      setIsAddingEmail(true);
     } catch (error) {
       console.warn(error);
       setErrorMessage("Something went wrong trying to add authenticator");
@@ -501,11 +518,9 @@ export function AddAuthenticatorsForm({
   if (isAddingEmail) {
     return (
       <AddEmail
-        onSuccess={(session_jwt, session_token) => {
-          addJwtAuthenticator(session_jwt, session_token);
-          setIsAddingEmail(false);
-          setIsSuccess(true);
-        }}
+        onSubmit={addJwtAuthenticator}
+        error={otpError}
+        onError={setOtpError}
       />
     );
   }
