@@ -205,7 +205,6 @@ export function AddAuthenticatorsForm({
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount?.authenticators,
       );
-      const { session_token } = await stytch.session.getTokens();
 
       // Need to pass session_token to
       const authResponse = await fetch(
@@ -228,11 +227,10 @@ export function AddAuthenticatorsForm({
       }
 
       const { user_id: sub, project_id: aud } = authResponseData.data;
-      console.log({ sub, aud, session_token });
 
       const { signature } = await (
         client.abstractSigner as AbstractAccountJWTSigner
-      ).signDirectArb(abstractAccount.id, session_token);
+      ).signDirectArb(abstractAccount.id);
 
       const msg: AddJwtAuthenticator = {
         add_auth_method: {
