@@ -3,7 +3,6 @@ import { Button, Input } from "../../../ui";
 import { useStytch } from "@stytch/react";
 import OtpForm from "../../../OtpForm";
 import { Loading } from "../../../Loading";
-// import { useStytchUser } from "@stytch/react";
 
 export function AddEmail({
   onSubmit,
@@ -19,10 +18,6 @@ export function AddEmail({
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const stytch = useStytch();
-  //   const session_jwt = stytch.session.getTokens()?.session_jwt;
-  //   const session_token = stytch.session.getTokens()?.session_token;
-
-  //   console.log({ session_jwt, session_token });
 
   useEffect(() => {
     if (error && !isCodeSent) {

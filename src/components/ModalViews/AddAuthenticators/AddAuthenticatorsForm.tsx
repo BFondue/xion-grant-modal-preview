@@ -17,7 +17,7 @@ import {
 } from "../../AbstraxionContext";
 import { useAbstraxionSigningClient } from "../../../hooks";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
-import { AAAlgo, AbstractAccountJWTSigner } from "../../../signers";
+import { AAAlgo } from "../../../signers";
 import {
   registeredCredentials,
   saveRegistration,
@@ -31,6 +31,7 @@ import { getGasCalculation } from "../../../utils/gas-utils";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
+import { decodeJwt, JWTPayload } from "jose";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -130,6 +131,7 @@ export function AddAuthenticatorsForm({
   function postAddFunction() {
     setIsSuccess(true);
     setIsLoading(false);
+    setIsAddingEmail(false);
   }
 
   async function handleAddAuthenticator(
@@ -170,8 +172,6 @@ export function AddAuthenticatorsForm({
 
     const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
 
-    console.log(abstractAccount.id, addMsg, validFeeGranter);
-
     const simmedGas = await client.simulate(
       abstractAccount.id,
       [addMsg],
@@ -206,6 +206,14 @@ export function AddAuthenticatorsForm({
         abstractAccount?.authenticators,
       );
 
+      const hashSignBytes = new Uint8Array(
+        Buffer.from(abstractAccount.id, "utf-8"),
+      );
+      const hashedMessage = Buffer.from(hashSignBytes).toString("base64");
+      const session_custom_claims = {
+        transaction_hash: hashedMessage,
+      };
+
       const authResponse = await fetch(
         `${apiUrl}/api/v1/sessions/authenticate-no-session`,
         {
@@ -216,6 +224,7 @@ export function AddAuthenticatorsForm({
           body: JSON.stringify({
             otp,
             methodId,
+            session_custom_claims,
           }),
         },
       );
@@ -225,18 +234,22 @@ export function AddAuthenticatorsForm({
         return;
       }
 
-      const { user_id: sub, project_id: aud } = authResponseData.data;
+      const { aud, sub } = decodeJwt(
+        authResponseData.data.session_jwt,
+      ) as JWTPayload;
+      const formattedAud = Array.isArray(aud) ? aud[0] : aud;
 
-      const { signature } = await (
-        client.abstractSigner as AbstractAccountJWTSigner
-      ).signDirectArb(abstractAccount.id);
+      const signature = Buffer.from(
+        authResponseData.data.session_jwt,
+        "utf-8",
+      ).toString("base64");
 
       const msg: AddJwtAuthenticator = {
         add_auth_method: {
           add_authenticator: {
             Jwt: {
               id: accountIndex,
-              aud,
+              aud: formattedAud,
               sub,
               token: signature,
             },
@@ -250,10 +263,7 @@ export function AddAuthenticatorsForm({
         authenticator: `${aud}.${sub}`,
         authenticatorIndex: accountIndex,
       };
-
-      console.log({ msg, authenticatorStateData });
       await handleAddAuthenticator(msg, authenticatorStateData);
-      setIsAddingEmail(true);
     } catch (error) {
       console.warn(error);
       setErrorMessage("Something went wrong trying to add authenticator");

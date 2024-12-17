@@ -62,7 +62,6 @@ export const useAbstraxionAccount = () => {
         const { aud, sub } = session_jwt
           ? decodeJwt(session_jwt)
           : { aud: undefined, sub: undefined };
-        // console.log({ aud, sub });
         authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
         break;
       }
