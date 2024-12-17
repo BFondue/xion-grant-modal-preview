@@ -565,7 +565,7 @@ export function AddAuthenticatorsForm({
           >
             SKIP FOR NOW
           </Button> */}
-          <div className="ui-flex ui-gap-4 ui-w-full ui-justify-center">
+          <div className="ui-grid ui-grid-cols-3 ui-gap-4 ui-w-full ui-justify-center">
             <Button
               className={
                 selectedAuthenticator === "jwt" ? "!ui-border-white" : ""
