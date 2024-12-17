@@ -31,7 +31,6 @@ import { getGasCalculation } from "../../../utils/gas-utils";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
-import { useStytch } from "@stytch/react";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -87,7 +86,6 @@ export function AddAuthenticatorsForm({
 
   // Hooks
   const { client } = useAbstraxionSigningClient();
-  const stytch = useStytch();
   const { data: grazAccount } = useAccount();
   const { suggestAndConnect } = useSuggestChainAndConnect({
     onSuccess: async () => await addKeplrAuthenticator(),
@@ -172,6 +170,8 @@ export function AddAuthenticatorsForm({
 
     const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
 
+    console.log(abstractAccount.id, addMsg, validFeeGranter);
+
     const simmedGas = await client.simulate(
       abstractAccount.id,
       [addMsg],
@@ -206,7 +206,6 @@ export function AddAuthenticatorsForm({
         abstractAccount?.authenticators,
       );
 
-      // Need to pass session_token to
       const authResponse = await fetch(
         `${apiUrl}/api/v1/sessions/authenticate-no-session`,
         {
@@ -251,6 +250,8 @@ export function AddAuthenticatorsForm({
         authenticator: `${aud}.${sub}`,
         authenticatorIndex: accountIndex,
       };
+
+      console.log({ msg, authenticatorStateData });
       await handleAddAuthenticator(msg, authenticatorStateData);
       setIsAddingEmail(true);
     } catch (error) {
