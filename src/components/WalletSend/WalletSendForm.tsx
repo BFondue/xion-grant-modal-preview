@@ -1,12 +1,13 @@
 import React, { ChangeEvent, useState } from "react";
 import { ErrorDisplay } from "../ErrorDisplay";
-import { useAbstraxionAccount } from "../../hooks";
+import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { isValidWalletAddress } from "../../utils";
 import { WalletSendInput } from "./WalletSendInput";
 import { WalletSendReview } from "./WalletSendReview";
 import { WalletSendSuccess } from "./WalletSendSuccess";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
 import { isMainnet } from "../../utils";
+import { WalletSendWarning } from "./WalletSendWarning";
 
 export function WalletSendForm({
   setIsOpen,
@@ -28,9 +29,12 @@ export function WalletSendForm({
   const [userMemo, setUserMemo] = useState("");
 
   const [isOnReviewStep, setIsOnReviewStep] = useState(false);
+  const [isOnWarningStep, setIsOnWarningStep] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [sendTokensError, setSendTokensError] = useState(false);
+
+  const client = useAbstraxionSigningClient();
 
   function updateSendAmount(inputValue: string) {
     setAmountError("");
@@ -61,7 +65,16 @@ export function WalletSendForm({
     updateSendAmount(inputValue);
   }
 
-  function handleStart() {
+  async function isExistingAddress(address: string) {
+    try {
+      return await client.client.getAccount(address);
+    } catch {
+      setIsOnWarningStep(true);
+      return false;
+    }
+  }
+
+  async function handleStart() {
     if (!sendAmount || sendAmount === "0") {
       setAmountError("No amount entered");
       return;
@@ -74,6 +87,13 @@ export function WalletSendForm({
 
     if (!isValidWalletAddress(recipientAddress)) {
       setRecipientAddressError("Invalid wallet address");
+      return;
+    }
+
+    const addressExists = await isExistingAddress(recipientAddress);
+
+    if (!addressExists) {
+      setIsOnWarningStep(true);
       return;
     }
 
@@ -128,6 +148,14 @@ export function WalletSendForm({
           onBack={() => {
             setIsOnReviewStep(false);
           }}
+        />
+      ) : isOnWarningStep ? (
+        <WalletSendWarning
+          onContinue={() => {
+            setIsOnWarningStep(false);
+            setIsOnReviewStep(true);
+          }}
+          onCancel={() => setIsOnWarningStep(false)}
         />
       ) : (
         <WalletSendInput
