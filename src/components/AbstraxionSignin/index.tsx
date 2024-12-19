@@ -65,7 +65,6 @@ export const AbstraxionSignin = () => {
     },
   });
 
-  // const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const { setConnectionType, setAbstraxionError, chainInfo } = useContext(
     AbstraxionContext,
