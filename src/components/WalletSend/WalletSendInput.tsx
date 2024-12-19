@@ -83,6 +83,11 @@ export function WalletSendInput({
           sendAmount,
           selectedCurrencyDenom,
         );
+
+        if (estimatedFee === null) {
+          setIsCalculatingFee(false);
+          return;
+        }
       } else {
         setEstimatedFee(null);
       }
