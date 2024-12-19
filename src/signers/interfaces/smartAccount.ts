@@ -78,7 +78,7 @@ export interface AddJwtAuthenticator {
     add_authenticator: {
       Jwt: {
         id: number;
-        aud: string;
+        aud: string | string[];
         sub: string;
         token: string; //base64 encoded
       };

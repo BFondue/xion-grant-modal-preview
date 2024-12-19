@@ -1,4 +1,16 @@
+// import { base64url, decodeJwt } from "jose";
 import { Authenticator } from "../indexer-strategies/types";
+
+// interface JwtPayload {
+//   iat?: number;
+//   iss?: string;
+//   aud?: string | string[];
+//   exp?: number;
+//   nbf?: number;
+//   jti?: string;
+//   sub?: string;
+//   transaction_hash?: string;
+// }
 
 /**
  * Returns the lowest missing or next index

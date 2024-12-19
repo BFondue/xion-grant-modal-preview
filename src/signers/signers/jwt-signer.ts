@@ -97,13 +97,17 @@ export class AbstractAccountJWTSigner extends AASigner {
    * property of the session claims property to the hash of the passed msg
    * @param signerAddress
    * @param message Arbitrary message to be signed
+   * @param customToken Custom JWT token to be used for signing
    * @returns
    */
-  async signDirectArb(message: string): Promise<{ signature: string }> {
+  async signDirectArb(
+    message: string,
+    customToken?: string,
+  ): Promise<{ signature: string }> {
     if (this.sessionToken === undefined) {
       throw new Error("stytch session token is undefined");
     }
-    const hashSignBytes = sha256(new Uint8Array(Buffer.from(message, "utf-8")));
+    const hashSignBytes = new Uint8Array(Buffer.from(message, "utf-8"));
     const hashedMessage = Buffer.from(hashSignBytes).toString("base64");
 
     const authResponse = await fetch(
@@ -114,7 +118,7 @@ export class AbstractAccountJWTSigner extends AASigner {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          session_token: this.sessionToken,
+          session_token: customToken || this.sessionToken,
           session_duration_minutes: 60 * 24 * 30,
           session_custom_claims: {
             transaction_hash: hashedMessage,
@@ -130,10 +134,9 @@ export class AbstractAccountJWTSigner extends AASigner {
     const authResponseData = await authResponse.json();
 
     return {
-      signature: Buffer.from(
-        authResponseData.data.session_jwt,
-        "utf-8",
-      ).toString("base64"),
+      signature: Buffer.from(authResponseData.data.session_jwt).toString(
+        "base64",
+      ),
     };
   }
 }

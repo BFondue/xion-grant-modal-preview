@@ -73,7 +73,6 @@ export function App() {
                       Account Info
                     </h3>
                     <AccountInfo
-                      account={account}
                       updateContractCodeID={updateAbstractAccountCodeId}
                     />
                   </div>

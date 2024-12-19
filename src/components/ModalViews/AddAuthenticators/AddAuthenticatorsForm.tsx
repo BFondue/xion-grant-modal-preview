@@ -4,7 +4,13 @@ import { create } from "@github/webauthn-json/browser-ponyfill";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { Button, KeplrLogo, MetamaskLogo, PasskeyIcon } from "../../ui";
+import {
+  Button,
+  EmailIcon,
+  KeplrLogo,
+  MetamaskLogo,
+  PasskeyIcon,
+} from "../../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -17,10 +23,15 @@ import {
   saveRegistration,
 } from "../../../utils/webauthn-utils";
 import { Loading } from "../../Loading";
-import { AddAuthenticator } from "../../../signers/interfaces";
+import {
+  AddAuthenticator,
+  AddJwtAuthenticator,
+} from "../../../signers/interfaces";
 import { getGasCalculation } from "../../../utils/gas-utils";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
+import { AddEmail } from "./AddEmail/AddEmail";
+import { decodeJwt, JWTPayload } from "jose";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -38,7 +49,20 @@ const shouldEnableMetamask =
 const shouldEnableKeplr =
   deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && keplrFlag);
 
-type AuthenticatorStates = "none" | "keplr" | "metamask" | "okx" | "passkey";
+type AuthenticatorStates =
+  | "none"
+  | "keplr"
+  | "metamask"
+  | "okx"
+  | "passkey"
+  | "jwt";
+
+interface AuthenticatorStateData {
+  id: string;
+  type: string;
+  authenticator: string;
+  authenticatorIndex: number;
+}
 
 export function AddAuthenticatorsForm({
   setIsOpen,
@@ -53,9 +77,11 @@ export function AddAuthenticatorsForm({
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isAddingEmail, setIsAddingEmail] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   // Context state
-  const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
+  const { abstractAccount, setAbstractAccount, chainInfo, apiUrl } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
@@ -94,6 +120,9 @@ export function AddAuthenticatorsForm({
       case "passkey":
         await addPasskeyAuthenticator();
         break;
+      case "jwt":
+        setIsAddingEmail(true);
+        break;
       default:
         break;
     }
@@ -102,13 +131,7 @@ export function AddAuthenticatorsForm({
   function postAddFunction() {
     setIsSuccess(true);
     setIsLoading(false);
-  }
-
-  interface AuthenticatorStateData {
-    id: string;
-    type: string;
-    authenticator: string;
-    authenticatorIndex: number;
+    setIsAddingEmail(false);
   }
 
   async function handleAddAuthenticator(
@@ -175,6 +198,78 @@ export function AddAuthenticatorsForm({
 
     postAddFunction();
     return;
+  }
+
+  async function addJwtAuthenticator(otp: string, methodId: string) {
+    try {
+      const accountIndex = findLowestMissingOrNextIndex(
+        abstractAccount?.authenticators,
+      );
+
+      const hashSignBytes = new Uint8Array(
+        Buffer.from(abstractAccount.id, "utf-8"),
+      );
+      const hashedMessage = Buffer.from(hashSignBytes).toString("base64");
+      const session_custom_claims = {
+        transaction_hash: hashedMessage,
+      };
+
+      const authResponse = await fetch(
+        `${apiUrl}/api/v1/sessions/authenticate-no-session`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            otp,
+            methodId,
+            session_custom_claims,
+          }),
+        },
+      );
+      const authResponseData = await authResponse.json();
+      if (!authResponse.ok) {
+        setOtpError("Error Verifying OTP Code");
+        return;
+      }
+
+      const { aud, sub } = decodeJwt(
+        authResponseData.data.session_jwt,
+      ) as JWTPayload;
+      const formattedAud = Array.isArray(aud) ? aud[0] : aud;
+
+      const signature = Buffer.from(
+        authResponseData.data.session_jwt,
+        "utf-8",
+      ).toString("base64");
+
+      const msg: AddJwtAuthenticator = {
+        add_auth_method: {
+          add_authenticator: {
+            Jwt: {
+              id: accountIndex,
+              aud: formattedAud,
+              sub,
+              token: signature,
+            },
+          },
+        },
+      };
+
+      const authenticatorStateData = {
+        id: `${abstractAccount.id}-${accountIndex}`,
+        type: "Jwt",
+        authenticator: `${aud}.${sub}`,
+        authenticatorIndex: accountIndex,
+      };
+      await handleAddAuthenticator(msg, authenticatorStateData);
+    } catch (error) {
+      console.warn(error);
+      setErrorMessage("Something went wrong trying to add authenticator");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function addKeplrAuthenticator() {
@@ -429,6 +524,16 @@ export function AddAuthenticatorsForm({
     );
   }
 
+  if (isAddingEmail) {
+    return (
+      <AddEmail
+        onSubmit={addJwtAuthenticator}
+        error={otpError}
+        onError={setOtpError}
+      />
+    );
+  }
+
   return (
     <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
       <div className="ui-flex ui-flex-col ui-gap-2">
@@ -460,7 +565,16 @@ export function AddAuthenticatorsForm({
           >
             SKIP FOR NOW
           </Button> */}
-          <div className="ui-flex ui-gap-4 ui-w-full ui-justify-center">
+          <div className="ui-grid ui-grid-cols-3 ui-gap-4 ui-w-full ui-justify-center">
+            <Button
+              className={
+                selectedAuthenticator === "jwt" ? "!ui-border-white" : ""
+              }
+              onClick={() => handleSwitch("jwt")}
+              structure="outlined"
+            >
+              <EmailIcon />
+            </Button>
             {shouldEnableKeplr ? (
               <Button
                 className={
