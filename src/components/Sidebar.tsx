@@ -22,7 +22,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       {
         text: "history",
         path: isMainnet
-          ? "https://explorer.mainnet.burnt.com/xion-mainnet-1/"
+          ? "https://www.mintscan.io/xion"
           : "https://explorer.burnt.com/xion-testnet-1/",
         external: true,
       },
