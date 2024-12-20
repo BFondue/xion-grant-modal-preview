@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:mainnet": "vite build --mode mainnet",
     "check-types": "tsc --noEmit",
+    "changeset": "changeset",
     "preview": "vite preview",
     "lint": "eslint",
     "format:check": "prettier . --check",
@@ -42,6 +43,7 @@
     "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.11",
     "@eslint/compat": "^1.2.1",
     "@eslint/js": "^9.13.0",
     "@keplr-wallet/types": "^0.12.143",
