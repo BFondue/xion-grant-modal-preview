@@ -1,26 +1,44 @@
-name: Check for Changesets
+name: Changesets
 
 on:
   pull_request:
-    paths:
-      - "**/*"
+    types: [opened, edited, reopened, synchronize]
+
+  push:
+    branches: [main]
 
 jobs:
-  changesets:
+  check-for-changeset:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Check out the repo
+        uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
+      - name: Install dependencies
+        run: npm install
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: Verify changeset existence
+        run: npx changeset status --verbose
 
-      - name: Check for Changeset
-        uses: changesets/action@v2
-        with:
-          check: true
+  release:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create version bump
+        run: npx changeset version
+
+      - name: Commit and tag version changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "chore: version bump from Changesets"
+          git push --follow-tags
+
