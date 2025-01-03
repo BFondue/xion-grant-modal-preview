@@ -3,7 +3,7 @@ name: Check for Changesets
 on:
   pull_request:
     paths:
-      - '**/*'
+      - "**/*"
 
 jobs:
   changesets:

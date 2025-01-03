@@ -19,5 +19,7 @@ export interface SelectedSmartAccount extends SmartAccountWithCodeId {
 }
 
 export interface IndexerStrategy {
-  fetchSmartAccounts(loginAuthenticator: string): Promise<SmartAccountWithCodeId[]>;
+  fetchSmartAccounts(
+    loginAuthenticator: string,
+  ): Promise<SmartAccountWithCodeId[]>;
 }

@@ -65,7 +65,6 @@ export const AbstraxionSignin = () => {
     },
   });
 
-
   const { setConnectionType, setAbstraxionError, chainInfo } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;

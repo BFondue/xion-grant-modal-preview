@@ -1,5 +1,5 @@
 import axios from "axios";
-import {IndexerStrategy, SmartAccountWithCodeId} from "./types";
+import { IndexerStrategy, SmartAccountWithCodeId } from "./types";
 
 interface NumiaAuthenticatorResp {
   type: string;
