@@ -1,0 +1,47 @@
+name: Changesets
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+  push:
+    branches: [main]
+
+jobs:
+  check-for-changeset:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verify changeset existence
+        run: npx changeset status --since origin/main
+
+  release:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create version bump
+        run: npx changeset version --since origin/main
+
+      - name: Commit and tag version changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "chore: version bump from Changesets"
+          git push --follow-tags

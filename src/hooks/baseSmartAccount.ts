@@ -4,11 +4,17 @@
  * I hate the name of this hook, should workshop a better one.
  *
  * */
-import {QueryKey, useQuery} from "@tanstack/react-query";
-import {useAbstraxionAccount} from "./useAbstraxionAccount";
-import {IndexerStrategy, SmartAccountWithCodeId,} from "../indexer-strategies/types";
-import {useContext, useEffect, useState} from "react";
-import {AbstraxionContext, AbstraxionContextProps,} from "../components/AbstraxionContext";
+import { QueryKey, useQuery } from "@tanstack/react-query";
+import { useAbstraxionAccount } from "./useAbstraxionAccount";
+import {
+  IndexerStrategy,
+  SmartAccountWithCodeId,
+} from "../indexer-strategies/types";
+import { useContext, useEffect, useState } from "react";
+import {
+  AbstraxionContext,
+  AbstraxionContextProps,
+} from "../components/AbstraxionContext";
 
 const POLL_INTERVAL_DEFAULT = 3000;
 

@@ -7,7 +7,9 @@ export interface ITextFieldProps extends BaseInputProps {
   className?: string;
   error?: string;
   baseInputClassName?: string;
-  onKeyDown?: (e: any) => false | Promise<void>;
+  onKeyDown?: (
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => false | Promise<void>;
 }
 export function Input({
   className,
@@ -26,7 +28,7 @@ export function Input({
     setIsInputFocused(true);
   };
 
-  const handleBlur = (event: any) => {
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (event.target.value === "") {
       setIsInputFocused(false);
     }
