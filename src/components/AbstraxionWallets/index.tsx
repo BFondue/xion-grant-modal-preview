@@ -10,6 +10,7 @@ import { useAbstraxionAccount } from "../../hooks";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { useGetSmartAccountsStrategy } from "../../hooks/useGetSmartAccountsStrategy";
 import { Button, Spinner, WalletIcon } from "../ui";
+import { ErrorDisplay } from "../ErrorDisplay";
 
 export const AbstraxionWallets = () => {
   const {
@@ -69,8 +70,16 @@ export const AbstraxionWallets = () => {
   ]);
 
   if (error) {
-    setAbstraxionError("Failed to fetch accounts");
-    return null;
+    return (
+      <ErrorDisplay
+        title="Failed to fetch accounts"
+        message="There was an error fetching your accounts. Please try reloading the page."
+        onClose={() => {
+          setAbstraxionError("");
+          xionDisconnect();
+        }}
+      />
+    );
   }
 
   if (isGeneratingNewWallet) {
