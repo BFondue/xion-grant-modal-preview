@@ -134,8 +134,8 @@ export const AbstraxionWallets = () => {
               </div>
             ))
           ) : (
-            <>
-              <p>No Accounts Found.</p>
+            <div className="ui-flex ui-flex-col ui-gap-4 ui-items-center ui-justify-center ui-text-center">
+              <p className="ui-text-sm ui-text-white/50">No Accounts Found.</p>
               {connectionType !== "stytch" ? (
                 <p className="ui-text-center ui-text-neutral-400">
                   This authenticator can only be used as a backup right now.
