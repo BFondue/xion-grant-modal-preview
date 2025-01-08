@@ -27,21 +27,20 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
+      - name: Checkout Repo
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
       - name: Install dependencies
         run: npm install
 
-      - name: Create version bump
-        run: npx changeset version --since origin/main
-
-      - name: Commit and tag version changes
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add .
-          git commit -m "chore: version bump from Changesets"
-          git push --follow-tags
+      - name: Create Release Pull Request
+        uses: changesets/action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
