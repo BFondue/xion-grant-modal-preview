@@ -10,6 +10,7 @@ import { useAbstraxionAccount } from "../../hooks";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { useGetSmartAccountsStrategy } from "../../hooks/useGetSmartAccountsStrategy";
 import { Button, Spinner, WalletIcon } from "../ui";
+import { ErrorDisplay } from "../ErrorDisplay";
 
 export const AbstraxionWallets = () => {
   const {
@@ -69,8 +70,16 @@ export const AbstraxionWallets = () => {
   ]);
 
   if (error) {
-    setAbstraxionError("Failed to fetch accounts");
-    return null;
+    return (
+      <ErrorDisplay
+        title="Failed to fetch accounts"
+        message="There was an error fetching your accounts. Please try reloading the page."
+        onClose={() => {
+          setAbstraxionError("");
+          xionDisconnect();
+        }}
+      />
+    );
   }
 
   if (isGeneratingNewWallet) {
@@ -134,8 +143,8 @@ export const AbstraxionWallets = () => {
               </div>
             ))
           ) : (
-            <div className="ui-flex ui-flex-col ui-gap-4 ui-items-center ui-justify-center ui-text-center">
-              <p className="ui-text-sm ui-text-white/50">No Accounts Found.</p>
+            <>
+              <p>No Accounts Found.</p>
               {connectionType !== "stytch" ? (
                 <p className="ui-text-center ui-text-neutral-400">
                   This authenticator can only be used as a backup right now.
