@@ -1,5 +1,18 @@
 # abstraxion-dashboard
 
+## 0.2.0
+
+### Minor Changes
+
+- 73e21cf: Added error handling modal for indexer failure
+
+### Patch Changes
+
+- 90ef1b2: Updated release changeset job to utilize official action.
+- 1e7089b: Removed node setup step in changeset release job.
+- 808c57e: Added changeset tooling
+- a3cda95: Fixed changeset config
+
 ## 0.2.0-alpha.27
 
 ### Minor Changes
