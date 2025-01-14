@@ -1,5 +1,11 @@
 # abstraxion-dashboard
 
+## 0.2.1
+
+### Patch Changes
+
+- 6896393: Upated changeset github workflow
+
 ## 0.2.0
 
 ### Minor Changes
