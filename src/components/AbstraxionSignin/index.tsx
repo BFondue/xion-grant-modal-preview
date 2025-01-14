@@ -19,7 +19,7 @@ import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../AbstraxionContext";
-import { getHumanReadablePubkey, isMainnet } from "../../utils";
+import { getHumanReadablePubkey } from "../../utils";
 import {
   convertToStandardBase64,
   registeredCredentials,
@@ -106,11 +106,6 @@ export const AbstraxionSignin = () => {
   const handleEmail = async () => {
     if (!email) {
       setEmailError("Please enter your email");
-      return;
-    }
-
-    if (googleOAuthFlag && email.endsWith("@gmail.com") && isMainnet) {
-      await loginWithGoogle();
       return;
     }
 
