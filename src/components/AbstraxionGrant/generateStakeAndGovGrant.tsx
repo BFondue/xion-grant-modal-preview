@@ -16,6 +16,7 @@ import {
 } from "cosmjs-types/cosmos/feegrant/v1beta1/feegrant";
 import { MsgGrantAllowance } from "cosmjs-types/cosmos/feegrant/v1beta1/tx";
 import { MsgVote } from "cosmjs-types/cosmos/gov/v1beta1/tx";
+import { MsgSubmitProposal } from "cosmjs-types/cosmos/gov/v1beta1/tx";
 
 export const generateStakeAndGovGrant = (
   expiration: bigint,
@@ -60,10 +61,12 @@ export const generateStakeAndGovGrant = (
   };
 
   // Need to grant MsgWithdrawDelegatorReward and MsgCancelUnbondingDelegation
+  // also MsgVote and MsgSubmitProposal
   const genericMsgGrants = [
     MsgWithdrawDelegatorReward.typeUrl,
     MsgCancelUnbondingDelegation.typeUrl,
     MsgVote.typeUrl,
+    MsgSubmitProposal.typeUrl,
   ].map((msg) => ({
     typeUrl: MsgGrant.typeUrl,
     value: MsgGrant.fromPartial({
