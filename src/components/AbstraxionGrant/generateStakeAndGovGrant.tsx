@@ -16,7 +16,7 @@ import {
 } from "cosmjs-types/cosmos/feegrant/v1beta1/feegrant";
 import { MsgGrantAllowance } from "cosmjs-types/cosmos/feegrant/v1beta1/tx";
 import { MsgVote } from "cosmjs-types/cosmos/gov/v1beta1/tx";
-import { MsgSubmitProposal } from "cosmjs-types/cosmos/gov/v1beta1/tx";
+import { MsgSubmitProposal } from "cosmjs-types/cosmos/gov/v1/tx";
 
 export const generateStakeAndGovGrant = (
   expiration: bigint,
