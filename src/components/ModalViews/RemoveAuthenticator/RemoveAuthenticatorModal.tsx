@@ -18,9 +18,11 @@ export default function RemoveAuthenticatorModal({
         className="ui-text-white"
         onPointerDownOutside={(e: CustomEvent) => e.preventDefault()}
       >
-        <DialogClose className="ui-absolute ui-top-5 ui-right-10">
-          <CloseIcon className="ui-stroke-white/50" />
-        </DialogClose>
+        <div className="ui-flex ui-justify-end ui-absolute ui-top-10 ui-right-10">
+          <DialogClose className="ui-inline-flex">
+            <CloseIcon className="ui-stroke-white/50 " />
+          </DialogClose>
+        </div>
         <RemoveAuthenticatorForm
           authenticator={authenticator}
           setIsOpen={setIsOpen}

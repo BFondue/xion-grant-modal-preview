@@ -18,7 +18,7 @@ export const CloseIcon = ({
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={cn("ui-h-5 ui-w-5", className)}
+    className={cn("ui-h-6 ui-w-6", className)}
     onClick={onClick}
   >
     <path d="M18 6 6 18" />

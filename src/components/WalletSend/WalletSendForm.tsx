@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { isValidWalletAddress } from "../../utils";
@@ -74,19 +74,38 @@ export function WalletSendForm({
     }
   }
 
+  function checkSendAmountInput() {
+    if (Number(sendAmount) > selectedCurrency.value && sendAmount !== "") {
+      setAmountError("Input is greater than your current balance");
+      return false;
+    } else if (sendAmount && Number(sendAmount) < selectedCurrency.value) {
+      setAmountError("");
+      return true;
+    }
+
+    return true;
+  }
+
+  function checkRecipientAddressInput() {
+    if (!isValidWalletAddress(recipientAddress)) {
+      setRecipientAddressError("Invalid wallet address");
+      return false;
+    }
+
+    return true;
+  }
+
   async function handleStart() {
     if (!sendAmount || sendAmount === "0") {
       setAmountError("No amount entered");
       return;
     }
 
-    if (Number(sendAmount) > selectedCurrency.value) {
-      setAmountError("Input is greater than your current balance");
+    if (!checkSendAmountInput()) {
       return;
     }
 
-    if (!isValidWalletAddress(recipientAddress)) {
-      setRecipientAddressError("Invalid wallet address");
+    if (!checkRecipientAddressInput()) {
       return;
     }
 
@@ -103,6 +122,7 @@ export function WalletSendForm({
   async function triggerSend() {
     try {
       setIsLoading(true);
+      await handleStart();
 
       await sendTokens(
         recipientAddress,
@@ -118,6 +138,14 @@ export function WalletSendForm({
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    checkSendAmountInput();
+  }, [sendAmount]);
+
+  useEffect(() => {
+    checkRecipientAddressInput();
+  }, [recipientAddress]);
 
   return (
     <>

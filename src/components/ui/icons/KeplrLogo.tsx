@@ -1,8 +1,10 @@
 import React from "react";
+import { cn } from "../../../utils/classname-util";
 
-export function KeplrLogo() {
+export function KeplrLogo({ className }: { className?: string }) {
   return (
     <svg
+      className={cn("ui-w-16 ui-h-16", className)}
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"

@@ -212,19 +212,19 @@ export function RemoveAuthenticatorForm({
 
   if (showEmailWarning) {
     return (
-      <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
-        <div className="ui-flex ui-flex-col ui-gap-4 ui-w-full">
-          <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
+      <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-12 ui-items-center">
+        <div className="ui-flex ui-flex-col ui-gap-3 ui-w-full">
+          <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
             WARNING
           </h1>
           {errorMessage ? (
-            <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-red-500">
+            <p className="ui-w-full ui-text-center ui-text-sm ui-text-red-500">
               {errorMessage}
             </p>
           ) : (
             <>
               <div>
-                <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
+                <p className="ui-w-full ui-text-center ui-text-base  ui-text-white/50">
                   Once you delete your email authenticator, you won&apos;t be
                   able to add it back. That feature is coming soon.
                 </p>

@@ -32,6 +32,7 @@ import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
+import { cn } from "../../../utils/classname-util";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -535,22 +536,22 @@ export function AddAuthenticatorsForm({
   }
 
   return (
-    <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
-      <div className="ui-flex ui-flex-col ui-gap-2">
-        <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
+    <div className="ui-p-0 md:ui-p-10 ui-flex ui-flex-col ui-gap-12 ui-items-center">
+      <div className="ui-flex ui-flex-col ui-gap-3">
+        <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
           ADD AUTHENTICATORS
         </h1>
         {isSuccess ? (
-          <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
+          <p className="ui-w-full ui-text-center ui-text-base ui-text-white/50">
             Successfully added authenticator to account. Please click continue
             to navigate back to home page.
           </p>
         ) : errorMessage ? (
-          <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-red-500">
+          <p className="ui-w-full ui-text-center ui-text-base ui-text-red-500">
             {errorMessage}
           </p>
         ) : (
-          <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
+          <p className="ui-w-full ui-text-center ui-text-base ui-text-white/50">
             Enhance your account&apos;s security by adding authenticators.
             Select from the following options.
           </p>
@@ -565,64 +566,76 @@ export function AddAuthenticatorsForm({
           >
             SKIP FOR NOW
           </Button> */}
-          <div className="ui-grid ui-grid-cols-3 ui-gap-4 ui-w-full ui-justify-center">
+          <div className="ui-grid ui-grid-cols-3 ui-gap-4 ui-w-fit ui-justify-center ui-mx-auto">
             <Button
-              className={
-                selectedAuthenticator === "jwt" ? "!ui-border-white" : ""
-              }
+              className={cn(
+                { "!ui-border-white": selectedAuthenticator === "jwt" },
+                "ui-w-16 ui-h-16 !ui-p-0 ui-flex ui-items-center ui-justify-center",
+                "ui-border ui-border-white/20 ui-rounded-lg",
+              )}
               onClick={() => handleSwitch("jwt")}
               structure="outlined"
             >
-              <EmailIcon />
+              <EmailIcon className="ui-w-[30px] ui-h-[24px]" />
             </Button>
             {shouldEnableKeplr ? (
               <Button
-                className={
-                  selectedAuthenticator === "keplr" ? "!ui-border-white" : ""
-                }
+                className={cn(
+                  { "!ui-border-white": selectedAuthenticator === "keplr" },
+                  "ui-w-16 ui-h-16 !ui-p-0 ui-flex ui-items-center ui-justify-center",
+                  "ui-border ui-border-white/20 ui-rounded-lg",
+                )}
                 onClick={() => handleSwitch("keplr")}
                 structure="outlined"
               >
-                <KeplrLogo />
+                <KeplrLogo className="ui-w-[26px] ui-h-[26px]" />
               </Button>
             ) : null}
             {shouldEnableMetamask ? (
               <Button
-                className={
-                  selectedAuthenticator === "metamask" ? "!ui-border-white" : ""
-                }
+                className={cn(
+                  { "!ui-border-white": selectedAuthenticator === "metamask" },
+                  "ui-w-16 ui-h-16 !ui-p-0 ui-flex ui-items-center ui-justify-center",
+                  "ui-border ui-border-white/20 ui-rounded-lg",
+                )}
                 disabled={!shouldEnableMetamask}
                 onClick={() => handleSwitch("metamask")}
                 structure="outlined"
               >
-                <MetamaskLogo className="ui-w-12" />
+                <MetamaskLogo className="ui-w-[34px] ui-h-[34px]" />
               </Button>
             ) : null}
             {shouldEnableOkx ? (
               <Button
-                className={
-                  selectedAuthenticator === "okx" ? "!ui-border-white" : ""
-                }
+                className={cn(
+                  { "!ui-border-white": selectedAuthenticator === "okx" },
+                  "ui-w-16 ui-h-16 !ui-p-0 ui-flex ui-items-center ui-justify-center",
+                  "ui-border ui-border-white/20 ui-rounded-lg",
+                )}
                 disabled={!shouldEnableOkx}
                 onClick={() => handleSwitch("okx")}
                 structure="outlined"
               >
                 <img
                   src="/okxWallet.png"
-                  height={48}
-                  width={48}
+                  height={36}
+                  width={36}
                   alt="OKX Logo"
                 />
               </Button>
             ) : null}
             {shouldEnablePasskey ? (
               <Button
-                className={`ui-relative ${selectedAuthenticator === "passkey" ? "!ui-border-white" : ""}`}
+                className={cn(
+                  { "!ui-border-white": selectedAuthenticator === "passkey" },
+                  "ui-w-16 ui-h-16 ui-relative !ui-p-0 ui-flex ui-items-center ui-justify-center",
+                  "ui-border ui-border-white/20 ui-rounded-lg",
+                )}
                 disabled={!shouldEnablePasskey}
                 onClick={() => handleSwitch("passkey")}
                 structure="outlined"
               >
-                <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-xs ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[.28rem]">
+                <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-[10px] ui-leading-[100%] ui-font-bold ui-px-1 ui-rounded-[4px] ui-h-[14px] ui-flex ui-items-center ui-justify-center">
                   BETA
                 </span>
                 <PasskeyIcon className="ui-w-12" />
@@ -632,12 +645,12 @@ export function AddAuthenticatorsForm({
         </>
       ) : null}
       {isSuccess ? (
-        <Button className="ui-mt-4 ui-w-full" onClick={() => setIsOpen(false)}>
+        <Button className="ui-w-full ui-mt-4" onClick={() => setIsOpen(false)}>
           CONTINUE
         </Button>
       ) : (
         <Button
-          className="ui-mt-4 ui-w-full"
+          className="ui-w-full"
           disabled={selectedAuthenticator === "none"}
           onClick={handleSelection}
         >

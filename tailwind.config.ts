@@ -20,6 +20,7 @@ const config: Config = {
         "modal-overlay": `url('${imageToBase64(
           "./src/assets/xion-bg-blur.png",
         )}')`,
+        "modal-static": `url('${imageToBase64("./src/assets/static.png")}')`,
       },
       colors: {
         primary: "#000",

@@ -29,7 +29,7 @@ export function App() {
           <Abstraxion onClose={() => null} isOpen={true} />
         </div>
       ) : (
-        <div className="ui-flex ui-relative ui-max-h-dvh">
+        <div className="ui-flex ui-relative ui-max-h-dvh ui-h-screen">
           {showMobileSiderbar ? (
             <div className="ui-absolute ui-min-h-dvh ui-w-screen ui-bg-black ui-bg-opacity-20 ui-backdrop-blur-md ui-z-50">
               <Sidebar onClose={() => setShowMobileSiderbar(false)} />
@@ -40,20 +40,23 @@ export function App() {
           </div>
 
           <div className="ui-flex ui-flex-1 ui-max-w-full ui-flex-col">
-            <div className="ui-flex sm:!ui-hidden  ui-justify-between ui-items-center ui-bg-black ui-p-6 ui-border-b-[1px] ui-border-[#6C6A6A]">
+            <div className="ui-flex sm:!ui-hidden ui-justify-between ui-items-center ui-bg-black ui-p-6 ui-border-b-[1px] ui-border-[#6C6A6A]">
               <div className="ui-flex ui-items-center">
                 <img src={xionLogo} alt="XION Logo" width="90" height="32" />
                 <div
-                  className={`ui-flex ${
+                  className={`ui-flex ui-items-center ui-justify-center ${
                     isMainnet ? "ui-bg-mainnet-bg" : "ui-bg-testnet-bg"
                   } ui-px-2 ui-py-1 ui-ml-4 ${
                     isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
-                  } ui-rounded-md ui-font-akkuratLL ui-text-xs ui-tracking-widest`}
+                  } ui-rounded-md ui-text-xs ui-tracking-widest`}
                 >
                   {isMainnet ? "MAINNET" : "TESTNET"}
                 </div>
               </div>
-              <div onClick={() => setShowMobileSiderbar(true)}>
+              <div
+                onClick={() => setShowMobileSiderbar(true)}
+                className="ui-cursor-pointer"
+              >
                 <div className="ui-bg-white ui-w-8 ui-h-[1px] ui-mb-2" />
                 <div className="ui-bg-white ui-w-6 ui-h-[1px] ui-ml-auto" />
               </div>
@@ -64,14 +67,14 @@ export function App() {
                 {/* Tiles */}
                 <div className="ui-mx-auto ui-flex ui-max-w-7xl">
                   {/* Left Tiles */}
-                  <div className="ui-flex-grow-2 ui-flex ui-flex-col ui-max-w-full">
-                    <h3 className="ui-font-akkuratLL ui-mb-4 ui-text-2xl ui-text-white ui-font-bold">
+                  <div className="ui-flex-grow-2 ui-flex ui-flex-col ui-max-w-[700px] ui-mx-auto">
+                    <h2 className="ui-mb-6 ui-text-2xl ui-leading-[30px] ui-text-white ui-font-bold">
                       Overview
-                    </h3>
+                    </h2>
                     <Overview account={account} />
-                    <h3 className="ui-font-akkuratLL ui-mb-4 ui-mt-8 ui-text-2xl ui-font-bold ui-text-white">
+                    <h2 className="ui-mb-6 ui-mt-8 ui-text-2xl ui-leading-[30px] ui-text-white ui-font-bold">
                       Account Info
-                    </h3>
+                    </h2>
                     <AccountInfo
                       updateContractCodeID={updateAbstractAccountCodeId}
                     />

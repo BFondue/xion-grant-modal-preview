@@ -1,15 +1,13 @@
 import React, { ReactElement, useState } from "react";
 import {
   Button,
-  CheckIcon,
   CloseIcon,
-  CopyIcon,
   Dialog,
   DialogClose,
   DialogContent,
   DialogTrigger,
 } from "../ui";
-import { truncateAddress } from "../../utils";
+import { CopyAddress } from "../CopyAddress";
 
 export function WalletReceive({
   trigger,
@@ -19,47 +17,32 @@ export function WalletReceive({
   xionAddress: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const copyXionAddress = () => {
-    if (xionAddress) {
-      navigator.clipboard.writeText(xionAddress);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 500);
-    }
-  };
 
   return (
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
       <DialogTrigger>{trigger}</DialogTrigger>
       <DialogContent
-        className="ui-text-white"
+        className="ui-text-white ui-p-12"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <div className="ui-flex ui-justify-end ui-mt-8">
+        <div className="ui-flex ui-justify-end ui-absolute ui-top-6 ui-right-6">
           <DialogClose className="ui-inline-flex">
-            <CloseIcon className="ui-stroke-white/50" />
+            <CloseIcon className="ui-stroke-white/50 " />
           </DialogClose>
         </div>
 
-        <div className="ui-flex ui-flex-col">
-          <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
+        <div className="ui-flex ui-flex-col ui-gap-10">
+          <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
             RECEIVE
           </h1>
-          <h3 className="ui-text-white ui-text-sm ui-font-bold ui-font-akkuratLL ui-leading-none ui-my-6">
-            XION Address
-          </h3>
-          <div
-            onClick={copyXionAddress}
-            className="ui-flex ui-cursor-pointer ui-items-center ui-justify-between ui-px-4 ui-w-full ui-h-16 ui-bg-black ui-rounded-lg"
-          >
-            <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
-              {truncateAddress(xionAddress)}
-            </p>
-            {copied ? <CheckIcon color="white" /> : <CopyIcon color="white" />}
+          <div className="ui-flex ui-flex-col ui-gap-6">
+            <h3 className="ui-text-white ui-text-sm ui-font-bold ui-leading-none">
+              XION Address
+            </h3>
+            <CopyAddress xionAddress={xionAddress} />
           </div>
           <Button
-            className="ui-mt-6"
+            className="ui-mt-2"
             onClick={() => setIsOpen(false)}
             fullWidth
           >

@@ -1,7 +1,19 @@
 import React from "react";
+import { cn } from "../../utils/classname-util";
 
-export const Divider = ({ margin = 6 }: { margin?: number }) => {
+export const Divider = ({
+  margin = 6,
+  className,
+}: {
+  margin?: number;
+  className?: string;
+}) => {
   return (
-    <div className={`ui-my-${margin} ui-h-[1px] ui-w-full ui-bg-white/20`} />
+    <div
+      className={cn(
+        `ui-my-${margin} ui-h-[1px] ui-w-full ui-bg-white/20`,
+        className,
+      )}
+    />
   );
 };

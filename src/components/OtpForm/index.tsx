@@ -133,8 +133,8 @@ const OtpForm: React.FC<OtpFormProps> = ({
   };
 
   return (
-    <div className="ui-flex ui-flex-col ui-items-center ui-gap-4">
-      <div className="ui-grid ui-grid-cols-6 ui-gap-2 ui-w-full">
+    <div className="ui-flex ui-flex-col ui-items-center ui-gap-12 ui-w-full">
+      <div className="ui-grid ui-grid-cols-6 ui-gap-3 ui-w-fit ui-mt-4 ui-mx-auto">
         {otp.map((digit, index) => (
           <input
             key={index}
@@ -147,7 +147,7 @@ const OtpForm: React.FC<OtpFormProps> = ({
             onChange={(e) => handleInputChange(e.target.value, index)}
             onPaste={(e) => handlePaste(e, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className={`ui-no-spinner ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-base ui-border ui-rounded-md ui-outline-none ui-border-gray-500 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-text-lg ${
+            className={`ui-no-spinner ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-base ui-border ui-rounded-lg ui-outline-none ui-border-white/20 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-w-14 sm:ui-text-lg ${
               digit ? "ui-bg-[rgba(255,255,255,0.1)]" : "ui-bg-transparent"
             }  ${
               error
@@ -157,29 +157,31 @@ const OtpForm: React.FC<OtpFormProps> = ({
           />
         ))}
       </div>
-      <p className="ui-mt-2 ui-text-center ui-text-inputError">{error}</p>
-      <Button
-        fullWidth={true}
-        onClick={submitOtp}
-        disabled={!isOtpValid || isSubmitted}
-      >
-        Confirm
-      </Button>
-      {timeLeft ? (
-        <div className="ui-text-sm ui-text-inactive">
-          RESEND {`IN ${timeLeft}S`}
-        </div>
-      ) : (
+      <div className="ui-w-full ui-flex ui-flex-col ui-gap-2">
+        <p className="ui-mt-2 ui-text-center ui-text-inputError">{error}</p>
         <Button
-          className="ui-mt-2"
-          structure="outlined"
           fullWidth={true}
-          onClick={submitResendCode}
-          disabled={!!timeLeft}
+          onClick={submitOtp}
+          disabled={!isOtpValid || isSubmitted}
         >
-          Resend Code {timeLeft && `in ${timeLeft} seconds`}
+          Confirm
         </Button>
-      )}
+        {timeLeft ? (
+          <div className="ui-text-sm ui-text-inactive ui-w-full ui-text-center ui-p-[16px]">
+            RESEND {`IN ${timeLeft}S`}
+          </div>
+        ) : (
+          <Button
+            className="ui-mt-2"
+            structure="outlined"
+            fullWidth={true}
+            onClick={submitResendCode}
+            disabled={!!timeLeft}
+          >
+            Resend Code {timeLeft && `in ${timeLeft} seconds`}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

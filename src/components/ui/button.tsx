@@ -51,7 +51,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={`ui-flex ui-items-center ui-justify-center ui-rounded-md ui-font-akkuratLL ui-uppercase ui-px-5 ui-py-3.5 ui-text-sm ui-outline-none ui-hover:opacity-70 ${
+      className={`ui-flex ui-items-center ui-justify-center ui-rounded-lg ui-font-akkuratLL ui-uppercase ui-px-5 ui-py-3.5 ui-text-sm ui-outline-none ui-hover:opacity-70 ${
         fullWidth ? "ui-w-full" : ""
       } ${getButtonClasses()} ${className}`}
       onClick={onClick}

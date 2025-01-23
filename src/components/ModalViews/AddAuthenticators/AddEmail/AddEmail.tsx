@@ -55,12 +55,12 @@ export function AddEmail({
   }
 
   return (
-    <div className="ui-flex ui-flex-col ui-gap-8 ui-items-center">
-      <div className="ui-flex ui-flex-col ui-gap-2">
-        <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
+    <div className="md:ui-p-10 ui-flex ui-flex-col ui-gap-8 ui-items-center">
+      <div className="ui-flex ui-flex-col ui-gap-3">
+        <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
           ADD AUTHENTICATORS
         </h1>
-        <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
+        <p className="ui-w-full ui-text-center ui-text-base ui-text-white/50">
           {isCodeSent
             ? `Input the 6 digit verification code. Please check your email for the verification code. You will be logged in with this account.`
             : `Enter your email to receive a verification code. Input the email
@@ -76,7 +76,11 @@ export function AddEmail({
             onChange={(e) => setEmail(e.target.value)}
             className="ui-w-full"
           />
-          <Button className="ui-w-full" onClick={handleEmail} disabled={!email}>
+          <Button
+            className="ui-w-full ui-mt-4"
+            onClick={handleEmail}
+            disabled={!email}
+          >
             SEND VERIFICATION CODE
           </Button>
         </>

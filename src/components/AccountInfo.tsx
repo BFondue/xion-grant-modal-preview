@@ -2,26 +2,22 @@ import React, { useContext, useState, useEffect } from "react";
 import {
   AccountWalletLogo,
   Button,
-  CopyIcon,
   CosmosLogo,
   EmailIcon,
   EthereumLogo,
   EyeIcon,
   EyeOffIcon,
   PasskeyIcon,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   TrashIcon,
 } from "./ui";
 import { useStytchUser } from "@stytch/react";
-import { truncateAddress } from "../utils";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
 import type { authenticatorTypes } from "../types";
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
 import { Authenticator } from "../indexer-strategies/types";
 import { AbstraxionMigrate } from "./AbstraxionMigrate";
 import { AbstraxionContext } from "./AbstraxionContext";
+import { CopyAddress } from "./CopyAddress";
 
 export const AccountInfo = ({
   updateContractCodeID,
@@ -61,12 +57,6 @@ export const AccountInfo = ({
     }
   }, [user, abstractAccount, setAbstractAccount]);
 
-  const copyXIONAddress = () => {
-    if (abstractAccount?.id) {
-      navigator.clipboard.writeText(abstractAccount?.id);
-    }
-  };
-
   const handleAuthenticatorLabels = (type: authenticatorTypes) => {
     switch (type) {
       case "SECP256K1":
@@ -85,11 +75,11 @@ export const AccountInfo = ({
   const handleAuthenticatorLogos = (type: authenticatorTypes) => {
     switch (type) {
       case "SECP256K1":
-        return <CosmosLogo />;
+        return <CosmosLogo className="ui-w-4 ui-h-4" />;
       case "ETHWALLET":
-        return <EthereumLogo />;
+        return <EthereumLogo className="ui-w-4 ui-h-4" />;
       case "JWT":
-        return <EmailIcon />;
+        return <EmailIcon className="ui-w-4 ui-h-4" />;
       case "PASSKEY":
         return <PasskeyIcon />;
       default:
@@ -107,7 +97,9 @@ export const AccountInfo = ({
       const currentAuthenticator =
         abstractAccount?.currentAuthenticatorIndex ===
         authenticator.authenticatorIndex;
+
       let email = "";
+
       if (authenticator.type === "Jwt" && user) {
         if (
           user.user_id ===
@@ -116,13 +108,14 @@ export const AccountInfo = ({
           email = user.emails[0]?.email;
         }
       }
+
       return (
         <div
           key={authenticator.id}
-          className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-2 ui-mb-3 ui-min-h-16 ui-bg-black ui-rounded-lg"
+          className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-2 ui-min-h-16 ui-bg-black ui-rounded-lg"
         >
           <div className="ui-flex ui-flex-1 ui-items-center">
-            <div className="ui-flex ui-w-10 ui-h-10 ui-bg-white/20 ui-items-center ui-justify-center ui-rounded-full">
+            <div className="ui-flex ui-w-8 ui-h-8 ui-bg-[#434040] ui-items-center ui-justify-center ui-rounded-full">
               {handleAuthenticatorLogos(
                 authenticator.type.toUpperCase() as authenticatorTypes,
               )}
@@ -148,14 +141,14 @@ export const AccountInfo = ({
               )}
               {currentAuthenticator && (
                 <div
-                  className={`ui-ml-4 ui-p-1 ui-rounded ui-flex ui-border ${
+                  className={`ui-ml-3 ui-px-1.5 ui-rounded-sm ui-flex ui-border ${
                     isMainnet ? "ui-border-mainnet-bg" : "ui-border-testnet-bg"
                   }`}
                 >
                   <p
                     className={`${
                       isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
-                    } ui-text-xs ui-whitespace-nowrap ui-font-normal ui-font-akkuratLL ui-leading-normal`}
+                    } ui-text-xs ui-whitespace-nowrap ui-font-normal ui-font-akkuratLL ui-leading-[20px]`}
                   >
                     Active Session
                   </p>
@@ -164,10 +157,10 @@ export const AccountInfo = ({
             </div>
           </div>
 
-          <div className="ui-flex ui-items-center">
+          <div className="ui-flex ui-items-center ui-gap-4">
             {authenticator.type === "Jwt" && currentAuthenticator && (
               <button
-                className="ui-text-white ui-mr-4"
+                className="ui-text-white"
                 onClick={() => {
                   setShowUserEmail(!showUserEmail);
                 }}
@@ -182,57 +175,51 @@ export const AccountInfo = ({
                 setIsRemoveModalOpen(true);
               }}
             >
-              <TrashIcon />
+              <TrashIcon className="ui-w-4 ui-h-4" />
             </button>
           </div>
         </div>
       );
     });
   };
+
   return (
     <div className="ui-bg-white/10 ui-p-6 ui-rounded-2xl">
-      <h3 className="ui-text-white ui-text-sm ui-font-bold ui-font-akkuratLL ui-leading-none ui-mb-6">
-        XION Address
-      </h3>
-      <div
-        onClick={copyXIONAddress}
-        className="ui-flex ui-cursor-pointer ui-items-center ui-justify-between ui-mb-10 ui-px-4 ui-w-full ui-h-16 ui-bg-black ui-rounded-lg"
-      >
-        <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
-          {truncateAddress(abstractAccount?.id)}
-        </p>
-        <Popover>
-          <PopoverTrigger>
-            <CopyIcon color="white" />
-          </PopoverTrigger>
-          <PopoverContent>
-            <p>Copied!</p>
-          </PopoverContent>
-        </Popover>
-      </div>
-      <div className="ui-flex">
-        <div className="ui-flex ui-flex-1 ui-flex-col">
-          <div className="ui-flex ui-items-center ui-justify-between ui-mb-6">
-            <h3 className="ui-text-white ui-text-sm ui-font-bold ui-font-akkuratLL ui-leading-none">
-              Your Logins
-            </h3>
-            <Button
-              className="!ui-p-0"
-              onClick={() => setIsAddModalOpen(true)}
-              structure="naked"
-            >
-              Add more
-            </Button>
-            <AddAuthenticatorsModal
-              isOpen={isAddModalOpen}
-              setIsOpen={setIsAddModalOpen}
-            />
-          </div>
-          {renderAuthenticators()}
+      <div className="ui-flex ui-flex-col ui-gap-[42px]">
+        <div className="ui-flex ui-flex-col ui-items-start ui-gap-6">
+          <h4 className="ui-text-white ui-text-sm ui-font-bold ui-leading-none">
+            XION Address
+          </h4>
+          <CopyAddress xionAddress={abstractAccount?.id} />
         </div>
-        {/* TODO: Add history components */}
-        {/* <div className="flex flex-1 flex-col"></div> */}
+
+        <div className="ui-flex">
+          <div className="ui-flex ui-flex-1 ui-flex-col ui-gap-6">
+            <div className="ui-flex ui-items-center ui-justify-between">
+              <h3 className="ui-text-white ui-text-sm ui-font-bold ui-font-akkuratLL ui-leading-none">
+                Your Logins
+              </h3>
+              <Button
+                className="!ui-p-0 ui-normal-case"
+                onClick={() => setIsAddModalOpen(true)}
+                structure="naked"
+              >
+                Add more
+              </Button>
+              <AddAuthenticatorsModal
+                isOpen={isAddModalOpen}
+                setIsOpen={setIsAddModalOpen}
+              />
+            </div>
+            <div className="ui-flex ui-flex-col ui-gap-3">
+              {renderAuthenticators()}
+            </div>
+          </div>
+          {/* TODO: Add history components */}
+          {/* <div className="flex flex-1 flex-col"></div> */}
+        </div>
       </div>
+
       <AbstraxionMigrate
         currentCodeId={abstractAccount.codeId}
         updateContractCodeID={updateContractCodeID}

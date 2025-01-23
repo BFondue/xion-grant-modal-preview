@@ -18,9 +18,9 @@ export function WalletSend({ trigger }: { trigger: ReactElement }) {
         className="ui-text-white"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <div className="ui-flex ui-justify-end">
+        <div className="ui-flex ui-justify-end ui-absolute ui-top-6 ui-right-6">
           <DialogClose className="ui-inline-flex">
-            <CloseIcon className="ui-stroke-white/50" />
+            <CloseIcon className="ui-stroke-white " />
           </DialogClose>
         </div>
 
