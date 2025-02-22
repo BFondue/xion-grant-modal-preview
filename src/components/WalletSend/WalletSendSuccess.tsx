@@ -1,7 +1,13 @@
 import React from "react";
-import { Button } from "../ui";
+import {
+  BaseButton,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui";
 import type { FormattedAssetAmount } from "../../types/assets";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
+import { truncateAddress } from "../../utils";
 
 interface WalletSendSuccessProps {
   sendAmount: string;
@@ -26,65 +32,71 @@ export function WalletSendSuccess({
 
   return (
     <>
-      <div className="ui-p-0 ui-flex ui-flex-col ui-gap-4 max-h-full ui-h-full">
-        <div className="ui-flex ui-flex-col ui-gap-3">
-          <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
-            SUCCESS!
-          </h1>
-          <p className="ui-w-full ui-text-center ui-text-sm ui-text-white/40">
+      <div className="ui-p-0 ui-flex ui-flex-col ui-gap-8 max-h-full ui-h-full">
+        <DialogHeader>
+          <DialogTitle>Success!</DialogTitle>
+          <DialogDescription>
             You have initiated the transaction below.
-          </p>
-        </div>
-        <div className="ui-flex ui-flex-col">
-          <div className="ui-mb-8 ui-mt-4 ui-h-[1px] ui-w-full ui-bg-white/10" />
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="ui-flex ui-flex-col ui-gap-8">
+          <div className="ui-h-[1px] ui-w-full ui-bg-border" />
+
           <div className="ui-flex ui-flex-col ui-gap-6">
             <div className="ui-flex ui-flex-col ui-gap-3">
-              <p className="ui-w-full ui-text-center ui-text-sm ui-leading-[16px] ui-text-white/50 ui-font-semibold">
+              <p className="ui-w-full ui-text-center ui-text-sm ui-font-bold ui-leading-[16px] ui-text-secondary-text">
                 Transfer Amount
               </p>
               <div className="ui-flex ui-flex-col ui-gap-2">
-                <p className="ui-w-full ui-text-center ui-text-[40px] ui-leading-[36px] ui-text-white ui-font-semibold">
+                <p className="ui-w-full ui-text-center ui-text-[40px] ui-leading-none ui-font-bold">
                   {sendAmount}{" "}
-                  <span className="ui-text-[#949494] ui-text-[40px] ui-leading-[36px]">
+                  <span className="ui-text-[40px] ui-leading-none">
                     {selectedCurrency.asset.display.toUpperCase()}
                   </span>
                 </p>
-                <p className="ui-w-full ui-text-center ui-text-md ui-text-[#949494]">
+                <p className="ui-w-full ui-text-center ui-text-sm ui-text-secondary-text">
                   ${(Number(sendAmount) * selectedCurrency.price).toFixed(2)}{" "}
                   USD
                 </p>
               </div>
             </div>
-            <p className="ui-w-full ui-text-center ui-text-sm ui-text-white ui-italic">
-              {userMemo}
-            </p>
           </div>
-          <div className="ui-mt-8 ui-h-[1px] ui-w-full ui-bg-white/10" />
+
+          <div className="ui-h-[1px] ui-w-full ui-bg-border" />
         </div>
-        <div className="ui-flex ui-flex-col ui-gap-8">
-          <div className="ui-flex ui-flex-col ui-gap-3">
-            <p className="ui-w-full ui-text-center ui-text-sm ui-leading-4 ui-text-[#949494] ui-font-semibold">
-              From
-            </p>
-            <p className="ui-w-full ui-text-center ui-text-sm ui-text-white ui-break-words">
-              {account.id}
-            </p>
-          </div>
-          <div className="ui-flex ui-flex-col ui-gap-3">
-            <p className="ui-w-full ui-text-center ui-text-sm ui-leading-4 ui-text-[#949494] ui-font-semibold">
-              To
-            </p>
-            <p className="ui-w-full ui-text-center ui-text-sm ui-text-white ui-break-words">
-              {recipientAddress}
+
+        <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
+          <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
+            <h5 className="ui-text-sm">From</h5>
+            <p className="ui-text-sm ui-font-bold">
+              {truncateAddress(account.id, 8, 8)}
             </p>
           </div>
+
+          <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
+            <h5 className="ui-text-sm">To</h5>
+            <p className="ui-text-sm ui-font-bold">
+              {truncateAddress(recipientAddress, 8, 8)}
+            </p>
+          </div>
+
+          {userMemo && (
+            <div className="ui-flex ui-items-start ui-justify-between ui-gap-2 ui-flex-wrap">
+              <h5 className="ui-text-sm">Memo</h5>
+              <p className="ui-text-sm ui-font-bold ui-max-w-[50%] ui-break-words ui-text-end">
+                {userMemo}
+              </p>
+            </div>
+          )}
         </div>
-        <Button
+
+        <BaseButton
           onClick={() => handleConfirmClick()}
           className="ui-mt-8 ui-mb-10 sm:ui-mb-0"
         >
           CLOSE
-        </Button>
+        </BaseButton>
       </div>
     </>
   );

@@ -1,26 +1,22 @@
-import React, { Dispatch, SetStateAction } from "react";
-import { CloseIcon, Dialog, DialogClose, DialogContent } from "../../ui";
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogTrigger } from "../../ui";
 import { AddAuthenticatorsForm } from "./AddAuthenticatorsForm";
 
 export default function AddAuthenticatorsModal({
-  isOpen,
-  setIsOpen,
+  trigger,
 }: {
-  isOpen: boolean;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  trigger: React.ReactNode;
 }) {
-  return (
-    <Dialog onOpenChange={setIsOpen} open={isOpen}>
-      <DialogContent
-        className="ui-text-white ui-flex ui-flex-col ui-p-12"
-        onPointerDownOutside={(e) => e.preventDefault()}
-      >
-        <div className="ui-flex ui-justify-end ui-absolute ui-top-10 ui-right-10">
-          <DialogClose className="ui-inline-flex">
-            <CloseIcon className="ui-stroke-white/50 " />
-          </DialogClose>
-        </div>
+  const [isOpen, setIsOpen] = useState(false);
 
+  return (
+    <Dialog modal onOpenChange={setIsOpen} open={isOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent
+        className="ui-flex ui-flex-col"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        closeButton
+      >
         <AddAuthenticatorsForm setIsOpen={setIsOpen} />
       </DialogContent>
     </Dialog>

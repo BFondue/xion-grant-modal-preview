@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -10,24 +10,29 @@ import { AbstraxionWallets } from "../../components/AbstraxionWallets";
 import { ErrorDisplay } from "../../components/ErrorDisplay";
 import { AbstraxionGrant } from "../AbstraxionGrant";
 
-import xionLogo from "../../assets/logo.png";
 import { useQueryParams } from "../../hooks/useQueryParams";
+import FooterLogin from "../ui/footerLogin";
 
 export interface ModalProps {
   onClose: VoidFunction;
   isOpen: boolean;
 }
 
-export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
-  const { contracts, stake, bank, grantee, treasury } = useQueryParams([
-    "contracts",
-    "stake",
-    "bank",
-    "grantee",
-    "treasury",
-  ]);
+const MALFORMED_REQUEST_MESSAGE =
+  "Application is not setup correctly. For safety and security, we cannot log you in.";
 
-  const { abstraxionError, isMainnet } = useContext(
+export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
+  const { contracts, stake, bank, grantee, treasury, redirect_uri } =
+    useQueryParams([
+      "contracts",
+      "stake",
+      "bank",
+      "grantee",
+      "treasury",
+      "redirect_uri",
+    ]);
+
+  const { abstraxionError, setAbstraxionError, isInGrantFlow } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
@@ -49,6 +54,15 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
     contractsArray = contracts?.split(",") || [];
   }
 
+  // Check for missing redirect_uri in grant flow
+  useEffect(() => {
+    if (isInGrantFlow && !redirect_uri) {
+      setAbstraxionError(MALFORMED_REQUEST_MESSAGE);
+    } else {
+      setAbstraxionError(undefined);
+    }
+  }, [isInGrantFlow, redirect_uri, setAbstraxionError]);
+
   useEffect(() => {
     const closeOnEscKey = (e: KeyboardEvent) =>
       e.key === "Escape" ? onClose() : null;
@@ -58,17 +72,35 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
     };
   }, [onClose]);
 
+  // Determine if the error is a malformed request error
+  const isMalformedRequest = useMemo(() => {
+    return abstraxionError?.startsWith(MALFORMED_REQUEST_MESSAGE);
+  }, [abstraxionError]);
+
+  const handleReturn = () => {
+    window.history.back();
+  };
+
   if (!isOpen) return null;
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className={`${isMainnet ? "" : "!ui-bg-white/10"}`}>
+        <DialogContent>
           {abstraxionError ? (
-            <ErrorDisplay message={abstraxionError} onClose={onClose} />
+            <ErrorDisplay
+              description={abstraxionError}
+              onClose={onClose}
+              title={isMalformedRequest ? "Login Error" : undefined}
+              buttonText={isMalformedRequest ? "RETURN" : "CLOSE"}
+              onButtonClick={isMalformedRequest ? handleReturn : undefined}
+              errorMessage={
+                isMalformedRequest ? "redirect_uri is not defined" : undefined
+              }
+            />
           ) : account?.id &&
             grantee &&
-            // We support granting any combunation of
+            // We support granting any combination of
             (contractsArray.length > 0 ||
               stake ||
               bankArray.length > 0 ||
@@ -88,42 +120,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
         </DialogContent>
       </Dialog>
       {/* TOS Footer */}
-      {!isConnected && (
-        <div className="ui-self-end ui-pointer-events-auto ui-w-full ui-z-[1000] ui-flex ui-flex-col ui-pb-safe sm:ui-flex-row sm:ui-justify-between sm:ui-items-end">
-          <div className="ui-font-akkuratLL ui-text-xs sm:ui-text-sm ui-font-normal ui-text-center sm:ui-text-left">
-            <span className="ui-text-neutral-400">
-              By continuing, you agree to and acknowledge that you have read and
-              understand the
-            </span>
-            <a
-              href="https://burnt.com/terms-and-conditions"
-              className="ui-pl-1 ui-text-white"
-            >
-              Disclaimer
-            </a>
-            <span className="ui-text-neutral-400">.</span>
-          </div>
-          <div className="ui-flex ui-gap-2 ui-justify-center ui-items-end ui-mt-2 sm:ui-my-0">
-            <p className="ui-font-akkuratLL ui-text-sm ui-text-zinc-100 ui-opacity-50 leading-tight">
-              Powered by
-            </p>
-            <div className="ui-flex ui-flex-row-reverse ui-items-center sm:ui-items-start  sm:ui-flex-col">
-              <div
-                className={`ui-flex ui-justify-between ${
-                  isMainnet ? "ui-bg-mainnet-bg" : "ui-bg-testnet-bg"
-                } ui-px-2 ui-py-1 ui-ml-2 sm:ui-ml-0 sm:ui-mb-2 ${
-                  isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
-                } ui-rounded-md ui-font-akkuratLL ui-text-xs ui-tracking-widest`}
-              >
-                {isMainnet ? "MAINNET" : "TESTNET"}
-              </div>
-              <a href="https://burnt.com/terms-and-conditions">
-                <img src={xionLogo} alt="XION Logo" width="108" height="48" />
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+      {!isConnected && <FooterLogin />}
     </>
   );
 };

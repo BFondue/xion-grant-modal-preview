@@ -1,10 +1,24 @@
 import React from "react";
 
-export const CopyIcon = ({ color }: { color: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="17" fill="none">
+export const CopyIcon = ({
+  color,
+  width = 11,
+  height = 13,
+}: {
+  color: string;
+  width?: number;
+  height?: number;
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={width}
+    height={height}
+    viewBox="0 0 11 13"
+    fill="none"
+  >
     <g stroke={color} strokeWidth="1.5">
-      <path d="M4.7129 4.7129h9.1667V16.25H4.7129z" />
-      <path d="M1 12.2593V2c0-.5523.4477-1 1-1h9.0741" />
+      <path d="M3.5347 3.5347h6.875V12.1875H3.5347z" />
+      <path d="M0.75 9.1945V1.5c0-.4142.3358-.75.75-.75h6.8056" />
     </g>
   </svg>
 );

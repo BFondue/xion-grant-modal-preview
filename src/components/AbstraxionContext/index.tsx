@@ -2,6 +2,7 @@ import React, { createContext, ReactNode, useState } from "react";
 import { getEnvStringOrThrow } from "../../utils";
 import { ChainInfo } from "@burnt-labs/constants";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
+import { useQueryParams } from "../../hooks/useQueryParams";
 
 export type ConnectionType =
   | "stytch"
@@ -23,6 +24,7 @@ export interface AbstraxionContextProps {
   isMainnet: boolean;
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isInGrantFlow: boolean;
 }
 
 export const AbstraxionContext = createContext<AbstraxionContextProps>(
@@ -40,6 +42,18 @@ export const AbstraxionContextProvider = ({
   >(undefined);
   const [abstraxionError, setAbstraxionError] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+
+  const { contracts, stake, bank, grantee, treasury } = useQueryParams([
+    "contracts",
+    "stake",
+    "bank",
+    "grantee",
+    "treasury",
+  ]);
+
+  const isInGrantFlow = Boolean(
+    grantee && (contracts || stake || bank || treasury),
+  );
 
   const serializedChainInfo = getEnvStringOrThrow(
     "VITE_DEFAULT_CHAIN_INFO",
@@ -72,6 +86,7 @@ export const AbstraxionContextProvider = ({
         isMainnet,
         isOpen,
         setIsOpen,
+        isInGrantFlow,
       }}
     >
       {children}

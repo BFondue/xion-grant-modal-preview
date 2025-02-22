@@ -7,6 +7,7 @@ import type {
   GrantConfigByTypeUrl,
   GrantConfigTypeUrlsResponse,
   PermissionDescription,
+  TreasuryParams,
 } from "../types/treasury-types";
 import type { AAClient } from "../signers";
 
@@ -48,18 +49,23 @@ const CosmosAuthzPermission: { [key: string]: string } = {
     "clear the admin of smart contracts on your behalf",
 };
 
+export interface TreasuryContractResponse {
+  permissionDescriptions: PermissionDescription[];
+  params: TreasuryParams;
+}
+
 /**
  * Queries the DAPP treasury contract to parse and display requested permissions to end user
  * @param {string} contractAddress - The address for the deployed treasury contract instance
  * @param {AAClient} client - Client to query RPC
  * @param {string} account - Users account address
- * @returns {PermissionDescription[]} - The human-readable permission descriptions
+ * @returns {TreasuryContractResponse} - The human-readable permission descriptions and treasury parameters
  */
 export const queryTreasuryContract = async (
   contractAddress: string,
   client: AAClient,
   account: string,
-): Promise<PermissionDescription[]> => {
+): Promise<TreasuryContractResponse> => {
   if (!contractAddress) {
     throw new Error("Missing contract address");
   }
@@ -72,15 +78,40 @@ export const queryTreasuryContract = async (
     grant_config_type_urls: {},
   };
 
-  // Query all grant config type urls for treasury contract instance
-  const queryAllTypeUrlsResponse: GrantConfigTypeUrlsResponse =
-    await client.queryContractSmart(contractAddress, queryTreasuryContractMsg);
+  const queryParams = { params: {} };
+
+  // Query params with safe fallback
+  const safeQueryParams = async (): Promise<TreasuryParams> => {
+    try {
+      return (await client.queryContractSmart(
+        contractAddress,
+        queryParams,
+      )) as TreasuryParams;
+    } catch (error) {
+      console.warn("Error querying params:", error);
+      return {
+        display_url: "",
+        redirect_url: "",
+        icon_url: "",
+      };
+    }
+  };
+
+  // Query all grant config type urls and params in parallel
+  const [queryAllTypeUrlsResponse, paramsResponse] = await Promise.all([
+    client.queryContractSmart(
+      contractAddress,
+      queryTreasuryContractMsg,
+    ) as Promise<GrantConfigTypeUrlsResponse>,
+    safeQueryParams(),
+  ]);
 
   if (!queryAllTypeUrlsResponse) {
     throw new Error(
       "Something went wrong querying the treasury contract for grants",
     );
   }
+
   // For each grant type url, query grant config and construct a human readable description
   const permissionDescriptions: PermissionDescription[] = await Promise.all(
     queryAllTypeUrlsResponse.map(async (grant) => {
@@ -183,5 +214,8 @@ export const queryTreasuryContract = async (
     }),
   );
 
-  return permissionDescriptions;
+  return {
+    permissionDescriptions,
+    params: paramsResponse,
+  };
 };

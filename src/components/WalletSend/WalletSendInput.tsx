@@ -1,10 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button, ChevronDownIcon, Input } from "../ui";
-import { SelectedSmartAccount } from "../../indexer-strategies/types";
+import {
+  BaseButton,
+  ChevronDownIcon,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  WalletIcon,
+} from "../ui";
 import type { FormattedAssetAmount } from "../../types/assets";
-
 import { useAccountBalance } from "../../hooks/useAccountBalance";
 import { isMainnet } from "../../utils";
+import SpinnerV2 from "../ui/icons/SpinnerV2";
 
 const XION_CONVERSION = 1000000;
 
@@ -16,7 +22,6 @@ interface WalletSendInputProps {
   sendAmount: string;
   amountError: string;
   onAmountChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  account: SelectedSmartAccount;
   recipientAddressError: string;
   recipientAddress: string;
   userMemo: string;
@@ -33,7 +38,6 @@ export function WalletSendInput({
   sendAmount,
   amountError,
   onAmountChange: handleAmountChange,
-  account,
   recipientAddressError,
   recipientAddress,
   userMemo,
@@ -50,6 +54,7 @@ export function WalletSendInput({
   const [estimatedFee, setEstimatedFee] = useState(null);
   const [isCalculatingFee, setIsCalculatingFee] = useState(false);
   const [estimatingError, setEstimatingError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -132,34 +137,59 @@ export function WalletSendInput({
     setIsCalculatingFee(false);
   }, [recipientAddress, sendAmount, selectedCurrencyDenom]);
 
+  const TokenRow = ({
+    imageUrl,
+    symbol,
+    value,
+    dollarValue,
+  }: {
+    imageUrl: string;
+    symbol: string;
+    value: number;
+    dollarValue: number;
+  }) => {
+    return (
+      <div className="ui-flex ui-items-center ui-gap-3">
+        <img className="ui-w-[40px] ui-h-[40px]" src={imageUrl} />
+
+        <div className="ui-flex ui-flex-col ui-items-start ui-gap-1">
+          <p className="ui-text-base ui-leading-[20px] ui-font-bold">
+            {symbol.toUpperCase()}
+          </p>
+          <p className="ui-text-sm ui-leading-none ui-flex ui-items-center ui-gap-1.5">
+            <WalletIcon
+              color="white"
+              backgroundColor="hsl(var(--background))"
+              width={14}
+              height={12}
+            />
+            {value.toFixed(2)}
+            <span className="ui-h-[3px] ui-w-[3px] ui-rounded-full ui-bg-white/80" />
+            <span className="ui-text-secondary-text">
+              ${dollarValue.toFixed(2)} USD
+            </span>
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const currencyDropdown = () => {
     return (
       <div className="ui-relative">
         <div
-          className={`ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-[18px] ui-bg-black hover:ui-cursor-pointer hover:ui-bg-[#262626] ui-relative ui-z-10 ui-transition-all ui-duration-300 ${
+          className={`ui-flex ui-items-center ui-justify-between ui-p-4 ui-bg-black/50 hover:ui-cursor-pointer hover:ui-bg-[#262626] ui-relative ui-z-10 ui-transition-all ui-duration-300 ${
             showDropdown ? "ui-rounded-tr-lg ui-rounded-tl-lg" : "ui-rounded-lg"
           }`}
           onClick={() => setShowDropdown(!showDropdown)}
         >
-          <div className="ui-flex ui-items-center">
-            <img
-              className="ui-w-[40px] ui-h-[40px] ui-mr-3"
-              src={selectedCurrency.imageUrl}
-            />
-
-            <div className="ui-flex ui-flex-col ui-items-start">
-              <p className="ui-text-lg ui-leading-[24px] ui-font-bold ui-text-white">
-                {selectedCurrency.symbol.toUpperCase()}
-              </p>
-              <p className="ui-text-sm ui-text-white">
-                Balance: {selectedCurrency.value.toFixed(2)}{" "}
-                <span className="ui-text-[#949494] ui-pl-3">
-                  ${selectedCurrency.dollarValue.toFixed(2)} USD
-                </span>
-              </p>
-            </div>
-          </div>
-          <ChevronDownIcon isUp={showDropdown} className="ui-w-6 ui-h-6" />
+          <TokenRow
+            imageUrl={selectedCurrency.imageUrl}
+            symbol={selectedCurrency.symbol}
+            value={selectedCurrency.value}
+            dollarValue={selectedCurrency.dollarValue}
+          />
+          <ChevronDownIcon isUp={showDropdown} className="ui-w-5 ui-h-5" />
         </div>
 
         {/* Dropdown Values - iterate over balances that are not the selected currency */}
@@ -180,50 +210,41 @@ export function WalletSendInput({
 
             return (
               <div
-                className={`ui-flex ui-items-center ui-p-4 ui-bg-black hover:ui-cursor-pointer hover:ui-bg-white/20 ${
+                className={`ui-flex ui-items-center ui-p-4 hover:ui-cursor-pointer hover:ui-bg-[#262626] ui-transition-all ui-duration-300 ${
                   isLast ? "ui-rounded-b-lg" : ""
                 }`}
                 key={index + balance.symbol}
                 onClick={() => switchSelectedCurrency(balance.asset.base)}
               >
-                <img
-                  className="ui-w-[40px] ui-h-[40px] ui-mr-3"
-                  src={balance.imageUrl}
+                <TokenRow
+                  imageUrl={balance.imageUrl}
+                  symbol={balance.symbol}
+                  value={balance.value}
+                  dollarValue={balance.dollarValue}
                 />
-
-                <div className="ui-flex ui-flex-col ui-items-start">
-                  <p className="ui-text-lg ui-leading-[24px] ui-font-bold ui-text-white">
-                    {balance.symbol.toUpperCase()}
-                  </p>
-                  <p className="ui-text-sm ui-text-white">
-                    Balance: {balance.value.toFixed(2)}
-                    <span className="ui-text-[#949494] ui-pl-3">
-                      ${balance.dollarValue.toFixed(2)} USD
-                    </span>
-                  </p>
-                </div>
               </div>
             );
           })}
         </div>
-        {/* End Dropdown Values */}
       </div>
     );
   };
 
   function renderEstimatedFee() {
     if (isCalculatingFee) {
-      return <div className="ui-text-[#949494]">Calculating Gas Fee...</div>;
+      return (
+        <div className="ui-text-secondary-text">Calculating Gas Fee...</div>
+      );
     }
     if (estimatingError) {
-      return <div className="ui-text-inputError">{estimatingError}</div>;
+      return <div className="ui-text-destructive">{estimatingError}</div>;
     }
     if (!estimatedFee) return;
 
     return (
       <>
-        <div className="ui-text-[#949494]">Estimated fee</div>
-        <div className="ui-text-[#949494]">
+        <div className="ui-text-secondary-text">Estimated fee</div>
+        <div className="ui-text-secondary-text">
           {(estimatedFee.amount / XION_CONVERSION).toFixed(6)} XION
         </div>
       </>
@@ -232,29 +253,29 @@ export function WalletSendInput({
 
   return (
     <>
-      <div className="ui-flex ui-flex-col ui-p-0 ui-gap-y-8 ui-max-h-full">
-        <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
-          SEND
-        </h1>
+      <div className="ui-flex ui-flex-col ui-p-0 ui-gap-y-6 ui-max-h-full">
+        <DialogHeader>
+          <DialogTitle>Send</DialogTitle>
+        </DialogHeader>
         <div className="ui-flex ui-flex-col ui-gap-8 ui-mt-2">
           {currencyDropdown()}
-          <div className="ui-flex ui-flex-col ui-gap-3">
-            <div className="ui-flex ui-justify-between">
-              <p className="ui-text-white ui-font-semibold">Amount</p>
-              <p className="ui-text-[#949494]">
+          <div className="ui-flex ui-flex-col ui-gap-2 -ui-mb-5">
+            <div className="ui-flex ui-justify-between ui-px-1">
+              <p className="ui-font-bold">Amount</p>
+              <p className="ui-text-secondary-text">
                 =$
                 {(Number(sendAmount) * selectedCurrency.price).toFixed(2)} USD
               </p>
             </div>
             <div
-              className={`ui-flex ui-items-center ui-justify-between ui-p-6 ui-border ${
-                amountError ? "ui-border-red-500" : "ui-border-white/20"
-              } ui-rounded-[18px]`}
+              className={`ui-flex ui-items-center ui-justify-between ui-gap-2 ui-px-6 ui-py-4 ui-border ${
+                amountError ? "ui-border-destructive" : "ui-border-border"
+              } ui-rounded-[12px]`}
             >
               <input
-                className={`ui-w-full ui-no-spinner ui-bg-transparent ${
-                  sendAmount === "0" && "!ui-text-[#6C6A6A]"
-                } ui-text-white ui-font-bold ui-text-5xl placeholder:ui-text-[#6C6A6A] focus:ui-outline-none`}
+                className={`ui-w-full ui-bg-transparent ui-no-spinner ${
+                  sendAmount === "0" && "!ui-text-secondary-text"
+                } ui-font-bold ui-text-5xl !ui-h-[48px] placeholder:ui-text-secondary-text focus:ui-outline-none`}
                 onChange={(e) => {
                   handleAmountChange(e);
                 }}
@@ -263,22 +284,14 @@ export function WalletSendInput({
                 inputMode="decimal"
                 value={sendAmount}
               />
-              <p className="ui-text-5xl ui-font-bold ui-text-[#949494]">
+              <p className="ui-text-5xl ui-font-bold ui-text-secondary-text">
                 {selectedCurrency.symbol.toUpperCase()}
               </p>
             </div>
-            {amountError ? (
-              <p className="ui-text-red-500 ui-text-sm">{amountError}</p>
-            ) : null}
+            <p className="ui-text-destructive ui-h-5 ui-text-sm ui-pl-1">
+              {amountError}
+            </p>
           </div>
-        </div>
-        <div className="ui-flex ui-flex-col ui-gap-1">
-          <label className="ui-text-xs ui-leading-[20px] ui-text-[#949494]">
-            From
-          </label>
-          <p className="ui-w-full ui-text-left ui-text-sm ui-text-white ui-break-words">
-            {account.id}
-          </p>
         </div>
         <Input
           data-testid="recipient-input"
@@ -295,25 +308,26 @@ export function WalletSendInput({
           placeholder="Memo (Optional)"
           value={userMemo}
         />
-        <div className="ui-flex ui-flex-col ui-gap-4 ui-mt-4">
-          {estimatedFee && (
-            <div className="ui-flex ui-items-center ui-text-sm ui-justify-between">
-              {renderEstimatedFee()}
-            </div>
-          )}
+        <div className="ui-flex ui-flex-col ui-gap-2 ui-mt-2">
+          <div className="ui-flex ui-items-center ui-text-sm ui-justify-between ui-h-5">
+            {renderEstimatedFee()}
+          </div>
 
-          <Button
+          <BaseButton
             disabled={
               estimatingError ||
               isCalculatingFee ||
               !recipientAddress ||
               !sendAmount
             }
-            onClick={onStart}
+            onClick={() => {
+              setIsLoading(true);
+              onStart();
+            }}
             className="ui-mb-10 sm:ui-mb-0"
           >
-            REVIEW
-          </Button>
+            {isLoading ? <SpinnerV2 size="sm" color="black" /> : "REVIEW"}
+          </BaseButton>
         </div>
       </div>
     </>

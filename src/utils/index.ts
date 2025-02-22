@@ -1,11 +1,15 @@
-export function truncateAddress(address: string | undefined) {
+export function truncateAddress(
+  address: string | undefined,
+  frontLength: number = 8,
+  backLength: number = 4,
+) {
   if (!address) {
     return "";
   }
   return (
-    address.slice(0, 8) +
+    address.slice(0, frontLength) +
     "..." +
-    address.slice(address.length - 4, address.length)
+    address.slice(address.length - backLength, address.length)
   );
 }
 

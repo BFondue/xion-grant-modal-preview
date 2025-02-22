@@ -1,5 +1,12 @@
 import React from "react";
-import { ModalSection, Spinner } from "../ui";
+import {
+  BaseButton,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui";
+import SpinnerV2 from "../ui/icons/SpinnerV2";
 
 interface LoadingProps {
   header: string;
@@ -8,18 +15,20 @@ interface LoadingProps {
 
 export const Loading = ({ header, message }: LoadingProps) => {
   return (
-    <ModalSection>
-      <div className="ui-flex ui-flex-col md:ui-p-10 ui-justify-center ui-items-center ui-h-full ui-w-full">
-        <div className="ui-flex ui-w-full ui-flex-col ui-justify-center ui-items-center ui-text-white">
-          <h1 className="ui-max-w-[350px] ui-mb-6 ui-text-3xl ui-font-thin ui-tracking-wide ui-text-center">
-            {header}
-          </h1>
-          <h2 className="ui-mb-6 ui-text-white/50 ui-text-center">{message}</h2>
-        </div>
-        <div className="ui-flex ui-w-full ui-items-center ui-justify-center ui-text-white">
-          <Spinner size="large" />
-        </div>
+    <div className="ui-flex ui-flex-col ui-justify-center ui-items-center ui-gap-12 ui-w-full">
+      <DialogHeader>
+        <DialogTitle>{header}</DialogTitle>
+        <DialogDescription>{message}</DialogDescription>
+      </DialogHeader>
+      <div className="ui-flex ui-w-full ui-items-center ui-justify-center ui-text-white">
+        <SpinnerV2 size="lg" color="white" />
       </div>
-    </ModalSection>
+
+      <DialogFooter>
+        <BaseButton className="ui-w-full" disabled={true}>
+          SET UP AUTHENTICATOR
+        </BaseButton>
+      </DialogFooter>
+    </div>
   );
 };

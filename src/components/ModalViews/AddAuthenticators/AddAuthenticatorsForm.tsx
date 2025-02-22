@@ -5,7 +5,10 @@ import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
-  Button,
+  BaseButton,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
   EmailIcon,
   KeplrLogo,
   MetamaskLogo,
@@ -33,6 +36,7 @@ import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
+import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -519,7 +523,7 @@ export function AddAuthenticatorsForm({
   if (isLoading) {
     return (
       <Loading
-        header="ADDING AUTHENTICATOR..."
+        header="Adding Authenticator"
         message="We are adding an authenticator to your account. Don't leave the page or close the window. This will take a few seconds..."
       />
     );
@@ -536,27 +540,32 @@ export function AddAuthenticatorsForm({
   }
 
   return (
-    <div className="ui-p-0 md:ui-p-10 ui-flex ui-flex-col ui-gap-12 ui-items-center">
-      <div className="ui-flex ui-flex-col ui-gap-3">
-        <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
-          ADD AUTHENTICATORS
-        </h1>
+    <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center">
+      <DialogHeader>
         {isSuccess ? (
-          <p className="ui-w-full ui-text-center ui-text-base ui-text-white/50">
-            Successfully added authenticator to account. Please click continue
-            to navigate back to home page.
-          </p>
+          <>
+            <DialogTitle>Success!</DialogTitle>
+            <DialogDescription>
+              Successfully added authenticator to account.
+            </DialogDescription>
+          </>
         ) : errorMessage ? (
-          <p className="ui-w-full ui-text-center ui-text-base ui-text-red-500">
-            {errorMessage}
-          </p>
+          <>
+            <DialogTitle>Add Authenticators</DialogTitle>
+            <DialogDescription className="ui-text-disabled-text">
+              {errorMessage}
+            </DialogDescription>
+          </>
         ) : (
-          <p className="ui-w-full ui-text-center ui-text-base ui-text-white/50">
-            Enhance your account&apos;s security by adding authenticators.
-            Select from the following options.
-          </p>
+          <>
+            <DialogTitle>Add Authenticators</DialogTitle>
+            <DialogDescription>
+              Enhance your account&apos;s security by adding authenticators.
+              Select from the following options.
+            </DialogDescription>
+          </>
         )}
-      </div>
+      </DialogHeader>
       {!isSuccess ? (
         <>
           {/* <Button
@@ -567,54 +576,53 @@ export function AddAuthenticatorsForm({
             SKIP FOR NOW
           </Button> */}
           <div className="ui-grid ui-grid-cols-3 ui-gap-4 ui-w-fit ui-justify-center ui-mx-auto">
-            <Button
-              className={cn(
-                { "!ui-border-white": selectedAuthenticator === "jwt" },
-                "ui-w-16 ui-h-16 !ui-p-0 ui-flex ui-items-center ui-justify-center",
-                "ui-border ui-border-white/20 ui-rounded-lg",
-              )}
+            <BaseButton
+              className={cn("ui-w-16 ui-h-16", {
+                "!ui-border-white": selectedAuthenticator === "jwt",
+              })}
               onClick={() => handleSwitch("jwt")}
-              structure="outlined"
+              variant="secondary"
+              size="icon-large"
             >
               <EmailIcon className="ui-w-[30px] ui-h-[24px]" />
-            </Button>
+            </BaseButton>
             {shouldEnableKeplr ? (
-              <Button
+              <BaseButton
                 className={cn(
                   { "!ui-border-white": selectedAuthenticator === "keplr" },
-                  "ui-w-16 ui-h-16 !ui-p-0 ui-flex ui-items-center ui-justify-center",
-                  "ui-border ui-border-white/20 ui-rounded-lg",
+                  "ui-w-16 ui-h-16",
                 )}
                 onClick={() => handleSwitch("keplr")}
-                structure="outlined"
+                variant="secondary"
+                size="icon-large"
               >
                 <KeplrLogo className="ui-w-[26px] ui-h-[26px]" />
-              </Button>
+              </BaseButton>
             ) : null}
             {shouldEnableMetamask ? (
-              <Button
+              <BaseButton
                 className={cn(
                   { "!ui-border-white": selectedAuthenticator === "metamask" },
-                  "ui-w-16 ui-h-16 !ui-p-0 ui-flex ui-items-center ui-justify-center",
-                  "ui-border ui-border-white/20 ui-rounded-lg",
+                  "ui-w-16 ui-h-16",
                 )}
                 disabled={!shouldEnableMetamask}
                 onClick={() => handleSwitch("metamask")}
-                structure="outlined"
+                variant="secondary"
+                size="icon-large"
               >
                 <MetamaskLogo className="ui-w-[34px] ui-h-[34px]" />
-              </Button>
+              </BaseButton>
             ) : null}
             {shouldEnableOkx ? (
-              <Button
+              <BaseButton
                 className={cn(
                   { "!ui-border-white": selectedAuthenticator === "okx" },
-                  "ui-w-16 ui-h-16 !ui-p-0 ui-flex ui-items-center ui-justify-center",
-                  "ui-border ui-border-white/20 ui-rounded-lg",
+                  "ui-w-16 ui-h-16",
                 )}
                 disabled={!shouldEnableOkx}
                 onClick={() => handleSwitch("okx")}
-                structure="outlined"
+                variant="secondary"
+                size="icon-large"
               >
                 <img
                   src="/okxWallet.png"
@@ -622,40 +630,43 @@ export function AddAuthenticatorsForm({
                   width={36}
                   alt="OKX Logo"
                 />
-              </Button>
+              </BaseButton>
             ) : null}
             {shouldEnablePasskey ? (
-              <Button
+              <BaseButton
                 className={cn(
                   { "!ui-border-white": selectedAuthenticator === "passkey" },
-                  "ui-w-16 ui-h-16 ui-relative !ui-p-0 ui-flex ui-items-center ui-justify-center",
-                  "ui-border ui-border-white/20 ui-rounded-lg",
+                  "ui-w-16 ui-h-16 ui-relative",
                 )}
                 disabled={!shouldEnablePasskey}
                 onClick={() => handleSwitch("passkey")}
-                structure="outlined"
+                variant="secondary"
+                size="icon-large"
               >
-                <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500 ui-text-white ui-text-[10px] ui-leading-[100%] ui-font-bold ui-px-1 ui-rounded-[4px] ui-h-[14px] ui-flex ui-items-center ui-justify-center">
+                <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500/50 ui-text-white ui-text-[10px] ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
                   BETA
                 </span>
                 <PasskeyIcon className="ui-w-12" />
-              </Button>
+              </BaseButton>
             ) : null}
           </div>
         </>
       ) : null}
       {isSuccess ? (
-        <Button className="ui-w-full ui-mt-4" onClick={() => setIsOpen(false)}>
-          CONTINUE
-        </Button>
+        <div className="ui-flex ui-flex-col ui-gap-12 ui-w-full ui-items-center">
+          <AnimatedCheckmark />
+          <BaseButton className="ui-w-full" onClick={() => setIsOpen(false)}>
+            Done
+          </BaseButton>
+        </div>
       ) : (
-        <Button
+        <BaseButton
           className="ui-w-full"
           disabled={selectedAuthenticator === "none"}
           onClick={handleSelection}
         >
           SET UP AUTHENTICATOR
-        </Button>
+        </BaseButton>
       )}
     </div>
   );

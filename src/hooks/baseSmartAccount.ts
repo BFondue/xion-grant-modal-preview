@@ -32,7 +32,7 @@ export const useBaseSmartAccounts = (
   const { loginAuthenticator } = useAbstraxionAccount();
   const [shouldFetch, setShouldFetch] = useState(!waitToFetch);
   const [pollInterval, setPollInterval] = useState(POLL_INTERVAL_DEFAULT);
-  const { abstractAccount, setAbstractAccount } = useContext(
+  const { abstractAccount } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
   const [isSuccess, setIsSuccess] = useState(false);
@@ -67,15 +67,7 @@ export const useBaseSmartAccounts = (
   useEffect(() => {
     const { data } = query;
 
-    if (data?.length === 1 && !abstractAccount) {
-      const node = data[0];
-      setAbstractAccount({
-        ...node,
-        currentAuthenticatorIndex: node.authenticators.find(
-          (authenticator) => authenticator.authenticator === loginAuthenticator,
-        ).authenticatorIndex,
-      });
-    } else if (!abstractAccount && data?.length === 0) {
+    if (!abstractAccount && data?.length === 0) {
       return;
     } else if (!abstractAccount) {
       setShouldFetch(false);

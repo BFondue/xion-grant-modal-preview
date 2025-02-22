@@ -1,10 +1,11 @@
 import React, { ReactElement, useState } from "react";
 import {
   Button,
-  CloseIcon,
   Dialog,
-  DialogClose,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "../ui";
 import { CopyAddress } from "../CopyAddress";
@@ -20,26 +21,26 @@ export function WalletReceive({
 
   return (
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
-      <DialogTrigger>{trigger}</DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         className="ui-text-white ui-p-12"
         onPointerDownOutside={(e) => e.preventDefault()}
+        closeButton
       >
-        <div className="ui-flex ui-justify-end ui-absolute ui-top-6 ui-right-6">
-          <DialogClose className="ui-inline-flex">
-            <CloseIcon className="ui-stroke-white/50 " />
-          </DialogClose>
-        </div>
-
+        <DialogHeader>
+          <DialogTitle>Receive XION</DialogTitle>
+          <DialogDescription>
+            Copy the XION address below to receive.
+          </DialogDescription>
+        </DialogHeader>
         <div className="ui-flex ui-flex-col ui-gap-10">
-          <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
-            RECEIVE
-          </h1>
           <div className="ui-flex ui-flex-col ui-gap-6">
-            <h3 className="ui-text-white ui-text-sm ui-font-bold ui-leading-none">
-              XION Address
-            </h3>
-            <CopyAddress xionAddress={xionAddress} />
+            <CopyAddress
+              xionAddress={xionAddress}
+              className="ui-w-full ui-h-14 ui-text-sm ui-font-bold ui-leading-none ui-rounded-lg ui-justify-between ui-items-center ui-bg-white/[0.05] ui-px-4 ui-py-2"
+              iconHeight={14}
+              iconWidth={12}
+            />
           </div>
           <Button
             className="ui-mt-2"

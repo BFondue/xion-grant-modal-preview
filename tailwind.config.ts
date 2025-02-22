@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 // Convert image to base64
 const imageToBase64 = (path: string): string => {
@@ -21,8 +22,15 @@ const config: Config = {
           "./src/assets/xion-bg-blur.png",
         )}')`,
         "modal-static": `url('${imageToBase64("./src/assets/static.png")}')`,
+        "modal-static-2": `url('${imageToBase64("./src/assets/static2.png")}')`,
       },
       colors: {
+        background: "hsla(var(--background), 1)",
+        "primary-text": "var(--primary-text)",
+        "secondary-text": "var(--secondary-text)",
+        border: "var(--border)",
+        "border-focus": "var(--border-focus)",
+        destructive: "hsla(var(--destructive), 1)",
         primary: "#000",
         mainnet: "#CAF033",
         "mainnet-bg": "rgba(4, 199, 0, 0.2)",
@@ -32,6 +40,7 @@ const config: Config = {
         inputError: "#D74506",
         "disabled-bg": "#949494",
         "disabled-text": "#575454",
+        warning: "hsla(var(--warning), 1)",
       },
       flexGrow: {
         "2": "2",
@@ -56,6 +65,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [animate],
 };
 export default config;

@@ -4,9 +4,11 @@ import { cn } from "../../../utils/classname-util";
 export const CloseIcon = ({
   onClick,
   className,
+  strokeWidth = 2,
 }: {
   onClick?: VoidFunction;
   className?: string;
+  strokeWidth?: number;
 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -15,7 +17,7 @@ export const CloseIcon = ({
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth={strokeWidth}
     strokeLinecap="round"
     strokeLinejoin="round"
     className={cn("ui-h-6 ui-w-6", className)}

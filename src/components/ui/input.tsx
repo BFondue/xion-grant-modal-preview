@@ -38,10 +38,10 @@ export function Input({
   return (
     <div className={`ui-relative ui-w-full ui-text-left ${className || ""}`}>
       <label
-        className={`ui-relative ui-z-0 ui-w-auto ui-transition-all ui-duration-100 ui-ease-in-out ${
+        className={`ui-relative ui-z-0 ui-w-auto ui-transition-all ui-duration-100 ui-ease-linear  ui-text-secondary-text ${
           isInputFocused || value
-            ? "ui-top-2 ui-text-xs ui-leading-tight ui-text-[#949494]"
-            : "ui-top-7 ui-text-[#6C6A6A]"
+            ? "ui-top-0 ui-text-xs ui-leading-tight"
+            : "ui-top-7"
         }`}
       >
         {placeholder}
@@ -50,9 +50,9 @@ export function Input({
         {...props}
         className={`${
           baseInputClassName || ""
-        } ui-z-10 ui-block ui-h-8 ui-w-full ui-border-b ui-border-[#949494] ui-rounded-none ui-relative ${
-          error ? "ui-border-red-400" : ""
-        } ui-bg-transparent ui-font-akkuratLL ui-py-5 !ui-text-base ui-text-zinc-100 ui-font-normal ui-leading-tight ui-outline-none`}
+        } ui-z-10 ui-block ui-h-8 ui-w-full ui-border-b ui-border-border ui-rounded-none ui-relative ${
+          error ? "ui-border-destructive" : ""
+        } ui-bg-transparent ui-font-akkuratLL ui-py-4 !ui-text-base ui-text-zinc-100 ui-font-normal ui-leading-tight ui-outline-none`}
         onBlur={handleBlur}
         onFocus={handleFocus}
         onKeyDown={onKeyDown}
@@ -61,11 +61,9 @@ export function Input({
         }}
         value={value}
       />
-      {error ? (
-        <p className="ui-left-0 -ui-bottom-6 ui-text-xs ui-leading-tight ui-absolute ui-text-red-500">
-          {error}
-        </p>
-      ) : null}
+      <p className="ui-left-0 -ui-bottom-4 ui-text-xs ui-h-3 ui-w-full ui-leading-tight ui-absolute ui-text-destructive">
+        {error}
+      </p>
     </div>
   );
 }

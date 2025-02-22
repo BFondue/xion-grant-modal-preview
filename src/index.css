@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --background: 0, 0%, 7%;
+    --primary-text: #ffffff;
+    --secondary-text: #8d8d8d;
+    --border: hsla(0, 0%, 100%, 0.2);
+    --border-focus: #8d8d8d;
+    --destructive: 18, 95%, 43%;
+    --warning: 32, 76%, 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply ui-border-border;
+  }
+  body {
+    @apply ui-bg-background ui-text-primary-text ui-antialiased;
+  }
+}
+
 @layer utilities {
   .ui-no-spinner {
     -moz-appearance: textfield;

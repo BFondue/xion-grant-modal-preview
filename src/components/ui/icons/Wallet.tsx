@@ -1,32 +1,38 @@
 import React from "react";
 
+interface WalletIconProps {
+  color: string;
+  backgroundColor: string;
+  width?: number;
+  height?: number;
+}
+
 export const WalletIcon = ({
   color,
   backgroundColor,
-}: {
-  color: string;
-  backgroundColor: string;
-}) => (
+  width = 16,
+  height = 14,
+}: WalletIconProps) => (
   <svg
-    width="21"
-    height="17"
-    viewBox="0 0 21 17"
+    width={width}
+    height={height}
+    viewBox="0 0 16 14"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
     <rect
-      x="1"
-      y="0.5"
-      width="17.2353"
-      height="11.9412"
+      x="0.5"
+      y="0.882717"
+      width="13.5882"
+      height="9.35294"
       rx="1.5"
       stroke={color}
     />
     <path
-      d="M1 14.1186V3.7511C1.00389 3.75308 1.00778 3.75504 1.01168 3.75699C1.56022 4.03126 2.2516 4.03078 2.79374 4.0304C2.81368 4.03039 2.83342 4.03037 2.85294 4.03037H18.1471C19.1704 4.03037 20 4.85996 20 5.88332V14.1186C20 15.142 19.1704 15.9715 18.1471 15.9715H2.85294C1.82959 15.9715 1 15.142 1 14.1186Z"
+      d="M0.5 11.6776V3.53782C0.934112 3.70797 1.44106 3.70745 1.82796 3.70705C1.84637 3.70704 1.86451 3.70702 1.88235 3.70702H14.1176C14.8811 3.70702 15.5 4.32592 15.5 5.08937V11.6776C15.5 12.4411 14.8811 13.06 14.1176 13.06H1.88235C1.1189 13.06 0.5 12.4411 0.5 11.6776Z"
       fill={backgroundColor}
-      stroke={color}
+      stroke="white"
     />
-    <line x1="4.0293" y1="7.14844" x2="16.3822" y2="7.14844" stroke={color} />
+    <line x1="2.82349" y1="6.00147" x2="12.7058" y2="6.00147" stroke="white" />
   </svg>
 );

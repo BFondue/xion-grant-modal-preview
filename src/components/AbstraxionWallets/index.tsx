@@ -1,6 +1,11 @@
-import React, { useCallback, useContext, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
 import { useStytch } from "@stytch/react";
-import { Loading } from "../Loading";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -9,8 +14,24 @@ import { truncateAddress } from "../../utils";
 import { useAbstraxionAccount } from "../../hooks";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { useGetSmartAccountsStrategy } from "../../hooks/useGetSmartAccountsStrategy";
-import { Button, Spinner, WalletIcon } from "../ui";
+import {
+  BaseButton,
+  CloseIcon,
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  NavigationButton,
+} from "../ui";
 import { ErrorDisplay } from "../ErrorDisplay";
+import { cn } from "../../utils/classname-util";
+import SpinnerV2 from "../ui/icons/SpinnerV2";
+import { ChevronRightIcon } from "../ui/icons/ChevronRight";
+import { InboxIcon } from "../ui/icons/Inbox";
+import SadIcon from "../ui/icons/Sad";
+import { useQueryParams } from "../../hooks/useQueryParams";
+import { redirectToDapp } from "../../utils/redirect-utils";
 
 export const AbstraxionWallets = () => {
   const {
@@ -20,7 +41,11 @@ export const AbstraxionWallets = () => {
     setAbstraxionError,
     apiUrl,
     setIsOpen,
+    isInGrantFlow,
   } = useContext(AbstraxionContext) as AbstraxionContextProps;
+
+  const { redirect_uri } = useQueryParams(["redirect_uri"]);
+  const isInLoginFlow = !abstractAccount;
 
   const stytchClient = useStytch();
   const session_jwt = stytchClient.session.getTokens()?.session_jwt;
@@ -36,6 +61,40 @@ export const AbstraxionWallets = () => {
   const { xionDisconnect } = useXionDisconnect();
 
   const [isGeneratingNewWallet, setIsGeneratingNewWallet] = useState(false);
+
+  // Handle auto-login for single account
+  useEffect(() => {
+    if (data?.length === 1 && isInLoginFlow) {
+      const node = data[0];
+      setAbstractAccount({
+        ...node,
+        currentAuthenticatorIndex: node.authenticators.find(
+          (authenticator) => authenticator.authenticator === loginAuthenticator,
+        ).authenticatorIndex,
+      });
+      setIsOpen(false);
+    }
+  }, [
+    data,
+    abstractAccount,
+    loginAuthenticator,
+    setAbstractAccount,
+    setIsOpen,
+  ]);
+
+  const dialogTitle = useMemo(() => {
+    if (isGeneratingNewWallet) return "Creating Account";
+    if (loading || (data?.length === 1 && isInLoginFlow))
+      return "Fetching Accounts";
+    return "Accounts";
+  }, [isGeneratingNewWallet, loading, data, abstractAccount]);
+
+  const dialogDescription = useMemo(() => {
+    if (isGeneratingNewWallet) return "This will take a few seconds";
+    if (loading || (data?.length === 1 && isInLoginFlow))
+      return "Loading your accounts";
+    return "Choose an account to continue";
+  }, [isGeneratingNewWallet, loading, data, abstractAccount]);
 
   const handleJwtAALoginOrCreate = useCallback(async () => {
     try {
@@ -69,11 +128,19 @@ export const AbstraxionWallets = () => {
     setAbstraxionError,
   ]);
 
+  const handleDisconnectClick = () => {
+    if (redirect_uri) {
+      redirectToDapp();
+    } else {
+      xionDisconnect();
+    }
+  };
+
   if (error) {
     return (
       <ErrorDisplay
         title="Failed to fetch accounts"
-        message="There was an error fetching your accounts. Please try reloading the page."
+        description="There was an error fetching your accounts. Please try reloading the page."
         onClose={() => {
           setAbstraxionError("");
           xionDisconnect();
@@ -82,39 +149,49 @@ export const AbstraxionWallets = () => {
     );
   }
 
-  if (isGeneratingNewWallet) {
-    return (
-      <Loading
-        header="CREATING YOUR ACCOUNT..."
-        message="Creating your account now. This will take a few seconds..."
-      />
-    );
-  }
-
   return (
-    <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-8 sm:ui-p-10 ui-text-white">
-      <div className="ui-flex ui-flex-col ui-w-full ui-text-center">
-        <h1 className="ui-font-akkuratLL ui-w-full ui-leading-[38.40px] ui-tracking-tighter ui-text-3xl ui-font-light ui-text-white ui-uppercase ui-mb-3">
-          Welcome
-        </h1>
-        <h2 className="ui-font-akkuratLL ui-w-full ui-mb-4 ui-text-center ui-text-sm ui-font-normal ui-leading-tight ui-text-white/50">
-          Choose an account to continue
-        </h2>
-      </div>
+    <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-12">
+      {!isInLoginFlow && (
+        <DialogClose className="ui-absolute ui-top-6 ui-right-6">
+          <CloseIcon strokeWidth={2} className="ui-w-4 ui-h-4" />
+        </DialogClose>
+      )}
+      <DialogHeader>
+        <DialogTitle>{dialogTitle}</DialogTitle>
+        <DialogDescription>{dialogDescription}</DialogDescription>
+      </DialogHeader>
       <div className="ui-flex ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-4">
-        <div className="ui-text-white ui-text-base ui-font-bold ui-font-akkuratLL ui-leading-tight">
-          Accounts
-        </div>
-        <div className="ui-flex ui-max-h-[19rem] ui-w-full ui-flex-col ui-items-center ui-gap-4 ui-overflow-auto">
-          {loading ? (
-            <Spinner />
+        <div
+          className="ui-flex ui-max-h-[19rem] ui-w-full ui-flex-col ui-items-center ui-gap-3 ui-overflow-auto"
+          role="region"
+          aria-label={dialogTitle}
+        >
+          {loading ||
+          isGeneratingNewWallet ||
+          (data?.length === 1 && isInLoginFlow) ? (
+            <SpinnerV2
+              size="lg"
+              color="white"
+              aria-label={
+                isGeneratingNewWallet
+                  ? "Creating account..."
+                  : "Loading accounts..."
+              }
+            />
           ) : data?.length >= 1 ? (
             data?.map((node, i: number) => (
-              <div
-                className={`ui-w-full ui-items-center ui-gap-4 ui-rounded-lg ui-p-6 ui-flex ui-bg-transparent hover:ui-cursor-pointer ui-border-[1px] ui-border-white hover:ui-bg-white/5 ${
-                  node.id === abstractAccount?.id ? "" : "ui-border-opacity-30"
-                }`}
-                key={i}
+              <NavigationButton
+                className={cn("ui-w-full", {
+                  "ui-border-opacity-30": node.id === abstractAccount?.id,
+                })}
+                key={node.id}
+                subLabel={
+                  <div className="ui-bg-white/10 ui-px-1.5 ui-py-0.5 ui-rounded-[4px] ui-text-xs ui-font-bold">
+                    <span className="ui-text-white/80">
+                      {truncateAddress(node.id)}
+                    </span>
+                  </div>
+                }
                 onClick={() => {
                   setAbstractAccount({
                     authenticators: node.authenticators,
@@ -127,51 +204,80 @@ export const AbstraxionWallets = () => {
                   });
                   setIsOpen(false);
                 }}
+                aria-label={`Select Personal Account ${i + 1}`}
               >
-                <div className="ui-h-10 ui-w-10 ui-flex ui-justify-center ui-items-center ui-rounded-full ui-bg-black/30">
-                  <WalletIcon color="white" backgroundColor="#363635" />
-                </div>
-
-                <div className="ui-flex ui-flex-col ui-gap-1">
-                  <h1 className="ui-text-sm ui-font-bold ui-font-akkuratLL ui-leading-none">
-                    Personal Account {i + 1}
-                  </h1>
-                  <h2 className="ui-text-xs ui-text-neutral-400 ui-font-akkuratLL ui-leading-tight">
-                    {truncateAddress(node.id)}
-                  </h2>
-                </div>
-              </div>
+                Personal Account {i + 1}
+              </NavigationButton>
             ))
           ) : (
             <>
-              <p>No Accounts Found.</p>
-              {connectionType !== "stytch" ? (
-                <p className="ui-text-center ui-text-neutral-400">
-                  This authenticator can only be used as a backup right now.
-                  Please log in with email to create an account.
-                </p>
-              ) : null}
+              {connectionType === "stytch" ? (
+                <>
+                  <div className="ui-flex ui-items-center ui-justify-center ui-w-full ui-h-full">
+                    <InboxIcon aria-hidden="true" />
+                  </div>
+                  <p
+                    className="ui-font-bold ui-text-xl ui-leading-6"
+                    role="status"
+                  >
+                    No accounts found
+                  </p>
+                </>
+              ) : (
+                <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-5 ui-px-8">
+                  <SadIcon aria-hidden="true" />
+                  <p
+                    className="ui-text-center ui-font-bold ui-text-base ui-leading-[19.2px]"
+                    role="status"
+                  >
+                    This authenticator can only be used as a backup right now.
+                    Please log in with email or social account to create an
+                    account.
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>
       </div>
       <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
-        {!loading && data?.length < 1 && connectionType === "stytch" ? (
-          <Button
-            structure="outlined"
-            fullWidth={true}
-            onClick={handleJwtAALoginOrCreate}
-          >
-            Create your first account now!
-          </Button>
-        ) : null}
-        <Button
-          structure="destructive-outline"
-          fullWidth={true}
-          onClick={xionDisconnect}
-        >
-          Disconnect
-        </Button>
+        <DialogFooter>
+          <div className="ui-flex ui-flex-col ui-gap-3 ui-w-full">
+            {connectionType === "stytch" && isInLoginFlow && (
+              <BaseButton
+                className="ui-w-full"
+                onClick={handleJwtAALoginOrCreate}
+                disabled={loading || isGeneratingNewWallet || data?.length > 0}
+              >
+                CREATE NEW ACCOUNT
+              </BaseButton>
+            )}
+            <div className="ui-flex ui-gap-3 ui-w-full">
+              {isInLoginFlow && isInGrantFlow && (
+                <BaseButton
+                  variant="secondary"
+                  size="icon-large"
+                  className="ui-group/basebutton"
+                  disabled={loading || isGeneratingNewWallet}
+                  onClick={xionDisconnect}
+                >
+                  <div className="ui-flex ui-items-center ui-justify-center">
+                    <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
+                    <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
+                  </div>
+                </BaseButton>
+              )}
+              <BaseButton
+                variant="destructive"
+                className="ui-w-full"
+                disabled={loading || isGeneratingNewWallet}
+                onClick={handleDisconnectClick}
+              >
+                {redirect_uri ? "CANCEL" : "DISCONNECT"}
+              </BaseButton>
+            </div>
+          </div>
+        </DialogFooter>
       </div>
     </div>
   );

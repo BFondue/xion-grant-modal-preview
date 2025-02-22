@@ -4,8 +4,11 @@ import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import {
   AccountWalletLogo,
-  Button,
+  BaseButton,
   CosmosLogo,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
   EmailIcon,
   EthereumLogo,
   PasskeyIcon,
@@ -87,19 +90,23 @@ export function RemoveAuthenticatorForm({
     return (
       <div
         key={authenticator.authenticator}
-        className="ui-flex ui-items-center ui-px-4 ui-mb-3 ui-h-16 ui-bg-black ui-rounded-lg"
+        className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-5 ui-min-h-16 ui-bg-black/50 ui-rounded-xl ui-w-full"
       >
-        <div className="ui-flex ui-w-10 ui-h-10 ui-bg-white/20 ui-items-center ui-justify-center ui-rounded-full">
-          {handleAuthenticatorLogos(
-            authenticator.type.toUpperCase() as authenticatorTypes,
-          )}
-        </div>
-        <div className="ui-ml-4 ui-flex ui-flex-1 ui-items-center ui-justify-between">
-          <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
-            {handleAuthenticatorLabels(
+        <div className="ui-flex ui-flex-1 ui-items-center">
+          <div className="ui-flex ui-w-8 ui-h-8 ui-bg-[#434040] ui-items-center ui-justify-center ui-rounded-full">
+            {handleAuthenticatorLogos(
               authenticator.type.toUpperCase() as authenticatorTypes,
             )}
-          </p>
+          </div>
+          <div className="ui-flex ui-flex-1 ui-pr-1 ui-items-start md:!ui-items-center ui-flex-col-reverse md:!ui-flex-row">
+            <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
+              <p className="ui-text-base">
+                {handleAuthenticatorLabels(
+                  authenticator.type.toUpperCase() as authenticatorTypes,
+                )}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -204,7 +211,7 @@ export function RemoveAuthenticatorForm({
   if (isLoading) {
     return (
       <Loading
-        header="REMOVING AUTHENTICATOR..."
+        header="Removing Authenticator"
         message="We are removing an authenticator from your account. Don't leave the page or close the window. This will take a few seconds..."
       />
     );
@@ -212,69 +219,61 @@ export function RemoveAuthenticatorForm({
 
   if (showEmailWarning) {
     return (
-      <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-12 ui-items-center">
-        <div className="ui-flex ui-flex-col ui-gap-3 ui-w-full">
-          <h1 className="ui-w-full ui-text-center ui-text-[32px] ui-leading-[120%] ui-font-thin">
-            WARNING
-          </h1>
+      <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center">
+        <DialogHeader>
+          <DialogTitle>Warning</DialogTitle>
           {errorMessage ? (
-            <p className="ui-w-full ui-text-center ui-text-sm ui-text-red-500">
+            <DialogDescription className="ui-text-destructive-text">
               {errorMessage}
-            </p>
+            </DialogDescription>
           ) : (
-            <>
-              <div>
-                <p className="ui-w-full ui-text-center ui-text-base  ui-text-white/50">
-                  Once you delete your email authenticator, you won&apos;t be
-                  able to add it back. That feature is coming soon.
-                </p>
-              </div>
-            </>
+            <DialogDescription className="ui-text-white/50">
+              Once you delete your email authenticator, you won&apos;t be able
+              to add it back. That feature is coming soon.
+            </DialogDescription>
           )}
-        </div>
-        <Button
-          fullWidth
+        </DialogHeader>
+        <BaseButton
           onClick={() => setShowEmailWarning(false)}
-          structure="destructive"
+          variant="destructive"
+          className="ui-w-full"
         >
           I ACKNOWLEDGE & WISH TO PROCEED
-        </Button>
+        </BaseButton>
       </div>
     );
   }
 
   return (
-    <div className="ui-p-0 md:ui-p-8 ui-flex ui-flex-col ui-gap-8 ui-items-center">
-      <div className="ui-flex ui-flex-col ui-gap-4 ui-w-full">
-        <h1 className="ui-w-full ui-text-center ui-text-3xl ui-font-akkuratLL ui-font-thin">
-          ARE YOU SURE?
-        </h1>
+    <div className="ui-flex ui-flex-col ui-gap-8 ui-items-center ui-w-full">
+      <DialogHeader>
+        <DialogTitle>Are you sure?</DialogTitle>
         {errorMessage ? (
-          <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-red-500">
+          <DialogDescription className="ui-text-destructive-text">
             {errorMessage}
-          </p>
+          </DialogDescription>
         ) : (
           <>
             <div>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
+              <DialogDescription>
                 You are about to delete the authenticator below.
-              </p>
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-akkuratLL ui-text-white/40">
+              </DialogDescription>
+              <DialogDescription>
                 Please click the confirm button to proceed.
-              </p>
+              </DialogDescription>
             </div>
-            {renderAuthenticator()}
           </>
         )}
-      </div>
+      </DialogHeader>
+      {renderAuthenticator()}
       {errorMessage ? (
-        <Button fullWidth onClick={() => setIsOpen(false)}>
+        <BaseButton className="ui-w-full" onClick={() => setIsOpen(false)}>
           CONTINUE
-        </Button>
+        </BaseButton>
       ) : (
-        <Button fullWidth onClick={removeAuthenticator}>
+        <BaseButton className="ui-w-full" onClick={removeAuthenticator}>
           CONFIRM
-        </Button>
+        </BaseButton>
       )}
     </div>
   );

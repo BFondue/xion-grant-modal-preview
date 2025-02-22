@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { isValidWalletAddress } from "../../utils";
@@ -36,9 +36,19 @@ export function WalletSendForm({
 
   const client = useAbstraxionSigningClient();
 
-  function updateSendAmount(inputValue: string) {
-    setAmountError("");
+  const validateAmount = useCallback(() => {
+    if (!sendAmount || sendAmount === "0") {
+      return;
+    }
 
+    if (Number(sendAmount) > selectedCurrency.value) {
+      setAmountError("Input is greater than your current balance");
+    } else {
+      setAmountError("");
+    }
+  }, [sendAmount, selectedCurrency.value]);
+
+  function updateSendAmount(inputValue: string) {
     // replace commas with periods for decimal input
     inputValue = inputValue.replace(/,/g, ".");
 
@@ -54,6 +64,7 @@ export function WalletSendForm({
     // If input is empty, set sendAmount to an empty string
     if (!inputValue) {
       setSendAmount("");
+      setAmountError("");
     } else {
       setSendAmount(inputValue);
     }
@@ -64,6 +75,15 @@ export function WalletSendForm({
 
     updateSendAmount(inputValue);
   }
+
+  // Debounce the amount validation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      validateAmount();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [sendAmount, validateAmount]);
 
   async function isExistingAddress(address: string) {
     try {
@@ -98,10 +118,6 @@ export function WalletSendForm({
   async function handleStart() {
     if (!sendAmount || sendAmount === "0") {
       setAmountError("No amount entered");
-      return;
-    }
-
-    if (!checkSendAmountInput()) {
       return;
     }
 
@@ -152,7 +168,7 @@ export function WalletSendForm({
       {sendTokensError ? (
         <ErrorDisplay
           title="ERROR!"
-          message="Transaction failed. Please try again later."
+          description="Transaction failed. Please try again later."
           onClose={() => setIsOpen(false)}
         />
       ) : isSuccess ? (
@@ -187,7 +203,6 @@ export function WalletSendForm({
         />
       ) : (
         <WalletSendInput
-          account={account}
           balances={balances}
           amountError={amountError}
           onChangeCurrency={setSelectedCurrencyDenom}

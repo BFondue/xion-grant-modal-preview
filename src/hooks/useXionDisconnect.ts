@@ -4,7 +4,7 @@ import { useStytch } from "@stytch/react";
 import { disconnect } from "graz";
 
 export function useXionDisconnect() {
-  const { connectionType, setConnectionType, setAbstractAccount } =
+  const { connectionType, setConnectionType, setAbstractAccount, setIsOpen } =
     useContext(AbstraxionContext);
 
   const stytch = useStytch();
@@ -16,6 +16,7 @@ export function useXionDisconnect() {
     disconnect();
     setConnectionType("none");
     setAbstractAccount(undefined);
+    setIsOpen(false);
     localStorage.removeItem("loginType");
     localStorage.removeItem("loginAuthenticator");
     localStorage.removeItem("okxXionAddress");

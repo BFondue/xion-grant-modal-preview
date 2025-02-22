@@ -1,12 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { AccountInfo } from "./AccountInfo";
 import { AbstraxionContext } from "./AbstraxionContext";
 import { Overview } from "./Overview";
-import { Sidebar } from "./Sidebar";
+import { TopNav } from "./TopNav";
 import { Abstraxion } from "./Abstraxion";
 import { useAbstraxionAccount } from "../hooks";
-
-import xionLogo from "../assets/logo.png";
 import { useQueryParams } from "../hooks/useQueryParams";
 
 export function App() {
@@ -18,9 +16,7 @@ export function App() {
     "treasury",
   ]);
   const { data: account, updateAbstractAccountCodeId } = useAbstraxionAccount();
-  const { isOpen, setIsOpen, isMainnet } = useContext(AbstraxionContext);
-
-  const [showMobileSiderbar, setShowMobileSiderbar] = useState(false);
+  const { isOpen, setIsOpen } = useContext(AbstraxionContext);
 
   return (
     <>
@@ -29,64 +25,26 @@ export function App() {
           <Abstraxion onClose={() => null} isOpen={true} />
         </div>
       ) : (
-        <div className="ui-flex ui-relative ui-max-h-dvh ui-h-screen">
-          {showMobileSiderbar ? (
-            <div className="ui-absolute ui-min-h-dvh ui-w-screen ui-bg-black ui-bg-opacity-20 ui-backdrop-blur-md ui-z-50">
-              <Sidebar onClose={() => setShowMobileSiderbar(false)} />
-            </div>
-          ) : null}
-          <div className="ui-hidden sm:ui-flex">
-            <Sidebar />
-          </div>
+        <div className="ui-flex ui-flex-col ui-min-h-screen ui-bg-background">
+          <TopNav />
 
-          <div className="ui-flex ui-flex-1 ui-max-w-full ui-flex-col">
-            <div className="ui-flex sm:!ui-hidden ui-justify-between ui-items-center ui-bg-black ui-p-6 ui-border-b-[1px] ui-border-[#6C6A6A]">
-              <div className="ui-flex ui-items-center">
-                <img src={xionLogo} alt="XION Logo" width="90" height="32" />
-                <div
-                  className={`ui-flex ui-items-center ui-justify-center ${
-                    isMainnet ? "ui-bg-mainnet-bg" : "ui-bg-testnet-bg"
-                  } ui-px-2 ui-py-1 ui-ml-4 ${
-                    isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
-                  } ui-rounded-md ui-text-xs ui-tracking-widest`}
-                >
-                  {isMainnet ? "MAINNET" : "TESTNET"}
-                </div>
-              </div>
-              <div
-                onClick={() => setShowMobileSiderbar(true)}
-                className="ui-cursor-pointer"
-              >
-                <div className="ui-bg-white ui-w-8 ui-h-[1px] ui-mb-2" />
-                <div className="ui-bg-white ui-w-6 ui-h-[1px] ui-ml-auto" />
-              </div>
-            </div>
-            <div className="ui-h-screen ui-bg-black ui-flex-1 ui-overflow-y-auto ui-p-6">
+          <main className="ui-flex-1 ui-overflow-y-auto ui-p-6">
+            <div className="ui-max-w-7xl ui-mx-auto">
               <div className="ui-relative">
                 <Abstraxion onClose={() => setIsOpen(false)} isOpen={isOpen} />
                 {/* Tiles */}
                 <div className="ui-mx-auto ui-flex ui-max-w-7xl">
                   {/* Left Tiles */}
-                  <div className="ui-flex-grow-2 ui-flex ui-flex-col ui-max-w-[700px] ui-mx-auto">
-                    <h2 className="ui-mb-6 ui-text-2xl ui-leading-[30px] ui-text-white ui-font-bold">
-                      Overview
-                    </h2>
+                  <div className="ui-flex-grow-2 ui-gap-8 ui-flex ui-flex-col ui-max-w-[700px] ui-mx-auto">
                     <Overview account={account} />
-                    <h2 className="ui-mb-6 ui-mt-8 ui-text-2xl ui-leading-[30px] ui-text-white ui-font-bold">
-                      Account Info
-                    </h2>
                     <AccountInfo
                       updateContractCodeID={updateAbstractAccountCodeId}
                     />
                   </div>
-                  {/* Right Tiles */}
-                  {/* <div className="ui-hidden sm:ui-flex sm:ui-flex-1 sm:ui-flex-col"></div> */}
                 </div>
-                {/* Right Tiles */}
-                {/* <div className="ui-hidden sm:ui-flex sm:ui-flex-1 sm:ui-flex-col"></div> */}
               </div>
             </div>
-          </div>
+          </main>
         </div>
       )}
     </>

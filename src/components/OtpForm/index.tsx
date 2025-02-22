@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button } from "../ui";
+import { BaseButton } from "../ui";
+import { cn } from "../../utils/classname-util";
+import SpinnerV2 from "../ui/icons/SpinnerV2";
 
 type OtpCode = [string, string, string, string, string, string];
 
@@ -17,10 +19,18 @@ const OtpForm: React.FC<OtpFormProps> = ({
   setError,
 }) => {
   const [otp, setOtp] = useState<OtpCode>(["", "", "", "", "", ""]);
-  // const [otpError, setOtpError] = useState<string | null>(error);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  useEffect(() => {
+    if (error) {
+      setIsSubmitted(false);
+      // Focus the first empty input or the first input if all are filled
+      const firstEmptyIndex = otp.findIndex((digit) => digit === "") ?? 0;
+      inputRefs.current[firstEmptyIndex]?.focus();
+    }
+  }, [error, otp]);
 
   useEffect(() => {
     if (timeLeft === 0) {
@@ -50,6 +60,7 @@ const OtpForm: React.FC<OtpFormProps> = ({
 
   async function submitResendCode(e: React.UIEvent) {
     e.preventDefault();
+    setIsSubmitted(false);
     try {
       await handleResendCode();
       setTimeLeft(60);
@@ -63,6 +74,7 @@ const OtpForm: React.FC<OtpFormProps> = ({
 
   const handleInputChange = (value: string, index: number) => {
     setError(null);
+    setIsSubmitted(false);
 
     if (value === "") {
       const newOtp = [...otp];
@@ -107,6 +119,8 @@ const OtpForm: React.FC<OtpFormProps> = ({
     index: number,
   ) => {
     e.preventDefault();
+    setError(null);
+    setIsSubmitted(false);
 
     const pastedData = await navigator.clipboard.readText();
     // Only allow digits to be pasted
@@ -133,8 +147,12 @@ const OtpForm: React.FC<OtpFormProps> = ({
   };
 
   return (
-    <div className="ui-flex ui-flex-col ui-items-center ui-gap-12 ui-w-full">
-      <div className="ui-grid ui-grid-cols-6 ui-gap-3 ui-w-fit ui-mt-4 ui-mx-auto">
+    <div
+      className={cn("ui-flex ui-flex-col ui-items-center ui-gap-12 ui-w-full", {
+        "ui-gap-6": error,
+      })}
+    >
+      <div className="ui-grid ui-grid-cols-6 ui-gap-3 ui-w-fit ui-mx-auto">
         {otp.map((digit, index) => (
           <input
             key={index}
@@ -147,39 +165,48 @@ const OtpForm: React.FC<OtpFormProps> = ({
             onChange={(e) => handleInputChange(e.target.value, index)}
             onPaste={(e) => handlePaste(e, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className={`ui-no-spinner ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-base ui-border ui-rounded-lg ui-outline-none ui-border-white/20 focus:ui-border-gray-200 focus:ui-border-2 ui-p-2 sm:ui-h-14 sm:ui-w-14 sm:ui-text-lg ${
-              digit ? "ui-bg-[rgba(255,255,255,0.1)]" : "ui-bg-transparent"
-            }  ${
-              error
-                ? "ui-border-inputError !ui-text-inputError ui-bg-inherit focus:!ui-border-inputError"
-                : ""
-            }`}
+            disabled={isSubmitted}
+            className={cn(
+              // Base styles - dimensions, text, border
+              "ui-no-spinner ui-w-full ui-h-12 ui-text-center ui-text-white ui-text-[28px] ui-font-bold ui-border ui-rounded-lg",
+              // Focus states and responsive styles
+              "ui-outline-none ui-border-border focus:ui-border-border-focus ui-p-2.5 sm:ui-h-14 sm:ui-w-14 sm:ui-text-2xl ui-bg-transparent",
+              // Active/filled state styling
+              { "ui-bg-white/5": digit },
+              // Error state styling
+              {
+                "ui-border-destructive !ui-text-destructive ui-bg-inherit focus:!ui-border-destructive":
+                  error,
+              },
+              // Submitted state styling
+              { "ui-opacity-50": isSubmitted },
+            )}
           />
         ))}
       </div>
-      <div className="ui-w-full ui-flex ui-flex-col ui-gap-2">
-        <p className="ui-mt-2 ui-text-center ui-text-inputError">{error}</p>
-        <Button
-          fullWidth={true}
-          onClick={submitOtp}
-          disabled={!isOtpValid || isSubmitted}
-        >
-          Confirm
-        </Button>
+      <div className="ui-w-full ui-flex ui-flex-col ui-gap-3">
+        <p className="ui-text-center ui-text-destructive">{error}</p>
+        <BaseButton onClick={submitOtp} disabled={!isOtpValid || isSubmitted}>
+          {isSubmitted ? <SpinnerV2 size="sm" color="black" /> : "CONFIRM"}
+        </BaseButton>
         {timeLeft ? (
-          <div className="ui-text-sm ui-text-inactive ui-w-full ui-text-center ui-p-[16px]">
+          <div
+            className={cn(
+              "ui-text-sm ui-text-inactive ui-w-full ui-text-center ui-leading-none ui-py-1",
+              { "ui-opacity-50": isSubmitted },
+            )}
+          >
             RESEND {`IN ${timeLeft}S`}
           </div>
         ) : (
-          <Button
-            className="ui-mt-2"
-            structure="outlined"
-            fullWidth={true}
+          <BaseButton
             onClick={submitResendCode}
             disabled={!!timeLeft}
+            variant="text"
+            size="text"
           >
-            Resend Code {timeLeft && `in ${timeLeft} seconds`}
-          </Button>
+            RESEND CODE {timeLeft && `in ${timeLeft} seconds`}
+          </BaseButton>
         )}
       </div>
     </div>

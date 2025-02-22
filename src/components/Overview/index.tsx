@@ -1,13 +1,18 @@
 import React, { useState } from "react";
-import { RightArrowIcon, ScanIcon } from "../ui";
+import { WalletActionButton } from "../ui";
 import type { SmartAccount } from "../../indexer-strategies/types";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
 import { WalletSend } from "../WalletSend/WalletSend";
 import { WalletReceive } from "../WalletReceive";
 import { Divider } from "./Divider";
-import { OverviewBalanceRow } from "./OverviewBalanceRow";
+import {
+  OverviewBalanceRow,
+  OverviewBalanceRowSkeleton,
+} from "./OverviewBalanceRow";
 import { FEATURED_ASSETS } from "../../config";
 import { isMainnet } from "../../utils";
+import { CopyAddress } from "../CopyAddress";
+import { cn } from "../../utils/classname-util";
 
 export const Overview = ({ account }: { account?: SmartAccount }) => {
   const [showAllBalances, setShowAllBalances] = useState(false);
@@ -40,84 +45,102 @@ export const Overview = ({ account }: { account?: SmartAccount }) => {
   );
 
   return (
-    <div
-      style={{
-        backgroundImage: `url('/overviewBackground.png')`,
-      }}
-      className="ui-w-full ui-bg-cover ui-bg-no-repeat ui-bg-center ui-rounded-2xl ui-p-6 bg-fixed"
-    >
-      <h3 className="ui-text-2xl ui-font-bold ui-leading-7 ui-text-white ui-mb-6">
-        Personal Account
-      </h3>
-      <div className="ui-w-full ui-flex ui-flex-col ui-justify-between ui-items-end ui-gap-6 sm:ui-flex-row">
-        <div className="ui-flex ui-flex-col ui-gap-3">
-          <h6 className="ui-text-sm ui-leading-4 ui-text-white/50">
-            Current Balance
-          </h6>
-          {balances && (
-            <h1 className="ui-text-[40px] ui-leading-[36px] ui-font-bold">
-              ${totalDollarValue.toFixed(2)}
-            </h1>
-          )}
-        </div>
-        <div className="ui-flex ui-gap-4 md:ui-gap-6">
-          {account?.id && (
-            <WalletReceive
-              xionAddress={account.id}
-              trigger={
-                <div className="ui-flex ui-h-12 ui-w-12 ui-items-center ui-justify-center ui-rounded-full ui-bg-black hover:ui-cursor-pointer">
-                  <ScanIcon color="white" />
-                </div>
-              }
-            />
-          )}
-          <WalletSend
-            trigger={
-              <div className="ui-flex ui-h-12 ui-w-12 ui-items-center ui-justify-center ui-rounded-full ui-bg-black hover:ui-cursor-pointer -ui-rotate-45">
-                <RightArrowIcon color="white" />
-              </div>
-            }
-          />
-        </div>
-      </div>
-      <Divider className="ui-my-6" />
-      <div className="ui-flex ui-flex-col ui-gap-3">
-        {splitBalances.featuredBalances.map((balance) => (
-          <OverviewBalanceRow
-            key={balance.symbol}
-            label={balance.symbol}
-            asset={balance}
-          />
-        ))}
-      </div>
-      {splitBalances.otherBalances.length > 0 && (
-        <>
-          {" "}
-          <div>
-            {showAllBalances &&
-              splitBalances.otherBalances.map((balance) => (
-                <OverviewBalanceRow
-                  key={balance.symbol}
-                  label={balance.symbol}
-                  asset={balance}
+    <div className="ui-overflow-hidden ui-relative ui-rounded-xl ">
+      <div className="ui-w-full ui-p-6 ui-flex ui-flex-col ui-gap-6 ui-z-10 ui-relative">
+        <div className="ui-flex ui-flex-col ui-gap-8 md:ui-gap-12">
+          <div className="ui-flex ui-flex-col md:ui-flex-row ui-gap-2 md:ui-gap-4 ui-items-start md:ui-items-center">
+            <h3 className="ui-text-2xl ui-font-bold ui-leading-7">
+              Personal Account
+            </h3>
+            <CopyAddress xionAddress={account?.id} />
+          </div>
+
+          <div className="ui-w-full ui-flex ui-flex-col ui-gap-6 ">
+            <div className="ui-flex ui-flex-col ui-gap-3">
+              {balances && (
+                <h1 className="ui-text-[40px] ui-leading-[36px] ui-font-bold">
+                  ${totalDollarValue.toFixed(2)}
+                </h1>
+              )}
+            </div>
+            <div className="ui-flex ui-w-full ui-gap-3">
+              {account?.id && (
+                <WalletReceive
+                  xionAddress={account.id}
+                  trigger={
+                    <WalletActionButton
+                      type="receive"
+                      className="ui-w-full md:ui-w-[150px]"
+                    />
+                  }
                 />
-              ))}
-          </div>
-          <div className="ui-flex ui-items-center ui-justify-between ui-mt-2">
-            <div className="ui-text-white/40 ui-text-base font-normal leading-normal">
-              {showAllBalances
-                ? `${balances.length} items`
-                : `+${splitBalances.otherBalances.length} more`}
-            </div>
-            <div
-              onClick={toggleShowAllBalances}
-              className="text-right text-white text-sm font-normal underline leading-tight hover:ui-cursor-pointer ui-underline"
-            >
-              {showAllBalances ? "Show less" : "Show all"}
+              )}
+              <WalletSend
+                trigger={
+                  <WalletActionButton
+                    type="send"
+                    className="ui-w-full md:ui-w-[150px]"
+                  />
+                }
+              />
             </div>
           </div>
-        </>
-      )}
+        </div>
+
+        <Divider className="ui-my-0" />
+
+        <div className="ui-flex ui-flex-col ui-gap-5">
+          {splitBalances.featuredBalances.length === 0 && (
+            <>
+              <OverviewBalanceRowSkeleton />
+              <OverviewBalanceRowSkeleton />
+            </>
+          )}
+          {splitBalances.featuredBalances.map((balance) => (
+            <OverviewBalanceRow key={balance.symbol} asset={balance} />
+          ))}
+        </div>
+        {splitBalances.otherBalances.length > 0 && (
+          <>
+            {" "}
+            <div>
+              {showAllBalances &&
+                splitBalances.otherBalances.map((balance) => (
+                  <OverviewBalanceRow key={balance.symbol} asset={balance} />
+                ))}
+            </div>
+            <div className="ui-flex ui-items-center ui-justify-between ui-mt-2">
+              <div className="ui-text-white/40 ui-text-base font-normal leading-normal">
+                {showAllBalances
+                  ? `${balances.length} items`
+                  : `+${splitBalances.otherBalances.length} more`}
+              </div>
+              <div
+                onClick={toggleShowAllBalances}
+                className="text-right text-white text-sm font-normal underline leading-tight hover:ui-cursor-pointer ui-underline"
+              >
+                {showAllBalances ? "Show less" : "Show all"}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      <div
+        className={cn(
+          // Positioning and dimensions
+          "ui-absolute ui-inset-0 ui-z-0",
+          // Visual styling
+          "ui-bg-[#2C2C2C]/100 ui-backdrop-blur-sm ui-rounded-xl ui-shadow-[inset_0_0_1px_1px_rgba(225,225,225,0.2)]",
+        )}
+      />
+      <div
+        className={cn(
+          // Positioning and dimensions
+          "ui-absolute ui-inset-0 ui-z-0",
+          // Visual styling
+          "ui-bg-modal-static ui-bg-center ui-bg-fixed ui-opacity-[25%] ui-rounded-xl",
+        )}
+      />
     </div>
   );
 };

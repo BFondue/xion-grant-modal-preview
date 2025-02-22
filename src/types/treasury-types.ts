@@ -2,6 +2,12 @@ import type { MsgGrant } from "cosmjs-types/cosmos/authz/v1beta1/tx";
 
 export type GrantConfigTypeUrlsResponse = string[];
 
+export interface TreasuryParams {
+  display_url: string;
+  redirect_url: string;
+  icon_url: string;
+}
+
 export interface GrantConfigByTypeUrl {
   allowance: Any;
   authorization: Any;

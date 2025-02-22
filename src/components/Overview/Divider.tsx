@@ -11,7 +11,7 @@ export const Divider = ({
   return (
     <div
       className={cn(
-        `ui-my-${margin} ui-h-[1px] ui-w-full ui-bg-white/20`,
+        `ui-my-${margin} ui-h-[1px] ui-w-full ui-bg-border`,
         className,
       )}
     />

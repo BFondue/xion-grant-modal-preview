@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import {
   AccountWalletLogo,
-  Button,
   CosmosLogo,
   EmailIcon,
   EthereumLogo,
@@ -9,6 +8,8 @@ import {
   EyeOffIcon,
   PasskeyIcon,
   TrashIcon,
+  BaseButton,
+  CloseIcon,
 } from "./ui";
 import { useStytchUser } from "@stytch/react";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
@@ -17,14 +18,14 @@ import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthentica
 import { Authenticator } from "../indexer-strategies/types";
 import { AbstraxionMigrate } from "./AbstraxionMigrate";
 import { AbstraxionContext } from "./AbstraxionContext";
-import { CopyAddress } from "./CopyAddress";
+import { cn } from "../utils/classname-util";
 
 export const AccountInfo = ({
   updateContractCodeID,
 }: {
   updateContractCodeID: (codeId: number) => void;
 }) => {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [, setIsAddModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [authenticatorToRemove, setAuthenticatorToRemove] = useState<
     Authenticator | undefined
@@ -112,7 +113,7 @@ export const AccountInfo = ({
       return (
         <div
           key={authenticator.id}
-          className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-2 ui-min-h-16 ui-bg-black ui-rounded-lg"
+          className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-5 ui-min-h-16 ui-bg-black/50 ui-rounded-xl"
         >
           <div className="ui-flex ui-flex-1 ui-items-center">
             <div className="ui-flex ui-w-8 ui-h-8 ui-bg-[#434040] ui-items-center ui-justify-center ui-rounded-full">
@@ -125,7 +126,7 @@ export const AccountInfo = ({
               showUserEmail &&
               currentAuthenticator ? null : (
                 <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
-                  <p className="ui-text-white ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
+                  <p className="ui-text-base">
                     {handleAuthenticatorLabels(
                       authenticator.type.toUpperCase() as authenticatorTypes,
                     )}
@@ -134,21 +135,21 @@ export const AccountInfo = ({
               )}
               {showUserEmail && currentAuthenticator && (
                 <div className="ui-ml-4 ui-flex ui-items-center ui-max-w-full ui-justify-between">
-                  <p className="ui-text-[#6C6A6A] ui-break-all ui-max-w-full ui-text-base ui-font-normal ui-font-akkuratLL ui-leading-normal">
+                  <p className="ui-text-secondary-text ui-break-all ui-max-w-full ui-text-base">
                     {email}
                   </p>
                 </div>
               )}
               {currentAuthenticator && (
                 <div
-                  className={`ui-ml-3 ui-px-1.5 ui-rounded-sm ui-flex ui-border ${
+                  className={`ui-ml-3 ui-px-1.5 ui-py-[1px] ui-rounded-sm ui-flex ui-border ${
                     isMainnet ? "ui-border-mainnet-bg" : "ui-border-testnet-bg"
                   }`}
                 >
                   <p
                     className={`${
                       isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
-                    } ui-text-xs ui-whitespace-nowrap ui-font-normal ui-font-akkuratLL ui-leading-[20px]`}
+                    } ui-text-xs ui-whitespace-nowrap ui-leading-[20px]`}
                   >
                     Active Session
                   </p>
@@ -184,34 +185,35 @@ export const AccountInfo = ({
   };
 
   return (
-    <div className="ui-bg-white/10 ui-p-6 ui-rounded-2xl">
+    <div className="ui-bg-[#262626] ui-p-6 ui-rounded-xl">
       <div className="ui-flex ui-flex-col ui-gap-[42px]">
-        <div className="ui-flex ui-flex-col ui-items-start ui-gap-6">
-          <h4 className="ui-text-white ui-text-sm ui-font-bold ui-leading-none">
-            XION Address
-          </h4>
-          <CopyAddress xionAddress={abstractAccount?.id} />
-        </div>
-
         <div className="ui-flex">
-          <div className="ui-flex ui-flex-1 ui-flex-col ui-gap-6">
+          <div className="ui-flex ui-flex-1 ui-flex-col ui-gap-5">
             <div className="ui-flex ui-items-center ui-justify-between">
-              <h3 className="ui-text-white ui-text-sm ui-font-bold ui-font-akkuratLL ui-leading-none">
-                Your Logins
+              <h3 className="ui-leading-[24px] ui-text-lg md:ui-text-xl ui-font-bold">
+                Your Authenticators
               </h3>
-              <Button
-                className="!ui-p-0 ui-normal-case"
-                onClick={() => setIsAddModalOpen(true)}
-                structure="naked"
-              >
-                Add more
-              </Button>
               <AddAuthenticatorsModal
-                isOpen={isAddModalOpen}
-                setIsOpen={setIsAddModalOpen}
+                trigger={
+                  <BaseButton
+                    size="small"
+                    onClick={() => setIsAddModalOpen(true)}
+                    className={cn(
+                      "ui-h-fit ui-w-fit ui-min-w-fit ui-gap-1 ui-font-bold ui-bg-transparent ui-rounded-lg ui-border ui-border-border ui-text-white/60",
+                      "hover:ui-text-white hover:ui-bg-white/[0.05] ui-transition-all ui-duration-300",
+                      "ui-px-1.5 ui-py-1 ui-text-xs md:ui-px-2.5 md:ui-py-1.5 md:ui-text-base",
+                    )}
+                  >
+                    <CloseIcon
+                      strokeWidth={3}
+                      className="ui-w-2.5 ui-h-2.5 md:ui-w-3 md:ui-h-3 ui-rotate-45"
+                    />
+                    Add more
+                  </BaseButton>
+                }
               />
             </div>
-            <div className="ui-flex ui-flex-col ui-gap-3">
+            <div className="ui-flex ui-flex-col ui-gap-5">
               {renderAuthenticators()}
             </div>
           </div>
