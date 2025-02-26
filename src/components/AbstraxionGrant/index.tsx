@@ -43,6 +43,17 @@ import xionLogo from "../../assets/logo.png";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
 
+// Function to normalize URLs by removing trailing slashes and handling undefined values
+const normalizeURL = (url: string | undefined): string | null => {
+  try {
+    const urlObject = new URL(url);
+    return urlObject.href;
+  } catch {
+    // Handle invalid URL
+    return null;
+  }
+};
+
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
   grantee: string;
@@ -80,7 +91,8 @@ export const AbstraxionGrant = ({
   });
   const [urlMismatchConfirmed, setUrlMismatchConfirmed] = useState(false);
   const hasUrlMismatch =
-    treasury && treasuryParams.redirect_url !== redirect_uri;
+    treasury &&
+    normalizeURL(treasuryParams.redirect_url) !== normalizeURL(redirect_uri);
 
   useEffect(
     function redirectAfterSuccess() {
