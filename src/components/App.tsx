@@ -20,7 +20,7 @@ export function App() {
   const { isOpen, setIsOpen } = useContext(AbstraxionContext);
 
   return (
-    <>  
+    <>
       {!account?.id || (grantee && (contracts || stake || bank || treasury)) ? (
         <div className="ui-flex ui-w-full ui-h-svh ui-z-[10000] ui-fixed ui-flex-1 ui-items-center ui-justify-center ui-overflow-y-auto ui-p-6">
           <Banner className="ui-fixed ui-top-0 ui-left-0 ui-z-[10001]" />

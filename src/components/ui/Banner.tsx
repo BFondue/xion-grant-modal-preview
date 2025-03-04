@@ -24,12 +24,15 @@ export const Banner: React.FC<BannerProps> = ({ className }) => {
     const link = import.meta.env.VITE_BANNER_LINK || "";
     const linkText = import.meta.env.VITE_BANNER_LINK_TEXT || "Learn more";
 
-    const backgroundColor = import.meta.env.VITE_BANNER_BG_COLOR || "ui-bg-testnet-bg";
-    const textColor = import.meta.env.VITE_BANNER_TEXT_COLOR || "ui-text-testnet";
+    const backgroundColor =
+      import.meta.env.VITE_BANNER_BG_COLOR || "ui-bg-testnet-bg";
+    const textColor =
+      import.meta.env.VITE_BANNER_TEXT_COLOR || "ui-text-testnet";
 
     // Get networks where the banner should be displayed
-    const networksString = import.meta.env.VITE_BANNER_NETWORKS || "xion-testnet-2";
-    const networks = networksString.split(",").map(network => network.trim());
+    const networksString =
+      import.meta.env.VITE_BANNER_NETWORKS || "xion-testnet-2";
+    const networks = networksString.split(",").map((network) => network.trim());
 
     setBannerConfig({
       enabled,
@@ -61,11 +64,12 @@ export const Banner: React.FC<BannerProps> = ({ className }) => {
   };
 
   const currentChainId =
-    typeof import.meta.env.VITE_DEFAULT_CHAIN_INFO === 'string'
+    typeof import.meta.env.VITE_DEFAULT_CHAIN_INFO === "string"
       ? JSON.parse(import.meta.env.VITE_DEFAULT_CHAIN_INFO)?.chainId
       : "";
 
-  const shouldDisplayOnCurrentNetwork = bannerConfig.networks.includes(currentChainId);
+  const shouldDisplayOnCurrentNetwork =
+    bannerConfig.networks.includes(currentChainId);
 
   if (!bannerConfig.enabled || !isVisible || !shouldDisplayOnCurrentNetwork) {
     return null;
@@ -78,17 +82,19 @@ export const Banner: React.FC<BannerProps> = ({ className }) => {
       <div className="ui-max-w-7xl ui-mx-auto ui-flex ui-items-center ui-justify-between">
         <div className={`ui-flex-1 ${bannerConfig.textColor}`}>
           <div className="ui-flex ui-flex-wrap ui-items-center ui-gap-x-2">
-            <span className="ui-font-akkuratLL">{bannerConfig.message} {bannerConfig.link && (
-              <BaseButton 
-                variant="text" 
-                size="text"
-                onClick={handleLinkClick}
-                className="ui-underline ui-text-testnet ui-text-base !ui-inline"
-              >
-                {bannerConfig.linkText}
-              </BaseButton>
-            )}</span>
-            
+            <span className="ui-font-akkuratLL">
+              {bannerConfig.message}{" "}
+              {bannerConfig.link && (
+                <BaseButton
+                  variant="text"
+                  size="text"
+                  onClick={handleLinkClick}
+                  className="ui-underline ui-text-testnet ui-text-base !ui-inline"
+                >
+                  {bannerConfig.linkText}
+                </BaseButton>
+              )}
+            </span>
           </div>
         </div>
 
@@ -104,4 +110,4 @@ export const Banner: React.FC<BannerProps> = ({ className }) => {
   );
 };
 
-export default Banner; 
+export default Banner;
