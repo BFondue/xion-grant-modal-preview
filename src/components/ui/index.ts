@@ -9,6 +9,7 @@ export * from "./modal";
 export * from "./pinInput";
 export * from "./popover";
 export * from "./accordion";
+export * from "./Banner";
 
 // icons
 export * from "./icons";

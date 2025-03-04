@@ -6,6 +6,7 @@ import { TopNav } from "./TopNav";
 import { Abstraxion } from "./Abstraxion";
 import { useAbstraxionAccount } from "../hooks";
 import { useQueryParams } from "../hooks/useQueryParams";
+import { Banner } from "./ui";
 
 export function App() {
   const { contracts, stake, bank, grantee, treasury } = useQueryParams([
@@ -19,13 +20,15 @@ export function App() {
   const { isOpen, setIsOpen } = useContext(AbstraxionContext);
 
   return (
-    <>
+    <>  
       {!account?.id || (grantee && (contracts || stake || bank || treasury)) ? (
         <div className="ui-flex ui-w-full ui-h-svh ui-z-[10000] ui-fixed ui-flex-1 ui-items-center ui-justify-center ui-overflow-y-auto ui-p-6">
+          <Banner className="ui-fixed ui-top-0 ui-left-0 ui-z-[10001]" />
           <Abstraxion onClose={() => null} isOpen={true} />
         </div>
       ) : (
         <div className="ui-flex ui-flex-col ui-min-h-screen ui-bg-background">
+          <Banner />
           <TopNav />
 
           <main className="ui-flex-1 ui-overflow-y-auto ui-p-6">
