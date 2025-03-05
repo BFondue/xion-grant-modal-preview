@@ -11,6 +11,27 @@ import type {
 } from "../types/treasury-types";
 import type { AAClient } from "../signers";
 
+export function formatXionAmount(amount: string, denom: string): string {
+  if (denom === "uxion") {
+    // Handle invalid inputs
+    const numAmount = Number(amount);
+    if (isNaN(numAmount)) {
+      return `${amount} ${denom}`;
+    }
+
+    // Handle negative numbers
+    if (numAmount < 0) {
+      return `${amount} ${denom}`;
+    }
+
+    const value = numAmount / Math.pow(10, 6);
+    // Format with 6 decimal places and remove trailing zeros
+    const formattedValue = value.toFixed(6).replace(/\.?0+$/, "");
+    return `${formattedValue} XION`;
+  }
+  return `${amount} ${denom}`;
+}
+
 const CosmosAuthzPermission: { [key: string]: string } = {
   "/cosmos.bank.v1beta1.MsgSend": "send tokens from your account",
   "/cosmos.staking.v1beta1.MsgDelegate": "delegate your tokens",
@@ -159,7 +180,7 @@ export const queryTreasuryContract = async (
           );
           const decodedSendAuth = SendAuthorization.decode(sendAuthByteArray);
           const spendLimit = decodedSendAuth.spendLimit
-            .map((limit: Coin) => `${limit.amount} ${limit.denom}`)
+            .map((limit: Coin) => formatXionAmount(limit.amount, limit.denom))
             .join(", ");
           const allowList = decodedSendAuth.allowList.join(", ");
           description = `Permission to send tokens with spend limit: ${spendLimit} ${allowList && `and allow list: ${allowList}`}`;
@@ -175,7 +196,10 @@ export const queryTreasuryContract = async (
             decodedStakeAuth.allowList?.address?.join(", ");
           const deniedValidators =
             decodedStakeAuth.denyList?.address?.join(", "); // TODO: Impl
-          const maxTokens = `${decodedStakeAuth.maxTokens.amount} ${decodedStakeAuth.maxTokens.denom}`;
+          const maxTokens = formatXionAmount(
+            decodedStakeAuth.maxTokens.amount,
+            decodedStakeAuth.maxTokens.denom,
+          );
           description = `Permission to stake tokens ${
             allowedValidators
               ? `with allowed validators: ${allowedValidators}`
