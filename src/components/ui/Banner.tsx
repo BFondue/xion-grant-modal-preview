@@ -26,7 +26,11 @@ export const Banner: React.FC<BannerProps> = ({ className }) => {
 
   const handleLinkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.open("https://github.com/orgs/burnt-labs/discussions/1", "_blank", "noopener,noreferrer");
+    window.open(
+      "https://github.com/orgs/burnt-labs/discussions/1",
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   const currentChainId = chainInfo?.chainId || "";
@@ -56,7 +60,7 @@ export const Banner: React.FC<BannerProps> = ({ className }) => {
             </span>
           </div>
         </div>
-        
+
         <button
           onClick={handleDismiss}
           className="ui-p-1 ui-rounded-full ui-text-white hover:ui-bg-white/10 ui-transition-colors ui-cursor-pointer ui-ml-3"
