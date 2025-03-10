@@ -14,6 +14,7 @@ export const WalletIcon = ({
   height = 14,
 }: WalletIconProps) => (
   <svg
+    data-testid="wallet-icon"
     width={width}
     height={height}
     viewBox="0 0 16 14"

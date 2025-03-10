@@ -3,6 +3,7 @@ import React from "react";
 export const InboxIcon = () => {
   return (
     <svg
+      data-testid="inbox-icon"
       width="64"
       height="64"
       viewBox="0 0 64 64"

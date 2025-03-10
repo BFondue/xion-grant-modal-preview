@@ -4,6 +4,7 @@ import { cn } from "../../../utils/classname-util";
 export const CosmosLogo = ({ className }: { className?: string }) => {
   return (
     <svg
+      data-testid="cosmos-logo-icon"
       className={cn("ui-h-6 ui-w-6", className)}
       width="1024"
       height="1024"

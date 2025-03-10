@@ -4,6 +4,7 @@ import { cn } from "../../../utils/classname-util";
 export function KeplrLogo({ className }: { className?: string }) {
   return (
     <svg
+      data-testid="keplr-logo-icon"
       className={cn("ui-w-16 ui-h-16", className)}
       xmlns="http://www.w3.org/2000/svg"
       width="24"

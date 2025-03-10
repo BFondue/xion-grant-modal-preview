@@ -2,6 +2,7 @@ import React from "react";
 
 export const ErrorIcon = () => (
   <svg
+    data-testid="error-icon"
     width="32"
     height="33"
     viewBox="0 0 32 33"

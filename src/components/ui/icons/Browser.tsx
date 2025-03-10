@@ -4,6 +4,7 @@ import { cn } from "../../../utils/classname-util";
 export const BrowserIcon = ({ className }: { className?: string }) => {
   return (
     <svg
+      data-testid="browser-icon"
       width="160"
       height="104"
       viewBox="0 0 160 104"

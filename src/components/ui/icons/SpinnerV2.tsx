@@ -29,6 +29,7 @@ const SpinnerV2: React.FC<SpinnerV2Props> = ({
   return (
     <div className="ui-flex ui-items-center ui-justify-center ui-overflow-hidden">
       <svg
+        data-testid="spinner-v2-icon"
         width={pixelSize}
         height={pixelSize}
         viewBox="0 0 50 50"

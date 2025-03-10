@@ -2,6 +2,7 @@ import React from "react";
 
 export const EyeIcon = ({ color = "white" }: { color?: string }) => (
   <svg
+    data-testid="eye-icon"
     width="16"
     height="16"
     viewBox="0 0 16 16"

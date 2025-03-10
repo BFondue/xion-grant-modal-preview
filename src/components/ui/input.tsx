@@ -19,13 +19,15 @@ export function Input({
   value,
   error,
   onBlur,
+  onFocus,
   onKeyDown,
   ...props
 }: ITextFieldProps) {
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  const handleFocus = () => {
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
     setIsInputFocused(true);
+    onFocus?.(event);
   };
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {

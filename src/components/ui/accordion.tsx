@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { ChevronDownIcon } from "./icons/ChevronDown";
 import { cn } from "../../utils/classname-util";
 
-interface AccordionItemProps {
+interface AccordionItemProps
+  extends Omit<React.HTMLAttributes<HTMLLIElement>, "title"> {
   title: React.ReactNode;
   children?: React.ReactNode;
   icon?: React.ReactNode;
@@ -16,12 +17,20 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
   children,
   icon,
   expandable = false,
+  className,
+  ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggleOpen = () => setIsOpen(!isOpen);
 
   return (
-    <li className={`ui-flex ui-items-baseline ui-text-base ui-overflow-x-none`}>
+    <li
+      className={cn(
+        `ui-flex ui-items-baseline ui-text-base ui-overflow-x-none`,
+        className,
+      )}
+      {...props}
+    >
       {icon && <span className="ui-mr-2">{icon}</span>}
       <div className="ui-flex ui-flex-col ui-w-full">
         <div

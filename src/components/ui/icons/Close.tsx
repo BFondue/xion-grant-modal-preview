@@ -22,6 +22,7 @@ export const CloseIcon = ({
     strokeLinejoin="round"
     className={cn("ui-h-6 ui-w-6", className)}
     onClick={onClick}
+    data-testid="close-icon"
   >
     <path d="M18 6 6 18" />
     <path d="m6 6 12 12" />

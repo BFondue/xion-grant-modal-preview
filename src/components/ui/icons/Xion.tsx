@@ -2,6 +2,7 @@ import React from "react";
 
 export const XionIcon = () => (
   <svg
+    data-testid="xion-icon"
     width="40"
     height="40"
     viewBox="0 0 40 40"

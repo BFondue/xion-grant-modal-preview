@@ -4,6 +4,7 @@ import { cn } from "../../../utils/classname-util";
 export const EthereumLogo = ({ className }: { className?: string }) => {
   return (
     <svg
+      data-testid="ethereum-logo-icon"
       className={cn("ui-h-5 ui-w-5", className)}
       xmlns="http://www.w3.org/2000/svg"
       width="24"

@@ -15,6 +15,7 @@ export const CopyIcon = ({
     height={height}
     viewBox="0 0 11 13"
     fill="none"
+    data-testid="copy-icon"
   >
     <g stroke={color} strokeWidth="1.5">
       <path d="M3.5347 3.5347h6.875V12.1875H3.5347z" />
