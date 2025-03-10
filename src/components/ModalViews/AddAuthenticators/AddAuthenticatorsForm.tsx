@@ -455,7 +455,11 @@ export function AddAuthenticatorsForm({
             displayName: abstractAccount.id,
             id: new Uint8Array(challenge),
           },
-          pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+          pubKeyCredParams: [
+            { type: "public-key", alg: -7 }, // ES256
+            // { type: "public-key", alg: -257 }, // RS256
+            // { type: "public-key", alg: -8 }, // EdDSA
+          ],
           challenge,
           authenticatorSelection: { userVerification: "preferred" },
           timeout: 300000, // 5 minutes,
