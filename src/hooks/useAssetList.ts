@@ -65,7 +65,7 @@ export const fetchPrices = async (
   // mock data for now, assuming that we may eventually use coingecko ids
   if (!coingeckoIds) {
     return {
-      "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64": {
+      "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349": {
         price: 1,
         last_updated: new Date().toISOString(),
         source: "placeholder",
@@ -192,6 +192,7 @@ export const useAssetList = (network: Network = "testnet") => {
       },
     ): FormattedAssetAmount | null => {
       const asset = getAssetByDenom(denom);
+
       if (!asset) return null;
 
       const exponent = getExponent(asset, options?.displayDenom);
