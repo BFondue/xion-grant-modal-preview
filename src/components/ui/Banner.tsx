@@ -34,7 +34,7 @@ export const Banner: React.FC<BannerProps> = ({ className }) => {
   };
 
   const currentChainId = chainInfo?.chainId || "";
-  const shouldShowBanner = currentChainId === "xion-testnet-2";
+  const shouldShowBanner = currentChainId === "xion-testnet-1";
 
   if (!isVisible || !shouldShowBanner) {
     return null;

@@ -7,6 +7,7 @@ import { Abstraxion } from "./Abstraxion";
 import { useAbstraxionAccount } from "../hooks";
 import { useQueryParams } from "../hooks/useQueryParams";
 import { Banner } from "./ui";
+import { AbstraxionMigrate } from "./AbstraxionMigrate";
 
 export function App() {
   const { contracts, stake, bank, grantee, treasury } = useQueryParams([
@@ -40,9 +41,13 @@ export function App() {
                   {/* Left Tiles */}
                   <div className="ui-flex-grow-2 ui-gap-8 ui-flex ui-flex-col ui-max-w-[700px] ui-mx-auto">
                     <Overview account={account} />
-                    <AccountInfo
-                      updateContractCodeID={updateAbstractAccountCodeId}
-                    />
+                    {account && (
+                      <AbstraxionMigrate
+                        currentCodeId={account.codeId}
+                        updateContractCodeID={updateAbstractAccountCodeId}
+                      />
+                    )}
+                    <AccountInfo />
                   </div>
                 </div>
               </div>

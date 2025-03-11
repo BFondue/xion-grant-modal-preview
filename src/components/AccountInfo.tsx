@@ -16,15 +16,10 @@ import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAut
 import type { authenticatorTypes } from "../types";
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
 import { Authenticator } from "../indexer-strategies/types";
-import { AbstraxionMigrate } from "./AbstraxionMigrate";
 import { AbstraxionContext } from "./AbstraxionContext";
 import { cn } from "../utils/classname-util";
 
-export const AccountInfo = ({
-  updateContractCodeID,
-}: {
-  updateContractCodeID: (codeId: number) => void;
-}) => {
+export const AccountInfo = () => {
   const [, setIsAddModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [authenticatorToRemove, setAuthenticatorToRemove] = useState<
@@ -222,10 +217,6 @@ export const AccountInfo = ({
         </div>
       </div>
 
-      <AbstraxionMigrate
-        currentCodeId={abstractAccount.codeId}
-        updateContractCodeID={updateContractCodeID}
-      />
       <RemoveAuthenticatorModal
         isOpen={isRemoveModalOpen}
         setIsOpen={setIsRemoveModalOpen}
