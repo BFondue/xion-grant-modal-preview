@@ -1,8 +1,10 @@
 import { getEnvStringOrThrow } from "../utils";
 import { useSubquerySmartAccounts } from "./useSubquerySmartAccounts";
 import { useNumiaSmartAccounts } from "./useNumiaSmartAccounts";
+import { useNoSmartAccounts } from "./useNoSmartAccounts";
 
 enum SmartAccountsStrategy {
+  no = "no",
   numia = "numia",
   subquery = "subquery",
 }
@@ -18,6 +20,8 @@ export const useGetSmartAccountsStrategy = (
   handleSuccess?: () => void,
 ) => {
   switch (INDEXER_STRATEGY) {
+    case SmartAccountsStrategy.no:
+      return useNoSmartAccounts(waitToFetch, handleSuccess);
     case SmartAccountsStrategy.subquery:
       return useSubquerySmartAccounts(waitToFetch, handleSuccess);
     case SmartAccountsStrategy.numia:

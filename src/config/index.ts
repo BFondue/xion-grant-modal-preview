@@ -1,17 +1,62 @@
-import { isMainnet } from "../utils";
+import { isMainnet } from "../utils/index";
 
-export const ASSET_ENDPOINTS = {
-  mainnet: "https://assets.xion.burnt.com/chain-registry/xion/assetlist.json",
-  testnet:
-    "https://assets.xion.burnt.com/chain-registry/testnets/xiontestnet/assetlist.json",
+interface FeeToken {
+  denom: string;
+  fixed_min_gas_price: number;
+  low_gas_price: number;
+  average_gas_price: number;
+  high_gas_price: number;
+}
+
+export interface ChainConfig {
+  chain_name: string;
+  chain_id: string;
+  fees: {
+    fee_tokens: FeeToken[];
+  };
+}
+
+const CHAIN_ASSET_PATHS = {
+  "xion-mainnet-1": "xion",
+  "xion-testnet-1": "testnets/xiontestnet1",
+  "xion-testnet-2": "testnets/xiontestnet2",
 } as const;
+
+export const getAssetEndpoint = (chainId: string) => {
+  const baseUrl = "https://assets.xion.burnt.com/chain-registry";
+  const path = CHAIN_ASSET_PATHS[chainId as keyof typeof CHAIN_ASSET_PATHS];
+  if (!path) {
+    throw new Error(`Unsupported chain ID: ${chainId}`);
+  }
+  return `${baseUrl}/${path}/assetlist.json`;
+};
+
+export const getChainRegistryUrl = (chainId: string) => {
+  const baseUrl = "https://assets.xion.burnt.com/chain-registry";
+  const path = CHAIN_ASSET_PATHS[chainId as keyof typeof CHAIN_ASSET_PATHS];
+  if (!path) {
+    throw new Error(`Unsupported chain ID: ${chainId}`);
+  }
+  return `${baseUrl}/${path}/chain.json`;
+};
+
+export const getGasPrice = (chainConfig: ChainConfig) => {
+  // TODO: Can we make this dynamic?
+  return chainConfig.fees.fee_tokens[0];
+};
+
+// Get the default gas price for VITE_GAS_PRICE
+export const getDefaultGasPrice = (chainConfig: ChainConfig) => {
+  const feeToken = chainConfig.fees.fee_tokens[0];
+  return feeToken.fixed_min_gas_price || feeToken.average_gas_price;
+};
 
 export const COINGECKO_API_URL =
   "https://api.coingecko.com/api/v3/simple/price";
 
-export const REST_API_URL = isMainnet
-  ? "https://api.xion-mainnet-1.burnt.com"
-  : "https://api.xion-testnet-1.burnt.com";
+export const getRestApiUrl = (chainInfo: { rest: string }) => {
+  return chainInfo.rest;
+};
 
 export const REST_ENDPOINTS = {
   balances: "/cosmos/bank/v1beta1/balances",

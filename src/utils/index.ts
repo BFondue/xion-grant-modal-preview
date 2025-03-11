@@ -92,8 +92,12 @@ export function isValidWalletAddress(address: string) {
   return true;
 }
 
-export const isMainnet =
-  getEnvStringOrThrow(
-    "VITE_DEPLOYMENT_ENV",
-    import.meta.env.VITE_DEPLOYMENT_ENV,
-  ) === "mainnet";
+export const chainId = import.meta.env.VITE_CHAIN_ID;
+
+export function isMainnet() {
+  if (!chainId) {
+    console.error("VITE_CHAIN_ID is undefined");
+    return false;
+  }
+  return !chainId.includes("testnet");
+}

@@ -30,7 +30,6 @@ import {
   AddAuthenticator,
   AddJwtAuthenticator,
 } from "../../../signers/interfaces";
-import { getGasCalculation } from "../../../utils/gas-utils";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
@@ -91,7 +90,7 @@ export function AddAuthenticatorsForm({
   ) as AbstraxionContextProps;
 
   // Hooks
-  const { client } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: grazAccount } = useAccount();
   const { suggestAndConnect } = useSuggestChainAndConnect({
     onSuccess: async () => await addKeplrAuthenticator(),

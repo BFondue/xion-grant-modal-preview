@@ -6,7 +6,6 @@ import { WalletSendInput } from "./WalletSendInput";
 import { WalletSendReview } from "./WalletSendReview";
 import { WalletSendSuccess } from "./WalletSendSuccess";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
-import { isMainnet } from "../../utils";
 import { WalletSendWarning } from "./WalletSendWarning";
 
 export function WalletSendForm({
@@ -15,9 +14,7 @@ export function WalletSendForm({
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { data: account } = useAbstraxionAccount();
-  const { balances, sendTokens, getBalanceByDenom } = useAccountBalance(
-    isMainnet ? "mainnet" : "testnet",
-  );
+  const { balances, sendTokens, getBalanceByDenom } = useAccountBalance();
 
   const [selectedCurrencyDenom, setSelectedCurrencyDenom] = useState("uxion");
   const selectedCurrency = getBalanceByDenom(selectedCurrencyDenom);

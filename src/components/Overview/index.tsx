@@ -1,27 +1,28 @@
 import React, { useState } from "react";
 import { WalletActionButton } from "../ui";
-import type { SmartAccount } from "../../indexer-strategies/types";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
-import { WalletSend } from "../WalletSend/WalletSend";
 import { WalletReceive } from "../WalletReceive";
-import { Divider } from "./Divider";
+import { WalletSend } from "../WalletSend/WalletSend";
 import {
   OverviewBalanceRow,
   OverviewBalanceRowSkeleton,
 } from "./OverviewBalanceRow";
 import { FEATURED_ASSETS } from "../../config";
-import { isMainnet } from "../../utils";
+import { SelectedSmartAccount } from "../../indexer-strategies/types";
+import { Divider } from "./Divider";
 import { CopyAddress } from "../CopyAddress";
 import { cn } from "../../utils/classname-util";
 
-export const Overview = ({ account }: { account?: SmartAccount }) => {
+interface OverviewProps {
+  account: SelectedSmartAccount;
+}
+
+export function Overview({ account }: OverviewProps) {
   const [showAllBalances, setShowAllBalances] = useState(false);
-  const { balances, totalDollarValue } = useAccountBalance(
-    isMainnet ? "mainnet" : "testnet",
-  );
+  const { balances, totalDollarValue } = useAccountBalance();
 
   const toggleShowAllBalances = () => {
-    setShowAllBalances((currentState) => !currentState);
+    setShowAllBalances(!showAllBalances);
   };
 
   const featuredAssetsSet = new Set(FEATURED_ASSETS);
@@ -102,7 +103,6 @@ export const Overview = ({ account }: { account?: SmartAccount }) => {
         </div>
         {splitBalances.otherBalances.length > 0 && (
           <>
-            {" "}
             <div>
               {showAllBalances &&
                 splitBalances.otherBalances.map((balance) => (
@@ -143,4 +143,4 @@ export const Overview = ({ account }: { account?: SmartAccount }) => {
       />
     </div>
   );
-};
+}

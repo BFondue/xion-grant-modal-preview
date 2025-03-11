@@ -8,7 +8,6 @@ import {
   AbstraxionContextProps,
 } from "../AbstraxionContext";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import { getGasCalculation } from "../../utils/gas-utils";
 import { getEnvNumberOrThrow, getEnvStringOrThrow } from "../../utils";
 import { validateFeeGrant } from "../../utils/validate-fee-grant";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
@@ -33,10 +32,13 @@ export const AbstraxionMigrate = ({
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
-  const { client } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
   const [inProgress, setInProgress] = useState(false);
   const [failed, setFailed] = useState(false);
+
+  // Don't render the component if we're on testnet-2
+  if (chainInfo?.chainId === "xion-testnet-2") return null;
 
   const migrateAccount = async () => {
     if (!client) return;

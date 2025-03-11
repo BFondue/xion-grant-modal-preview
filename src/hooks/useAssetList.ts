@@ -2,33 +2,33 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import type { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
-import type { Network } from "../types";
 import type {
   AssetList,
   FormattedAssetAmount,
   Asset,
   PriceData,
 } from "../types/assets";
-import { ASSET_ENDPOINTS, COINGECKO_API_URL } from "../config";
+import { COINGECKO_API_URL, getAssetEndpoint } from "../config";
 import mainnetAssets from "../data/mainnet/assetlist.json";
 import testnetAssets from "../data/testnet/assetlist.json";
+import { isMainnet } from "../utils";
 
 /**
  * Fetches the asset list from the chain registry
- * @param network - The network to fetch the asset list for; either "testnet" or "mainnet"
+ * @param chainId - The chain ID to fetch the asset list for
  * @returns The asset list and query info
  */
-export const fetchAssetList = async (network: Network): Promise<AssetList> => {
+export const fetchAssetList = async (chainId: string): Promise<AssetList> => {
   try {
-    const response = await axios.get(ASSET_ENDPOINTS[network]);
+    const response = await axios.get(getAssetEndpoint(chainId));
     if (response.status !== 200) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
     return response.data;
   } catch (error) {
     console.error("Error fetching asset list:", error);
-    return network === "mainnet"
+    // Fallback to local assets
+    return isMainnet()
       ? (mainnetAssets as AssetList)
       : (testnetAssets as AssetList);
   }
@@ -36,13 +36,13 @@ export const fetchAssetList = async (network: Network): Promise<AssetList> => {
 
 /**
  * Hook to fetch the asset list from the chain registry
- * @param network - The network to fetch the asset list for; either "testnet" or "mainnet"
+ * @param chainId - The chain ID to fetch the asset list for
  * @returns The asset list and query info
  */
-export const useAssetListQuery = (network: Network) => {
+export const useAssetListQuery = (chainId: string) => {
   return useQuery({
-    queryKey: ["assetList", network],
-    queryFn: () => fetchAssetList(network),
+    queryKey: ["assetList", chainId],
+    queryFn: () => fetchAssetList(chainId),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -123,12 +123,12 @@ export const usePrices = (assets: Asset[]) => {
 
 /**
  * Hook to fetch and format the asset list
- * @param network - The network to fetch the asset list for; either "testnet" or "mainnet"
+ * @param chainId - The chain ID to fetch the asset list for
  * @returns The asset list and helper functions to work with the assets
  */
 
-export const useAssetList = (network: Network = "testnet") => {
-  const { data: assetList, ...queryInfo } = useAssetListQuery(network);
+export const useAssetList = (chainId: string) => {
+  const { data: assetList, ...queryInfo } = useAssetListQuery(chainId);
   const { data: priceData } = usePrices(assetList?.assets ?? []);
 
   const assets = useMemo(() => {

@@ -1,7 +1,7 @@
 import { SubqueryIndexerStrategy } from "../indexer-strategies/subquery-indexer-strategy";
 import { getEnvStringOrThrow } from "../utils";
 import { useBaseSmartAccounts } from "./baseSmartAccount";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -18,13 +18,27 @@ export const useSubquerySmartAccounts = (
   waitToFetch: boolean = false,
   handleSuccess?: () => void,
 ) => {
-  const { chainInfo } = useContext(AbstraxionContext) as AbstraxionContextProps;
+  const { chainInfo, isChainInfoLoading } = useContext(
+    AbstraxionContext,
+  ) as AbstraxionContextProps;
 
-  // This will set on every invocation of this hook
-  subqueryIndexerStrategy.rpcUrl = chainInfo.rpc;
+  // Update RPC URL when chainInfo changes
+  useEffect(() => {
+    if (chainInfo?.rpc) {
+      subqueryIndexerStrategy.rpcUrl = chainInfo.rpc;
+    }
+  }, [chainInfo?.rpc]);
+
+  // We should wait to fetch if:
+  // 1. Original waitToFetch is true OR
+  // 2. Chain info is still loading OR
+  // 3. RPC URL is not available
+  const shouldWaitToFetch =
+    waitToFetch || isChainInfoLoading || !chainInfo?.rpc;
+
   return useBaseSmartAccounts(
     subqueryIndexerStrategy,
-    waitToFetch,
+    shouldWaitToFetch,
     handleSuccess,
   );
 };

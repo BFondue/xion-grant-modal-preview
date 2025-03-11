@@ -94,6 +94,7 @@ const renderSignin = async () => {
           chainInfo: testChainInfo as ChainInfo,
           isMainnet: false,
           isOpen: true,
+          isChainInfoLoading: false,
           setIsOpen: vi.fn(),
           isInGrantFlow: false,
           abstractAccount: undefined,

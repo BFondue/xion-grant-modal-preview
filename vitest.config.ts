@@ -7,14 +7,21 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
+    pool: "forks",
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
     coverage: {
       provider: "v8",
-      reporter: ["text", "lcov"],
+      reporter: ["text", "html", "lcov"],
       exclude: [
-        "node_modules",
+        "node_modules/",
         "src/test/setup.ts",
         "**/*.d.ts",
         "**/*.config.*",
+        "**/index.ts",
       ],
       thresholds: {
         lines: 80,

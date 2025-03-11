@@ -5,7 +5,6 @@ import {
   AADirectSigner,
   AAEthSigner,
   AbstractAccountJWTSigner,
-  GasPrice,
 } from "../signers";
 import {
   AbstraxionContext,
@@ -15,11 +14,11 @@ import { getKeplr, useOfflineSigners } from "graz";
 import { testnetChainInfo } from "@burnt-labs/constants";
 import { getEnvStringOrThrow } from "../utils";
 import { AAPasskeySigner } from "../signers/signers/passkey-signer";
+import { formatGasPrice, getGasCalculation } from "../utils/gas-utils";
 
 export const useAbstraxionSigningClient = () => {
-  const { connectionType, abstractAccount, chainInfo } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
+  const { connectionType, abstractAccount, chainInfo, isChainInfoLoading } =
+    useContext(AbstraxionContext) as AbstraxionContextProps;
 
   const stytch = useStytch();
   const sessionToken = stytch.session.getTokens()?.session_token;
@@ -40,7 +39,7 @@ export const useAbstraxionSigningClient = () => {
       alert("Please install the OKX wallet extension");
       return;
     }
-    await window.okxwallet.keplr.enable(chainInfo.chainId);
+    await window.okxwallet.keplr.enable(chainInfo?.chainId || "");
     const signDataNew = Uint8Array.from(Object.values(signBytes));
     return window.okxwallet.keplr.signArbitrary(chainId, account, signDataNew);
   }
@@ -56,6 +55,10 @@ export const useAbstraxionSigningClient = () => {
   }
 
   const getSigner = useCallback(async () => {
+    if (isChainInfoLoading || !chainInfo) {
+      return;
+    }
+
     let signer:
       | AbstractAccountJWTSigner
       | AADirectSigner
@@ -137,24 +140,34 @@ export const useAbstraxionSigningClient = () => {
       chainInfo.rpc || testnetChainInfo.rpc,
       signer,
       {
-        gasPrice: GasPrice.fromString(
-          getEnvStringOrThrow("VITE_GAS_PRICE", import.meta.env.VITE_GAS_PRICE),
-        ),
+        gasPrice: formatGasPrice(chainInfo),
       },
     );
 
     setAbstractClient(abstractClient);
-  }, [sessionToken, abstractAccount, connectionType, data, keplr]);
+  }, [
+    sessionToken,
+    abstractAccount,
+    connectionType,
+    data,
+    keplr,
+    chainInfo,
+    isChainInfoLoading,
+  ]);
 
   useEffect(() => {
-    if (abstractAccount) {
+    if (abstractAccount && !isChainInfoLoading) {
       getSigner();
     }
-  }, [abstractAccount]);
+  }, [abstractAccount, isChainInfoLoading]);
 
   const memoizedClient = useMemo(
-    () => ({ client: abstractClient }),
-    [abstractClient],
+    () => ({
+      client: abstractClient,
+      getGasCalculation: (simmedGas: number) =>
+        chainInfo ? getGasCalculation(simmedGas, chainInfo) : undefined,
+    }),
+    [abstractClient, chainInfo],
   );
 
   return memoizedClient;
