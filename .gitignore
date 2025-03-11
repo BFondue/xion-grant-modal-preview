@@ -25,6 +25,7 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
+wrangler.toml
 
 # vercel
 .vercel
@@ -34,3 +35,4 @@ yarn-error.log*
 
 # Ignore vite build output
 /dist
+
