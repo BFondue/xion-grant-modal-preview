@@ -7,7 +7,13 @@ export const AvatarIcon = ({
   color: string;
   backgroundColor: string;
 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none">
+  <svg
+    data-testid="avatar-icon"
+    xmlns="http://www.w3.org/2000/svg"
+    width="32"
+    height="32"
+    fill="none"
+  >
     <rect width="32" height="32" fill="none" rx="16" />
     <rect width="32" height="32" fill="none" rx="16" />
     <rect width="22" height="22" x="5" y="5" fill={color} rx="11" />

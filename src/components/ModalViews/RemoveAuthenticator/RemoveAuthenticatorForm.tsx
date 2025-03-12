@@ -23,7 +23,6 @@ import { Authenticator } from "../../../indexer-strategies/types";
 import { AAAlgo } from "../../../signers";
 import { removeRegistration } from "../../../utils/webauthn-utils";
 import { Loading } from "../../Loading";
-import { getGasCalculation } from "../../../utils/gas-utils";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 
@@ -47,7 +46,7 @@ export function RemoveAuthenticatorForm({
   ) as AbstraxionContextProps;
 
   // Hooks
-  const { client } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useAbstraxionSigningClient();
 
   const handleAuthenticatorLabels = (type: authenticatorTypes) => {
     switch (type) {

@@ -10,6 +10,7 @@ export const ExternalLinkIcon = ({
   className = "",
 }: ExternalLinkIconProps) => (
   <svg
+    data-testid="external-link-icon"
     className={`${className}`}
     width={size}
     height={size}

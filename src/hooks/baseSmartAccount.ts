@@ -37,6 +37,11 @@ export const useBaseSmartAccounts = (
   ) as AbstraxionContextProps;
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Update shouldFetch when waitToFetch changes
+  useEffect(() => {
+    setShouldFetch(!waitToFetch);
+  }, [waitToFetch]);
+
   const queryKey: QueryKey = ["smartAccounts", loginAuthenticator];
   const query = useQuery<
     SmartAccountWithCodeId[],
@@ -48,7 +53,7 @@ export const useBaseSmartAccounts = (
       return await indexerStrategy.fetchSmartAccounts(loginAuthenticator);
     },
     refetchInterval: pollInterval,
-    enabled: shouldFetch,
+    enabled: shouldFetch && Boolean(loginAuthenticator),
   });
 
   const startPolling = (customInterval?: number) => {
@@ -77,7 +82,7 @@ export const useBaseSmartAccounts = (
     setShouldFetch(false);
     setIsSuccess(true);
     handleSuccess?.();
-  }, [query.data]);
+  }, [query.data, abstractAccount]);
 
   return {
     data: query.data,

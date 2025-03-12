@@ -30,7 +30,6 @@ import {
   AddAuthenticator,
   AddJwtAuthenticator,
 } from "../../../signers/interfaces";
-import { getGasCalculation } from "../../../utils/gas-utils";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
@@ -92,7 +91,7 @@ export function AddAuthenticatorsForm({
   ) as AbstraxionContextProps;
 
   // Hooks
-  const { client } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: grazAccount } = useAccount();
   const { suggestAndConnect } = useSuggestChainAndConnect({
     onSuccess: async () => await addKeplrAuthenticator(),
@@ -463,7 +462,11 @@ export function AddAuthenticatorsForm({
             displayName: abstractAccount.id,
             id: new Uint8Array(challenge),
           },
-          pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+          pubKeyCredParams: [
+            { type: "public-key", alg: -7 }, // ES256
+            // { type: "public-key", alg: -257 }, // RS256
+            // { type: "public-key", alg: -8 }, // EdDSA
+          ],
           challenge,
           authenticatorSelection: { userVerification: "preferred" },
           timeout: 300000, // 5 minutes,

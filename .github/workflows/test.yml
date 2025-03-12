@@ -1,0 +1,46 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set environment variables
+        run: |
+          echo "VITE_DEPLOYMENT_ENV=testnet" >> $GITHUB_ENV
+          echo "VITE_TIKTOK_FLAG=true" >> $GITHUB_ENV
+          echo "VITE_METAMASK_FLAG=true" >> $GITHUB_ENV
+          echo "VITE_OKX_FLAG=true" >> $GITHUB_ENV
+          echo "VITE_PASSKEY_FLAG=true" >> $GITHUB_ENV
+          echo "VITE_GOOGLE_OAUTH_FLAG=true" >> $GITHUB_ENV
+          echo "VITE_KEPLR_FLAG=true" >> $GITHUB_ENV
+          echo "VITE_DEFAULT_API_URL=https://aa.xion-testnet-1.burnt.com" >> $GITHUB_ENV
+          echo "VITE_NEW_CONTRACT_API_URL=https://aa-793.xion-testnet-1.burnt.com" >> $GITHUB_ENV
+          echo "VITE_DEFAULT_INDEXER_URL=https://api.subquery.network/sq/burnt-labs/xion-indexer" >> $GITHUB_ENV
+          echo "VITE_FEE_GRANTER_ADDRESS=xion18zzck9lltmy8czsrmshpwe89z7np4ap466mx98" >> $GITHUB_ENV
+          echo "VITE_DEFAULT_ACCOUNT_CONTRACT_CODE_ID=793" >> $GITHUB_ENV
+          echo "VITE_GAS_ADJUSTMENT=1.5" >> $GITHUB_ENV
+          echo "VITE_GAS_PRICE=0.025uxion" >> $GITHUB_ENV
+          echo "VITE_GAS_MARGIN=5000" >> $GITHUB_ENV
+          echo "VITE_INDEXER_STRATEGY=numia" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: npm test

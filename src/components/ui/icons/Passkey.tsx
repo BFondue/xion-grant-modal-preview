@@ -4,6 +4,7 @@ import { cn } from "../../../utils/classname-util";
 export function PasskeyIcon({ className }: { className?: string }) {
   return (
     <svg
+      data-testid="passkey-icon"
       className={cn(className)}
       width="24"
       height="24"

@@ -8,6 +8,7 @@ interface SadIconProps extends React.SVGProps<SVGSVGElement> {
 const SadIcon: React.FC<SadIconProps> = ({ className, ...props }) => {
   return (
     <svg
+      data-testid="sad-icon"
       width="64"
       height="65"
       viewBox="0 0 64 65"

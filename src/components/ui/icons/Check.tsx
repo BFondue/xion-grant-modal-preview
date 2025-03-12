@@ -2,6 +2,7 @@ import React from "react";
 
 export const CheckIcon = ({ color = "black" }: { color?: string }) => (
   <svg
+    data-testid="check-icon"
     width="15"
     height="12"
     viewBox="0 0 15 12"

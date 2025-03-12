@@ -14,6 +14,7 @@ export const Spinner = ({ size = "default" }: SpinnerProps) => {
       height={dimensions}
       viewBox="0 0 100 100"
       preserveAspectRatio="xMidYMid"
+      data-testid="spinner-icon"
     >
       <circle
         cx="50"

@@ -19,7 +19,6 @@ import {
 import { generateStakeAndGovGrant } from "./generateStakeAndGovGrant";
 import { getEnvStringOrThrow } from "../../utils";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
-import { getGasCalculation } from "../../utils/gas-utils";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -69,7 +68,7 @@ export const AbstraxionGrant = ({
   bank,
   treasury,
 }: AbstraxionGrantProps) => {
-  const { client } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
   const { redirect_uri } = useQueryParams(["redirect_uri"]);
   const { xionDisconnect } = useXionDisconnect();

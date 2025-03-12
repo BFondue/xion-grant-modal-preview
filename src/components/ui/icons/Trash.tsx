@@ -4,6 +4,7 @@ import { cn } from "../../../utils/classname-util";
 export const TrashIcon = ({ className }: { className?: string }) => {
   return (
     <svg
+      data-testid="trash-icon"
       className={cn("ui-h-5 ui-w-5", className)}
       width="16"
       height="16"

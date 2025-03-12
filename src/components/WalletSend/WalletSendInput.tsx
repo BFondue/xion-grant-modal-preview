@@ -9,7 +9,6 @@ import {
 } from "../ui";
 import type { FormattedAssetAmount } from "../../types/assets";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
-import { isMainnet } from "../../utils";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 
 const XION_CONVERSION = 1000000;
@@ -48,9 +47,7 @@ export function WalletSendInput({
   updateSendAmount,
 }: WalletSendInputProps) {
   const [showDropdown, setShowDropdown] = useState(false);
-  const { getEstimatedSendFee } = useAccountBalance(
-    isMainnet ? "mainnet" : "testnet",
-  );
+  const { getEstimatedSendFee } = useAccountBalance();
   const [estimatedFee, setEstimatedFee] = useState(null);
   const [isCalculatingFee, setIsCalculatingFee] = useState(false);
   const [estimatingError, setEstimatingError] = useState(null);

@@ -3,6 +3,7 @@ import React from "react";
 export function MetamaskLogo({ className }: { className?: string }) {
   return (
     <svg
+      data-testid="metamask-logo-icon"
       xmlns="http://www.w3.org/2000/svg"
       id="Layer_1"
       x="0"

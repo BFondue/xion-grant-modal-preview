@@ -17,14 +17,22 @@ export class NumiaIndexerStrategy implements IndexerStrategy {
   constructor(
     private readonly baseURL: string,
     private readonly authToken,
-  ) {}
+  ) {
+    if (!baseURL.endsWith("/")) {
+      this.baseURL = baseURL + "/";
+    }
+
+    if (!(this.baseURL.endsWith("/v2/") || this.baseURL.endsWith("/v3/"))) {
+      this.baseURL = this.baseURL + "v2/";
+    }
+  }
 
   async fetchSmartAccounts(
     loginAuthenticator: string,
   ): Promise<SmartAccountWithCodeId[]> {
     // Code id is only available with version 2 of the api
     const encodedAuthenticator = encodeURIComponent(loginAuthenticator);
-    const url = `${this.baseURL}v2/authenticators/${encodedAuthenticator}/smartAccounts/details`;
+    const url = `${this.baseURL}authenticators/${encodedAuthenticator}/smartAccounts/details`;
     const { data } = await axios.get<NumiaSmartAccountResp[]>(url, {
       headers: {
         Accept: "application/json",

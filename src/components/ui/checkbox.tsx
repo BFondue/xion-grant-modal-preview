@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/classname-util";
 
@@ -61,17 +61,36 @@ interface CheckboxProps
 
 export const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(
   (
-    { className, variant, label, checked, onChange, id, disabled, ...props },
+    {
+      className,
+      variant,
+      label,
+      checked = false,
+      onChange,
+      id,
+      disabled,
+      ...props
+    },
     ref,
   ) => {
-    const handleToggle = () => {
+    const [isChecked, setIsChecked] = useState(checked);
+
+    useEffect(() => {
+      setIsChecked(checked);
+    }, [checked]);
+
+    const handleToggle = useCallback(() => {
       if (disabled) return;
+
+      const newChecked = !isChecked;
+      setIsChecked(newChecked);
+
       if (onChange) {
         // Create a synthetic event if the handler expects one
         if (onChange.length > 0) {
           const syntheticEvent = {
             target: {
-              checked: !checked,
+              checked: newChecked,
               type: "checkbox",
               name: id || "",
             },
@@ -81,10 +100,10 @@ export const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(
           );
         } else {
           // If the handler expects a boolean
-          (onChange as (checked: boolean) => void)(!checked);
+          (onChange as (checked: boolean) => void)(newChecked);
         }
       }
-    };
+    }, [isChecked, onChange, disabled, id]);
 
     // Generate an ID if none is provided
     const checkboxId =
@@ -104,7 +123,7 @@ export const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(
             disabled && "ui-opacity-50 ui-cursor-not-allowed",
           )}
           role="checkbox"
-          aria-checked={checked}
+          aria-checked={isChecked}
           aria-disabled={disabled}
           aria-labelledby={label ? `${checkboxId}-label` : undefined}
           tabIndex={disabled ? -1 : 0}
@@ -122,7 +141,7 @@ export const Checkbox = React.forwardRef<HTMLDivElement, CheckboxProps>(
             className={cn(
               checkmarkVariants({ variant }),
               "ui-transform ui-transition-all ui-duration-200",
-              checked
+              isChecked
                 ? "ui-scale-100 ui-opacity-100"
                 : "ui-scale-0 ui-opacity-0",
             )}

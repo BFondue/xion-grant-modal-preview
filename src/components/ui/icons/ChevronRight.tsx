@@ -8,6 +8,7 @@ export const ChevronRightIcon = ({
   className?: string;
 }) => (
   <svg
+    data-testid="chevron-right-icon"
     xmlns="http://www.w3.org/2000/svg"
     width="6"
     height="11"

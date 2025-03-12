@@ -8,7 +8,6 @@ import {
   AbstraxionContextProps,
 } from "../AbstraxionContext";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import { getGasCalculation } from "../../utils/gas-utils";
 import { getEnvNumberOrThrow, getEnvStringOrThrow } from "../../utils";
 import { validateFeeGrant } from "../../utils/validate-fee-grant";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
@@ -34,16 +33,14 @@ export const AbstraxionMigrate = ({
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
-  // Check if the account needs migration
-  const needsMigration = currentCodeId !== targetCodeId;
-  
-  // Log current code ID and target code ID for debugging
-  console.log(`Current code ID: ${currentCodeId}, Target code ID: ${targetCodeId}, Needs migration: ${needsMigration}`);
-  const { client } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
   const [inProgress, setInProgress] = useState(false);
   const [failed, setFailed] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Don't render the component if we're on testnet-2
+  if (chainInfo?.chainId === "xion-testnet-2") return null;
 
   const migrateAccount = async () => {
     if (!client) return;

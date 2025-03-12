@@ -15,7 +15,7 @@ import { cn } from "../utils/classname-util";
 export function TopNav() {
   const location = useLocation();
   const pathname = location.pathname;
-  const { isMainnet, setIsOpen } = useContext(
+  const { isMainnet, setIsOpen, chainInfo } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
   const { data: account } = useAbstraxionAccount();
@@ -35,7 +35,9 @@ export function TopNav() {
         text: "History",
         path: isMainnet
           ? "https://www.mintscan.io/xion"
-          : "https://explorer.burnt.com/xion-testnet-1/",
+          : chainInfo?.chainId === "xion-testnet-2"
+            ? "https://www.mintscan.io/xion-testnet"
+            : "https://explorer.burnt.com/xion-testnet-1/",
         external: true,
       },
       {
@@ -46,7 +48,7 @@ export function TopNav() {
         external: true,
       },
     ],
-    [isMainnet],
+    [isMainnet, chainInfo?.chainId],
   );
 
   return (

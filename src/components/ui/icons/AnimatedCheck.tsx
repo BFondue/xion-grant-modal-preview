@@ -16,6 +16,7 @@ const AnimatedCheckmark = () => {
         }}
       >
         <svg
+          data-testid="animated-check-icon"
           viewBox="0 0 100 100"
           className="ui-w-full ui-h-full"
           xmlns="http://www.w3.org/2000/svg"

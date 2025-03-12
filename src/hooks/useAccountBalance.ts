@@ -1,16 +1,15 @@
 import { useMemo } from "react";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../hooks";
-import { getGasCalculation } from "../utils/gas-utils";
 import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";
 import { useBalances } from "./useBalances";
 import { useAssetList } from "./useAssetList";
-import type { Network } from "../types";
+import { chainId as envChainId } from "../utils";
 
-export function useAccountBalance(network: Network = "testnet") {
+export function useAccountBalance() {
   const { data: account } = useAbstraxionAccount();
-  const { client } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: balances, refetch: refetchBalances } = useBalances(account?.id);
-  const { data: assetList } = useAssetList(network);
+  const { data: assetList } = useAssetList(envChainId);
 
   const { processedBalances, totalDollarValue } = useMemo(() => {
     if (!assetList || !balances)
