@@ -1,9 +1,3 @@
-export interface MigrationFeature {
-  title: string;
-  description: string;
-  codeId: number;
-}
-
 export enum FeatureKey {
   PASSKEY = "passkey",
 }
@@ -38,3 +32,19 @@ export const accountFeatures: Record<number, AccountFeatureSet> = {
     ]
   }
 };
+
+function getContractFeatures(codeId: number): AccountFeatureSet | undefined {
+  return accountFeatures[codeId];
+}
+
+/**
+ * Checks if a specific feature is enabled for a contract code ID
+ * @param codeId The contract code ID to check
+ * @param feature The feature to check for
+ * @returns True if the feature is enabled, false otherwise
+ */
+export function hasFeature(codeId: number, feature: FeatureKey): boolean {
+  const featureSet = getContractFeatures(codeId);
+  if (!featureSet) return false;
+  return featureSet.features.has(feature);
+}

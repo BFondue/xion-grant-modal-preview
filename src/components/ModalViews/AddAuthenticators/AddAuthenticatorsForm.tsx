@@ -37,6 +37,7 @@ import { AddEmail } from "./AddEmail/AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
 import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
+import { FeatureKey, hasFeature } from "../../../types/migration-features";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -98,6 +99,13 @@ export function AddAuthenticatorsForm({
     onError: () => setIsLoading(false),
     onLoading: () => setIsLoading(true),
   });
+
+  // Check if passkey feature is enabled for the account's contract code ID
+  const isPasskeyFeatureEnabled = abstractAccount?.codeId ? 
+    hasFeature(abstractAccount.codeId, FeatureKey.PASSKEY) : false;
+  
+  // Only show passkey option if both the feature flag is enabled and the account contract supports it
+  const shouldShowPasskey = shouldEnablePasskey && isPasskeyFeatureEnabled;
 
   // Functions
   function handleSwitch(authenticator: AuthenticatorStates) {
@@ -632,13 +640,13 @@ export function AddAuthenticatorsForm({
                 />
               </BaseButton>
             ) : null}
-            {shouldEnablePasskey ? (
+            {shouldShowPasskey ? (
               <BaseButton
                 className={cn(
                   { "!ui-border-white": selectedAuthenticator === "passkey" },
                   "ui-w-16 ui-h-16 ui-relative",
                 )}
-                disabled={!shouldEnablePasskey}
+                disabled={!shouldShowPasskey}
                 onClick={() => handleSwitch("passkey")}
                 variant="secondary"
                 size="icon-large"
