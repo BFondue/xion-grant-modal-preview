@@ -26,7 +26,7 @@ const DialogOverlay = React.forwardRef<
     <DialogPrimitive.Overlay
       className={cn(
         // Base positioning
-        "ui-fixed ui-inset-0 ui-z-20",
+        "ui-fixed ui-inset-0 ui-z-30",
         // Animations
         "data-[state=open]:ui-animate-in data-[state=closed]:ui-animate-out",
         "data-[state=closed]:ui-fade-out-0 data-[state=open]:ui-fade-in-0",
@@ -38,7 +38,7 @@ const DialogOverlay = React.forwardRef<
       <div
         className={cn(
           // Positioning and dimensions
-          "ui-absolute ui-inset-0 ui-w-screen ui-h-screen ui-z-20",
+          "ui-absolute ui-inset-0 ui-w-screen ui-h-screen ui-z-30",
           // Visual styling
           "ui-bg-[#181818]/90 ui-backdrop-blur-sm",
         )}
@@ -49,7 +49,7 @@ const DialogOverlay = React.forwardRef<
           <div
             className={cn(
               // Positioning
-              "ui-absolute ui-right-1/2 ui-bottom-[10%] ui-translate-x-1/2 ui-z-30",
+              "ui-absolute ui-right-1/2 ui-bottom-[10%] ui-translate-x-1/2 ui-z-40",
               // Dimensions
               "ui-w-[884px] ui-h-[306px]",
               // Visual styling
@@ -62,7 +62,7 @@ const DialogOverlay = React.forwardRef<
           <div
             className={cn(
               // Positioning
-              "ui-absolute ui-right-1/2 ui-top-[20%] ui-translate-x-1/2 ui-z-30",
+              "ui-absolute ui-right-1/2 ui-top-[20%] ui-translate-x-1/2 ui-z-40",
               // Dimensions
               "ui-w-[484px] ui-h-[106px]",
               // Visual styling

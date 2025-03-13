@@ -134,7 +134,7 @@ export function TopNav() {
       {/* Mobile Sidebar */}
       <div
         className={cn(
-          "ui-fixed ui-inset-0 ui-z-50 ui-transition-all ui-duration-200",
+          "ui-fixed ui-inset-0 ui-z-30 ui-transition-all ui-duration-200",
           showMobileSidebar
             ? "ui-opacity-100"
             : "ui-opacity-0 ui-pointer-events-none",
