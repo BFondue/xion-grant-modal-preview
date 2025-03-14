@@ -58,6 +58,19 @@ export function WalletSendForm({
       inputValue = parts[0] + "." + parts.slice(1).join("");
     }
 
+    // limit decimal places to the number of decimals for the selected asset
+    if (
+      parts.length === 2 &&
+      selectedCurrency &&
+      selectedCurrency.decimals !== undefined
+    ) {
+      const decimals = selectedCurrency.decimals;
+      if (parts[1].length > decimals) {
+        parts[1] = parts[1].substring(0, decimals);
+        inputValue = parts[0] + (decimals > 0 ? "." + parts[1] : "");
+      }
+    }
+
     // If input is empty, set sendAmount to an empty string
     if (!inputValue) {
       setSendAmount("");

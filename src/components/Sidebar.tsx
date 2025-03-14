@@ -112,9 +112,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           <div className="ui-flex ui-items-center ui-space-x-3">
             <WalletIcon
               color="white"
-              backgroundColor="var(--background)"
-              width={18}
-              height={16}
+              backgroundColor="hsla(var(--background), 1)"
             />
             <span className="ui-text-lg ui-font-bold">
               {account?.id && truncateAddress(account.id)}

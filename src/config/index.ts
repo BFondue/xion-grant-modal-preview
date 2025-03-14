@@ -18,7 +18,7 @@ export interface ChainConfig {
 
 const CHAIN_ASSET_PATHS = {
   "xion-mainnet-1": "xion",
-  "xion-testnet-1": "testnets/xiontestnet1",
+  "xion-testnet-1": "testnets/xiontestnet",
   "xion-testnet-2": "testnets/xiontestnet2",
 } as const;
 
