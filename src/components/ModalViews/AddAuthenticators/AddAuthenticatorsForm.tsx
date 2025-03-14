@@ -40,7 +40,8 @@ import { FeatureKey, hasFeature } from "../../../types/migration-features";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
-const isPasskeyFeatureFlagEnabled = import.meta.env.VITE_PASSKEY_FLAG === "true";
+const isPasskeyFeatureFlagEnabled =
+  import.meta.env.VITE_PASSKEY_FLAG === "true";
 const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
@@ -100,11 +101,13 @@ export function AddAuthenticatorsForm({
   });
 
   // Check if passkey feature is enabled for the account's contract code ID
-  const isPasskeySupported = abstractAccount?.codeId ? 
-    hasFeature(abstractAccount.codeId, FeatureKey.PASSKEY) : false;
-  
+  const isPasskeySupported = abstractAccount?.codeId
+    ? hasFeature(abstractAccount.codeId, FeatureKey.PASSKEY)
+    : false;
+
   // Only show passkey option if both the feature flag is enabled and the account contract supports it
-  const isPasskeyAuthenticatorAvailable = isPasskeyFeatureFlagEnabled && isPasskeySupported;
+  const isPasskeyAuthenticatorAvailable =
+    isPasskeyFeatureFlagEnabled && isPasskeySupported;
 
   // Functions
   function handleSwitch(authenticator: AuthenticatorStates) {

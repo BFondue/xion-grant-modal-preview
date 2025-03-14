@@ -13,8 +13,6 @@ interface AccountFeatureSet {
   promotedFeatures: PromotedFeature[];
 }
 
-
-
 export const accountFeatures: Record<number, AccountFeatureSet> = {
   21: {
     codeId: 21,
@@ -22,10 +20,11 @@ export const accountFeatures: Record<number, AccountFeatureSet> = {
     promotedFeatures: [
       {
         title: "Performance Improvements",
-        description: "Improved utility and user experience for various operations."
+        description:
+          "Improved utility and user experience for various operations.",
       },
-    ]
-  }
+    ],
+  },
 };
 
 function getContractFeatures(codeId: number): AccountFeatureSet | undefined {
@@ -52,6 +51,6 @@ export function hasFeature(codeId: number, feature: FeatureKey): boolean {
 export function getPromotedFeatures(targetCodeId: number): PromotedFeature[] {
   const targetFeatures = getContractFeatures(targetCodeId);
   if (!targetFeatures) return [];
-  
+
   return targetFeatures.promotedFeatures;
 }

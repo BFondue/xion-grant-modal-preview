@@ -123,10 +123,14 @@ export const AbstraxionMigrate = ({
     <>
       <div className="ui-w-full ui-rounded-xl ui-bg-transparent ui-border ui-border-dashed ui-border-white/20 ui-p-4 ui-flex ui-flex-col sm:ui-flex-row ui-gap-4 sm:ui-justify-between ui-items-center">
         <div>
-          <h2 className="ui-text-xl ui-font-bold">Account Migration Available!</h2>
-          <p className="ui-text-secondary-text ui-text-sm">New features and security improvements.</p>
+          <h2 className="ui-text-xl ui-font-bold">
+            Account Migration Available!
+          </h2>
+          <p className="ui-text-secondary-text ui-text-sm">
+            New features and security improvements.
+          </p>
         </div>
-        <BaseButton 
+        <BaseButton
           size="small"
           onClick={() => setDialogOpen(true)}
           className="ui-w-full sm:ui-w-auto"
@@ -134,7 +138,7 @@ export const AbstraxionMigrate = ({
           LEARN MORE
         </BaseButton>
       </div>
-      
+
       <MigrationDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
