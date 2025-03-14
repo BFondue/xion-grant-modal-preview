@@ -39,9 +39,6 @@ export const AbstraxionMigrate = ({
   const [failed, setFailed] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Don't render the component if we're on testnet-2
-  if (chainInfo?.chainId === "xion-testnet-2") return null;
-
   const migrateAccount = async () => {
     if (!client) return;
     try {

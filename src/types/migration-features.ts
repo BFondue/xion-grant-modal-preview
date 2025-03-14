@@ -15,20 +15,15 @@ interface AccountFeatureSet {
 
 
 
-// Export for use in other files
 export const accountFeatures: Record<number, AccountFeatureSet> = {
   21: {
     codeId: 21,
     features: new Set([FeatureKey.PASSKEY]),
     promotedFeatures: [
       {
-        title: "Smart Contract Integration",
-        description: "Seamless interaction with a wider range of smart contracts."
+        title: "Performance Improvements",
+        description: "Improved utility and user experience for various operations."
       },
-      {
-        title: "Enhanced Security",
-        description: "Advanced security features to protect your assets."
-      }
     ]
   }
 };
@@ -47,4 +42,16 @@ export function hasFeature(codeId: number, feature: FeatureKey): boolean {
   const featureSet = getContractFeatures(codeId);
   if (!featureSet) return false;
   return featureSet.features.has(feature);
+}
+
+/**
+ * Gets the migration features when upgrading from one code ID to another
+ * @param targetCodeId The target contract code ID to migrate to
+ * @returns Array of promoted features for the migration
+ */
+export function getPromotedFeatures(targetCodeId: number): PromotedFeature[] {
+  const targetFeatures = getContractFeatures(targetCodeId);
+  if (!targetFeatures) return [];
+  
+  return targetFeatures.promotedFeatures;
 }

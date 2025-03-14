@@ -9,7 +9,7 @@ import {
   BaseButton,
 } from "../ui";
 import { Accordion } from "../ui/accordion";
-import { getMigrationFeatures } from "../../types/migration-features";
+import { getPromotedFeatures } from "../../types/migration-features";
 
 interface MigrationDialogProps {
   open: boolean;
@@ -22,11 +22,10 @@ interface MigrationDialogProps {
 export const MigrationDialog: React.FC<MigrationDialogProps> = ({
   open,
   onOpenChange,
-  currentCodeId,
   targetCodeId,
   onUpgrade,
 }) => {
-  const migrationFeatures = getMigrationFeatures(currentCodeId, targetCodeId);
+  const migrationFeatures = getPromotedFeatures(targetCodeId);
   
   const accordionItems = migrationFeatures.map((feature) => ({
     title: feature.title,
