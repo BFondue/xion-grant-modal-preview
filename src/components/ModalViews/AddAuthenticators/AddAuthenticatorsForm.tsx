@@ -40,7 +40,7 @@ import { FeatureKey, hasFeature } from "../../../types/migration-features";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
-const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
+const isPasskeyFeatureFlagEnabled = import.meta.env.VITE_PASSKEY_FLAG === "true";
 const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
@@ -100,11 +100,11 @@ export function AddAuthenticatorsForm({
   });
 
   // Check if passkey feature is enabled for the account's contract code ID
-  const isPasskeyFeatureEnabled = abstractAccount?.codeId ? 
+  const isPasskeySupported = abstractAccount?.codeId ? 
     hasFeature(abstractAccount.codeId, FeatureKey.PASSKEY) : false;
   
   // Only show passkey option if both the feature flag is enabled and the account contract supports it
-  const shouldShowPasskey = shouldEnablePasskey && isPasskeyFeatureEnabled;
+  const isPasskeyAuthenticatorAvailable = isPasskeyFeatureFlagEnabled && isPasskeySupported;
 
   // Functions
   function handleSwitch(authenticator: AuthenticatorStates) {
@@ -643,13 +643,13 @@ export function AddAuthenticatorsForm({
                 />
               </BaseButton>
             ) : null}
-            {shouldShowPasskey ? (
+            {isPasskeyAuthenticatorAvailable ? (
               <BaseButton
                 className={cn(
                   { "!ui-border-white": selectedAuthenticator === "passkey" },
                   "ui-w-16 ui-h-16 ui-relative",
                 )}
-                disabled={!shouldShowPasskey}
+                disabled={!isPasskeyAuthenticatorAvailable}
                 onClick={() => handleSwitch("passkey")}
                 variant="secondary"
                 size="icon-large"
