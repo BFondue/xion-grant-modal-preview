@@ -44,11 +44,12 @@ export const useAbstraxionAccount = () => {
     localStorage.getItem("loginAuthenticator"),
   );
 
-  const updateAbstractAccountCodeId = (codeId: number) => {
-    setAbstractAccount({
+  const updateAbstractAccountCodeId = async (codeId: number) => {
+    const newAccount = {
       ...abstractAccount,
       codeId,
-    });
+    };
+    setAbstractAccount(newAccount);
   };
 
   const { data: grazAccount, isConnected } = useAccount();

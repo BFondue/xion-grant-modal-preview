@@ -5,6 +5,7 @@ import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import axios from "axios";
 import { getChainRegistryUrl } from "../../config";
 import { useQueryParams } from "../../hooks/useQueryParams";
+import { ContractContextProvider } from "../ContractContext";
 
 export type ConnectionType =
   | "stytch"
@@ -169,7 +170,9 @@ export const AbstraxionContextProvider = ({
 
   return (
     <AbstraxionContext.Provider value={contextValue}>
-      {children}
+      <ContractContextProvider codeId={abstractAccount?.codeId}>
+        {children}
+      </ContractContextProvider>
     </AbstraxionContext.Provider>
   );
 };

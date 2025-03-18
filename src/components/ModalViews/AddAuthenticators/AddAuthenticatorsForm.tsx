@@ -19,6 +19,7 @@ import {
   AbstraxionContextProps,
 } from "../../AbstraxionContext";
 import { useAbstraxionSigningClient } from "../../../hooks";
+import { useContractFeatures } from "../../../hooks/useContractFeatures";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
 import { AAAlgo } from "../../../signers";
 import {
@@ -36,7 +37,7 @@ import { AddEmail } from "./AddEmail/AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
 import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
-import { FeatureKey, hasFeature } from "../../../types/migration-features";
+import { FeatureKey } from "../../../types/migration";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -101,13 +102,13 @@ export function AddAuthenticatorsForm({
   });
 
   // Check if passkey feature is enabled for the account's contract code ID
-  const isPasskeySupported = abstractAccount?.codeId
-    ? hasFeature(abstractAccount.codeId, FeatureKey.PASSKEY)
-    : false;
+  const { hasFeatures: isPasskeySupported, isLoadingFeatures } = useContractFeatures({
+    requestedFeatures: [FeatureKey.PASSKEY],
+  });
 
   // Only show passkey option if both the feature flag is enabled and the account contract supports it
   const isPasskeyAuthenticatorAvailable =
-    isPasskeyFeatureFlagEnabled && isPasskeySupported;
+    isPasskeyFeatureFlagEnabled && isPasskeySupported && !isLoadingFeatures;
 
   // Functions
   function handleSwitch(authenticator: AuthenticatorStates) {

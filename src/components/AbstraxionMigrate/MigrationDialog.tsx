@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,10 @@ import {
   DialogFooter,
   BaseButton,
 } from "../ui";
+import { Skeleton } from "../ui/skeleton";
 import { Accordion } from "../ui/accordion";
-import { getPromotedFeatures } from "../../types/migration-features";
+import { getPromotedFeatures, fetchContractChecksum } from "../../utils/migration";
+import { useAbstraxionSigningClient } from "../../hooks/useAbstraxionSigningClient";
 
 interface MigrationDialogProps {
   open: boolean;
@@ -25,7 +27,36 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
   targetCodeId,
   onUpgrade,
 }) => {
-  const migrationFeatures = getPromotedFeatures(targetCodeId);
+  const { client } = useAbstraxionSigningClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [targetChecksum, setTargetChecksum] = useState<string | null>(null);
+  const hasFetchedChecksum = useRef(false);
+
+  useEffect(() => {
+    const fetchTargetChecksum = async () => {
+      if (!client || !open || hasFetchedChecksum.current) return;
+      
+      setIsLoading(true);
+      try {
+        const checksum = await fetchContractChecksum(client, targetCodeId);
+        if (checksum) {
+          setTargetChecksum(checksum);
+          hasFetchedChecksum.current = true;
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (open) {
+      fetchTargetChecksum();
+    } else {
+      setTargetChecksum(null);
+      hasFetchedChecksum.current = false;
+    }
+  }, [open, targetCodeId]);
+
+  const migrationFeatures = targetChecksum ? getPromotedFeatures(targetChecksum) : [];
 
   const accordionItems = migrationFeatures.map((feature) => ({
     title: feature.title,
@@ -48,7 +79,16 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
           <h3 className="ui-text-lg ui-font-medium ui-mb-4">
             New upgrade features:
           </h3>
-          <Accordion items={accordionItems} />
+          {isLoading ? (
+            <div className="ui-space-y-4">
+              <Skeleton className="ui-h-6 ui-w-3/4" />
+              <Skeleton className="ui-h-4 ui-w-full" />
+              <Skeleton className="ui-h-6 ui-w-3/4" />
+              <Skeleton className="ui-h-4 ui-w-full" />
+            </div>
+          ) : (
+            <Accordion items={accordionItems} />
+          )}
         </div>
 
         <DialogFooter>
@@ -56,8 +96,12 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
             If you don&apos;t migrate nothing will change, but you will not get
             the new account features.
           </div>
-          <BaseButton onClick={onUpgrade} className="ui-w-full">
-            MIGRATE
+          <BaseButton 
+            onClick={onUpgrade} 
+            className="ui-w-full"
+            disabled={isLoading || !targetChecksum}
+          >
+            {isLoading ? "Loading..." : "MIGRATE"}
           </BaseButton>
         </DialogFooter>
       </DialogContent>
