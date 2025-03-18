@@ -10,7 +10,10 @@ import {
 } from "../ui";
 import { Skeleton } from "../ui/skeleton";
 import { Accordion } from "../ui/accordion";
-import { getPromotedFeatures, fetchContractChecksum } from "../../utils/migration";
+import {
+  getPromotedFeatures,
+  fetchContractChecksum,
+} from "../../utils/migration";
 import { useAbstraxionSigningClient } from "../../hooks/useAbstraxionSigningClient";
 
 interface MigrationDialogProps {
@@ -40,7 +43,7 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
   useEffect(() => {
     const fetchTargetChecksum = async () => {
       if (!client || !open || targetChecksum !== null) return;
-      
+
       setIsLoading(true);
       try {
         const checksum = await fetchContractChecksum(client, targetCodeId);
@@ -55,7 +58,9 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
     fetchTargetChecksum();
   }, [client, open, targetCodeId, targetChecksum]);
 
-  const migrationFeatures = targetChecksum ? getPromotedFeatures(targetChecksum) : [];
+  const migrationFeatures = targetChecksum
+    ? getPromotedFeatures(targetChecksum)
+    : [];
 
   const accordionItems = migrationFeatures.map((feature) => ({
     title: feature.title,
@@ -95,8 +100,8 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
             If you don&apos;t migrate nothing will change, but you will not get
             the new account features.
           </div>
-          <BaseButton 
-            onClick={onUpgrade} 
+          <BaseButton
+            onClick={onUpgrade}
             className="ui-w-full"
             disabled={isLoading || !targetChecksum}
           >

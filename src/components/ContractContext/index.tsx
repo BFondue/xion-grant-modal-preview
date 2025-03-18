@@ -13,7 +13,8 @@ const defaultContextValue: ContractContextProps = {
   enabledFeatures: [],
 };
 
-export const ContractContext = createContext<ContractContextProps>(defaultContextValue);
+export const ContractContext =
+  createContext<ContractContextProps>(defaultContextValue);
 
 export const ContractContextProvider = ({
   children,
@@ -29,12 +30,14 @@ export const ContractContextProvider = ({
   useEffect(() => {
     const fetchFeatures = async () => {
       if (!codeId || !client) return;
-      
+
       setIsLoadingFeatures(true);
       try {
         const checksum = await fetchContractChecksum(client, codeId);
         if (!checksum) {
-          console.warn(`[ContractContext] No checksum found for codeId: ${codeId}`);
+          console.warn(
+            `[ContractContext] No checksum found for codeId: ${codeId}`,
+          );
           setEnabledFeatures([]);
           return;
         }
@@ -44,11 +47,16 @@ export const ContractContextProvider = ({
           const features = Array.from(featureSet.features);
           setEnabledFeatures(features);
         } else {
-          console.warn(`[ContractContext] No feature set found for checksum: ${checksum}`);
+          console.warn(
+            `[ContractContext] No feature set found for checksum: ${checksum}`,
+          );
           setEnabledFeatures([]);
         }
       } catch (error) {
-        console.error('[ContractContext] Error fetching contract features:', error);
+        console.error(
+          "[ContractContext] Error fetching contract features:",
+          error,
+        );
         setEnabledFeatures([]);
       } finally {
         setIsLoadingFeatures(false);
@@ -68,4 +76,4 @@ export const ContractContextProvider = ({
       {children}
     </ContractContext.Provider>
   );
-}; 
+};

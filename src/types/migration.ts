@@ -11,4 +11,4 @@ export interface AccountFeatureSet {
   checksum: string;
   features: Set<FeatureKey>;
   promotedFeatures: PromotedFeature[];
-} 
+}

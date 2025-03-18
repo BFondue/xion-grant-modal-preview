@@ -102,9 +102,10 @@ export function AddAuthenticatorsForm({
   });
 
   // Check if passkey feature is enabled for the account's contract code ID
-  const { hasFeatures: isPasskeySupported, isLoadingFeatures } = useContractFeatures({
-    requestedFeatures: [FeatureKey.PASSKEY],
-  });
+  const { hasFeatures: isPasskeySupported, isLoadingFeatures } =
+    useContractFeatures({
+      requestedFeatures: [FeatureKey.PASSKEY],
+    });
 
   // Only show passkey option if both the feature flag is enabled and the account contract supports it
   const isPasskeyAuthenticatorAvailable =
