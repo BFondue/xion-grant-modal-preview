@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,31 +30,30 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
   const { client } = useAbstraxionSigningClient();
   const [isLoading, setIsLoading] = useState(false);
   const [targetChecksum, setTargetChecksum] = useState<string | null>(null);
-  const hasFetchedChecksum = useRef(false);
+
+  useEffect(() => {
+    if (!open) {
+      setTargetChecksum(null);
+    }
+  }, [open]);
 
   useEffect(() => {
     const fetchTargetChecksum = async () => {
-      if (!client || !open || hasFetchedChecksum.current) return;
+      if (!client || !open || targetChecksum !== null) return;
       
       setIsLoading(true);
       try {
         const checksum = await fetchContractChecksum(client, targetCodeId);
         if (checksum) {
           setTargetChecksum(checksum);
-          hasFetchedChecksum.current = true;
         }
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (open) {
-      fetchTargetChecksum();
-    } else {
-      setTargetChecksum(null);
-      hasFetchedChecksum.current = false;
-    }
-  }, [open, targetCodeId]);
+    fetchTargetChecksum();
+  }, [client, open, targetCodeId, targetChecksum]);
 
   const migrationFeatures = targetChecksum ? getPromotedFeatures(targetChecksum) : [];
 

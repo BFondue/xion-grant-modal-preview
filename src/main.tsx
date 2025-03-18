@@ -10,7 +10,6 @@ import { App } from "./components/App";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 
-// Provider order matters: QueryClient → Stytch → Abstraxion → Graz
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
