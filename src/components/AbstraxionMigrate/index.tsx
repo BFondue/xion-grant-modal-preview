@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { MsgMigrateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { Uint53 } from "@cosmjs/math";
 import { toUtf8 } from "@cosmjs/encoding";
-import { Button, Spinner } from "../ui";
+import { Spinner, BaseButton } from "../ui";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -11,6 +11,7 @@ import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { getEnvNumberOrThrow, getEnvStringOrThrow } from "../../utils";
 import { validateFeeGrant } from "../../utils/validate-fee-grant";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
+import { MigrationDialog } from "./MigrationDialog";
 
 type AbstraxionMigrateProps = {
   currentCodeId: number;
@@ -36,9 +37,7 @@ export const AbstraxionMigrate = ({
   const { data: account } = useAbstraxionAccount();
   const [inProgress, setInProgress] = useState(false);
   const [failed, setFailed] = useState(false);
-
-  // Don't render the component if we're on testnet-2
-  if (chainInfo?.chainId === "xion-testnet-2") return null;
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const migrateAccount = async () => {
     if (!client) return;
@@ -51,7 +50,11 @@ export const AbstraxionMigrate = ({
           sender: account.id,
           contract: account.id,
           codeId: BigInt(new Uint53(targetCodeId).toString()),
-          msg: toUtf8(JSON.stringify({})),
+          msg: toUtf8(
+            JSON.stringify({
+              code_id: targetCodeId,
+            }),
+          ),
         }),
       };
 
@@ -98,6 +101,7 @@ export const AbstraxionMigrate = ({
       setFailed(true);
     } finally {
       setInProgress(false);
+      setDialogOpen(false);
     }
   };
 
@@ -116,21 +120,32 @@ export const AbstraxionMigrate = ({
   }
 
   return (
-    <div className="ui-flexui-w-full ui-flex-col ui-items-start ui-justify-between ui-gap-8 sm:ui-p-10 ui-text-white">
-      <div className="ui-flex ui-flex-col ui-gap-y-5 ui-w-full ui-text-center">
-        <h1 className="ui-text-3xl ui-font-thin ui-uppercase ui-tracking-tighter ui-text-white ui-text-center">
-          Congratulations!
-        </h1>
-        <p className="ui-tracking-tight ui-text-zinc-400 ui-text-center">
-          Your account is due for an upgrade! Please click below to begin the
-          process.
-        </p>
-        <div className="ui-w-full ui-flex ui-flex-col ui-gap-4">
-          <Button structure="base" fullWidth={true} onClick={migrateAccount}>
-            Upgrade Account
-          </Button>
+    <>
+      <div className="ui-w-full ui-rounded-xl ui-bg-transparent ui-border ui-border-dashed ui-border-white/20 ui-p-4 ui-flex ui-flex-col sm:ui-flex-row ui-gap-4 sm:ui-justify-between ui-items-center">
+        <div>
+          <h2 className="ui-text-xl ui-font-bold">
+            Account Migration Available!
+          </h2>
+          <p className="ui-text-secondary-text ui-text-sm">
+            New features and security improvements.
+          </p>
         </div>
+        <BaseButton
+          size="small"
+          onClick={() => setDialogOpen(true)}
+          className="ui-w-full sm:ui-w-auto"
+        >
+          LEARN MORE
+        </BaseButton>
       </div>
-    </div>
+
+      <MigrationDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        currentCodeId={currentCodeId}
+        targetCodeId={targetCodeId}
+        onUpgrade={migrateAccount}
+      />
+    </>
   );
 };

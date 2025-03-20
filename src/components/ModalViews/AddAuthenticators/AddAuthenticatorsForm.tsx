@@ -19,6 +19,7 @@ import {
   AbstraxionContextProps,
 } from "../../AbstraxionContext";
 import { useAbstraxionSigningClient } from "../../../hooks";
+import { useContractFeatures } from "../../../hooks/useContractFeatures";
 import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
 import { AAAlgo } from "../../../signers";
 import {
@@ -36,10 +37,12 @@ import { AddEmail } from "./AddEmail/AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
 import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
+import { FeatureKey } from "../../../types/migration";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
-const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
+const isPasskeyFeatureFlagEnabled =
+  import.meta.env.VITE_PASSKEY_FLAG === "true";
 const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
 const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
 
@@ -97,6 +100,16 @@ export function AddAuthenticatorsForm({
     onError: () => setIsLoading(false),
     onLoading: () => setIsLoading(true),
   });
+
+  // Check if passkey feature is enabled for the account's contract code ID
+  const { hasFeatures: isPasskeySupported, isLoadingFeatures } =
+    useContractFeatures({
+      requestedFeatures: [FeatureKey.PASSKEY],
+    });
+
+  // Only show passkey option if both the feature flag is enabled and the account contract supports it
+  const isPasskeyAuthenticatorAvailable =
+    isPasskeyFeatureFlagEnabled && isPasskeySupported && !isLoadingFeatures;
 
   // Functions
   function handleSwitch(authenticator: AuthenticatorStates) {
@@ -635,13 +648,13 @@ export function AddAuthenticatorsForm({
                 />
               </BaseButton>
             ) : null}
-            {shouldEnablePasskey ? (
+            {isPasskeyAuthenticatorAvailable ? (
               <BaseButton
                 className={cn(
                   { "!ui-border-white": selectedAuthenticator === "passkey" },
                   "ui-w-16 ui-h-16 ui-relative",
                 )}
-                disabled={!shouldEnablePasskey}
+                disabled={!isPasskeyAuthenticatorAvailable}
                 onClick={() => handleSwitch("passkey")}
                 variant="secondary"
                 size="icon-large"
