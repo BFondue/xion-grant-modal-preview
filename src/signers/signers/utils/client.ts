@@ -13,35 +13,17 @@ import {
 } from "@cosmjs/proto-signing";
 import {
   Account,
-  calculateFee,
   createProtobufRpcClient,
   defaultRegistryTypes,
-  DeliverTxResponse,
-  GasPrice,
   SignerData,
   SigningStargateClientOptions,
   StdFee,
 } from "@cosmjs/stargate";
 import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
-import { xionGasValues } from "@burnt-labs/constants";
-import { MsgRegisterAccount } from "../../types/generated/abstractaccount/v1/tx";
-import {
-  abstractAccountTypes,
-  MsgRegisterAccountEncodeObject,
-  typeUrlMsgRegisterAccount,
-} from "./messages";
+import { abstractAccountTypes } from "./messages";
 import { customAccountFromAny, makeAAuthInfo } from ".";
 import { AASigner } from "../../interfaces/AASigner";
-import {
-  MsgExecuteContractEncodeObject,
-  SigningCosmWasmClient,
-  wasmTypes,
-} from "@cosmjs/cosmwasm-stargate";
-import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import {
-  AddAuthenticator,
-  RemoveAuthenticator,
-} from "../../interfaces/smartAccount";
+import { SigningCosmWasmClient, wasmTypes } from "@cosmjs/cosmwasm-stargate";
 import { Uint53 } from "@cosmjs/math";
 import { SignMode } from "cosmjs-types/cosmos/tx/signing/v1beta1/signing";
 import {
@@ -81,127 +63,6 @@ export class AAClient extends SigningCosmWasmClient {
   ) {
     super(tmClient, signer, options);
     this.abstractSigner = signer;
-  }
-
-  /**
-   * Creates a MsgRegisterAbstractAccount message and broadcasts it
-   * @param msg the message to be sent
-   * @returns
-   */
-  public async registerAbstractAccount(
-    msg: MsgRegisterAccount,
-  ): Promise<DeliverTxResponse> {
-    const { sender } = msg;
-    const createMsg: MsgRegisterAccountEncodeObject = {
-      typeUrl: typeUrlMsgRegisterAccount,
-      value: msg,
-    };
-    return this.signAndBroadcast(sender, [createMsg], "auto");
-  }
-
-  /**
-   * Simulates a transaction to estimate the gas and calculates the default fee.
-   *
-   * @param {string} sender - The address of the sender.
-   * @param {readonly EncodeObject[]} messages - An array of messages to include in the transaction.
-   * @param {string | undefined} memo - An optional memo to include in the transaction.
-   * @returns {Promise<StdFee>} - The calculated default fee for the transaction.
-   */
-  private async simulateDefaultFee(
-    sender: string,
-    messages: readonly EncodeObject[],
-    memo: string | undefined,
-  ): Promise<StdFee> {
-    const gasPriceString =
-      import.meta.env.VITE_GAS_PRICE || xionGasValues.gasPrice;
-    const gasAdjustment = import.meta.env.VITE_GAS_ADJUSTMENT
-      ? parseFloat(import.meta.env.VITE_GAS_ADJUSTMENT)
-      : xionGasValues.gasAdjustment;
-    const gasAdjustmentMargin = import.meta.env.VITE_GAS_MARGIN
-      ? parseInt(import.meta.env.VITE_GAS_MARGIN, 10)
-      : xionGasValues.gasAdjustmentMargin;
-
-    const simmedGas = await this.simulate(sender, messages, memo);
-    const gasPrice = GasPrice.fromString(gasPriceString);
-    const calculatedFee: StdFee = calculateFee(
-      Math.ceil(simmedGas * gasAdjustment),
-      gasPrice,
-    );
-
-    let defaultFee: StdFee;
-    const gas = Math.ceil(
-      parseInt(calculatedFee.gas) * gasAdjustment + gasAdjustmentMargin,
-    ).toString();
-
-    const chainId = await this.getChainId();
-
-    if (/testnet/.test(chainId)) {
-      defaultFee = { amount: [{ amount: "0", denom: "uxion" }], gas: gas };
-    } else {
-      defaultFee = { amount: calculatedFee.amount, gas: gas };
-    }
-
-    return defaultFee;
-  }
-
-  /**
-   * Create and a cosmwasm add authenticator msg to the abstract account
-   * @param msg the message to be sent
-   * @returns
-   */
-  public async addAbstractAccountAuthenticator(
-    msg: AddAuthenticator,
-    memo = "",
-    fee?: StdFee,
-  ): Promise<DeliverTxResponse> {
-    if (!this.abstractSigner.abstractAccount) {
-      throw new Error("Abstract account address not set in signer");
-    }
-    const sender = this.abstractSigner.abstractAccount;
-    const addMsg: MsgExecuteContractEncodeObject = {
-      typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
-      value: MsgExecuteContract.fromPartial({
-        sender,
-        contract: sender,
-        msg: new Uint8Array(Buffer.from(JSON.stringify(msg), "utf-8")),
-        funds: [],
-      }),
-    };
-
-    const defaultFee = await this.simulateDefaultFee(sender, [addMsg], memo);
-
-    const tx = await this.sign(sender, [addMsg], fee || defaultFee, memo);
-    return this.broadcastTx(TxRaw.encode(tx).finish());
-  }
-
-  /**
-   * Create a cosmwasm remove authenticator msg to the abstract account
-   * @param msg the message to be sent
-   * @returns
-   */
-  public async removeAbstractAccountAuthenticator(
-    msg: RemoveAuthenticator,
-    memo = "",
-    fee?: StdFee,
-  ): Promise<DeliverTxResponse> {
-    if (!this.abstractSigner.abstractAccount) {
-      throw new Error("Abstract account address not set in signer");
-    }
-    const sender = this.abstractSigner.abstractAccount;
-    const addMsg: MsgExecuteContractEncodeObject = {
-      typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
-      value: MsgExecuteContract.fromPartial({
-        sender,
-        contract: sender,
-        msg: new Uint8Array(Buffer.from(JSON.stringify(msg), "utf-8")),
-        funds: [],
-      }),
-    };
-
-    const defaultFee = await this.simulateDefaultFee(sender, [addMsg], memo);
-
-    const tx = await this.sign(sender, [addMsg], fee || defaultFee, memo);
-    return this.broadcastTx(TxRaw.encode(tx).finish());
   }
 
   /**
