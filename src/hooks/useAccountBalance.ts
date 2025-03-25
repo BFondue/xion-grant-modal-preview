@@ -4,6 +4,7 @@ import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";
 import { useBalances } from "./useBalances";
 import { useAssetList } from "./useAssetList";
 import { chainId as envChainId } from "../utils";
+import { assertIsDeliverTxSuccess } from "@cosmjs/stargate/build/stargateclient";
 
 export function useAccountBalance() {
   const { data: account } = useAbstraxionAccount();
@@ -79,10 +80,7 @@ export function useAccountBalance() {
       );
 
       const res = await client.signAndBroadcast(account.id, [msg], fee, memo);
-
-      if (res.rawLog?.includes("failed")) {
-        throw new Error(res.rawLog);
-      }
+      assertIsDeliverTxSuccess(res);
 
       refetchBalances();
       return res;
