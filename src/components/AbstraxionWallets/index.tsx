@@ -1,11 +1,12 @@
 import React, {
   useCallback,
   useContext,
-  useState,
-  useMemo,
   useEffect,
+  useMemo,
+  useState,
 } from "react";
 import { useStytch } from "@stytch/react";
+import { decodeJwt } from "jose";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -52,12 +53,9 @@ export const AbstraxionWallets = () => {
   const session_token = stytchClient.session.getTokens()?.session_token;
 
   const { loginAuthenticator } = useAbstraxionAccount();
-  const { data, loading, error, startPolling } = useGetSmartAccountsStrategy(
-    false,
-    () => {
-      setIsGeneratingNewWallet(false);
-    },
-  );
+  const { data, loading, error } = useGetSmartAccountsStrategy(false, () => {
+    setIsGeneratingNewWallet(false);
+  });
   const { xionDisconnect } = useXionDisconnect();
 
   const [isGeneratingNewWallet, setIsGeneratingNewWallet] = useState(false);
@@ -114,11 +112,38 @@ export const AbstraxionWallets = () => {
       if (!res.ok) {
         throw new Error(body.error);
       }
+
+      // Use the account_address and code_id directly from the response
+      const { account_address, code_id } = body;
+
+      // Create the authenticator data
+      const { aud, sub } = session_jwt
+        ? decodeJwt(session_jwt)
+        : { aud: undefined, sub: undefined };
+      const authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
+
+      // Set the abstract account directly
+      setAbstractAccount({
+        id: account_address,
+        codeId: code_id,
+        authenticators: [
+          {
+            id: `${account_address}-0`,
+            type: "Jwt",
+            authenticator,
+            authenticatorIndex: 0,
+          },
+        ],
+        currentAuthenticatorIndex: 0,
+      });
+
+      // Close the modal
+      setIsOpen(false);
     } catch (error) {
       console.log(error);
       setAbstraxionError("Error creating abstract account.");
     } finally {
-      startPolling(3000);
+      setIsGeneratingNewWallet(false);
     }
   }, [
     apiUrl,
@@ -126,6 +151,8 @@ export const AbstraxionWallets = () => {
     session_token,
     setIsGeneratingNewWallet,
     setAbstraxionError,
+    setAbstractAccount,
+    setIsOpen,
   ]);
 
   const handleDisconnectClick = () => {
