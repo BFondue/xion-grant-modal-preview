@@ -16,15 +16,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "select:mainnet": "cp -rf .deploy/mainnet/ ./",
-    "select:testnet": "cp -rf .deploy/testnet/ ./",
-    "select:testnet2": "cp -rf .deploy/testnet2/ ./",
-    "build:mainnet": "npm run select:mainnet && vite build --mode mainnet",
-    "build:testnet": "npm run select:testnet && vite build --mode testnet",
-    "build:testnet2": "npm run select:testnet2 && vite build --mode testnet2",
-    "deploy:mainnet": "npm run build:mainnet && wrangler pages deploy",
-    "deploy:testnet": "npm run build:testnet && wrangler pages deploy",
-    "deploy:testnet2": "npm run build:testnet2 && wrangler pages deploy"
+    "build:mainnet": "vite build --mode mainnet",
+    "build:testnet": "vite build --mode testnet",
+    "build:testnet2": "vite build --mode testnet2",
+    "deploy:mainnet": "npm run build:mainnet && cp .deploy/mainnet/wrangler.toml wrangler.toml && wrangler pages deploy",
+    "deploy:testnet": "npm run build:testnet && cp .deploy/testnet/wrangler.toml wrangler.toml && wrangler pages deploy",
+    "deploy:testnet2": "npm run build:testnet2 && cp .deploy/testnet2/wrangler.toml wrangler.toml && wrangler pages deploy"
   },
   "dependencies": {
     "@burnt-labs/constants": "^0.1.0-alpha.11",
