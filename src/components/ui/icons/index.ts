@@ -21,3 +21,5 @@ export { XionIcon } from "./Xion";
 export { EyeIcon } from "./Eye";
 export { EyeOffIcon } from "./EyeOff";
 export { CosmosLogo } from "./CosmosLogo";
+export { InfoFilledIcon } from "./InfoFilled";
+export { InfoIcon } from "./Info";

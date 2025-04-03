@@ -41,7 +41,9 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
           onClick={expandable ? toggleOpen : undefined}
         >
           <span className="ui-text-primary-text">{title}</span>
-          {expandable && <ChevronDownIcon isUp={isOpen} />}
+          {expandable && (
+            <ChevronDownIcon isUp={isOpen} className="ui-min-w-5 ui-min-h-5" />
+          )}
         </div>
         {isOpen && children && (
           <div className="ui-mt-2 ui-pl-4 ui-max-h-96 ui-overflow-y-auto ui-text-sm">

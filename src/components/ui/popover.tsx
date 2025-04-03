@@ -18,14 +18,16 @@ const PopoverContent = React.forwardRef<
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
       className={cn(
-        "ui-rounded ui-text-white ui-z-50 ui-p-2 ui-bg-[#434040] ui-data-[state=open]:ui-data-[side=top]:ui-animate-slideDownAndFade ui-data-[state=open]:ui-data-[side=right]:ui-animate-slideLeftAndFade ui-data-[state=open]:ui-data-[side=bottom]:ui-animate-slideUpAndFade ui-data-[state=open]:ui-data-[side=left]:ui-animate-slideRightAndFade",
+        "ui-rounded-md ui-text-white ui-z-50 ui-p-2 ui-bg-[#2a2a2a]",
+        "ui-shadow-[0px_6px_10px_6px_hsl(0deg_0%_0%_/_60%)]",
+        "ui-data-[state=open]:ui-data-[side=top]:ui-animate-slideDownAndFade ui-data-[state=open]:ui-data-[side=right]:ui-animate-slideLeftAndFade ui-data-[state=open]:ui-data-[side=bottom]:ui-animate-slideUpAndFade ui-data-[state=open]:ui-data-[side=left]:ui-animate-slideRightAndFade",
         className,
       )}
       ref={forwardedRef}
       {...props}
     >
       {children}
-      <PopoverPrimitive.Arrow className="ui-fill-[#434040]" />
+      <PopoverPrimitive.Arrow className="ui-fill-[#2a2a2a]" />
     </PopoverPrimitive.Content>
   </PopoverPrimitive.Portal>
 ));

@@ -4,12 +4,13 @@ import { EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { BaseButton } from "../ui";
 import {
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
   DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "../ui/dialog";
 import { Skeleton } from "../ui/skeleton";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { generateBankGrant } from "./generateBankGrant";
 import {
@@ -41,6 +42,7 @@ import { redirectToDapp } from "../../utils/redirect-utils";
 import xionLogo from "../../assets/logo.png";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
+import { InfoFilledIcon } from "../ui/icons";
 
 // Function to normalize URLs by removing trailing slashes and handling undefined values
 const normalizeURL = (url: string | undefined): string | null => {
@@ -305,7 +307,7 @@ export const AbstraxionGrant = ({
       setTreasuryParams(params);
     } catch {
       setAbstraxionError(
-        "Invalid contract grant configuration detected. Please reach out to the DAPP team to resolve this issue.",
+        "Invalid app settings detected. Please reach out to the DAPP team to resolve this issue.",
       );
     } finally {
       setIsTreasuryQueryLoading(false);
@@ -328,7 +330,7 @@ export const AbstraxionGrant = ({
 
           if (!isValid) {
             setAbstraxionError(
-              "Invalid contract grant configuration detected. Please reach out to the DAPP team to resolve this issue.",
+              "Invalid app settings detected. Please reach out to the DAPP team to resolve this issue.",
             );
           }
         }
@@ -429,6 +431,58 @@ export const AbstraxionGrant = ({
                   The app url you are connecting to does not match the url on
                   the contract. This could be a scam.
                 </p>
+                <div className="ui-mb-4 ui-flex ui-flex-col ui-gap-4">
+                  <div className="ui-flex ui-flex-col ui-gap-1">
+                    <Popover>
+                      <PopoverTrigger asChild className="ui-w-fit">
+                        <p className="ui-text-warning ui-text-sm ui-leading-[16px] ui-cursor-help ui-inline-flex ui-items-center">
+                          Provided URL:
+                          <span className="ui-ml-1">
+                            <InfoFilledIcon className="ui-w-[18px] ui-h-[18px] ui-text-warning ui-fill-warning" />
+                          </span>
+                        </p>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        side="bottom"
+                        align="start"
+                        alignOffset={0}
+                        sideOffset={0}
+                        className="ui-text-sm ui-max-w-[250px]"
+                      >
+                        The URL provided by the application in the contract
+                        configuration.
+                      </PopoverContent>
+                    </Popover>
+                    <div className="ui-text-white ui-text-sm ui-leading-[16px] ui-px-3 ui-py-2 ui-bg-[rgba(255,255,255,0.05)] ui-rounded-lg ui-break-all">
+                      {treasuryParams.redirect_url}
+                    </div>
+                  </div>
+                  <div className="ui-flex ui-flex-col ui-gap-1">
+                    <Popover>
+                      <PopoverTrigger asChild className="ui-w-fit">
+                        <p className="ui-text-warning ui-text-sm ui-leading-[16px] ui-cursor-help ui-inline-flex ui-items-center">
+                          Configured URL:
+                          <span className="ui-ml-1">
+                            <InfoFilledIcon className="ui-w-[18px] ui-h-[18px] ui-text-warning ui-fill-warning" />
+                          </span>
+                        </p>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        side="bottom"
+                        align="start"
+                        alignOffset={0}
+                        sideOffset={0}
+                        className="ui-text-sm ui-max-w-[250px]"
+                      >
+                        The URL you are currently connecting to, which should
+                        match the provided URL.
+                      </PopoverContent>
+                    </Popover>
+                    <div className="ui-text-white ui-text-sm ui-leading-[16px] ui-px-3 ui-py-2 ui-bg-[rgba(255,255,255,0.05)] ui-rounded-lg ui-break-all">
+                      {redirect_uri}
+                    </div>
+                  </div>
+                </div>
                 <div className="ui-mb-4">
                   <Checkbox
                     variant="warning"
