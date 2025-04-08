@@ -1,17 +1,18 @@
 import React from "react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createLocalStorageMock,
+  createStytchMock,
+  fillOtpInputs,
+  mockEnvironmentVariables,
   render,
   screen,
   waitFor,
-  createLocalStorageMock,
-  mockEnvironmentVariables,
-} from "../../../test/utils";
+} from "../../../test";
 import { AbstraxionSignin } from "../index";
 import { AbstraxionContext } from "../../AbstraxionContext";
 import type { ChainInfo } from "@burnt-labs/constants";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createStytchMock, fillOtpInputs } from "../../../test/auth-utils";
 
 const stytchMock = createStytchMock();
 stytchMock.otps.email.loginOrCreate = vi
@@ -36,7 +37,6 @@ vi.mock("graz", () => ({
 
 mockEnvironmentVariables({
   VITE_TIKTOK_FLAG: "true",
-  VITE_DEPLOYMENT_ENV: "testnet",
 });
 
 const setupTest = () => {

@@ -44,17 +44,6 @@ const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
 const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
 const tiktokFlag = import.meta.env.VITE_TIKTOK_FLAG === "true";
-const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
-
-// Variable to be true if deploymentEnv is "testnet", otherwise check flags for "mainnet"
-const shouldEnableOkx =
-  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && okxFlag);
-
-const shouldEnableMetamask =
-  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && metamaskFlag);
-
-const shouldEnableKeplr =
-  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && keplrFlag);
 
 const shouldEnableTikTok = tiktokFlag;
 
@@ -78,9 +67,13 @@ export const AbstraxionSignin = () => {
     },
   });
 
-  const { setConnectionType, setAbstraxionError, chainInfo } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
+  const { setConnectionType, setAbstraxionError, chainInfo, isMainnet } =
+    useContext(AbstraxionContext) as AbstraxionContextProps;
+
+  // Variable to be true if not mainnet, otherwise check flags for mainnet
+  const shouldEnableOkx = !isMainnet || (isMainnet && okxFlag);
+  const shouldEnableMetamask = !isMainnet || (isMainnet && metamaskFlag);
+  const shouldEnableKeplr = !isMainnet || (isMainnet && keplrFlag);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmailError("");

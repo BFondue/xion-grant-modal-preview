@@ -1,7 +1,8 @@
 # ---- Base Node ----
 FROM node:lts AS build
 
-ARG VITE_DEPLOYMENT_ENV
+ARG NETWORK_NAME=testnet2
+ENV NETWORK_NAME=${NETWORK_NAME}
 
 WORKDIR /app
 
@@ -12,7 +13,7 @@ RUN set -eux \
 
 COPY . .
 RUN set -eux \
-  && npx vite build --mode ${VITE_DEPLOYMENT_ENV}
+  && npx vite build --mode ${NETWORK_NAME}
 
 FROM node:lts AS runner
 

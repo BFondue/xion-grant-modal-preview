@@ -37,24 +37,13 @@ import { AddEmail } from "./AddEmail/AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
 import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
-import { FeatureKey } from "../../../types/migration";
+import { FeatureKey } from "../../../types";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const isPasskeyFeatureFlagEnabled =
   import.meta.env.VITE_PASSKEY_FLAG === "true";
 const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
-const deploymentEnv = import.meta.env.VITE_DEPLOYMENT_ENV;
-
-// Variable to be true if deploymentEnv is "testnet", otherwise check okxFlag for "mainnet"
-const shouldEnableOkx =
-  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && okxFlag);
-
-const shouldEnableMetamask =
-  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && metamaskFlag);
-
-const shouldEnableKeplr =
-  deploymentEnv === "testnet" || (deploymentEnv === "mainnet" && keplrFlag);
 
 type AuthenticatorStates =
   | "none"
@@ -88,9 +77,13 @@ export function AddAuthenticatorsForm({
   const [otpError, setOtpError] = useState<string | null>(null);
 
   // Context state
-  const { abstractAccount, setAbstractAccount, chainInfo, apiUrl } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
+  const { abstractAccount, setAbstractAccount, chainInfo, apiUrl, isMainnet } =
+    useContext(AbstraxionContext) as AbstraxionContextProps;
+
+  // Variable to be true if not mainnet, otherwise check flags for mainnet
+  const shouldEnableOkx = !isMainnet || (isMainnet && okxFlag);
+  const shouldEnableMetamask = !isMainnet || (isMainnet && metamaskFlag);
+  const shouldEnableKeplr = !isMainnet || (isMainnet && keplrFlag);
 
   // Hooks
   const { client, getGasCalculation } = useAbstraxionSigningClient();

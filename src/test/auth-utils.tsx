@@ -5,7 +5,6 @@ import { UserEvent } from "@testing-library/user-event";
 
 mockEnvironmentVariables({
   VITE_TIKTOK_FLAG: "true",
-  VITE_DEPLOYMENT_ENV: "testnet",
 });
 
 /**
