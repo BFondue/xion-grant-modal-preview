@@ -157,7 +157,7 @@ export const AbstraxionWallets = () => {
 
   const handleDisconnectClick = () => {
     if (redirect_uri) {
-      redirectToDapp();
+      redirectToDapp(redirect_uri);
     } else {
       xionDisconnect();
     }

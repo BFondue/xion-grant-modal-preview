@@ -97,20 +97,20 @@ export const AbstraxionGrant = ({
 
   useEffect(
     function redirectAfterSuccess() {
-      if (showSuccess && (treasuryParams.redirect_url || redirect_uri)) {
+      if (showSuccess && redirect_uri) {
         const redirectTimer = setTimeout(() => {
-          redirectToDapp(account?.id, treasuryParams.redirect_url);
+          redirectToDapp(redirect_uri, account?.id);
         }, 5000);
 
         return () => clearTimeout(redirectTimer);
       }
     },
-    [showSuccess, redirect_uri, account?.id, treasuryParams.redirect_url],
+    [showSuccess, redirect_uri, account?.id],
   );
 
   const handleDeny = () => {
-    if (treasuryParams.redirect_url || redirect_uri) {
-      redirectToDapp(undefined, treasuryParams.redirect_url);
+    if (redirect_uri) {
+      redirectToDapp(redirect_uri, undefined);
     } else {
       xionDisconnect();
     }
