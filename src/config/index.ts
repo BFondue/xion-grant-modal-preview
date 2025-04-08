@@ -65,6 +65,6 @@ export const REST_ENDPOINTS = {
 // used to filter assets in the overview
 export const FEATURED_ASSETS = ["USDC", "XION"] as const;
 
-export const USDC_DENOM = isMainnet
+export const USDC_DENOM = isMainnet()
   ? "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
   : "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64";
