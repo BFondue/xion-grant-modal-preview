@@ -93,6 +93,7 @@ export const AbstraxionGrant = ({
   const [urlMismatchConfirmed, setUrlMismatchConfirmed] = useState(false);
   const hasUrlMismatch =
     treasury &&
+    !!treasuryParams.redirect_url &&
     normalizeURL(treasuryParams.redirect_url) !== normalizeURL(redirect_uri);
 
   useEffect(
