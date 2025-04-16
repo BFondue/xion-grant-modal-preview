@@ -10,7 +10,6 @@ import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../components/AbstraxionContext";
-import { getKeplr, useOfflineSigners } from "graz";
 import { testnetChainInfo } from "@burnt-labs/constants";
 import { getEnvStringOrThrow } from "../utils";
 import { AAPasskeySigner } from "../signers/signers/passkey-signer";
@@ -23,12 +22,23 @@ export const useAbstraxionSigningClient = () => {
   const stytch = useStytch();
   const sessionToken = stytch.session.getTokens()?.session_token;
 
-  const { data } = useOfflineSigners();
-  const keplr = window.keplr ? getKeplr() : undefined;
-
   const [abstractClient, setAbstractClient] = useState<AAClient | undefined>(
     undefined,
   );
+
+  // track Keplr state changes
+  const [keplrState, setKeplrState] = useState(window.keplr ? true : false);
+
+  useEffect(() => {
+    const handleKeplrChange = () => {
+      setKeplrState(window.keplr ? true : false);
+    };
+
+    window.addEventListener("keplr_keystorechange", handleKeplrChange);
+    return () => {
+      window.removeEventListener("keplr_keystorechange", handleKeplrChange);
+    };
+  }, []);
 
   async function okxSignArb(
     chainId: string,
@@ -84,7 +94,7 @@ export const useAbstraxionSigningClient = () => {
               ),
         );
         break;
-      case "graz":
+      case "shuttle":
         if (window.keplr) {
           const offlineSigner = window.keplr.getOfflineSigner(
             chainInfo.chainId,
@@ -149,17 +159,16 @@ export const useAbstraxionSigningClient = () => {
     sessionToken,
     abstractAccount,
     connectionType,
-    data,
-    keplr,
     chainInfo,
     isChainInfoLoading,
+    keplrState,
   ]);
 
   useEffect(() => {
     if (abstractAccount && !isChainInfoLoading) {
       getSigner();
     }
-  }, [abstractAccount, isChainInfoLoading]);
+  }, [abstractAccount, isChainInfoLoading, keplrState]);
 
   const memoizedClient = useMemo(
     () => ({

@@ -9,7 +9,7 @@ import { ContractContextProvider } from "../ContractContext";
 
 export type ConnectionType =
   | "stytch"
-  | "graz"
+  | "shuttle"
   | "metamask"
   | "okx"
   | "passkey"

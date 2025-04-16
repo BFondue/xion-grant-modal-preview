@@ -1,5 +1,11 @@
-import React, { Dispatch, SetStateAction, useContext, useState } from "react";
-import { useAccount, useSuggestChainAndConnect, WalletType } from "graz";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useState,
+  useEffect,
+} from "react";
+import { useShuttle } from "@delphi-labs/shuttle-react";
 import { create } from "@github/webauthn-json/browser-ponyfill";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
@@ -87,12 +93,7 @@ export function AddAuthenticatorsForm({
 
   // Hooks
   const { client, getGasCalculation } = useAbstraxionSigningClient();
-  const { data: grazAccount } = useAccount();
-  const { suggestAndConnect } = useSuggestChainAndConnect({
-    onSuccess: async () => await addKeplrAuthenticator(),
-    onError: () => setIsLoading(false),
-    onLoading: () => setIsLoading(true),
-  });
+  const { connect, recentWallet } = useShuttle();
 
   // Check if passkey feature is enabled for the account's contract code ID
   const { hasFeatures: isPasskeySupported, isLoadingFeatures } =
@@ -110,16 +111,44 @@ export function AddAuthenticatorsForm({
     setSelectedAuthenticator(authenticator);
   }
 
+  // add handler and useEffect for shuttle connection
+  async function handleShuttleConnection() {
+    try {
+      setIsLoading(true);
+      await connect({
+        chainId: chainInfo.chainId,
+        extensionProviderId: "keplr",
+      });
+    } catch (error) {
+      console.error("Error connecting to Shuttle:", error);
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const handleWalletConnection = async () => {
+      if (recentWallet && selectedAuthenticator === "keplr" && isLoading) {
+        try {
+          await addKeplrAuthenticator();
+        } catch (error) {
+          console.error("Error adding Keplr authenticator:", error);
+          setErrorMessage("Something went wrong trying to add authenticator");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    handleWalletConnection();
+  }, [recentWallet, selectedAuthenticator]);
+
   async function handleSelection() {
     setErrorMessage("");
     switch (selectedAuthenticator) {
       case "none":
         break;
       case "keplr":
-        suggestAndConnect({
-          chainInfo: chainInfo,
-          walletType: WalletType.KEPLR,
-        });
+        await handleShuttleConnection();
         break;
       case "metamask":
         await addEthAuthenticator();
@@ -290,12 +319,19 @@ export function AddAuthenticatorsForm({
         return alert("Please install Keplr extension and try again");
       }
 
+      if (!recentWallet) {
+        return alert("Please connect Keplr and try again.");
+      }
+
+      const shuttleAccount = recentWallet.account;
+      const shuttleAddress = shuttleAccount?.address;
+
       const encoder = new TextEncoder();
       const signArbMessage = Buffer.from(encoder.encode(abstractAccount?.id));
 
       const signArbRes = await window.keplr.signArbitrary(
         chainInfo.chainId,
-        grazAccount?.bech32Address,
+        shuttleAddress,
         new Uint8Array(signArbMessage),
       );
 

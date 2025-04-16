@@ -26,13 +26,10 @@ vi.mock("@stytch/react", () => ({
   }),
 }));
 
-vi.mock("graz", () => ({
-  useSuggestChainAndConnect: () => ({
-    suggestAndConnect: vi.fn(),
+vi.mock("@delphi-labs/shuttle-react", () => ({
+  useShuttle: () => ({
+    connect: vi.fn(),
   }),
-  WalletType: {
-    KEPLR: "keplr",
-  },
 }));
 
 mockEnvironmentVariables({

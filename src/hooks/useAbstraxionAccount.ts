@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { useAccount } from "graz";
+import { useShuttle } from "@delphi-labs/shuttle-react";
 import { useStytch, useStytchSession } from "@stytch/react";
 import {
   AbstraxionContext,
@@ -7,7 +7,6 @@ import {
   ConnectionType,
 } from "../components/AbstraxionContext";
 import { decodeJwt } from "jose";
-import { getHumanReadablePubkey } from "../utils";
 
 interface OkxAccount {
   account: {
@@ -52,12 +51,13 @@ export const useAbstraxionAccount = () => {
     setAbstractAccount(newAccount);
   };
 
-  const { data: grazAccount, isConnected } = useAccount();
+  const { recentWallet } = useShuttle();
   const stytchClient = useStytch();
   const session_jwt = stytchClient.session.getTokens()?.session_jwt;
 
   function getAuthenticator() {
     let authenticator = "";
+    const shuttleAccount = recentWallet?.account;
     switch (connectionType) {
       case "stytch": {
         const { aud, sub } = session_jwt
@@ -66,8 +66,8 @@ export const useAbstraxionAccount = () => {
         authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
         break;
       }
-      case "graz":
-        authenticator = getHumanReadablePubkey(grazAccount?.pubKey);
+      case "shuttle":
+        authenticator = shuttleAccount?.pubkey;
         break;
       case "metamask":
         authenticator = loginAuthenticator || "";
@@ -88,7 +88,7 @@ export const useAbstraxionAccount = () => {
 
   const loginAuthenticatorMemo = useMemo(
     () => getAuthenticator(),
-    [connectionType, session_jwt, grazAccount, loginAuthenticator],
+    [connectionType, session_jwt, recentWallet, loginAuthenticator],
   );
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export const useAbstraxionAccount = () => {
     if (connectionType === "none") {
       refreshConnectionType();
     }
-  }, [session, isConnected, grazAccount, connectionType, loginType]);
+  }, [session, recentWallet, connectionType, loginType]);
 
   // Metamask & OKX account detection
   useEffect(() => {
@@ -154,7 +154,7 @@ export const useAbstraxionAccount = () => {
   // Keplr account detection
   useEffect(() => {
     const handleAccountsChanged = () => {
-      if (connectionType === "graz") {
+      if (connectionType === "shuttle") {
         setAbstractAccount(undefined);
       }
     };
@@ -173,8 +173,8 @@ export const useAbstraxionAccount = () => {
     isConnected:
       connectionType === "stytch"
         ? !!session
-        : connectionType === "graz"
-          ? isConnected
+        : connectionType === "shuttle"
+          ? !!recentWallet
           : connectionType === "metamask"
             ? window.ethereum.isConnected()
             : connectionType === "okx"

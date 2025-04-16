@@ -1,11 +1,12 @@
 import { useContext } from "react";
 import { AbstraxionContext } from "../components/AbstraxionContext";
 import { useStytch } from "@stytch/react";
-import { disconnect } from "graz";
+import { useShuttle } from "@delphi-labs/shuttle-react";
 
 export function useXionDisconnect() {
   const { connectionType, setConnectionType, setAbstractAccount, setIsOpen } =
     useContext(AbstraxionContext);
+  const { disconnect } = useShuttle();
 
   const stytch = useStytch();
 

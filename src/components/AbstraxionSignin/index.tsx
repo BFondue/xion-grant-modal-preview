@@ -31,7 +31,7 @@ import {
   registeredCredentials,
 } from "../../utils/webauthn-utils";
 import okxLogo from "../../assets/okx-logo.png";
-import { useSuggestChainAndConnect, WalletType } from "graz";
+import { useShuttle } from "@delphi-labs/shuttle-react";
 import OtpForm from "../OtpForm";
 import { GoogleLogoIcon } from "../ui/icons/GoogleLogo";
 import { TikTokLogoIcon } from "../ui/icons/TikTokLogo";
@@ -59,13 +59,7 @@ export const AbstraxionSignin = () => {
   const [otpError, setOtpError] = useState<string | null>(null);
   const tokenProcessed = useRef(false);
 
-  const { suggestAndConnect } = useSuggestChainAndConnect({
-    onError: (error) => console.log("connection error: ", error),
-    onSuccess: () => {
-      localStorage.setItem("loginType", "");
-      setConnectionType("graz");
-    },
-  });
+  const { connect } = useShuttle();
 
   const { setConnectionType, setAbstraxionError, chainInfo, isMainnet } =
     useContext(AbstraxionContext) as AbstraxionContextProps;
@@ -162,10 +156,18 @@ export const AbstraxionSignin = () => {
       alert("Please install the Keplr wallet extension");
       return;
     }
-    suggestAndConnect({
-      chainInfo,
-      walletType: WalletType.KEPLR,
-    });
+
+    try {
+      connect({
+        chainId: chainInfo.chainId,
+        extensionProviderId: "keplr",
+      });
+
+      localStorage.setItem("loginType", "");
+      setConnectionType("shuttle");
+    } catch (error) {
+      console.error("Error connecting to Keplr:", error);
+    }
   }
 
   async function handleOkx() {
