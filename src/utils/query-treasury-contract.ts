@@ -60,6 +60,8 @@ const CosmosAuthzPermission: { [key: string]: string } = {
   "/cosmwasm.wasm.v1.MsgStoreCode": "store smart contract code on your behalf",
   "/cosmwasm.wasm.v1.MsgInstantiateContract":
     "instantiate smart contracts on your behalf",
+  "/cosmwasm.wasm.v1.MsgInstantiateContract2":
+    "instantiate smart contracts on your behalf",
   "/cosmwasm.wasm.v1.MsgExecuteContract":
     "execute smart contracts on your behalf",
   "/cosmwasm.wasm.v1.MsgMigrateContract":
