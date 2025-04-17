@@ -34,9 +34,9 @@ export function TopNav() {
       {
         text: "History",
         path: isMainnet
-          ? "https://www.mintscan.io/xion"
+          ? `https://www.mintscan.io/xion/address/${account?.id}`
           : chainInfo?.chainId === "xion-testnet-2"
-            ? "https://www.mintscan.io/xion-testnet"
+            ? `https://www.mintscan.io/xion-testnet/address/${account?.id}`
             : "https://explorer.burnt.com/xion-testnet-1/",
         external: true,
       },
