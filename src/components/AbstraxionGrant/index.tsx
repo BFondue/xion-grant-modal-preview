@@ -102,7 +102,7 @@ export const AbstraxionGrant = ({
       if (showSuccess && redirect_uri) {
         const redirectTimer = setTimeout(() => {
           redirectToDapp(redirect_uri, account?.id);
-        }, 5000);
+        }, 500);
 
         return () => clearTimeout(redirectTimer);
       }
