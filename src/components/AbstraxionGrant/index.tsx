@@ -43,6 +43,7 @@ import xionLogo from "../../assets/logo.png";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
 import { InfoFilledIcon } from "../ui/icons";
+import FallbackImage from "../FallbackImage";
 
 // Function to normalize URLs by removing trailing slashes and handling undefined values
 const normalizeURL = (url: string | undefined): string | null => {
@@ -380,13 +381,15 @@ export const AbstraxionGrant = ({
                 {treasuryParams.icon_url || treasuryParams.redirect_url ? (
                   <div className="ui-mt-8 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
                     {treasuryParams.icon_url && (
-                      <img
-                        src={treasuryParams.icon_url}
-                        alt="App Icon"
-                        width={70}
-                        height={70}
-                        className="ui-rounded-2xl ui-w-[70px] ui-h-[70px] ui-object-cover"
-                      />
+                      <div className="ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
+                        <FallbackImage
+                          src={treasuryParams.icon_url}
+                          fallbackSrc={burntAvatar}
+                          alt="App Icon"
+                          width={70}
+                          className="ui-object-cover ui-max-h-[100px]"
+                        />
+                      </div>
                     )}
                     {treasuryParams.redirect_url && (
                       <div className="ui-text-white ui-font-bold ui-text-base ui-leading-[16px] ui-px-3 ui-py-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-rounded-lg">
@@ -395,8 +398,14 @@ export const AbstraxionGrant = ({
                     )}
                   </div>
                 ) : (
-                  <div className="ui-mb-10 ui-mt-6 ui-flex ui-items-center ui-justify-center">
-                    <img src={burntAvatar} alt="Burnt Avatar" />
+                  <div className="ui-mb-8 ui-mt-6 ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
+                    <FallbackImage
+                      src={burntAvatar}
+                      fallbackSrc={burntAvatar}
+                      alt="App Icon"
+                      width={70}
+                      className="ui-object-cover"
+                    />
                   </div>
                 )}
               </>
