@@ -4,8 +4,8 @@ import { useAccountBalance } from "../../hooks/useAccountBalance";
 import { WalletReceive } from "../WalletReceive";
 import { WalletSend } from "../WalletSend/WalletSend";
 import {
-  OverviewBalanceRow,
-  OverviewBalanceRowSkeleton,
+  OverviewBalanceTable,
+  OverviewBalanceTableSkeleton,
 } from "./OverviewBalanceRow";
 import { FEATURED_ASSETS } from "../../config";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
@@ -59,8 +59,12 @@ export function Overview({ account }: OverviewProps) {
           <div className="ui-w-full ui-flex ui-flex-col ui-gap-6 ">
             <div className="ui-flex ui-flex-col ui-gap-3">
               {balances && (
-                <h1 className="ui-text-[40px] ui-leading-[36px] ui-font-bold">
-                  ${totalDollarValue.toFixed(2)}
+                <h1 className="ui-text-[28px] sm:ui-text-[32px] md:ui-text-[40px] ui-leading-[36px] ui-font-bold">
+                  $
+                  {totalDollarValue.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </h1>
               )}
             </div>
@@ -92,22 +96,16 @@ export function Overview({ account }: OverviewProps) {
 
         <div className="ui-flex ui-flex-col ui-gap-5">
           {splitBalances.featuredBalances.length === 0 && (
-            <>
-              <OverviewBalanceRowSkeleton />
-              <OverviewBalanceRowSkeleton />
-            </>
+            <OverviewBalanceTableSkeleton />
           )}
-          {splitBalances.featuredBalances.map((balance) => (
-            <OverviewBalanceRow key={balance.symbol} asset={balance} />
-          ))}
+          <OverviewBalanceTable assets={splitBalances.featuredBalances} />
         </div>
         {splitBalances.otherBalances.length > 0 && (
           <>
             <div>
-              {showAllBalances &&
-                splitBalances.otherBalances.map((balance) => (
-                  <OverviewBalanceRow key={balance.symbol} asset={balance} />
-                ))}
+              {showAllBalances && (
+                <OverviewBalanceTable assets={splitBalances.otherBalances} />
+              )}
             </div>
             <div className="ui-flex ui-items-center ui-justify-between ui-mt-2">
               <div className="ui-text-white/40 ui-text-base font-normal leading-normal">
