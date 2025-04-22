@@ -1,5 +1,123 @@
 # abstraxion-dashboard
 
+## 0.3.0
+
+### Minor Changes
+
+- [#182](https://github.com/burnt-labs/xion-dashboard-app/pull/182) [`5016ecf`](https://github.com/burnt-labs/xion-dashboard-app/commit/5016ecf68307cbbc319fa5ca8d5797dbba0130b0) Thanks [@BurntVal](https://github.com/BurntVal)! - Introduce algorithms in passkey pubkey credential config
+
+- [#180](https://github.com/burnt-labs/xion-dashboard-app/pull/180) [`7dd7ab6`](https://github.com/burnt-labs/xion-dashboard-app/commit/7dd7ab66b3014d7198bf0da07a17178c31b7949a) Thanks [@OjiCode](https://github.com/OjiCode)! - Added configurable banner component.
+
+- [#208](https://github.com/burnt-labs/xion-dashboard-app/pull/208) [`1bed980`](https://github.com/burnt-labs/xion-dashboard-app/commit/1bed9808d39fe9336301af1319d15e1f69c5f95d) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Updated token rows with a table to ensure column uniformity
+
+- [#207](https://github.com/burnt-labs/xion-dashboard-app/pull/207) [`301cf9e`](https://github.com/burnt-labs/xion-dashboard-app/commit/301cf9e133491c817d8c12cd41f2ca93a7fb0bcb) Thanks [@justinbarry](https://github.com/justinbarry)! - Reduce redirect delay in AbstraxionGrant component
+
+- [#198](https://github.com/burnt-labs/xion-dashboard-app/pull/198) [`a3ee16b`](https://github.com/burnt-labs/xion-dashboard-app/commit/a3ee16b176fbdb9edbb1e0250db218523222d582) Thanks [@justinbarry](https://github.com/justinbarry)! - Remove unused methods
+
+- [#194](https://github.com/burnt-labs/xion-dashboard-app/pull/194) [`d1ad141`](https://github.com/burnt-labs/xion-dashboard-app/commit/d1ad1417eba5c093efe214165625ec92de0b45bf) Thanks [@OjiCode](https://github.com/OjiCode)! - Updated migration flow.
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Added new navigationa and layout structure
+
+- [#147](https://github.com/burnt-labs/xion-dashboard-app/pull/147) [`e8b613f`](https://github.com/burnt-labs/xion-dashboard-app/commit/e8b613f4a8b7e6a59b96647dea45877a54e95443) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Light UI and UX changes
+
+- [#210](https://github.com/burnt-labs/xion-dashboard-app/pull/210) [`95d6551`](https://github.com/burnt-labs/xion-dashboard-app/commit/95d6551143e566d90165f8bbe752dfb94163b1e2) Thanks [@burnt-sun](https://github.com/burnt-sun)! - Replace Graz with Shuttle
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Added new buttons
+
+- [#212](https://github.com/burnt-labs/xion-dashboard-app/pull/212) [`c52b0bc`](https://github.com/burnt-labs/xion-dashboard-app/commit/c52b0bc978dcfde34d84a7c22458119923a25035) Thanks [@burnt-sun](https://github.com/burnt-sun)! - Update React Query to v5
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Updated Login UI
+
+- [#214](https://github.com/burnt-labs/xion-dashboard-app/pull/214) [`7cdb227`](https://github.com/burnt-labs/xion-dashboard-app/commit/7cdb2277bbd868f96f6130b9aac86fde3fda9ed9) Thanks [@justinbarry](https://github.com/justinbarry)! - Fix Changeset Action
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Added a new animated loading spinner
+
+- [#173](https://github.com/burnt-labs/xion-dashboard-app/pull/173) [`4afc4ee`](https://github.com/burnt-labs/xion-dashboard-app/commit/4afc4ee279720dac7d3d8d7273f6f24981eb6d6b) Thanks [@justinbarry](https://github.com/justinbarry)! - Use chain-id to select network and load config at startup
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Added new components and streamlined permissions list
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Updated granting flow
+
+- [#197](https://github.com/burnt-labs/xion-dashboard-app/pull/197) [`5cb5078`](https://github.com/burnt-labs/xion-dashboard-app/commit/5cb50781ed42903112165a85aee7a0cf61d51b40) Thanks [@justinbarry](https://github.com/justinbarry)! - Show error dialog when send tx fails
+
+- [#206](https://github.com/burnt-labs/xion-dashboard-app/pull/206) [`4244bc1`](https://github.com/burnt-labs/xion-dashboard-app/commit/4244bc1ab1f2b592eea915cd9cd4c96d636d160e) Thanks [@justinbarry](https://github.com/justinbarry)! - Hide warning when empty screen
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Update Send flow
+
+- [#201](https://github.com/burnt-labs/xion-dashboard-app/pull/201) [`605799e`](https://github.com/burnt-labs/xion-dashboard-app/commit/605799e092eed23384597e877fd19a432eff9d6b) Thanks [@justinbarry](https://github.com/justinbarry)! - Redirect to redirect_uri, not treasury url
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Added new Wallet Action Button
+
+- [#141](https://github.com/burnt-labs/xion-dashboard-app/pull/141) [`43703d4`](https://github.com/burnt-labs/xion-dashboard-app/commit/43703d49848943f64b27116f3fe7cd8224e9e70e) Thanks [@burnt-sun](https://github.com/burnt-sun)! - add permissions for msgsubmitproposal
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - updated the current Dialog component to align with the new Figma designs and added a dialog.md file with examples of the components in use. Also updated the Input component and added some other icons.
+
+- [#196](https://github.com/burnt-labs/xion-dashboard-app/pull/196) [`6fbc2ba`](https://github.com/burnt-labs/xion-dashboard-app/commit/6fbc2baae097ee8017f1311e48ef6ed2a035ec68) Thanks [@justinbarry](https://github.com/justinbarry)! - Replaces polling for new accounts with the data returned by the create AA api endpoint.
+
+- [#202](https://github.com/burnt-labs/xion-dashboard-app/pull/202) [`d390ed7`](https://github.com/burnt-labs/xion-dashboard-app/commit/d390ed734055e6561b1831f355b0d7afa27c796f) Thanks [@justinbarry](https://github.com/justinbarry)! - Fix isMainnet usage in USDC_DENOM assignment
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Refreshed login modals
+
+- [#200](https://github.com/burnt-labs/xion-dashboard-app/pull/200) [`19e6e5e`](https://github.com/burnt-labs/xion-dashboard-app/commit/19e6e5e68ac6bf9c5f4d13442d7e9575284a73e1) Thanks [@justinbarry](https://github.com/justinbarry)! - Replace `VITE_DEPLOYMENT_ENV` with `isMainnet`
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - updated the disclaimer footer
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Updated Settings Dashboard with new UI
+
+### Patch Changes
+
+- [#149](https://github.com/burnt-labs/xion-dashboard-app/pull/149) [`8b5118d`](https://github.com/burnt-labs/xion-dashboard-app/commit/8b5118d63bc0526a27e4c0293b71d22c2e0dcabd) Thanks [@burnt-sun](https://github.com/burnt-sun)! - fix usdc fallback
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Fix Abstraxion error state resetting logic
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Added new token display rows
+
+- [#193](https://github.com/burnt-labs/xion-dashboard-app/pull/193) [`83d8be5`](https://github.com/burnt-labs/xion-dashboard-app/commit/83d8be5f006152687cf1176099256aeab910dbb0) Thanks [@justinbarry](https://github.com/justinbarry)! - Remove VITE_DEFAULT_CHAIN_INFO from environment files
+
+- [#205](https://github.com/burnt-labs/xion-dashboard-app/pull/205) [`cf5aaa2`](https://github.com/burnt-labs/xion-dashboard-app/commit/cf5aaa2266ae57c9f0eea94adf2133e16e7494b2) Thanks [@BurntVal](https://github.com/BurntVal)! - Add instantiate2 description message
+
+- [#195](https://github.com/burnt-labs/xion-dashboard-app/pull/195) [`4d9a877`](https://github.com/burnt-labs/xion-dashboard-app/commit/4d9a8773fed8fc94d558978e4fffdb94c420009f) Thanks [@justinbarry](https://github.com/justinbarry)! - - Add popover tooltips for URL mismatch warnings
+
+  - Display the provided and expected uri's inline
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Updated main used colors
+
+- [#178](https://github.com/burnt-labs/xion-dashboard-app/pull/178) [`d1004c7`](https://github.com/burnt-labs/xion-dashboard-app/commit/d1004c73f92efc41f0b9b9fda0457c583d789640) Thanks [@OjiCode](https://github.com/OjiCode)! - Added unit tests to components
+
+- [#142](https://github.com/burnt-labs/xion-dashboard-app/pull/142) [`f72339b`](https://github.com/burnt-labs/xion-dashboard-app/commit/f72339bc43a0c4aeea116a04f1f9720fe11aa550) Thanks [@burnt-sun](https://github.com/burnt-sun)! - use v1 gov for prop submission instead of v1beta1
+
+- [#192](https://github.com/burnt-labs/xion-dashboard-app/pull/192) [`3e811a0`](https://github.com/burnt-labs/xion-dashboard-app/commit/3e811a062acce5fa3c579bea0e9f99e5a8a5b0ee) Thanks [@justinbarry](https://github.com/justinbarry)! - Update API URL in testnet environment file
+
+- [#189](https://github.com/burnt-labs/xion-dashboard-app/pull/189) [`a609e78`](https://github.com/burnt-labs/xion-dashboard-app/commit/a609e7844537e6d898710fa027742f3183df1620) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Fixed a UI z-index bug
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - fixed mobile row skeleton and no Dialog close in dashboard Accounts Dialog
+
+- [#184](https://github.com/burnt-labs/xion-dashboard-app/pull/184) [`45da61c`](https://github.com/burnt-labs/xion-dashboard-app/commit/45da61c7d8eb20b4e5987fd9ab448bb3dfc4d7fd) Thanks [@2xburnt](https://github.com/2xburnt)! - Update build commands for wrangler, Add polyfills for pages deployment.
+
+- [#148](https://github.com/burnt-labs/xion-dashboard-app/pull/148) [`8e98bf3`](https://github.com/burnt-labs/xion-dashboard-app/commit/8e98bf3dc26fe2e94da5d62147198c0cd29770d4) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Added color #ffffff to the entire app
+
+- [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Updated AccountInfo card styling
+
+- [#181](https://github.com/burnt-labs/xion-dashboard-app/pull/181) [`1f05f4e`](https://github.com/burnt-labs/xion-dashboard-app/commit/1f05f4e1c7f2b87d43b2d8d18509a48ee9072413) Thanks [@justinbarry](https://github.com/justinbarry)! - Update readme with localhost dns setup
+
+- [#173](https://github.com/burnt-labs/xion-dashboard-app/pull/173) [`4afc4ee`](https://github.com/burnt-labs/xion-dashboard-app/commit/4afc4ee279720dac7d3d8d7273f6f24981eb6d6b) Thanks [@justinbarry](https://github.com/justinbarry)! - environment changes for testnet2
+
+- [#211](https://github.com/burnt-labs/xion-dashboard-app/pull/211) [`77230da`](https://github.com/burnt-labs/xion-dashboard-app/commit/77230daeb034b5672f356bb1042c41d1b72059d8) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Updated 'History' link to go to account
+
+- [#190](https://github.com/burnt-labs/xion-dashboard-app/pull/190) [`9ddfa39`](https://github.com/burnt-labs/xion-dashboard-app/commit/9ddfa3901a2565e0e58b03f7e88409e2d8f95556) Thanks [@justinbarry](https://github.com/justinbarry)! - Limit the number of decimals in the send form to match the number of decimals for that asset
+
+- [#139](https://github.com/burnt-labs/xion-dashboard-app/pull/139) [`43f59fb`](https://github.com/burnt-labs/xion-dashboard-app/commit/43f59fb5238e454a1adb8f1e7bbfa67037834717) Thanks [@justinbarry](https://github.com/justinbarry)! - No longer force Gmail addresses to use oauth on mainnet
+
+- [#179](https://github.com/burnt-labs/xion-dashboard-app/pull/179) [`0c39a45`](https://github.com/burnt-labs/xion-dashboard-app/commit/0c39a4595ffdfb0b849405b6949d68416ba4f4d2) Thanks [@justinbarry](https://github.com/justinbarry)! - Improved permission display with human-readable format for better user understanding
+
+- [#209](https://github.com/burnt-labs/xion-dashboard-app/pull/209) [`b5c6116`](https://github.com/burnt-labs/xion-dashboard-app/commit/b5c611669da40b57ee529487799d2f860ac9748b) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - updated 3rd party image display
+
+- [#188](https://github.com/burnt-labs/xion-dashboard-app/pull/188) [`21431d2`](https://github.com/burnt-labs/xion-dashboard-app/commit/21431d2a4fc1c85a9412b2f1112a053ee3040a88) Thanks [@justinbarry](https://github.com/justinbarry)! - Update fee granter address and gas adjustment values for testnet-2
+
+- [#177](https://github.com/burnt-labs/xion-dashboard-app/pull/177) [`153b5a2`](https://github.com/burnt-labs/xion-dashboard-app/commit/153b5a20f835baba5d01dcb1992374bf070d8fec) Thanks [@OjiCode](https://github.com/OjiCode)! - Added url normalization when comparing redirect urls during the grant process.
+
+- [#191](https://github.com/burnt-labs/xion-dashboard-app/pull/191) [`af18357`](https://github.com/burnt-labs/xion-dashboard-app/commit/af1835798bc3bcf756abcd98bc591f13e238ce4c) Thanks [@justinbarry](https://github.com/justinbarry)! - Fix chain registry path
+
 ## 0.2.1
 
 ### Patch Changes
