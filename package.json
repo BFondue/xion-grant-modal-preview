@@ -21,7 +21,9 @@
     "build:testnet2": "vite build --mode testnet2",
     "deploy:mainnet": "npm run build:mainnet && cp .deploy/mainnet/wrangler.toml wrangler.toml && wrangler pages deploy",
     "deploy:testnet": "npm run build:testnet && cp .deploy/testnet/wrangler.toml wrangler.toml && wrangler pages deploy",
-    "deploy:testnet2": "npm run build:testnet2 && cp .deploy/testnet2/wrangler.toml wrangler.toml && wrangler pages deploy"
+    "deploy:testnet2": "npm run build:testnet2 && cp .deploy/testnet2/wrangler.toml wrangler.toml && wrangler pages deploy",
+    "publish:packages": "changeset publish",
+    "version:packages": "changeset version"
   },
   "dependencies": {
     "@burnt-labs/constants": "^0.1.0-alpha.11",
@@ -52,6 +54,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.11",
     "@eslint/compat": "^1.2.1",
     "@eslint/js": "^9.13.0",
