@@ -1,5 +1,11 @@
 # abstraxion-dashboard
 
+## 0.4.0
+
+### Minor Changes
+
+- [#215](https://github.com/burnt-labs/xion-dashboard-app/pull/215) [`bda807a`](https://github.com/burnt-labs/xion-dashboard-app/commit/bda807ae9b36aa80000403fcf0aceb5007e7e00e) Thanks [@justinbarry](https://github.com/justinbarry)! - Remove the "Please make sure the url is correct before accepting."
+
 ## 0.3.0
 
 ### Minor Changes
