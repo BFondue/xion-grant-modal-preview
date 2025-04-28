@@ -527,9 +527,6 @@ export const AbstraxionGrant = ({
               </div>
             ) : (
               <>
-                <p className="ui-text-warning ui-text-sm ui-leading-[16px]">
-                  Please make sure the url is correct before accepting.
-                </p>
                 <BaseButton
                   className="ui-w-full"
                   disabled={
