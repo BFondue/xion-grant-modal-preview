@@ -20,3 +20,9 @@ To deploy mainnet, run the following commands
 npm run build:mainnet
 npm run deploy:mainnet
 ```
+
+## Environment Files
+
+The build scripts (`build:mainnet`, `build:testnet`, `build:testnet2`) will fail if a `.env` file is present in the directory. This is by design to ensure that environment-specific builds use the correct environment configuration files (`.env.mainnet`, `.env.testnet`, `.env.testnet2`) and are not affected by a local development `.env` file.
+
+If you encounter an error during the build process, make sure to remove any `.env` file before running the build commands.
