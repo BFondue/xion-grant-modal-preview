@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Skeleton } from "../ui/skeleton";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { generateBankGrant } from "./generateBankGrant";
 import {
@@ -42,19 +41,8 @@ import { redirectToDapp } from "../../utils/redirect-utils";
 import xionLogo from "../../assets/logo.png";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
-import { InfoFilledIcon } from "../ui/icons";
 import FallbackImage from "../FallbackImage";
-
-// Function to normalize URLs by removing trailing slashes and handling undefined values
-const normalizeURL = (url: string | undefined): string | null => {
-  try {
-    const urlObject = new URL(url);
-    return urlObject.href;
-  } catch {
-    // Handle invalid URL
-    return null;
-  }
-};
+import { getDomainAndProtocol, urlsMatch } from "../../utils/url";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -95,7 +83,7 @@ export const AbstraxionGrant = ({
   const hasUrlMismatch =
     treasury &&
     !!treasuryParams.redirect_url &&
-    normalizeURL(treasuryParams.redirect_url) !== normalizeURL(redirect_uri);
+    !urlsMatch(treasuryParams.redirect_url, redirect_uri);
 
   useEffect(
     function redirectAfterSuccess() {
@@ -436,60 +424,29 @@ export const AbstraxionGrant = ({
 
           <DialogFooter>
             {hasUrlMismatch && !isTreasuryQueryLoading ? (
-              <div className="ui-border ui-border-warning ui-rounded-lg ui-p-3">
-                <p className="ui-text-warning ui-text-sm ui-leading-[16px] ui-mb-4">
-                  The app url you are connecting to does not match the url on
-                  the contract. This could be a scam.
-                </p>
-                <div className="ui-mb-4 ui-flex ui-flex-col ui-gap-4">
-                  <div className="ui-flex ui-flex-col ui-gap-1">
-                    <Popover>
-                      <PopoverTrigger asChild className="ui-w-fit">
-                        <p className="ui-text-warning ui-text-sm ui-leading-[16px] ui-cursor-help ui-inline-flex ui-items-center">
-                          Provided URL:
-                          <span className="ui-ml-1">
-                            <InfoFilledIcon className="ui-w-[18px] ui-h-[18px] ui-text-warning ui-fill-warning" />
-                          </span>
-                        </p>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        side="bottom"
-                        align="start"
-                        alignOffset={0}
-                        sideOffset={0}
-                        className="ui-text-sm ui-max-w-[250px]"
-                      >
-                        The URL provided by the application in the contract
-                        configuration.
-                      </PopoverContent>
-                    </Popover>
-                    <div className="ui-text-white ui-text-sm ui-leading-[16px] ui-px-3 ui-py-2 ui-bg-[rgba(255,255,255,0.05)] ui-rounded-lg ui-break-all">
-                      {treasuryParams.redirect_url}
+              <>
+                <div className="ui-w-full ui-my-4">
+                  <div className="ui-p-4 ui-bg-[#2d1600] ui-border ui-border-[#ff9800] ui-rounded-xl ui-shadow-lg">
+                    <div className="ui-flex ui-items-center ui-gap-2 ui-mb-3">
+                      <span className="ui-text-[#ff9800] ui-text-xl">⚠️</span>
+                      <span className="ui-text-[#ff9800] ui-font-semibold ui-text-base">
+                        Potential Security Risk
+                      </span>
                     </div>
-                  </div>
-                  <div className="ui-flex ui-flex-col ui-gap-1">
-                    <Popover>
-                      <PopoverTrigger asChild className="ui-w-fit">
-                        <p className="ui-text-warning ui-text-sm ui-leading-[16px] ui-cursor-help ui-inline-flex ui-items-center">
-                          Configured URL:
-                          <span className="ui-ml-1">
-                            <InfoFilledIcon className="ui-w-[18px] ui-h-[18px] ui-text-warning ui-fill-warning" />
-                          </span>
-                        </p>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        side="bottom"
-                        align="start"
-                        alignOffset={0}
-                        sideOffset={0}
-                        className="ui-text-sm ui-max-w-[250px]"
-                      >
-                        The URL you are currently connecting to, which should
-                        match the provided URL.
-                      </PopoverContent>
-                    </Popover>
-                    <div className="ui-text-white ui-text-sm ui-leading-[16px] ui-px-3 ui-py-2 ui-bg-[rgba(255,255,255,0.05)] ui-rounded-lg ui-break-all">
-                      {redirect_uri}
+                    <div className="ui-text-[#ffb74d] ui-text-sm ui-mb-2">
+                      The URL you are connecting to:
+                    </div>
+                    <div className="ui-block ui-font-mono ui-text-white ui-text-base ui-font-bold ui-mb-3 ui-bg-[#3a2200] ui-px-2 ui-py-1 ui-rounded">
+                      {getDomainAndProtocol(redirect_uri)}
+                    </div>
+                    <div className="ui-text-[#ffb74d] ui-text-sm ui-mb-2">
+                      does not match the URL provided by the app developer:
+                    </div>
+                    <div className="ui-block ui-font-mono ui-text-white ui-text-base ui-font-bold ui-mb-3 ui-bg-[#3a2200] ui-px-2 ui-py-1 ui-rounded">
+                      {getDomainAndProtocol(treasuryParams.redirect_url)}
+                    </div>
+                    <div className="ui-text-[#ff9800] ui-text-xs">
+                      Proceed with caution, this could be a malicious link.
                     </div>
                   </div>
                 </div>
@@ -524,7 +481,7 @@ export const AbstraxionGrant = ({
                     "ACCEPT AND CONTINUE"
                   )}
                 </BaseButton>
-              </div>
+              </>
             ) : (
               <>
                 <BaseButton
