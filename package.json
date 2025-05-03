@@ -16,12 +16,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "build:mainnet": "[ ! -f .env ] || (echo 'Error: .env file present. Please remove it or rename to .env.local before building for mainnet.' && exit 1) && vite build --mode mainnet",
-    "build:testnet": "[ ! -f .env ] || (echo 'Error: .env file present. Please remove it or rename to .env.local before building for testnet.' && exit 1) && vite build --mode testnet",
-    "build:testnet2": "[ ! -f .env ] || (echo 'Error: .env file present. Please remove it or rename to .env.local before building for testnet2.' && exit 1) && vite build --mode testnet2",
-    "deploy:mainnet": "npm run build:mainnet && cp .deploy/mainnet/wrangler.toml wrangler.toml && wrangler pages deploy",
-    "deploy:testnet": "npm run build:testnet && cp .deploy/testnet/wrangler.toml wrangler.toml && wrangler pages deploy",
-    "deploy:testnet2": "npm run build:testnet2 && cp .deploy/testnet2/wrangler.toml wrangler.toml && wrangler pages deploy",
+    "checkdotenv": "[ ! -f .env ] || (echo 'Error: .env file present. Please remove it or rename to .env.local before building for mainnet.' && exit 1)",
+    "build:mainnet": "npm run checkdotenv && vite build --mode mainnet",
+    "build:testnet": "npm run checkdotenv && vite build --mode testnet",
+    "deploy:mainnet": "wrangler deploy --env mainnet",
+    "deploy:testnet": "wrangler deploy --env testnet",
     "publish:packages": "changeset publish",
     "version:packages": "changeset version"
   },
@@ -80,11 +79,11 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.11.0",
-    "vite": "^5.4.14",
+    "vite": "^6.2.6",
     "vite-plugin-checker": "^0.8.0",
-    "vite-plugin-node-polyfills": "^0.22.0",
+    "vite-plugin-node-polyfills": "^0.23.0",
     "vitest": "^3.0.6",
-    "wrangler": "^3.64.0"
+    "wrangler": "^4.14.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.22.2"

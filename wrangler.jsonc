@@ -1,0 +1,46 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "xion-dashboard",
+  "compatibility_date": "2025-04-04",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "server/index.ts",
+  "keep_vars": true,
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS",
+    "directory": "./dist",
+  },
+  "observability": { "enabled": true },
+  "env": {
+    "mainnet": {
+      "routes": [
+        {
+          "pattern": "settings.burnt.com",
+          "custom_domain": true,
+        },
+        {
+          "pattern": "auth.burnt.com",
+          "custom_domain": true,
+        },
+      ],
+      "build": { "command": "npm run build:mainnet" },
+    },
+    "testnet": {
+      "routes": [
+        {
+          "pattern": "settings.testnet.burnt.com",
+          "custom_domain": true,
+        },
+        {
+          "pattern": "auth.testnet.burnt.com",
+          "custom_domain": true,
+        },
+      ],
+      "build": { "command": "npm run build:testnet" },
+    },
+  },
+}
