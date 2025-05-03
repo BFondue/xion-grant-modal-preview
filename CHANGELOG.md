@@ -1,5 +1,11 @@
 # abstraxion-dashboard
 
+## 0.6.0
+
+### Minor Changes
+
+- [#204](https://github.com/burnt-labs/xion-dashboard-app/pull/204) [`9184b17`](https://github.com/burnt-labs/xion-dashboard-app/commit/9184b17943002da5a96bb24473087222519f766a) Thanks [@2xburnt](https://github.com/2xburnt)! - Convert to worker
+
 ## 0.5.0
 
 ### Minor Changes
