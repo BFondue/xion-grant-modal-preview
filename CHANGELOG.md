@@ -1,5 +1,15 @@
 # abstraxion-dashboard
 
+## 0.5.0
+
+### Minor Changes
+
+- [#217](https://github.com/burnt-labs/xion-dashboard-app/pull/217) [`b3f5aa8`](https://github.com/burnt-labs/xion-dashboard-app/commit/b3f5aa8d81bd275f9118b065b85c87c95929c8b7) Thanks [@justinbarry](https://github.com/justinbarry)! - Prevent environment-specific builds from running with a `.env` file present. Vite will fall back to the .env file for undefined env vars causing unexpected behavior.
+
+- [#223](https://github.com/burnt-labs/xion-dashboard-app/pull/223) [`f8b893e`](https://github.com/burnt-labs/xion-dashboard-app/commit/f8b893e5c2e0246e55e37b20f5662b78def956af) Thanks [@justinbarry](https://github.com/justinbarry)! - Only compare redirect_url on domain
+
+- [#223](https://github.com/burnt-labs/xion-dashboard-app/pull/223) [`f8b893e`](https://github.com/burnt-labs/xion-dashboard-app/commit/f8b893e5c2e0246e55e37b20f5662b78def956af) Thanks [@justinbarry](https://github.com/justinbarry)! - Update the warning sign on app permissions screen
+
 ## 0.4.0
 
 ### Minor Changes
