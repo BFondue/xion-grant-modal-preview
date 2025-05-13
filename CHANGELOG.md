@@ -1,5 +1,11 @@
 # abstraxion-dashboard
 
+## 0.7.0
+
+### Minor Changes
+
+- [#227](https://github.com/burnt-labs/xion-dashboard-app/pull/227) [`49784dd`](https://github.com/burnt-labs/xion-dashboard-app/commit/49784dd9d18f0794736e9e57978815c08181c0d3) Thanks [@justinbarry](https://github.com/justinbarry)! - Sanitize and validate URLs to enhance security.
+
 ## 0.6.0
 
 ### Minor Changes
