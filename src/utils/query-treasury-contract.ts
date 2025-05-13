@@ -10,6 +10,7 @@ import type {
   TreasuryParams,
 } from "../types/treasury-types";
 import type { AAClient } from "../signers";
+import { isUrlSafe } from "./url";
 
 export function formatXionAmount(amount: string, denom: string): string {
   if (denom === "uxion") {
@@ -106,10 +107,17 @@ export const queryTreasuryContract = async (
   // Query params with safe fallback
   const safeQueryParams = async (): Promise<TreasuryParams> => {
     try {
-      return (await client.queryContractSmart(
+      const params = (await client.queryContractSmart(
         contractAddress,
         queryParams,
       )) as TreasuryParams;
+
+      // Validate URLs even when successfully queried
+      return {
+        display_url: isUrlSafe(params.display_url) ? params.display_url : "",
+        redirect_url: isUrlSafe(params.redirect_url) ? params.redirect_url : "",
+        icon_url: isUrlSafe(params.icon_url) ? params.icon_url : "",
+      };
     } catch (error) {
       console.warn("Error querying params:", error);
       return {

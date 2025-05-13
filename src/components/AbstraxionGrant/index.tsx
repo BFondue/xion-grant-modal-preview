@@ -37,12 +37,12 @@ import { generateTreasuryGrants } from "../../utils/generate-treasury-grants";
 import { isContractGrantConfigValid } from "../../utils/contract-grant-check";
 import { validateFeeGrant } from "../../utils/validate-fee-grant";
 import { queryTreasuryContract } from "../../utils/query-treasury-contract";
-import { redirectToDapp } from "../../utils/redirect-utils";
+import { safeRedirectOrDisconnect } from "../../utils/redirect-utils";
 import xionLogo from "../../assets/logo.png";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
 import FallbackImage from "../FallbackImage";
-import { getDomainAndProtocol, urlsMatch } from "../../utils/url";
+import { getDomainAndProtocol, isUrlSafe, urlsMatch } from "../../utils/url";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -89,21 +89,35 @@ export const AbstraxionGrant = ({
     function redirectAfterSuccess() {
       if (showSuccess && redirect_uri) {
         const redirectTimer = setTimeout(() => {
-          redirectToDapp(redirect_uri, account?.id);
+          safeRedirectOrDisconnect(
+            redirect_uri,
+            setAbstraxionError,
+            xionDisconnect,
+            account?.id,
+            true,
+          );
         }, 500);
 
         return () => clearTimeout(redirectTimer);
       }
     },
-    [showSuccess, redirect_uri, account?.id],
+    [
+      showSuccess,
+      redirect_uri,
+      account?.id,
+      setAbstraxionError,
+      xionDisconnect,
+    ],
   );
 
   const handleDeny = () => {
-    if (redirect_uri) {
-      redirectToDapp(redirect_uri, undefined);
-    } else {
-      xionDisconnect();
-    }
+    safeRedirectOrDisconnect(
+      redirect_uri,
+      setAbstraxionError,
+      xionDisconnect,
+      undefined,
+      true,
+    );
   };
 
   const grantTreasuryPermissions = async (
@@ -141,7 +155,7 @@ export const AbstraxionGrant = ({
     const simmedGas = await client.simulate(
       account.id,
       batchedMsgs,
-      `treasury-grant-${expiration}`,
+      "treasury-grant-" + expiration,
       feeGranter,
     );
 
@@ -193,7 +207,7 @@ export const AbstraxionGrant = ({
     const simmedGas = await client.simulate(
       account.id,
       msgs,
-      `grant-${expiration}`,
+      "grant-" + expiration,
       feeGranter,
     );
 
@@ -331,6 +345,17 @@ export const AbstraxionGrant = ({
 
     validateContracts();
   }, [contracts, account]);
+
+  // Check if redirect_uri is safe when it changes
+  useEffect(() => {
+    if (redirect_uri) {
+      if (!isUrlSafe(redirect_uri)) {
+        setAbstraxionError(
+          "Unsafe redirect URL detected. This URL may contain malicious content. Please contact the application developer.",
+        );
+      }
+    }
+  }, [redirect_uri, setAbstraxionError]);
 
   return (
     <div>

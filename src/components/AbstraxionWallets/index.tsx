@@ -32,7 +32,7 @@ import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import { InboxIcon } from "../ui/icons/Inbox";
 import SadIcon from "../ui/icons/Sad";
 import { useQueryParams } from "../../hooks/useQueryParams";
-import { redirectToDapp } from "../../utils/redirect-utils";
+import { safeRedirectOrDisconnect } from "../../utils/redirect-utils";
 
 export const AbstraxionWallets = () => {
   const {
@@ -156,11 +156,15 @@ export const AbstraxionWallets = () => {
   ]);
 
   const handleDisconnectClick = () => {
-    if (redirect_uri) {
-      redirectToDapp(redirect_uri);
-    } else {
-      xionDisconnect();
-    }
+    // Only disconnect if there's no redirect_uri (button is labeled "DISCONNECT")
+    // If there is a redirect_uri (button is labeled "CANCEL"), just redirect without disconnecting
+    safeRedirectOrDisconnect(
+      redirect_uri,
+      setAbstraxionError,
+      xionDisconnect,
+      undefined,
+      !redirect_uri,
+    );
   };
 
   if (error) {
