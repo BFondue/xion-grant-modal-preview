@@ -60,11 +60,18 @@ describe("isUrlSafe", () => {
     expect(isUrlSafe("https://burnt-labs.github.io/app")).toBe(true);
   });
 
-  it("returns false for non-HTTP/HTTPS protocols", () => {
+  it("returns false for dangerous protocols", () => {
     expect(isUrlSafe("javascript:alert(1)")).toBe(false);
     expect(isUrlSafe("data:text/html,<script>alert(1)</script>")).toBe(false);
+    expect(isUrlSafe("vbscript:msgbox('XSS')")).toBe(false);
     expect(isUrlSafe("file:///etc/passwd")).toBe(false);
-    expect(isUrlSafe("ftp://example.com")).toBe(false);
+  });
+
+  it("returns true for native app URIs", () => {
+    expect(isUrlSafe("myapp://open")).toBe(true);
+    expect(isUrlSafe("app-name://auth/callback")).toBe(true);
+    expect(isUrlSafe("xion://wallet/connect")).toBe(true);
+    expect(isUrlSafe("ftp://example.com")).toBe(true);
   });
 
   it("returns false for URLs with suspicious encoded characters", () => {

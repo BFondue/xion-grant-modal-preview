@@ -29,8 +29,13 @@ export function isUrlSafe(url: string | undefined): boolean {
 
     const urlObj = new URL(url);
 
-    // Only allow http: and https: protocols
-    if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+    // Block known dangerous protocols, but allow custom app protocols
+    const dangerousProtocols = ["javascript:", "data:", "vbscript:", "file:"];
+    if (
+      dangerousProtocols.some((protocol) =>
+        urlObj.protocol.toLowerCase().startsWith(protocol),
+      )
+    ) {
       return false;
     }
 
