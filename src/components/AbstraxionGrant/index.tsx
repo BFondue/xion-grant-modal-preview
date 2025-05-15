@@ -83,6 +83,7 @@ export const AbstraxionGrant = ({
   const hasUrlMismatch =
     treasury &&
     !!treasuryParams.redirect_url &&
+    redirect_uri &&
     !urlsMatch(treasuryParams.redirect_url, redirect_uri);
 
   useEffect(
@@ -120,13 +121,29 @@ export const AbstraxionGrant = ({
     );
   };
 
+  if (!account?.id) {
+    throw new Error("Account ID is undefined");
+  }
+
+  if (!client) {
+    throw new Error("Client is undefined");
+  }
+
+  if (!redirect_uri) {
+    throw new Error("Redirect URI is undefined");
+  }
+
+  if (!chainInfo) {
+    throw new Error("Chain info is undefined");
+  }
+
   const grantTreasuryPermissions = async (
     granter: string,
     expiration: bigint,
     feeGranter?: string,
   ) => {
     const grantMsgs = await generateTreasuryGrants(
-      treasury,
+      treasury || "",
       client,
       granter,
       grantee,
@@ -144,7 +161,7 @@ export const AbstraxionGrant = ({
       {
         typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
         value: MsgExecuteContract.fromPartial({
-          sender: account.id,
+          sender: account?.id,
           contract: treasury,
           msg: new Uint8Array(Buffer.from(JSON.stringify(deployFeeGrantMsg))),
           funds: [],
@@ -164,12 +181,12 @@ export const AbstraxionGrant = ({
     const deliverTxResponse = await client.signAndBroadcast(
       account.id,
       batchedMsgs,
-      feeGranter
+      feeGranter && fee
         ? {
             ...fee,
             granter: feeGranter,
           }
-        : fee,
+        : fee || "auto",
     );
 
     assertIsDeliverTxSuccess({
@@ -216,12 +233,12 @@ export const AbstraxionGrant = ({
     const deliverTxResponse = await client.signAndBroadcast(
       account.id,
       msgs,
-      feeGranter
+      feeGranter && fee
         ? {
             ...fee,
             granter: feeGranter,
           }
-        : fee,
+        : fee || "auto",
     );
 
     assertIsDeliverTxSuccess(deliverTxResponse);
@@ -258,7 +275,7 @@ export const AbstraxionGrant = ({
         import.meta.env.VITE_FEE_GRANTER_ADDRESS,
       );
       const isValidFeeGrant = await validateFeeGrant(
-        chainInfo.rest,
+        chainInfo?.rest,
         feeGranterAddress,
         granter,
         [
@@ -270,7 +287,7 @@ export const AbstraxionGrant = ({
         account.id,
       );
 
-      const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
+      const validFeeGranter = isValidFeeGrant ? feeGranterAddress : undefined;
 
       if (treasury) {
         await grantTreasuryPermissions(
@@ -288,8 +305,11 @@ export const AbstraxionGrant = ({
 
       setShowSuccess(true);
     } catch (error) {
-      console.log("something went wrong: ", error);
-      setAbstraxionError(error.message);
+      if (error instanceof Error) {
+        setAbstraxionError(error.message);
+      } else {
+        setAbstraxionError("An unknown error occurred");
+      }
     } finally {
       setInProgress(false);
     }
@@ -303,7 +323,7 @@ export const AbstraxionGrant = ({
       );
 
       const [{ permissionDescriptions, params }] = await Promise.all([
-        queryTreasuryContract(treasury, client, account.id),
+        queryTreasuryContract(treasury || "", client, account.id),
         minimumLoadingTime,
       ]);
 
@@ -479,7 +499,7 @@ export const AbstraxionGrant = ({
                   <Checkbox
                     variant="warning"
                     checked={urlMismatchConfirmed}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       // Only allow changing if not in progress or if there's an error
                       if (!inProgress || abstraxionError) {
                         setUrlMismatchConfirmed(e.target.checked);

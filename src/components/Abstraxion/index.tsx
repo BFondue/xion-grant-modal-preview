@@ -57,9 +57,9 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
   // Check for missing redirect_uri in grant flow
   useEffect(() => {
     if (isInGrantFlow && !redirect_uri) {
-      setAbstraxionError(MALFORMED_REQUEST_MESSAGE);
-    } else {
-      setAbstraxionError(undefined);
+      setAbstraxionError(
+        isInGrantFlow && !redirect_uri ? MALFORMED_REQUEST_MESSAGE : "",
+      );
     }
   }, [isInGrantFlow, redirect_uri, setAbstraxionError]);
 
@@ -110,7 +110,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
               contracts={contractsArray}
               grantee={grantee}
               stake={Boolean(stake)}
-              treasury={treasury}
+              treasury={treasury || undefined}
             />
           ) : isConnected ? (
             <AbstraxionWallets />
@@ -120,7 +120,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
         </DialogContent>
       </Dialog>
       {/* TOS Footer */}
-      {!isConnected && <FooterLogin />}
+      <FooterLogin />
     </>
   );
 };
