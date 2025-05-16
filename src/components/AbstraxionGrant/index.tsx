@@ -121,22 +121,6 @@ export const AbstraxionGrant = ({
     );
   };
 
-  if (!account?.id) {
-    throw new Error("Account ID is undefined");
-  }
-
-  if (!client) {
-    throw new Error("Client is undefined");
-  }
-
-  if (!redirect_uri) {
-    throw new Error("Redirect URI is undefined");
-  }
-
-  if (!chainInfo) {
-    throw new Error("Chain info is undefined");
-  }
-
   const grantTreasuryPermissions = async (
     granter: string,
     expiration: bigint,
