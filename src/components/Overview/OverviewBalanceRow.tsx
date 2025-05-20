@@ -2,6 +2,7 @@ import React from "react";
 import { FormattedAssetAmount } from "../../types/assets";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "../../utils/classname-util";
+import { basicFormatCurrency, basicFormatTokenAmount } from "../../utils";
 
 export const OverviewBalanceTableSkeleton = () => {
   return (
@@ -118,9 +119,9 @@ export const OverviewBalanceTable = ({
               >
                 <p
                   className="ui-text-base sm:ui-text-xl !ui-leading-none ui-font-bold"
-                  aria-label={`Current price ${asset.price.toFixed(2)} dollars`}
+                  aria-label={`Current price ${basicFormatCurrency(asset.price)} dollars`}
                 >
-                  ${asset.price.toFixed(2)}
+                  ${basicFormatCurrency(asset.price)}
                 </p>
                 <p className="ui-text-xs sm:ui-text-sm !ui-leading-none ui-text-white/40">
                   Current Price
@@ -139,15 +140,15 @@ export const OverviewBalanceTable = ({
               >
                 <p
                   className="ui-text-base sm:ui-text-xl !ui-leading-none ui-font-bold"
-                  aria-label={`Total value ${asset.dollarValue?.toFixed(2)} dollars`}
+                  aria-label={`Total value ${basicFormatCurrency(asset.dollarValue || 0)} dollars`}
                 >
-                  ${asset.dollarValue?.toFixed(2)}
+                  ${basicFormatCurrency(asset.dollarValue || 0)}
                 </p>
                 <p
                   className="ui-text-xs sm:ui-text-sm !ui-leading-none ui-text-white/40"
-                  aria-label={`Balance ${asset.value.toFixed(4)} ${asset.symbol}`}
+                  aria-label={`Balance ${basicFormatTokenAmount(asset)} ${asset.symbol}`}
                 >
-                  {asset.value.toFixed(4)} {asset.symbol}
+                  {basicFormatTokenAmount(asset)} {asset.symbol}
                 </p>
               </div>
             </td>

@@ -12,6 +12,7 @@ import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import { Divider } from "./Divider";
 import { CopyAddress } from "../CopyAddress";
 import { cn } from "../../utils/classname-util";
+import { basicFormatCurrency } from "../../utils";
 
 interface OverviewProps {
   account: SelectedSmartAccount;
@@ -60,11 +61,7 @@ export function Overview({ account }: OverviewProps) {
             <div className="ui-flex ui-flex-col ui-gap-3">
               {balances && (
                 <h1 className="ui-text-[28px] sm:ui-text-[32px] md:ui-text-[40px] ui-leading-[36px] ui-font-bold">
-                  $
-                  {totalDollarValue.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                  ${basicFormatCurrency(totalDollarValue)}
                 </h1>
               )}
             </div>
