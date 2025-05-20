@@ -30,6 +30,7 @@ export function WalletSendForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [sendTokensError, setSendTokensError] = useState(false);
+  const [transactionHash, setTransactionHash] = useState("");
 
   const client = useAbstraxionSigningClient();
 
@@ -38,12 +39,16 @@ export function WalletSendForm({
       return;
     }
 
-    if (Number(sendAmount) > selectedCurrency.value) {
+    if (selectedCurrency?.value === undefined) {
+      setAmountError("Selected currency value is undefined");
+      return;
+    } else if (Number(sendAmount) > selectedCurrency.value) {
       setAmountError("Input is greater than your current balance");
+      return;
     } else {
       setAmountError("");
     }
-  }, [sendAmount, selectedCurrency.value]);
+  }, [sendAmount, selectedCurrency?.value]);
 
   function updateSendAmount(inputValue: string) {
     // replace commas with periods for decimal input
@@ -97,7 +102,7 @@ export function WalletSendForm({
 
   async function isExistingAddress(address: string) {
     try {
-      return await client.client.getAccount(address);
+      return await client?.client?.getAccount(address);
     } catch {
       setIsOnWarningStep(true);
       return false;
@@ -105,10 +110,18 @@ export function WalletSendForm({
   }
 
   function checkSendAmountInput() {
-    if (Number(sendAmount) > selectedCurrency.value && sendAmount !== "") {
+    if (
+      selectedCurrency?.value &&
+      Number(sendAmount) > selectedCurrency.value &&
+      sendAmount !== ""
+    ) {
       setAmountError("Input is greater than your current balance");
       return false;
-    } else if (sendAmount && Number(sendAmount) < selectedCurrency.value) {
+    } else if (
+      selectedCurrency?.value &&
+      sendAmount &&
+      Number(sendAmount) < selectedCurrency.value
+    ) {
       setAmountError("");
       return true;
     }
@@ -150,12 +163,21 @@ export function WalletSendForm({
       setIsLoading(true);
       await handleStart();
 
-      await sendTokens(
+      if (!selectedCurrency?.asset.base) {
+        throw new Error("Selected currency asset base is undefined");
+      }
+
+      const result = await sendTokens(
         recipientAddress,
         Number(sendAmount),
         selectedCurrency.asset.base,
         userMemo,
       );
+
+      if (result.transactionHash) {
+        setTransactionHash(result.transactionHash);
+      }
+
       setIsSuccess(true);
     } catch (error) {
       console.log(error);
@@ -189,6 +211,7 @@ export function WalletSendForm({
           selectedCurrency={selectedCurrency}
           sendAmount={sendAmount}
           userMemo={userMemo}
+          transactionHash={transactionHash}
         />
       ) : isOnReviewStep ? (
         <WalletSendReview

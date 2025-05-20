@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   BaseButton,
   DialogDescription,
@@ -11,6 +11,11 @@ import SpinnerV2 from "../ui/icons/SpinnerV2";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import { truncateAddress } from "../../utils";
 import { cn } from "../../utils/classname-util";
+import { InteractiveTooltip } from "../ui/tooltip";
+import { Link } from "react-router-dom";
+import { AbstraxionContextProps } from "../AbstraxionContext";
+import { AbstraxionContext } from "../AbstraxionContext";
+import { ExternalLinkIcon } from "../ui/icons/ExternalLink";
 
 interface WalletSendReviewProps {
   sendAmount: string;
@@ -33,6 +38,10 @@ export function WalletSendReview({
   onBack,
   triggerSend,
 }: WalletSendReviewProps) {
+  const { isMainnet, chainInfo } = useContext(
+    AbstraxionContext,
+  ) as AbstraxionContextProps;
+
   const handleBackClick = () => {
     onBack();
   };
@@ -80,16 +89,64 @@ export function WalletSendReview({
         <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
           <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
             <h5 className="ui-text-sm">From</h5>
-            <p className="ui-text-sm ui-font-bold">
-              {truncateAddress(account.id, 8, 8)}
-            </p>
+            <InteractiveTooltip
+              content={
+                <Link
+                  to={
+                    isMainnet
+                      ? `https://www.mintscan.io/xion/address/${account.id}`
+                      : chainInfo?.chainId === "xion-testnet-2"
+                        ? `https://www.mintscan.io/xion-testnet/address/${account.id}`
+                        : `https://explorer.burnt.com/xion-testnet-1/address/${account.id}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
+                >
+                  <span className="ui-break-all ui-inline">{account.id}</span>
+                  <ExternalLinkIcon
+                    size={16}
+                    className="ui-inline-block ui-align-text-bottom ui-ml-1"
+                  />
+                </Link>
+              }
+            >
+              <p className="ui-text-sm ui-font-bold">
+                {truncateAddress(account.id, 8, 8)}
+              </p>
+            </InteractiveTooltip>
           </div>
 
           <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
             <h5 className="ui-text-sm">To</h5>
-            <p className="ui-text-sm ui-font-bold">
-              {truncateAddress(recipientAddress, 8, 8)}
-            </p>
+            <InteractiveTooltip
+              content={
+                <Link
+                  to={
+                    isMainnet
+                      ? `https://www.mintscan.io/xion/address/${recipientAddress}`
+                      : chainInfo?.chainId === "xion-testnet-2"
+                        ? `https://www.mintscan.io/xion-testnet/address/${recipientAddress}`
+                        : `https://explorer.burnt.com/xion-testnet-1/address/${recipientAddress}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
+                >
+                  <span className="ui-break-all ui-inline">
+                    {recipientAddress}
+                  </span>
+                  <ExternalLinkIcon
+                    size={16}
+                    className="ui-inline-block ui-align-text-bottom ui-ml-1"
+                  />
+                </Link>
+              }
+            >
+              <p className="ui-text-sm ui-font-bold">
+                {truncateAddress(recipientAddress, 8, 8)}
+              </p>
+            </InteractiveTooltip>
           </div>
 
           {userMemo && (
