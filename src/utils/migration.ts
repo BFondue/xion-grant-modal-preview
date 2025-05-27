@@ -1,5 +1,5 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { FeatureKey, AccountFeatureSet } from "../types/migration";
+import { AccountFeatureSet, FeatureKey } from "../types/migration";
 
 export const accountFeatures: Record<string, AccountFeatureSet> = {
   d60581309eadf27a366f35eeffe364c40ce49f0bb4165a5ad03c1104983bf82f: {
@@ -25,6 +25,18 @@ export const accountFeatures: Record<string, AccountFeatureSet> = {
           "Improved utility and user experience for various operations.",
       },
     ],
+  },
+  fc06f022c95172f54ad05bc07214f50572cdf684459eadd4f58a765524567db8: {
+    checksum:
+      "fc06f022c95172f54ad05bc07214f50572cdf684459eadd4f58a765524567db8",
+    features: new Set([FeatureKey.PASSKEY]),
+    promotedFeatures: [],
+  },
+  "2b762f3ac65381f39dff37e08f5a0ccd7ab0e6c72e33cf4636f2261136f329bc": {
+    checksum:
+      "2b762f3ac65381f39dff37e08f5a0ccd7ab0e6c72e33cf4636f2261136f329bc",
+    features: new Set([FeatureKey.PASSKEY]),
+    promotedFeatures: [],
   },
 };
 
