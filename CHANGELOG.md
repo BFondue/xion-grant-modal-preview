@@ -1,5 +1,25 @@
 # abstraxion-dashboard
 
+## 0.9.0
+
+### Minor Changes
+
+- [#232](https://github.com/burnt-labs/xion-dashboard-app/pull/232) [`1a03d3a`](https://github.com/burnt-labs/xion-dashboard-app/commit/1a03d3ab7bac30c347a1df9ce7624be5ece1258f) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - added the footer to all login modal screens
+
+- [#236](https://github.com/burnt-labs/xion-dashboard-app/pull/236) [`45f6441`](https://github.com/burnt-labs/xion-dashboard-app/commit/45f64416da907b51b6b01535a38e0af77c9d9cd0) Thanks [@justinbarry](https://github.com/justinbarry)! - The removed checks for `account?.id`, `client`, `redirect_uri`, and `chainInfo` were unnecessary as their presence is guaranteed elsewhere in the code or application flow. This improves code readability and eliminates redundant error handling.
+
+- [#243](https://github.com/burnt-labs/xion-dashboard-app/pull/243) [`992bdf9`](https://github.com/burnt-labs/xion-dashboard-app/commit/992bdf916bb4c3d545692b0b4e715235375fcf0a) Thanks [@justinbarry](https://github.com/justinbarry)! - Switch to using the v3 version of the Numia indexer endpoint
+
+- [#235](https://github.com/burnt-labs/xion-dashboard-app/pull/235) [`b790014`](https://github.com/burnt-labs/xion-dashboard-app/commit/b790014d7a46d1fd50d53fe537d0814008a28604) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Added tooltip to addresses on the Send Review and Success Dialogs
+
+### Patch Changes
+
+- [#221](https://github.com/burnt-labs/xion-dashboard-app/pull/221) [`f97722c`](https://github.com/burnt-labs/xion-dashboard-app/commit/f97722ccf863cb88d0c20f7ce73f566ac536c68d) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Fixed tokens table number formatting
+
+- [#242](https://github.com/burnt-labs/xion-dashboard-app/pull/242) [`ae5e598`](https://github.com/burnt-labs/xion-dashboard-app/commit/ae5e598883e8ddcfa5137f456e1c755de5f2d788) Thanks [@justinbarry](https://github.com/justinbarry)! - Add testnet-2 code_id 1 to the account features feature flags and code_id 95.
+
+- [#233](https://github.com/burnt-labs/xion-dashboard-app/pull/233) [`5aa4f98`](https://github.com/burnt-labs/xion-dashboard-app/commit/5aa4f98b493b867f7934206e12c048bbfe2843c3) Thanks [@justinbarry](https://github.com/justinbarry)! - Avoid formatting generated CF worker file
+
 ## 0.8.0
 
 ### Minor Changes
