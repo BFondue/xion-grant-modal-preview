@@ -143,7 +143,7 @@ export const AbstraxionSignin = () => {
   const handleOtp = async (otpCode: string) => {
     try {
       await stytchClient.otps.authenticate(otpCode, methodId, {
-        session_duration_minutes: 60,
+        session_duration_minutes: 60 * 24 * 3,
       });
       localStorage.setItem("loginType", "stytch");
     } catch {
@@ -238,7 +238,7 @@ export const AbstraxionSignin = () => {
         tokenProcessed.current = true;
         try {
           await stytchClient.oauth.authenticate(token, {
-            session_duration_minutes: 60,
+            session_duration_minutes: 60 * 24 * 3,
           });
           localStorage.setItem("loginType", "stytch");
         } catch {

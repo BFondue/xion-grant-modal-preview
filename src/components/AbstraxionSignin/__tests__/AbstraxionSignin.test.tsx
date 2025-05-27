@@ -183,7 +183,7 @@ describe("AbstraxionSignin Component", () => {
       "123456",
       "test-method-id",
       {
-        session_duration_minutes: 60,
+        session_duration_minutes: 60 * 24 * 3,
       },
     );
 
