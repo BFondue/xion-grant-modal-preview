@@ -539,7 +539,7 @@ export function AddAuthenticatorsForm({
 
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
-        type: AAAlgo.ETHWALLET,
+        type: AAAlgo.PASSKEY,
         authenticator: base64EncodedCredential,
         authenticatorIndex: accountIndex,
       };

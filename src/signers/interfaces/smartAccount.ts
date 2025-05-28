@@ -34,7 +34,8 @@ export enum AAAlgo {
   JWT = "jwt",
   ethWallet = "ethWallet",
   ETHWALLET = "EthWallet",
-  Passkey = "Passkey",
+  passkey = "passkey",
+  PASSKEY = "Passkey",
 }
 
 export interface AddSecp256K1Authenticator {

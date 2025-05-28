@@ -34,6 +34,7 @@ export function RemoveAuthenticatorForm({
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }) {
   // General UI state
+  const [errorTitle, setErrorTitle] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailWarning, setShowEmailWarning] = useState(
@@ -133,6 +134,17 @@ export function RemoveAuthenticatorForm({
         );
       }
 
+      if (
+        abstractAccount.authenticators.some((a) => a.type === AAAlgo.PASSKEY) &&
+        abstractAccount.authenticators.length === 2
+      ) {
+        if (authenticator.type !== AAAlgo.PASSKEY) {
+          throw new Error(
+            "Passkey cannot be the only authenticator on the account.",
+          );
+        }
+      }
+
       const msg = {
         remove_auth_method: {
           id: authenticator.authenticatorIndex,
@@ -154,7 +166,7 @@ export function RemoveAuthenticatorForm({
         import.meta.env.VITE_FEE_GRANTER_ADDRESS,
       );
       const isValidFeeGrant = await validateFeeGrant(
-        chainInfo.rest,
+        chainInfo?.rest,
         feeGranterAddress,
         abstractAccount.id,
         [
@@ -202,7 +214,10 @@ export function RemoveAuthenticatorForm({
       return deliverTxResponse;
     } catch (error) {
       console.warn(error);
-      setErrorMessage("Something went wrong trying to remove authenticator");
+      setErrorTitle("Something went wrong trying to remove authenticator");
+      setErrorMessage(
+        error instanceof Error ? error.message : "An unknown error occurred",
+      );
       setIsLoading(false);
     }
   }
@@ -247,9 +262,9 @@ export function RemoveAuthenticatorForm({
     <div className="ui-flex ui-flex-col ui-gap-8 ui-items-center ui-w-full">
       <DialogHeader>
         <DialogTitle>Are you sure?</DialogTitle>
-        {errorMessage ? (
-          <DialogDescription className="ui-text-destructive-text">
-            {errorMessage}
+        {errorTitle ? (
+          <DialogDescription className="ui-text-destructive">
+            {errorTitle}
           </DialogDescription>
         ) : (
           <>
@@ -264,7 +279,10 @@ export function RemoveAuthenticatorForm({
           </>
         )}
       </DialogHeader>
-      {renderAuthenticator()}
+      <div className="ui-flex ui-flex-col ui-gap-2 ui-w-full">
+        {renderAuthenticator()}
+        <span className="ui-text-destructive">{errorMessage}</span>
+      </div>
       {errorMessage ? (
         <BaseButton className="ui-w-full" onClick={() => setIsOpen(false)}>
           CONTINUE
