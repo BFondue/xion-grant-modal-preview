@@ -307,7 +307,7 @@ export const AbstraxionGrant = ({
       );
 
       const [{ permissionDescriptions, params }] = await Promise.all([
-        queryTreasuryContract(treasury || "", client, account.id),
+        queryTreasuryContract(treasury || "", client, account?.id),
         minimumLoadingTime,
       ]);
 

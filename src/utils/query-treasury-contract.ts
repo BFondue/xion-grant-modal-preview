@@ -1,8 +1,13 @@
+import {
+  AuthorizationTypes,
+  decodeAuthorization,
+  DecodedReadableAuthorization,
+  HumanContractExecAuth,
+} from "@burnt-labs/abstraxion-core";
 import type { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
 import { GenericAuthorization } from "cosmjs-types/cosmos/authz/v1beta1/authz";
 import { StakeAuthorization } from "cosmjs-types/cosmos/staking/v1beta1/authz";
 import { SendAuthorization } from "cosmjs-types/cosmos/bank/v1beta1/authz";
-import { ContractExecutionAuthorization } from "cosmjs-types/cosmwasm/wasm/v1/authz";
 import type {
   GrantConfigByTypeUrl,
   GrantConfigTypeUrlsResponse,
@@ -86,9 +91,9 @@ export interface TreasuryContractResponse {
  * @returns {TreasuryContractResponse} - The human-readable permission descriptions and treasury parameters
  */
 export const queryTreasuryContract = async (
-  contractAddress: string,
-  client: AAClient,
-  account: string,
+  contractAddress?: string,
+  client?: AAClient,
+  account?: string,
 ): Promise<TreasuryContractResponse> => {
   if (!contractAddress) {
     throw new Error("Missing contract address");
@@ -96,6 +101,10 @@ export const queryTreasuryContract = async (
 
   if (!client) {
     throw new Error("Missing client");
+  }
+
+  if (!account) {
+    throw new Error("Missing account");
   }
 
   const queryTreasuryContractMsg = {
@@ -143,8 +152,9 @@ export const queryTreasuryContract = async (
     );
   }
 
-  // For each grant type url, query grant config and construct a human readable description
-  const permissionDescriptions: PermissionDescription[] = await Promise.all(
+  const decodedGrantsWithDappDescription: (DecodedReadableAuthorization & {
+    dappDescription: string;
+  })[] = await Promise.all(
     queryAllTypeUrlsResponse.map(async (grant) => {
       const queryByMsg = {
         grant_config_by_type_url: {
@@ -158,57 +168,65 @@ export const queryTreasuryContract = async (
       if (!queryGrantConfigResponse || !queryGrantConfigResponse.description) {
         throw new Error("Something went wrong querying the grant config");
       }
+
+      return {
+        ...decodeAuthorization(
+          queryGrantConfigResponse.authorization.type_url,
+          queryGrantConfigResponse.authorization.value,
+        ),
+        dappDescription: queryGrantConfigResponse.description,
+      };
+    }),
+  );
+
+  // For each grant type url, query grant config and construct a human readable description
+  const permissionDescriptions: PermissionDescription[] =
+    decodedGrantsWithDappDescription.map((decodedGrant) => {
       let description: string;
-      const contracts = [];
-      switch (queryGrantConfigResponse.authorization.type_url) {
-        case "/cosmos.authz.v1beta1.GenericAuthorization": {
+      const contracts: string[] = [];
+      switch (decodedGrant.type) {
+        case AuthorizationTypes.Generic: {
           // These msg type urls combined with a GenericAuthorization are dangerous. Prevent flow
           // TODO - Uncomment when proxy contract integrated, or find a solution for DevPortal
-          // if (
-          //   grant === "/cosmwasm.wasm.v1.MsgExecuteContract" ||
-          //   grant === "/cosmwasm.wasm.v1.MsgMigrateContract" ||
-          //   grant === "/cosmos.authz.v1beta1.MsgExec" ||
-          //   grant === "/cosmwasm.wasm.v1.MsgStoreCode" ||
-          //   grant === "/cosmwasm.wasm.v1.MsgUpdateAdmin" ||
-          //   grant === "/cosmwasm.wasm.v1.MsgClearAdmin"
-          // ) {
-          //   throw new Error("Misconfigured grant config");
-          // }
-          const genericAuthByteArray = new Uint8Array(
-            Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
-          );
-          const decodedGenericAuth =
-            GenericAuthorization.decode(genericAuthByteArray);
+          const genericMsg = (decodedGrant.data as GenericAuthorization).msg;
+          if (
+            // genericMsg === "/cosmwasm.wasm.v1.MsgExecuteContract" ||
+            // genericMsg === "/cosmwasm.wasm.v1.MsgMigrateContract" ||
+            // genericMsg === "/cosmos.authz.v1beta1.MsgExec" ||
+            // genericMsg === "/cosmwasm.wasm.v1.MsgStoreCode" ||
+            // genericMsg === "/cosmwasm.wasm.v1.MsgUpdateAdmin" ||
+            // genericMsg === "/cosmwasm.wasm.v1.MsgClearAdmin" ||
+            genericMsg === "/cosmos.bank.v1beta1.MsgSend"
+          ) {
+            throw new Error("Misconfigured grant config");
+          }
           description = `Permission to ${
-            CosmosAuthzPermission[decodedGenericAuth.msg]
+            CosmosAuthzPermission[
+              (decodedGrant.data as GenericAuthorization).msg
+            ]
           }`;
           break;
         }
-        case "/cosmos.bank.v1beta1.SendAuthorization": {
-          const sendAuthByteArray = new Uint8Array(
-            Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
-          );
-          const decodedSendAuth = SendAuthorization.decode(sendAuthByteArray);
-          const spendLimit = decodedSendAuth.spendLimit
+        case AuthorizationTypes.Send: {
+          const spendLimit = (decodedGrant.data as SendAuthorization).spendLimit
             .map((limit: Coin) => formatXionAmount(limit.amount, limit.denom))
             .join(", ");
-          const allowList = decodedSendAuth.allowList.join(", ");
+          const allowList = (
+            decodedGrant.data as SendAuthorization
+          ).allowList.join(", ");
           description = `Permission to send tokens with spend limit: ${spendLimit} ${allowList && `and allow list: ${allowList}`}`;
           break;
         }
-        case "/cosmos.staking.v1beta1.StakeAuthorization": {
-          const stakeAuthByteArray = new Uint8Array(
-            Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
-          );
-          const decodedStakeAuth =
-            StakeAuthorization.decode(stakeAuthByteArray);
-          const allowedValidators =
-            decodedStakeAuth.allowList?.address?.join(", ");
-          const deniedValidators =
-            decodedStakeAuth.denyList?.address?.join(", "); // TODO: Impl
+        case AuthorizationTypes.Stake: {
+          const allowedValidators = (
+            decodedGrant.data as StakeAuthorization
+          ).allowList?.address?.join(", ");
+          const deniedValidators = (
+            decodedGrant.data as StakeAuthorization
+          ).denyList?.address?.join(", ");
           const maxTokens = formatXionAmount(
-            decodedStakeAuth.maxTokens.amount,
-            decodedStakeAuth.maxTokens.denom,
+            (decodedGrant.data as StakeAuthorization)?.maxTokens?.amount ?? "",
+            (decodedGrant.data as StakeAuthorization)?.maxTokens?.denom ?? "",
           );
           description = `Permission to stake tokens ${
             allowedValidators
@@ -221,32 +239,25 @@ export const queryTreasuryContract = async (
           } and max tokens: ${maxTokens}`;
           break;
         }
-        case "/cosmwasm.wasm.v1.ContractExecutionAuthorization": {
-          const contractExecAuthByteArray = new Uint8Array(
-            Buffer.from(queryGrantConfigResponse.authorization.value, "base64"),
-          );
-          const decodedContractExecAuth = ContractExecutionAuthorization.decode(
-            contractExecAuthByteArray,
-          );
+        case AuthorizationTypes.ContractExecution: {
           description = "Permission to execute smart contracts";
-          decodedContractExecAuth.grants.map((grant) => {
-            if (grant.contract === account) {
+          (decodedGrant.data as HumanContractExecAuth)?.grants.map((grant) => {
+            if (grant.address === account) {
               throw new Error("Misconfigured treasury contract");
             }
-            contracts.push(grant.contract);
+            contracts.push(grant.address);
           });
           break;
         }
         default:
-          description = `Unknown Authorization Type: ${queryGrantConfigResponse.authorization["@type"]}`;
+          description = `Unknown Authorization Type: ${decodedGrant.type}`;
       }
       return {
         authorizationDescription: description,
-        dappDescription: queryGrantConfigResponse.description,
+        dappDescription: decodedGrant.dappDescription,
         contracts,
       };
-    }),
-  );
+    });
 
   return {
     permissionDescriptions,

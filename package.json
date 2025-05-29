@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@braintree/sanitize-url": "^7.1.1",
+    "@burnt-labs/abstraxion-core": "^1.0.0-alpha.57",
     "@burnt-labs/constants": "^0.1.0-alpha.11",
     "@cosmjs/cosmwasm-stargate": "^0.32.4",
     "@cosmjs/crypto": "^0.32.4",
