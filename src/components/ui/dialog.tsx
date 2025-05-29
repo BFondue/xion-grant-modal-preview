@@ -93,52 +93,328 @@ interface DialogContentProps
   closeButton?: boolean;
 }
 
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  DialogContentProps
->(({ className, children, overApp, closeButton = false, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay overApp={overApp} />
-    <DialogPrimitive.Content
-      aria-describedby={undefined}
-      ref={ref}
-      className={cn(
-        // Positioning and z-index
-        "ui-fixed ui-z-50",
-        "ui-left-[50%] ui-top-[50%] ui-translate-x-[-50%] ui-translate-y-[-50%]",
-        // Dimensions and layout
-        "ui-w-full ui-h-screen sm:ui-max-w-lg sm:ui-h-auto md:ui-min-w-[560px]",
-        // Padding and layout
-        "ui-p-10 ui-gap-12 !ui-flex ui-flex-col ui-justify-center sm:ui-p-12 sm:ui-block sm:ui-flex-none",
-        // Visual styling
-        "ui-bg-[#0A0A0A]/50 sm:ui-backdrop-blur-2xl sm:ui-rounded-[48px] ui-overflow-y-auto ui-shadow-[0_0_20px_10px_rgba(255,255,255,0.01)]",
+const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
+  (
+    { className, children, overApp, closeButton = false, ...props },
+    forwardedRef,
+  ) => {
+    const [isTall, setIsTall] = React.useState(false);
 
-        "ui-duration-200",
-        // Close animation
-        "data-[state=closed]:ui-animate-out data-[state=closed]:ui-fade-out-0 data-[state=closed]:ui-zoom-out-95",
-        // Open animation
-        "data-[state=open]:ui-animate-in data-[state=open]:ui-fade-in-0 data-[state=open]:ui-zoom-in-95",
-        // Slide animations
-        "data-[state=closed]:ui-slide-out-to-left-1/2 data-[state=closed]:ui-slide-out-to-top-[48%]",
-        "data-[state=open]:ui-slide-in-from-left-1/2 data-[state=open]:ui-slide-in-from-top-[48%]",
+    const stateRef = React.useRef({
+      element: null as HTMLDivElement | null,
+      observers: null as {
+        resize?: ResizeObserver;
+        attributes?: MutationObserver;
+      } | null,
+      timeouts: [] as number[],
+      lastCheckTime: 0,
+      isObserving: false,
+      previousWindowHeight: window.innerHeight,
+      previousWindowWidth: window.innerWidth,
+      naturalContentHeight: 0,
+      widthMeasurementTimeout: null as number | null,
+      handleWindowResize: null as (() => void) | null,
+    });
 
-        // Additional classes
-        className,
-      )}
-      {...props}
-    >
-      <VisuallyHidden.Root>
-        <DialogPrimitive.Title />
-      </VisuallyHidden.Root>
-      {closeButton && (
-        <DialogClose className="ui-absolute ui-top-6 ui-right-6">
-          <CloseIcon strokeWidth={2} className="ui-w-4 ui-h-4" />
-        </DialogClose>
-      )}
-      {children}
-    </DialogPrimitive.Content>
-  </DialogPortal>
-));
+    const measureNaturalContentSize = React.useCallback(() => {
+      const { element } = stateRef.current;
+      if (!element) return { width: 0, height: 0 };
+
+      const originalStyles = {
+        position: element.style.position,
+        top: element.style.top,
+        left: element.style.left,
+        maxWidth: element.style.maxWidth,
+        width: element.style.width,
+        maxHeight: element.style.maxHeight,
+        height: element.style.height,
+        transform: element.style.transform,
+        overflow: element.style.overflow,
+        display: element.style.display,
+      };
+
+      element.style.position = "absolute";
+      element.style.top = "-9999px";
+      element.style.left = "-9999px";
+      element.style.maxWidth = "min(560px, 100vw - 32px)";
+      element.style.width = "auto";
+      element.style.maxHeight = "";
+      element.style.height = "auto";
+      element.style.transform = "none";
+      element.style.overflow = "visible";
+      element.style.display = "block";
+
+      const naturalWidth = element.offsetWidth;
+      const naturalHeight = element.scrollHeight;
+
+      stateRef.current.naturalContentHeight = naturalHeight;
+
+      element.style.position = originalStyles.position;
+      element.style.top = originalStyles.top;
+      element.style.left = originalStyles.left;
+      element.style.maxWidth = originalStyles.maxWidth;
+      element.style.width = originalStyles.width;
+      element.style.maxHeight = originalStyles.maxHeight;
+      element.style.height = originalStyles.height;
+      element.style.transform = originalStyles.transform;
+      element.style.overflow = originalStyles.overflow;
+      element.style.display = originalStyles.display;
+
+      return { width: naturalWidth, height: naturalHeight };
+    }, []);
+
+    const checkHeight = React.useCallback(
+      (forceUpdate = false) => {
+        const { element } = stateRef.current;
+        if (!element) return;
+
+        const now = Date.now();
+        if (!forceUpdate && now - stateRef.current.lastCheckTime < 100) return;
+        stateRef.current.lastCheckTime = now;
+
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const previousWidth = stateRef.current.previousWindowWidth;
+        const previousHeight = stateRef.current.previousWindowHeight;
+
+        stateRef.current.previousWindowWidth = windowWidth;
+        stateRef.current.previousWindowHeight = windowHeight;
+
+        const isSignificantWidthChange =
+          Math.abs(windowWidth - previousWidth) > 10;
+
+        if (isSignificantWidthChange || forceUpdate) {
+          if (stateRef.current.widthMeasurementTimeout) {
+            clearTimeout(stateRef.current.widthMeasurementTimeout);
+          }
+
+          stateRef.current.widthMeasurementTimeout = window.setTimeout(() => {
+            const { height: naturalHeight } = measureNaturalContentSize();
+
+            const minHeightThreshold = 200;
+            const shouldBeTall =
+              naturalHeight > windowHeight * 0.85 &&
+              naturalHeight > minHeightThreshold;
+
+            if (shouldBeTall !== isTall) {
+              setIsTall(shouldBeTall);
+            }
+          }, 100) as unknown as number;
+
+          return;
+        }
+
+        if (isTall && windowHeight > previousHeight) {
+          const { height: naturalHeight } = measureNaturalContentSize();
+
+          if (naturalHeight <= windowHeight * 0.85) {
+            setIsTall(false);
+          }
+          return;
+        }
+
+        const contentHeight = element.scrollHeight;
+        const minHeightThreshold = 200;
+        const shouldBeTall =
+          contentHeight > windowHeight * 0.85 &&
+          contentHeight > minHeightThreshold;
+
+        if (shouldBeTall !== isTall) {
+          setIsTall(shouldBeTall);
+        }
+      },
+      [isTall, measureNaturalContentSize],
+    );
+
+    const checkHeightRef = React.useRef(checkHeight);
+
+    React.useEffect(() => {
+      checkHeightRef.current = checkHeight;
+    }, [checkHeight]);
+
+    const cleanupObservers = React.useCallback(() => {
+      stateRef.current.timeouts.forEach((id) => {
+        window.clearTimeout(id);
+      });
+      stateRef.current.timeouts = [];
+
+      if (stateRef.current.widthMeasurementTimeout) {
+        clearTimeout(stateRef.current.widthMeasurementTimeout);
+        stateRef.current.widthMeasurementTimeout = null;
+      }
+
+      if (stateRef.current.observers) {
+        if (stateRef.current.observers.resize) {
+          stateRef.current.observers.resize.disconnect();
+        }
+        if (stateRef.current.observers.attributes) {
+          stateRef.current.observers.attributes.disconnect();
+        }
+        stateRef.current.observers = null;
+      }
+
+      stateRef.current.isObserving = false;
+
+      if (stateRef.current.handleWindowResize) {
+        window.removeEventListener(
+          "resize",
+          stateRef.current.handleWindowResize,
+        );
+        stateRef.current.handleWindowResize = null;
+      }
+    }, []);
+
+    const setupObservers = React.useCallback(() => {
+      cleanupObservers();
+
+      const element = stateRef.current.element;
+      if (!element) return;
+
+      stateRef.current.observers = {};
+
+      const scheduleCheck = (delay: number) => {
+        if (stateRef.current.timeouts.length > 0) {
+          stateRef.current.timeouts.forEach((id) => window.clearTimeout(id));
+          stateRef.current.timeouts = [];
+        }
+        const id = window.setTimeout(() => {
+          measureNaturalContentSize();
+          checkHeightRef.current(true);
+          stateRef.current.timeouts = stateRef.current.timeouts.filter(
+            (t) => t !== id,
+          );
+        }, delay);
+        stateRef.current.timeouts.push(id);
+      };
+
+      scheduleCheck(150);
+
+      const attributeObserver = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "data-state"
+          ) {
+            if (element.getAttribute("data-state") === "open") {
+              scheduleCheck(150);
+            }
+          }
+        }
+      });
+      attributeObserver.observe(element, { attributes: true });
+      stateRef.current.observers.attributes = attributeObserver;
+
+      let resizeTimeout: number | null = null;
+      const resizeObserver = new ResizeObserver(() => {
+        if (resizeTimeout) window.clearTimeout(resizeTimeout);
+        resizeTimeout = window.setTimeout(() => {
+          checkHeightRef.current(true);
+        }, 100) as unknown as number;
+      });
+
+      const handleWindowResize = () => {
+        if (!element || !document.body.contains(element)) return;
+        scheduleCheck(100);
+      };
+      stateRef.current.handleWindowResize = handleWindowResize;
+      window.addEventListener("resize", handleWindowResize);
+
+      const startObserving = window.setTimeout(() => {
+        if (element && document.body.contains(element)) {
+          resizeObserver.observe(element);
+          stateRef.current.isObserving = true;
+        }
+      }, 300);
+      stateRef.current.timeouts.push(startObserving);
+      stateRef.current.observers.resize = resizeObserver;
+
+      return () => {
+        cleanupObservers();
+      };
+    }, [measureNaturalContentSize, cleanupObservers]);
+
+    const handleRef = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        stateRef.current.element = node;
+
+        cleanupObservers();
+
+        if (node) {
+          setTimeout(() => {
+            if (stateRef.current.element === node) {
+              setupObservers();
+            }
+          }, 0);
+        }
+
+        if (typeof forwardedRef === "function") {
+          forwardedRef(node);
+        } else if (forwardedRef) {
+          forwardedRef.current = node;
+        }
+      },
+      [setupObservers, cleanupObservers, forwardedRef],
+    );
+
+    React.useEffect(() => {
+      return cleanupObservers;
+    }, [cleanupObservers]);
+
+    return (
+      <DialogPortal>
+        <DialogOverlay overApp={overApp} />
+        <DialogPrimitive.Content
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dialog-title"
+          ref={handleRef}
+          className={cn(
+            "ui-fixed ui-z-50",
+            !isTall
+              ? "ui-left-[50%] ui-top-[50%] ui-translate-x-[-50%] ui-translate-y-[-50%]"
+              : "ui-left-[50%] ui-translate-x-[-50%] ui-top-0 ui-translate-y-0",
+            !isTall && "ui-w-full sm:ui-max-w-lg md:ui-min-w-[560px]",
+            isTall && "ui-max-w-full ui-w-full",
+            "ui-p-10 ui-gap-12 !ui-flex ui-flex-col sm:ui-p-12 sm:ui-block sm:ui-flex-none",
+            !isTall && "ui-justify-center",
+            "ui-bg-[#0A0A0A]/50 ui-backdrop-blur-2xl sm:ui-rounded-[48px] ui-shadow-[0_0_20px_10px_rgba(255,255,255,0.01)]",
+            isTall && "!ui-rounded-none",
+            !isTall
+              ? "ui-h-screen sm:ui-h-auto"
+              : "ui-max-h-screen ui-h-full ui-overflow-y-auto",
+            "ui-duration-200",
+            "data-[state=closed]:ui-animate-out data-[state=closed]:ui-fade-out-0 data-[state=closed]:ui-zoom-out-95",
+            "data-[state=open]:ui-animate-in data-[state=open]:ui-fade-in-0 data-[state=open]:ui-zoom-in-95",
+            "data-[state=closed]:ui-slide-out-to-left-1/2 data-[state=closed]:ui-slide-out-to-top-[48%]",
+            "data-[state=open]:ui-slide-in-from-left-1/2 data-[state=open]:ui-slide-in-from-top-[48%]",
+            className,
+          )}
+          {...props}
+        >
+          <VisuallyHidden.Root>
+            <DialogPrimitive.Title id="dialog-title" />
+          </VisuallyHidden.Root>
+          {closeButton && (
+            <DialogClose
+              className="ui-absolute ui-top-6 ui-right-6"
+              aria-label="Close dialog"
+            >
+              <CloseIcon strokeWidth={2} className="ui-w-4 ui-h-4" />
+            </DialogClose>
+          )}
+          <div
+            className={cn(
+              "ui-flex ui-flex-col ui-gap-8",
+              isTall && "ui-w-full ui-max-w-[464px] ui-mx-auto",
+            )}
+          >
+            {children}
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    );
+  },
+);
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 function DialogHeader({

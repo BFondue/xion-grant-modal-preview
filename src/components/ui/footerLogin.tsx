@@ -11,7 +11,7 @@ const FooterLogin = () => {
   const { isMainnet } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
   return (
-    <div className="ui-self-end ui-pointer-events-auto ui-w-full ui-z-[1000] ui-flex ui-flex-col ui-gap-2 sm:ui-gap-12 ui-pb-safe ui-items-center sm:ui-flex-row sm:ui-justify-between sm:ui-items-end">
+    <div className="ui-self-end ui-pointer-events-auto ui-w-full ui-z-[30] ui-flex ui-flex-col ui-gap-2 sm:ui-gap-12 ui-pb-safe ui-items-center sm:ui-flex-row sm:ui-justify-between sm:ui-items-end">
       <div className="ui-text-xs ui-font-normal ui-leading-5 ui-text-center sm:ui-text-left ui-max-w-[280px] sm:ui-max-w-full">
         <span className="ui-text-secondary-text">
           By continuing, you agree to and acknowledge that you have read and

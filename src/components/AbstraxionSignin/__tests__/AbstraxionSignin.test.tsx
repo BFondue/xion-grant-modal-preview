@@ -55,6 +55,17 @@ const testChainInfo: Partial<ChainInfo> = {
 
 // Setup before each test
 beforeEach(() => {
+  // Mock ResizeObserver and MutationObserver
+  global.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+  // global.MutationObserver = class MutationObserver {
+  //   constructor(callback: MutationCallback) {}
+  //   observe() {}
+  //   disconnect() {}
+  // };
   Object.defineProperty(window, "location", {
     value: {
       origin: "https://test.com",
