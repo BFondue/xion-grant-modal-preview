@@ -40,7 +40,14 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
           )}
           onClick={expandable ? toggleOpen : undefined}
         >
-          <span className="ui-text-primary-text">{title}</span>
+          <span
+            className="ui-text-primary-text"
+            style={{
+              overflowWrap: "anywhere",
+            }}
+          >
+            {title}
+          </span>
           {expandable && (
             <ChevronDownIcon isUp={isOpen} className="ui-min-w-5 ui-min-h-5" />
           )}

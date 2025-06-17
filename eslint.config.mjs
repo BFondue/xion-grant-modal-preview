@@ -14,7 +14,7 @@ const gitignorePath = path.resolve(__dirname, ".gitignore");
 export default [
   includeIgnoreFile(gitignorePath),
   {
-    ignores: ["src/signers/types/"],
+    ignores: ["src/signers/types/", "worker-configuration.d.ts"],
   },
   pluginJs.configs.recommended,
   { languageOptions: { globals: globals.browser } },

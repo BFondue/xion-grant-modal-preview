@@ -103,3 +103,7 @@ export function isMainnet() {
 }
 
 export { basicFormatCurrency, basicFormatTokenAmount } from "./formatters";
+export {
+  formatIBCAddresses,
+  IBC_ADDRESS_PATTERN,
+} from "./format-ibc-addresses";

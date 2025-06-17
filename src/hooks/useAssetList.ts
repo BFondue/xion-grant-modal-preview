@@ -214,7 +214,7 @@ export const useAssetList = (chainId: string) => {
         decimals: exponent,
         dollarValue: options?.includeDollarValue ? dollarValue : undefined,
         price,
-        imageUrl: getAssetImageUrl(asset),
+        imageUrl: getAssetImageUrl(asset) || "",
       };
     };
 

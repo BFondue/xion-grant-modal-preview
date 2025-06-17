@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { PermissionDescription } from "../../types/treasury-types";
 import { Accordion } from "../ui";
 import { Skeleton } from "../ui/skeleton";
+import { useAssetList } from "../../hooks/useAssetList";
+import { chainId as envChainId } from "../../utils";
+import { formatIBCAddresses } from "../../utils/format-ibc-addresses";
 
 interface PermissionsListProps {
   permissions: PermissionDescription[];
@@ -27,31 +30,54 @@ export const PermissionsList: React.FC<PermissionsListProps> = ({
   permissions,
   isLoading = false,
 }) => {
-  if (isLoading) {
+  const { data: assetData, isLoading: isLoadingAssets } =
+    useAssetList(envChainId);
+
+  const { getAssetByDenom } = assetData || { getAssetByDenom: () => undefined };
+
+  const items = useMemo(
+    () =>
+      permissions.map((permission) => {
+        const formattedTitle = formatIBCAddresses(
+          permission.authorizationDescription,
+          getAssetByDenom,
+        );
+
+        return {
+          title: `"${permission.dappDescription}" - ${formattedTitle}`,
+          icon: <EllipsisIcon />,
+          expandable: permission.contracts && permission.contracts.length > 0,
+          children:
+            permission.contracts && permission.contracts.length > 0 ? (
+              <ul className="ui-list-disc ui-space-y-0.5">
+                {permission.contracts.map((contract, index) => {
+                  const formattedContract = formatIBCAddresses(
+                    contract,
+                    getAssetByDenom,
+                  );
+
+                  return (
+                    <li
+                      key={index}
+                      className="ui-break-words ui-text-primary-text"
+                      style={{
+                        overflowWrap: "anywhere",
+                      }}
+                    >
+                      {formattedContract}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : undefined,
+        };
+      }),
+    [permissions, getAssetByDenom],
+  );
+
+  if (isLoading || isLoadingAssets || !assetData) {
     return <LoadingSkeleton />;
   }
-
-  const items = permissions.map((permission) => ({
-    title: `"${permission.dappDescription}" - ${permission.authorizationDescription}`,
-    icon: <EllipsisIcon />,
-    expandable: permission.contracts?.length > 0,
-    children:
-      permission.contracts?.length > 0 ? (
-        <ul className="ui-list-disc ui-space-y-0.5">
-          {permission.contracts.map((contract, index) => (
-            <li
-              key={index}
-              className="ui-break-words ui-text-primary-text"
-              style={{
-                overflowWrap: "anywhere",
-              }}
-            >
-              {contract}
-            </li>
-          ))}
-        </ul>
-      ) : undefined,
-  }));
 
   return <Accordion items={items} />;
 };
