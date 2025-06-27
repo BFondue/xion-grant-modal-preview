@@ -39,6 +39,7 @@ export const AbstraxionWallets = () => {
     connectionType,
     abstractAccount,
     setAbstractAccount,
+    abstraxionError,
     setAbstraxionError,
     apiUrl,
     setIsOpen,
@@ -59,40 +60,7 @@ export const AbstraxionWallets = () => {
   const { xionDisconnect } = useXionDisconnect();
 
   const [isGeneratingNewWallet, setIsGeneratingNewWallet] = useState(false);
-
-  // Handle auto-login for single account
-  useEffect(() => {
-    if (data?.length === 1 && isInLoginFlow) {
-      const node = data[0];
-      setAbstractAccount({
-        ...node,
-        currentAuthenticatorIndex: node.authenticators.find(
-          (authenticator) => authenticator.authenticator === loginAuthenticator,
-        ).authenticatorIndex,
-      });
-      setIsOpen(false);
-    }
-  }, [
-    data,
-    abstractAccount,
-    loginAuthenticator,
-    setAbstractAccount,
-    setIsOpen,
-  ]);
-
-  const dialogTitle = useMemo(() => {
-    if (isGeneratingNewWallet) return "Creating Account";
-    if (loading || (data?.length === 1 && isInLoginFlow))
-      return "Fetching Accounts";
-    return "Accounts";
-  }, [isGeneratingNewWallet, loading, data, abstractAccount]);
-
-  const dialogDescription = useMemo(() => {
-    if (isGeneratingNewWallet) return "This will take a few seconds";
-    if (loading || (data?.length === 1 && isInLoginFlow))
-      return "Loading your accounts";
-    return "Choose an account to continue";
-  }, [isGeneratingNewWallet, loading, data, abstractAccount]);
+  const [shouldAutoNavigate, setShouldAutoNavigate] = useState(false);
 
   const handleJwtAALoginOrCreate = useCallback(async () => {
     try {
@@ -137,11 +105,14 @@ export const AbstraxionWallets = () => {
         currentAuthenticatorIndex: 0,
       });
 
-      // Close the modal
-      setIsOpen(false);
+      // Only close the modal if not in grant flow (grant flow will show permissions next)
+      if (!isInGrantFlow) {
+        setIsOpen(false);
+      }
     } catch (error) {
       console.log(error);
       setAbstraxionError("Error creating abstract account.");
+      setShouldAutoNavigate(false); // Reset auto-navigation on error
     } finally {
       setIsGeneratingNewWallet(false);
     }
@@ -153,7 +124,67 @@ export const AbstraxionWallets = () => {
     setAbstraxionError,
     setAbstractAccount,
     setIsOpen,
+    isInGrantFlow,
+    setShouldAutoNavigate,
   ]);
+
+  // Handle auto-navigation for 0 or 1 account scenarios
+  useEffect(() => {
+    if (
+      isInLoginFlow &&
+      !loading &&
+      !isGeneratingNewWallet &&
+      !abstraxionError
+    ) {
+      if (data?.length === 1) {
+        // Auto-select the single account
+        const node = data[0];
+        const authenticatorIndex = node.authenticators.find(
+          (authenticator) => authenticator.authenticator === loginAuthenticator,
+        )?.authenticatorIndex;
+
+        if (authenticatorIndex !== undefined) {
+          setAbstractAccount({
+            ...node,
+            currentAuthenticatorIndex: authenticatorIndex,
+          });
+          setShouldAutoNavigate(true);
+          // Only close modal if not in grant flow (grant flow will show permissions next)
+          if (!isInGrantFlow) {
+            setIsOpen(false);
+          }
+        }
+      } else if (data?.length === 0 && connectionType === "stytch") {
+        // Auto-create account for users with no accounts
+        setShouldAutoNavigate(true);
+        handleJwtAALoginOrCreate();
+      }
+    }
+  }, [
+    data,
+    loading,
+    isGeneratingNewWallet,
+    isInLoginFlow,
+    loginAuthenticator,
+    setAbstractAccount,
+    connectionType,
+    handleJwtAALoginOrCreate,
+    isInGrantFlow,
+    setIsOpen,
+    abstraxionError,
+  ]);
+
+  const dialogTitle = useMemo(() => {
+    if (isGeneratingNewWallet) return "Creating Account";
+    if (loading || shouldAutoNavigate) return "Fetching Accounts";
+    return "Accounts";
+  }, [isGeneratingNewWallet, loading, shouldAutoNavigate]);
+
+  const dialogDescription = useMemo(() => {
+    if (isGeneratingNewWallet) return "This will take a few seconds";
+    if (loading || shouldAutoNavigate) return "Loading your accounts";
+    return "Choose an account to continue";
+  }, [isGeneratingNewWallet, loading, shouldAutoNavigate]);
 
   const handleDisconnectClick = () => {
     // Only disconnect if there's no redirect_uri (button is labeled "DISCONNECT")
@@ -197,9 +228,7 @@ export const AbstraxionWallets = () => {
           role="region"
           aria-label={dialogTitle}
         >
-          {loading ||
-          isGeneratingNewWallet ||
-          (data?.length === 1 && isInLoginFlow) ? (
+          {loading || isGeneratingNewWallet || shouldAutoNavigate ? (
             <SpinnerV2
               size="lg"
               color="white"
@@ -274,15 +303,19 @@ export const AbstraxionWallets = () => {
       <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
         <DialogFooter>
           <div className="ui-flex ui-flex-col ui-gap-3 ui-w-full">
-            {connectionType === "stytch" && isInLoginFlow && (
-              <BaseButton
-                className="ui-w-full"
-                onClick={handleJwtAALoginOrCreate}
-                disabled={loading || isGeneratingNewWallet || data?.length > 0}
-              >
-                CREATE NEW ACCOUNT
-              </BaseButton>
-            )}
+            {connectionType === "stytch" &&
+              isInLoginFlow &&
+              !shouldAutoNavigate && (
+                <BaseButton
+                  className="ui-w-full"
+                  onClick={handleJwtAALoginOrCreate}
+                  disabled={
+                    loading || isGeneratingNewWallet || data?.length > 0
+                  }
+                >
+                  CREATE NEW ACCOUNT
+                </BaseButton>
+              )}
             <div className="ui-flex ui-gap-3 ui-w-full">
               {isInLoginFlow && isInGrantFlow && (
                 <BaseButton
