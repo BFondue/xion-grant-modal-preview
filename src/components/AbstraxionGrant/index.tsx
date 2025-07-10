@@ -38,6 +38,7 @@ import { isContractGrantConfigValid } from "../../utils/contract-grant-check";
 import { validateFeeGrant } from "../../utils/validate-fee-grant";
 import { queryTreasuryContract } from "../../utils/query-treasury-contract";
 import { safeRedirectOrDisconnect } from "../../utils/redirect-utils";
+import { CopyAddress } from "../CopyAddress";
 import xionLogo from "../../assets/logo.png";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
@@ -428,6 +429,17 @@ export const AbstraxionGrant = ({
               </>
             )}
           </DialogHeader>
+
+          {account?.id && (
+            <div className="ui-mt-4 ui-mb-2 ui-text-center">
+              <div className="ui-text-sm ui-text-secondary-text ui-mb-2">
+                Granting permissions for:
+              </div>
+              <div className="ui-flex ui-justify-center">
+                <CopyAddress xionAddress={account.id} fullAddress={true} />
+              </div>
+            </div>
+          )}
 
           {treasury ? (
             <div className="ui-py-8">

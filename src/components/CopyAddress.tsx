@@ -36,7 +36,12 @@ export function CopyAddress({
       )}
     >
       <p className="ui-text-white/80">
-        {fullAddress ? xionAddress : truncateAddress(xionAddress)}
+        <span className="ui-hidden sm:ui-inline">
+          {fullAddress ? xionAddress : truncateAddress(xionAddress)}
+        </span>
+        <span className="ui-inline sm:ui-hidden">
+          {truncateAddress(xionAddress)}
+        </span>
       </p>
       {copied ? (
         <CheckIcon color="white" />
