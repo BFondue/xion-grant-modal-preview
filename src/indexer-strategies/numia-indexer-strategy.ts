@@ -42,12 +42,12 @@ export class NumiaIndexerStrategy implements IndexerStrategy {
 
     return data?.map(({ smart_account, code_id, authenticators }) => ({
       id: smart_account,
-      codeId: code_id,
+      codeId: Number(code_id),
       authenticators: authenticators.map(
         ({ authenticator, authenticator_index, type }) => ({
           id: `${smart_account}-${authenticator_index}`,
           authenticator,
-          authenticatorIndex: authenticator_index,
+          authenticatorIndex: Number(authenticator_index),
           type,
         }),
       ),
