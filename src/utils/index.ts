@@ -92,15 +92,7 @@ export function isValidWalletAddress(address: string) {
   return true;
 }
 
-export const chainId = import.meta.env.VITE_CHAIN_ID;
-
-export function isMainnet() {
-  if (!chainId) {
-    console.error("VITE_CHAIN_ID is undefined");
-    return false;
-  }
-  return !chainId.includes("testnet");
-}
+export { chainId, isMainnet } from "./chain-utils";
 
 export { basicFormatCurrency, basicFormatTokenAmount } from "./formatters";
 export {

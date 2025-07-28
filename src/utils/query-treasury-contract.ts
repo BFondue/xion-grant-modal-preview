@@ -2,12 +2,15 @@ import {
   AuthorizationTypes,
   decodeAuthorization,
   DecodedReadableAuthorization,
+  formatCoinArray,
   HumanContractExecAuth,
+  parseCoinString,
 } from "@burnt-labs/abstraxion-core";
 import type { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
 import { GenericAuthorization } from "cosmjs-types/cosmos/authz/v1beta1/authz";
 import { StakeAuthorization } from "cosmjs-types/cosmos/staking/v1beta1/authz";
 import { SendAuthorization } from "cosmjs-types/cosmos/bank/v1beta1/authz";
+import { TransferAuthorization } from "cosmjs-types/ibc/applications/transfer/v1/authz";
 import type {
   GrantConfigByTypeUrl,
   GrantConfigTypeUrlsResponse,
@@ -16,6 +19,62 @@ import type {
 } from "../types/treasury-types";
 import type { AAClient } from "../signers";
 import { isUrlSafe } from "./url";
+import { USDC_DENOM } from "../config";
+
+export const DENOM_DECIMALS = {
+  xion: 6,
+  usdc: 6,
+} as const;
+
+export const DENOM_DISPLAY_MAP = {
+  xion: "XION",
+  usdc: "USDC",
+} as const;
+
+/**
+ * Formats a coin string (e.g. "1000000uxion") into a human readable format (e.g. "1 XION")
+ * Can handle multiple coins separated by commas
+ * @param coinStr The coin string to format
+ * @returns Formatted string of coins
+ */
+export function formatCoins(coinStr: string): string {
+  if (!coinStr) return "";
+
+  const formattedCoins = coinStr.split(",").map((singleCoin) => {
+    const coin = parseCoinString(singleCoin)[0];
+    if (!coin) return "";
+
+    // Handle special case for USDC
+    if (coin.denom === USDC_DENOM) {
+      const amount = Number(coin.amount) / Math.pow(10, DENOM_DECIMALS.usdc);
+      return `${amount} ${DENOM_DISPLAY_MAP.usdc}`;
+    }
+
+    // Handle regular denoms
+    const baseDenom = coin.denom.startsWith("u")
+      ? coin.denom.slice(1)
+      : coin.denom;
+
+    // Check if it's a known denom
+    if (baseDenom in DENOM_DECIMALS) {
+      // Only convert if the denom starts with 'u'
+      if (coin.denom.startsWith("u")) {
+        const decimals =
+          DENOM_DECIMALS[baseDenom as keyof typeof DENOM_DECIMALS];
+        const amount = Number(coin.amount) / Math.pow(10, decimals);
+        const displayDenom =
+          DENOM_DISPLAY_MAP[baseDenom as keyof typeof DENOM_DISPLAY_MAP] ??
+          baseDenom.toUpperCase();
+        return `${amount} ${displayDenom}`;
+      }
+    }
+
+    // For unknown denoms, try to make a best effort to format them nicely
+    return `${coin.amount} ${coin.denom.toUpperCase()}`;
+  });
+
+  return formattedCoins.filter(Boolean).join(", ");
+}
 
 export function formatXionAmount(amount: string, denom: string): string {
   if (denom === "uxion") {
@@ -48,6 +107,7 @@ const CosmosAuthzPermission: { [key: string]: string } = {
   "/cosmos.gov.v1beta1.MsgVote": "vote on governance proposals on your behalf",
   "/ibc.applications.transfer.v1.MsgTransfer": "transfer your tokens via IBC",
   "/cosmos.authz.v1beta1.MsgExec": "execute transactions on your behalf",
+  "/cosmos.authz.v1beta1.MsgRevoke": "revoke permissions",
   "/cosmos.crisis.v1beta1.MsgVerifyInvariant":
     "verify network invariants on your behalf",
   "/cosmos.evidence.v1beta1.MsgSubmitEvidence":
@@ -215,6 +275,19 @@ export const queryTreasuryContract = async (
             decodedGrant.data as SendAuthorization
           ).allowList.join(", ");
           description = `Permission to send tokens with spend limit: ${spendLimit} ${allowList && `and allow list: ${allowList}`}`;
+          break;
+        }
+        case AuthorizationTypes.IbcTransfer: {
+          const allocations = (decodedGrant.data as TransferAuthorization)
+            .allocations;
+          const formattedLimits = allocations.map((allocation) => {
+            const limits = formatCoins(formatCoinArray(allocation.spendLimit));
+            const allowList = allocation.allowList?.length
+              ? ` to ${allocation.allowList.join(", ")}`
+              : " to any channel";
+            return `${limits}${allowList}`;
+          });
+          description = `Permission to transfer tokens via IBC with the following limits: ${formattedLimits.join("; ")}`;
           break;
         }
         case AuthorizationTypes.Stake: {

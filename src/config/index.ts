@@ -1,4 +1,4 @@
-import { isMainnet } from "../utils/index";
+import { isMainnet } from "../utils/chain-utils";
 
 interface FeeToken {
   denom: string;
@@ -65,6 +65,9 @@ export const REST_ENDPOINTS = {
 // used to filter assets in the overview
 export const FEATURED_ASSETS = ["USDC", "XION"] as const;
 
-export const USDC_DENOM = isMainnet()
-  ? "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
-  : "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64";
+const MAINNET_USDC_DENOM =
+  "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349";
+const TESTNET_USDC_DENOM =
+  "ibc/6490A7EAB61059BFC1CDDEB05917DD70BDF3A611654162A1A47DB930D40D8AF4";
+
+export const USDC_DENOM = isMainnet() ? MAINNET_USDC_DENOM : TESTNET_USDC_DENOM;
