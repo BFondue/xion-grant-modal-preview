@@ -1,5 +1,40 @@
 # abstraxion-dashboard
 
+## 0.10.0
+
+### Minor Changes
+
+- [#249](https://github.com/burnt-labs/xion-dashboard-app/pull/249) [`a40a87e`](https://github.com/burnt-labs/xion-dashboard-app/commit/a40a87e49d6d330baa3f4261634992310fc4092d) Thanks [@justinbarry](https://github.com/justinbarry)! - Add Xion address display to grant permissions page
+
+  - Display user's Xion address on the permissions grant page so users know which address is granting permissions
+  - Address is responsive: shows full address on desktop, truncated on mobile
+
+- [#247](https://github.com/burnt-labs/xion-dashboard-app/pull/247) [`f6014d1`](https://github.com/burnt-labs/xion-dashboard-app/commit/f6014d1f7e10488a816f0f79ade632fbed01eb9b) Thanks [@justinbarry](https://github.com/justinbarry)! - Optimize login flow to skip account selection for users with 0 or 1 account
+
+  - Auto-navigate users with 0 or 1 account directly to permissions screen
+  - Auto-create account for users with no accounts (email/social auth only)
+  - Auto-select single account without showing selection screen
+  - Add loading state to mask background account operations
+  - Improve error handling for account creation failures
+
+  Users with 2+ accounts continue to see the account selection screen as before.
+
+- [#239](https://github.com/burnt-labs/xion-dashboard-app/pull/239) [`7219161`](https://github.com/burnt-labs/xion-dashboard-app/commit/7219161e95b2dd8be874cba5e50a5905cbf72318) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - session time updated
+
+- [#245](https://github.com/burnt-labs/xion-dashboard-app/pull/245) [`0d4b78d`](https://github.com/burnt-labs/xion-dashboard-app/commit/0d4b78dd58c9646f04ee9f883252b89798e64b8a) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Checks IBCs in permissions and displays their name
+
+- [#246](https://github.com/burnt-labs/xion-dashboard-app/pull/246) [`f135cfd`](https://github.com/burnt-labs/xion-dashboard-app/commit/f135cfd8a83339042476c03c43ef4685750b685e) Thanks [@BurntVal](https://github.com/BurntVal)! - add ibc transfer authorization logic and views
+
+- [#238](https://github.com/burnt-labs/xion-dashboard-app/pull/238) [`07c9eab`](https://github.com/burnt-labs/xion-dashboard-app/commit/07c9eab2027fe924a9469a322e510b26ac779dc5) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - upgraded DialogContent component to be much more responsive
+
+- [#241](https://github.com/burnt-labs/xion-dashboard-app/pull/241) [`2d61aca`](https://github.com/burnt-labs/xion-dashboard-app/commit/2d61aca7f0367b3420ebae20dd5a8af263c530cd) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Fixed display after adding passkey
+
+### Patch Changes
+
+- [#226](https://github.com/burnt-labs/xion-dashboard-app/pull/226) [`5683f4b`](https://github.com/burnt-labs/xion-dashboard-app/commit/5683f4b9446b1a29266ff4c6dfc6dfce1e921659) Thanks [@BurntVal](https://github.com/BurntVal)! - Implement core grant utility decode function
+
+- [#250](https://github.com/burnt-labs/xion-dashboard-app/pull/250) [`a05aea2`](https://github.com/burnt-labs/xion-dashboard-app/commit/a05aea20397850b6a9f4a057e4980ebc3687bb54) Thanks [@justinbarry](https://github.com/justinbarry)! - Dashboard showing the migrate button when no migrate is needed. Numia Api is returning strings instead of numbers.
+
 ## 0.9.0
 
 ### Minor Changes
