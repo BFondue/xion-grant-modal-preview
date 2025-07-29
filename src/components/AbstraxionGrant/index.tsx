@@ -316,7 +316,7 @@ export const AbstraxionGrant = ({
       setTreasuryParams(params);
     } catch {
       setAbstraxionError(
-        "Invalid app settings detected. Please reach out to the DAPP team to resolve this issue.",
+        "Unable to load application details. Please check your connection and try again, or contact the application developer if the issue persists.",
       );
     } finally {
       setIsTreasuryQueryLoading(false);
