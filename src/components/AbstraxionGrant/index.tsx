@@ -44,6 +44,7 @@ import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
 import FallbackImage from "../FallbackImage";
 import { getDomainAndProtocol, isUrlSafe, urlsMatch } from "../../utils/url";
+import { ChevronDownIcon } from "../ui/icons";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -81,6 +82,9 @@ export const AbstraxionGrant = ({
     icon_url: "",
   });
   const [urlMismatchConfirmed, setUrlMismatchConfirmed] = useState(false);
+  const [grantError, setGrantError] = useState<string | null>(null);
+  const [retryCooldown, setRetryCooldown] = useState(0);
+  const [securityRiskCollapsed, setSecurityRiskCollapsed] = useState(false);
   const hasUrlMismatch =
     treasury &&
     !!treasuryParams.redirect_url &&
@@ -291,14 +295,26 @@ export const AbstraxionGrant = ({
       setShowSuccess(true);
     } catch (error) {
       if (error instanceof Error) {
-        setAbstraxionError(error.message);
+        setGrantError(error.message);
       } else {
-        setAbstraxionError("An unknown error occurred");
+        setGrantError("An unknown error occurred");
       }
+      // Start 10 second cooldown
+      setRetryCooldown(10);
     } finally {
       setInProgress(false);
     }
   };
+
+  // Handle retry cooldown countdown
+  useEffect(() => {
+    if (retryCooldown > 0) {
+      const timer = setTimeout(() => {
+        setRetryCooldown(retryCooldown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [retryCooldown]);
 
   const query = useCallback(async () => {
     try {
@@ -466,45 +482,83 @@ export const AbstraxionGrant = ({
           <DialogFooter>
             {hasUrlMismatch && !isTreasuryQueryLoading ? (
               <>
-                <div className="ui-w-full ui-my-4">
+                <div className="ui-w-full ui-mb-1">
                   <div className="ui-p-4 ui-bg-[#2d1600] ui-border ui-border-[#ff9800] ui-rounded-xl ui-shadow-lg">
-                    <div className="ui-flex ui-items-center ui-gap-2 ui-mb-3">
-                      <span className="ui-text-[#ff9800] ui-text-xl">⚠️</span>
-                      <span className="ui-text-[#ff9800] ui-font-semibold ui-text-base">
-                        Potential Security Risk
+                    <button
+                      className="ui-w-full ui-flex ui-items-center ui-justify-between ui-text-left"
+                      onClick={() =>
+                        setSecurityRiskCollapsed(!securityRiskCollapsed)
+                      }
+                    >
+                      <div className="ui-flex ui-items-center ui-gap-2">
+                        <span className="ui-text-[#ff9800] ui-text-xl">⚠️</span>
+                        <span className="ui-text-[#ff9800] ui-font-semibold ui-text-base">
+                          Potential Security Risk
+                        </span>
+                      </div>
+                      <span
+                        className={`ui-text-[#ff9800] ui-text-lg ui-transition-transform ui-duration-200 ${
+                          securityRiskCollapsed ? "ui-rotate-180" : ""
+                        }`}
+                      >
+                        <ChevronDownIcon
+                          isUp={!securityRiskCollapsed}
+                          className="ui-h-5 ui-w-5"
+                        />
                       </span>
-                    </div>
-                    <div className="ui-text-[#ffb74d] ui-text-sm ui-mb-2">
-                      The URL you are connecting to:
-                    </div>
-                    <div className="ui-block ui-font-mono ui-text-white ui-text-base ui-font-bold ui-mb-3 ui-bg-[#3a2200] ui-px-2 ui-py-1 ui-rounded">
-                      {getDomainAndProtocol(redirect_uri)}
-                    </div>
-                    <div className="ui-text-[#ffb74d] ui-text-sm ui-mb-2">
-                      does not match the URL provided by the app developer:
-                    </div>
-                    <div className="ui-block ui-font-mono ui-text-white ui-text-base ui-font-bold ui-mb-3 ui-bg-[#3a2200] ui-px-2 ui-py-1 ui-rounded">
-                      {getDomainAndProtocol(treasuryParams.redirect_url)}
-                    </div>
-                    <div className="ui-text-[#ff9800] ui-text-xs">
-                      Proceed with caution, this could be a malicious link.
-                    </div>
+                    </button>
+                    {!securityRiskCollapsed && (
+                      <div className="ui-mt-3">
+                        <div className="ui-text-[#ffb74d] ui-text-sm ui-mb-2">
+                          The URL you are connecting to:
+                        </div>
+                        <div className="ui-block ui-font-mono ui-text-white ui-text-base ui-font-bold ui-mb-3 ui-bg-[#3a2200] ui-px-2 ui-py-1 ui-rounded">
+                          {getDomainAndProtocol(redirect_uri)}
+                        </div>
+                        <div className="ui-text-[#ffb74d] ui-text-sm ui-mb-2">
+                          does not match the URL provided by the app developer:
+                        </div>
+                        <div className="ui-block ui-font-mono ui-text-white ui-text-base ui-font-bold ui-mb-3 ui-bg-[#3a2200] ui-px-2 ui-py-1 ui-rounded">
+                          {getDomainAndProtocol(treasuryParams.redirect_url)}
+                        </div>
+                        <div className="ui-text-[#ff9800] ui-text-xs">
+                          Proceed with caution, this could be a malicious link.
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="ui-mb-4">
+                <div className="ui-mb-4 ui-pl-1">
                   <Checkbox
                     variant="warning"
                     checked={urlMismatchConfirmed}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       // Only allow changing if not in progress or if there's an error
-                      if (!inProgress || abstraxionError) {
+                      if (!inProgress || grantError) {
                         setUrlMismatchConfirmed(e.target.checked);
+                        // Collapse the security risk card when confirmed
+                        if (e.target.checked) {
+                          setSecurityRiskCollapsed(true);
+                        }
                       }
                     }}
-                    disabled={inProgress && !abstraxionError}
+                    disabled={inProgress && !grantError}
                     label="Confirm you want to continue"
                   />
                 </div>
+                {grantError && (
+                  <div className="ui-w-full ui-mb-4 ui-p-4 ui-bg-red-500/10 ui-border ui-border-red-500/20 ui-rounded-xl">
+                    <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
+                      <span className="ui-text-red-500 ui-text-lg">⚠️</span>
+                      <span className="ui-text-red-500 ui-font-semibold ui-text-sm">
+                        Grant Failed
+                      </span>
+                    </div>
+                    <div className="ui-text-red-400 ui-text-sm">
+                      {grantError}
+                    </div>
+                  </div>
+                )}
                 <BaseButton
                   className="ui-w-full"
                   disabled={
@@ -512,12 +566,21 @@ export const AbstraxionGrant = ({
                     !client ||
                     isTreasuryQueryLoading ||
                     inCheckProgress ||
-                    !urlMismatchConfirmed
+                    !urlMismatchConfirmed ||
+                    retryCooldown > 0
                   }
-                  onClick={grant}
+                  onClick={() => {
+                    setGrantError(null);
+                    setRetryCooldown(0);
+                    grant();
+                  }}
                 >
                   {inProgress ? (
                     <SpinnerV2 size="sm" color="black" />
+                  ) : retryCooldown > 0 ? (
+                    `RETRY IN ${retryCooldown}s`
+                  ) : grantError ? (
+                    "RETRY"
                   ) : (
                     "ACCEPT AND CONTINUE"
                   )}
@@ -525,18 +588,40 @@ export const AbstraxionGrant = ({
               </>
             ) : (
               <>
+                {grantError && (
+                  <div className="ui-w-full ui-mb-4 ui-p-4 ui-bg-red-500/10 ui-border ui-border-red-500/20 ui-rounded-xl">
+                    <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
+                      <span className="ui-text-red-500 ui-text-lg">⚠️</span>
+                      <span className="ui-text-red-500 ui-font-semibold ui-text-sm">
+                        Grant Failed
+                      </span>
+                    </div>
+                    <div className="ui-text-red-400 ui-text-sm">
+                      {grantError}
+                    </div>
+                  </div>
+                )}
                 <BaseButton
                   className="ui-w-full"
                   disabled={
                     inProgress ||
                     !client ||
                     isTreasuryQueryLoading ||
-                    inCheckProgress
+                    inCheckProgress ||
+                    retryCooldown > 0
                   }
-                  onClick={grant}
+                  onClick={() => {
+                    setGrantError(null);
+                    setRetryCooldown(0);
+                    grant();
+                  }}
                 >
                   {inProgress ? (
                     <SpinnerV2 size="sm" color="black" />
+                  ) : retryCooldown > 0 ? (
+                    `RETRY IN ${retryCooldown}s`
+                  ) : grantError ? (
+                    "RETRY"
                   ) : (
                     "ACCEPT AND CONTINUE"
                   )}
