@@ -248,18 +248,19 @@ export const queryTreasuryContract = async (
         case AuthorizationTypes.Generic: {
           // These msg type urls combined with a GenericAuthorization are dangerous. Prevent flow
           // TODO - Uncomment when proxy contract integrated, or find a solution for DevPortal
-          const genericMsg = (decodedGrant.data as GenericAuthorization).msg;
-          if (
-            // genericMsg === "/cosmwasm.wasm.v1.MsgExecuteContract" ||
-            // genericMsg === "/cosmwasm.wasm.v1.MsgMigrateContract" ||
-            // genericMsg === "/cosmos.authz.v1beta1.MsgExec" ||
-            // genericMsg === "/cosmwasm.wasm.v1.MsgStoreCode" ||
-            // genericMsg === "/cosmwasm.wasm.v1.MsgUpdateAdmin" ||
-            // genericMsg === "/cosmwasm.wasm.v1.MsgClearAdmin" ||
-            genericMsg === "/cosmos.bank.v1beta1.MsgSend"
-          ) {
-            throw new Error("Misconfigured grant config");
-          }
+          // Temporarily commented out to allow generic MsgSend
+          // const genericMsg = (decodedGrant.data as GenericAuthorization).msg;
+          // if (
+          //   genericMsg === "/cosmwasm.wasm.v1.MsgExecuteContract" ||
+          //   genericMsg === "/cosmwasm.wasm.v1.MsgMigrateContract" ||
+          //   genericMsg === "/cosmos.authz.v1beta1.MsgExec" ||
+          //   genericMsg === "/cosmwasm.wasm.v1.MsgStoreCode" ||
+          //   genericMsg === "/cosmwasm.wasm.v1.MsgUpdateAdmin" ||
+          //   genericMsg === "/cosmwasm.wasm.v1.MsgClearAdmin" ||
+          //   genericMsg === "/cosmos.bank.v1beta1.MsgSend"
+          // ) {
+          //   throw new Error("Misconfigured grant config");
+          // }
           description = `Permission to ${
             CosmosAuthzPermission[
               (decodedGrant.data as GenericAuthorization).msg
