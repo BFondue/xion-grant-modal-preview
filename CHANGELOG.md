@@ -1,5 +1,19 @@
 # abstraxion-dashboard
 
+## 0.11.0
+
+### Minor Changes
+
+- [#254](https://github.com/burnt-labs/xion-dashboard-app/pull/254) [`26e2763`](https://github.com/burnt-labs/xion-dashboard-app/commit/26e2763e35433965fd7e37228ee214f06251a30c) Thanks [@justinbarry](https://github.com/justinbarry)! - Restore the ability to grant MsgSend to unblock Blazeswap
+
+  This change temporarily comments out the code that was preventing the use of generic MsgSend authorization in the treasury contract query function. Previously, the code was throwing an error when encountering "/cosmos.bank.v1beta1.MsgSend" message types, which was blocking Blazeswap functionality. This is a temporary solution.
+
+### Patch Changes
+
+- [#251](https://github.com/burnt-labs/xion-dashboard-app/pull/251) [`662c158`](https://github.com/burnt-labs/xion-dashboard-app/commit/662c158883e77ca227a628a3535dba4c23cb170d) Thanks [@BurntVal](https://github.com/BurntVal)! - refactor error message to appropriately reflect query issue
+
+- [#253](https://github.com/burnt-labs/xion-dashboard-app/pull/253) [`5eb821e`](https://github.com/burnt-labs/xion-dashboard-app/commit/5eb821e8da94c0dcc59bd6b5212f87306f07de82) Thanks [@BurntVal](https://github.com/BurntVal)! - feat: enhance AbstraxionGrant error handling and UI improvements
+
 ## 0.10.0
 
 ### Minor Changes
