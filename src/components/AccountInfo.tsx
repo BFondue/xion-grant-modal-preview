@@ -1,23 +1,13 @@
 import React, { useContext, useState, useEffect } from "react";
-import {
-  AccountWalletLogo,
-  CosmosLogo,
-  EmailIcon,
-  EthereumLogo,
-  EyeIcon,
-  EyeOffIcon,
-  PasskeyIcon,
-  TrashIcon,
-  BaseButton,
-  CloseIcon,
-} from "./ui";
+import { BaseButton, CloseIcon } from "./ui";
 import { useStytchUser } from "@stytch/react";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
-import type { authenticatorTypes } from "../types";
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
 import { Authenticator } from "../indexer-strategies/types";
 import { AbstraxionContext } from "./AbstraxionContext";
 import { cn } from "../utils/classname-util";
+import { AuthenticatorsList } from "./AuthenticatorsList";
+import { extractUserIdFromAuthenticator } from "../auth/utils/authenticator-helpers";
 
 export const AccountInfo = () => {
   const [, setIsAddModalOpen] = useState(false);
@@ -25,7 +15,6 @@ export const AccountInfo = () => {
   const [authenticatorToRemove, setAuthenticatorToRemove] = useState<
     Authenticator | undefined
   >();
-  const [showUserEmail, setShowUserEmail] = useState(false);
   const { isMainnet, abstractAccount, setAbstractAccount } =
     useContext(AbstraxionContext);
   const { user } = useStytchUser();
@@ -38,7 +27,10 @@ export const AccountInfo = () => {
         (authenticator) =>
           authenticator.type === "Jwt" &&
           user.user_id ===
-            pullUserIdFromAuthenticator(authenticator.authenticator),
+            extractUserIdFromAuthenticator(
+              authenticator.authenticator,
+              authenticator.type,
+            ),
       );
       if (
         activeJwtAuthenticator &&
@@ -53,130 +45,9 @@ export const AccountInfo = () => {
     }
   }, [user, abstractAccount, setAbstractAccount]);
 
-  const handleAuthenticatorLabels = (type: authenticatorTypes) => {
-    switch (type) {
-      case "SECP256K1":
-        return "Cosmos Wallet";
-      case "ETHWALLET":
-        return "EVM Wallet";
-      case "JWT":
-        return "Email";
-      case "PASSKEY":
-        return "Passkey";
-      default:
-        return "";
-    }
-  };
-
-  const handleAuthenticatorLogos = (type: authenticatorTypes) => {
-    switch (type) {
-      case "SECP256K1":
-        return <CosmosLogo className="ui-w-4 ui-h-4" />;
-      case "ETHWALLET":
-        return <EthereumLogo className="ui-w-4 ui-h-4" />;
-      case "JWT":
-        return <EmailIcon className="ui-w-4 ui-h-4" />;
-      case "PASSKEY":
-        return <PasskeyIcon />;
-      default:
-        return <AccountWalletLogo />;
-    }
-  };
-
-  function pullUserIdFromAuthenticator(authenticator: string) {
-    const [, userId] = authenticator.split(".");
-    return userId;
-  }
-
-  const renderAuthenticators = () => {
-    return abstractAccount?.authenticators.map((authenticator) => {
-      const currentAuthenticator =
-        abstractAccount?.currentAuthenticatorIndex ===
-        authenticator.authenticatorIndex;
-
-      let email = "";
-
-      if (authenticator.type === "Jwt" && user) {
-        if (
-          user.user_id ===
-          pullUserIdFromAuthenticator(authenticator.authenticator)
-        ) {
-          email = user.emails[0]?.email;
-        }
-      }
-
-      return (
-        <div
-          key={authenticator.id}
-          className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-5 ui-min-h-16 ui-bg-black/50 ui-rounded-xl"
-        >
-          <div className="ui-flex ui-flex-1 ui-items-center">
-            <div className="ui-flex ui-w-8 ui-h-8 ui-bg-[#434040] ui-items-center ui-justify-center ui-rounded-full">
-              {handleAuthenticatorLogos(
-                authenticator.type.toUpperCase() as authenticatorTypes,
-              )}
-            </div>
-            <div className="ui-flex ui-flex-1 ui-pr-1 ui-items-start md:!ui-items-center ui-flex-col-reverse md:!ui-flex-row">
-              {authenticator.type === "Jwt" &&
-              showUserEmail &&
-              currentAuthenticator ? null : (
-                <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
-                  <p className="ui-text-base">
-                    {handleAuthenticatorLabels(
-                      authenticator.type.toUpperCase() as authenticatorTypes,
-                    )}
-                  </p>
-                </div>
-              )}
-              {showUserEmail && currentAuthenticator && (
-                <div className="ui-ml-4 ui-flex ui-items-center ui-max-w-full ui-justify-between">
-                  <p className="ui-text-secondary-text ui-break-all ui-max-w-full ui-text-base">
-                    {email}
-                  </p>
-                </div>
-              )}
-              {currentAuthenticator && (
-                <div
-                  className={`ui-ml-3 ui-px-1.5 ui-py-[1px] ui-rounded-sm ui-flex ui-border ${
-                    isMainnet ? "ui-border-mainnet-bg" : "ui-border-testnet-bg"
-                  }`}
-                >
-                  <p
-                    className={`${
-                      isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
-                    } ui-text-xs ui-whitespace-nowrap ui-leading-[20px]`}
-                  >
-                    Active Session
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="ui-flex ui-items-center ui-gap-4">
-            {authenticator.type === "Jwt" && currentAuthenticator && (
-              <button
-                className="ui-text-white"
-                onClick={() => {
-                  setShowUserEmail(!showUserEmail);
-                }}
-              >
-                {showUserEmail ? <EyeOffIcon /> : <EyeIcon />}
-              </button>
-            )}
-            <button
-              className="ui-text-white"
-              onClick={() => {
-                setAuthenticatorToRemove(authenticator);
-                setIsRemoveModalOpen(true);
-              }}
-            >
-              <TrashIcon className="ui-w-4 ui-h-4" />
-            </button>
-          </div>
-        </div>
-      );
-    });
+  const handleRemoveAuthenticator = (authenticator: Authenticator) => {
+    setAuthenticatorToRemove(authenticator);
+    setIsRemoveModalOpen(true);
   };
 
   return (
@@ -209,7 +80,17 @@ export const AccountInfo = () => {
               />
             </div>
             <div className="ui-flex ui-flex-col ui-gap-5">
-              {renderAuthenticators()}
+              {abstractAccount && (
+                <AuthenticatorsList
+                  authenticators={abstractAccount.authenticators}
+                  currentAuthenticatorIndex={
+                    abstractAccount.currentAuthenticatorIndex
+                  }
+                  isMainnet={isMainnet}
+                  onRemoveAuthenticator={handleRemoveAuthenticator}
+                  user={user}
+                />
+              )}
             </div>
           </div>
           {/* TODO: Add history components */}

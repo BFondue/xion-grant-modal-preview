@@ -23,3 +23,6 @@ export { EyeOffIcon } from "./EyeOff";
 export { CosmosLogo } from "./CosmosLogo";
 export { InfoFilledIcon } from "./InfoFilled";
 export { InfoIcon } from "./Info";
+export { AppleLogoIcon } from "./AppleLogo";
+export { GoogleLogoIcon } from "./GoogleLogo";
+export { GithubLogoIcon } from "./GithubLogo";

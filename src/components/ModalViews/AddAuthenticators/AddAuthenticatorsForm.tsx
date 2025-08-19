@@ -19,6 +19,7 @@ import {
   KeplrLogo,
   MetamaskLogo,
   PasskeyIcon,
+  AppleLogoIcon,
 } from "../../ui";
 import {
   AbstraxionContext,
@@ -26,7 +27,7 @@ import {
 } from "../../AbstraxionContext";
 import { useAbstraxionSigningClient } from "../../../hooks";
 import { useContractFeatures } from "../../../hooks/useContractFeatures";
-import { findLowestMissingOrNextIndex } from "../../../utils/authenticator-util";
+import { findLowestMissingOrNextIndex } from "../../../auth/utils/authenticator-helpers";
 import { AAAlgo } from "../../../signers";
 import {
   registeredCredentials,
@@ -44,12 +45,14 @@ import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
 import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
 import { FeatureKey } from "../../../types";
+import { useStytch, useStytchSession } from "@stytch/react";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const isPasskeyFeatureFlagEnabled =
   import.meta.env.VITE_PASSKEY_FLAG === "true";
 const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
+const appleFlag = import.meta.env.VITE_APPLE_FLAG === "true";
 
 type AuthenticatorStates =
   | "none"
@@ -57,7 +60,8 @@ type AuthenticatorStates =
   | "metamask"
   | "okx"
   | "passkey"
-  | "jwt";
+  | "jwt"
+  | "apple";
 
 interface AuthenticatorStateData {
   id: string;
@@ -68,8 +72,10 @@ interface AuthenticatorStateData {
 
 export function AddAuthenticatorsForm({
   setIsOpen,
+  pendingOAuthJwt,
 }: {
   setIsOpen: Dispatch<SetStateAction<boolean>>;
+  pendingOAuthJwt?: { oAuthToken: string; provider: string } | null;
 }) {
   // Component specific state
   const [selectedAuthenticator, setSelectedAuthenticator] =
@@ -90,10 +96,14 @@ export function AddAuthenticatorsForm({
   const shouldEnableOkx = !isMainnet || (isMainnet && okxFlag);
   const shouldEnableMetamask = !isMainnet || (isMainnet && metamaskFlag);
   const shouldEnableKeplr = !isMainnet || (isMainnet && keplrFlag);
+  const shouldEnableApple = !isMainnet || (isMainnet && appleFlag);
 
   // Hooks
   const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { connect, recentWallet } = useShuttle();
+
+  const stytchClient = useStytch();
+  const { session } = useStytchSession();
 
   // Check if passkey feature is enabled for the account's contract code ID
   const { hasFeatures: isPasskeySupported, isLoadingFeatures } =
@@ -161,6 +171,9 @@ export function AddAuthenticatorsForm({
         break;
       case "jwt":
         setIsAddingEmail(true);
+        break;
+      case "apple":
+        await handleAddAppleAuthenticator();
         break;
       default:
         break;
@@ -233,6 +246,7 @@ export function AddAuthenticatorsForm({
         ...abstractAccount.authenticators,
         authenticatorStateData,
       ],
+      currentAuthenticatorIndex: abstractAccount.currentAuthenticatorIndex,
     });
 
     postAddFunction();
@@ -565,6 +579,128 @@ export function AddAuthenticatorsForm({
     }
   }
 
+  /**
+   * Start of OAuth JWT handling
+   */
+
+  /* OAuth JWT functions */
+  async function addOAuthJwtAuthenticator(oauth_token: string) {
+    setIsLoading(true);
+    if (!abstractAccount) {
+      return;
+    }
+
+    if (!oauth_token) {
+      return;
+    }
+    sessionStorage.removeItem("captured_oauth_add");
+    sessionStorage.removeItem("oauth_provider");
+    sessionStorage.removeItem("oauth_add_mode");
+
+    try {
+      const accountIndex = findLowestMissingOrNextIndex(
+        abstractAccount?.authenticators,
+      );
+
+      const hashSignBytes = new Uint8Array(
+        Buffer.from(abstractAccount.id, "utf-8"),
+      );
+      const hashedMessage = Buffer.from(hashSignBytes).toString("base64");
+      const session_custom_claims = {
+        transaction_hash: hashedMessage,
+      };
+
+      const authResponse = await fetch(
+        `${apiUrl}/api/v1/sessions/authenticate-oauth-no-session`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            token: oauth_token,
+            session_custom_claims,
+          }),
+        },
+      );
+      const authResponseData = await authResponse.json();
+
+      if (!authResponse.ok) {
+        setOtpError("Error Verifying OAuth Code");
+        return;
+      }
+
+      const { aud, sub } = decodeJwt(
+        authResponseData.data.session_jwt,
+      ) as JWTPayload;
+      const formattedAud = Array.isArray(aud) ? aud[0] : aud;
+
+      const signature = Buffer.from(
+        authResponseData.data.session_jwt,
+        "utf-8",
+      ).toString("base64");
+
+      const msg: AddJwtAuthenticator = {
+        add_auth_method: {
+          add_authenticator: {
+            Jwt: {
+              id: accountIndex,
+              aud: formattedAud,
+              sub,
+              token: signature,
+            },
+          },
+        },
+      };
+
+      const authenticatorStateData = {
+        id: `${abstractAccount.id}-${accountIndex}`,
+        type: "Jwt",
+        authenticator: `${aud}.${sub}`,
+        authenticatorIndex: accountIndex,
+      };
+      await handleAddAuthenticator(msg, authenticatorStateData);
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const handleAddAppleAuthenticator = async () => {
+    setIsLoading(true);
+    try {
+      // Check if user is logged in
+      if (!session || !stytchClient.session.getTokens()?.session_token) {
+        return;
+      }
+
+      const origin = window.location.origin;
+      const redirectUrl = `${origin}/`;
+
+      // Store add mode information for when we return from OAuth
+      sessionStorage.setItem("oauth_add_mode", "true");
+      sessionStorage.setItem("oauth_provider", "apple");
+
+      // Use Stytch SDK to initiate OAuth flow
+      await stytchClient.oauth.apple.start({
+        login_redirect_url: redirectUrl,
+        signup_redirect_url: redirectUrl,
+      });
+    } catch (error) {
+      console.error("Error starting Apple OAuth flow:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /* OAuth JWT useEffect(s) */
+  useEffect(() => {
+    if (pendingOAuthJwt && client) {
+      addOAuthJwtAuthenticator(pendingOAuthJwt.oAuthToken);
+    }
+  }, [pendingOAuthJwt, client]);
+
   if (isLoading) {
     return (
       <Loading
@@ -692,6 +828,20 @@ export function AddAuthenticatorsForm({
                   BETA
                 </span>
                 <PasskeyIcon className="ui-w-12" />
+              </BaseButton>
+            ) : null}
+            {shouldEnableApple ? (
+              <BaseButton
+                className={cn(
+                  { "!ui-border-white": selectedAuthenticator === "apple" },
+                  "ui-w-16 ui-h-16",
+                )}
+                disabled={!shouldEnableApple}
+                onClick={() => handleSwitch("apple")}
+                variant="secondary"
+                size="icon-large"
+              >
+                <AppleLogoIcon className="ui-w-[34px] ui-h-[34px]" />
               </BaseButton>
             ) : null}
           </div>

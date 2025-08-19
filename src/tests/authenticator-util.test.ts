@@ -1,4 +1,4 @@
-import { findLowestMissingOrNextIndex } from "../utils/authenticator-util";
+import { findLowestMissingOrNextIndex } from "../auth/utils/authenticator-helpers";
 import { describe, expect, it } from "vitest";
 import { Authenticator } from "../indexer-strategies/types";
 

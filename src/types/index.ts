@@ -3,6 +3,13 @@ export * from "./migration";
 export * from "./treasury-types";
 
 export type authenticatorTypes = "SECP256K1" | "ETHWALLET" | "JWT" | "PASSKEY";
+export type JwtSubType =
+  | "email"
+  | "google"
+  | "apple"
+  | "github"
+  | "twitter"
+  | "x";
 
 export type Network = "testnet" | "mainnet";
 

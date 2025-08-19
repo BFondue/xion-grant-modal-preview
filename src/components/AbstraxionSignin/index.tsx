@@ -20,6 +20,7 @@ import {
   MetamaskLogo,
   NavigationButton,
   PasskeyIcon,
+  AppleLogoIcon,
 } from "../ui";
 import {
   AbstraxionContext,
@@ -97,6 +98,20 @@ export const AbstraxionSignin = () => {
     const redirectUrl = `${origin}/${currentParams}`;
 
     await stytchClient.oauth.google.start({
+      login_redirect_url: redirectUrl,
+      signup_redirect_url: redirectUrl,
+      // custom_scopes: (?)
+    });
+  }, [stytchClient]);
+
+  const loginWithApple = useCallback(async () => {
+    const origin = window.location.origin;
+    const currentParams = window.location.search;
+    // Take url params into consideration on grant flow cases
+
+    const redirectUrl = `${origin}/${currentParams}`;
+
+    await stytchClient.oauth.apple.start({
       login_redirect_url: redirectUrl,
       signup_redirect_url: redirectUrl,
       // custom_scopes: (?)
@@ -319,6 +334,12 @@ export const AbstraxionSignin = () => {
                   onClick={loginWithGoogle}
                 >
                   Google
+                </NavigationButton>
+                <NavigationButton
+                  icon={<AppleLogoIcon />}
+                  onClick={loginWithApple}
+                >
+                  Apple
                 </NavigationButton>
                 {shouldEnableTikTok && (
                   <NavigationButton
