@@ -96,7 +96,6 @@ export function AddAuthenticatorsForm({
   const shouldEnableOkx = !isMainnet || (isMainnet && okxFlag);
   const shouldEnableMetamask = !isMainnet || (isMainnet && metamaskFlag);
   const shouldEnableKeplr = !isMainnet || (isMainnet && keplrFlag);
-  const shouldEnableApple = !isMainnet || (isMainnet && appleFlag);
 
   // Hooks
   const { client, getGasCalculation } = useAbstraxionSigningClient();
@@ -830,13 +829,13 @@ export function AddAuthenticatorsForm({
                 <PasskeyIcon className="ui-w-12" />
               </BaseButton>
             ) : null}
-            {shouldEnableApple ? (
+            {appleFlag ? (
               <BaseButton
                 className={cn(
                   { "!ui-border-white": selectedAuthenticator === "apple" },
                   "ui-w-16 ui-h-16",
                 )}
-                disabled={!shouldEnableApple}
+                disabled={!appleFlag}
                 onClick={() => handleSwitch("apple")}
                 variant="secondary"
                 size="icon-large"

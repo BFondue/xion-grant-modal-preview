@@ -45,6 +45,7 @@ const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
 const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
 const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
 const tiktokFlag = import.meta.env.VITE_TIKTOK_FLAG === "true";
+const appleFlag = import.meta.env.VITE_APPLE_FLAG === "true";
 
 const shouldEnableTikTok = tiktokFlag;
 
@@ -335,12 +336,14 @@ export const AbstraxionSignin = () => {
                 >
                   Google
                 </NavigationButton>
-                <NavigationButton
-                  icon={<AppleLogoIcon />}
-                  onClick={loginWithApple}
-                >
-                  Apple
-                </NavigationButton>
+                {appleFlag && (
+                  <NavigationButton
+                    icon={<AppleLogoIcon />}
+                    onClick={loginWithApple}
+                  >
+                    Apple
+                  </NavigationButton>
+                )}
                 {shouldEnableTikTok && (
                   <NavigationButton
                     icon={<TikTokLogoIcon />}
