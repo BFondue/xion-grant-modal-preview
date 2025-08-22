@@ -1,7 +1,10 @@
 import React, { useMemo } from "react";
 import { User } from "@stytch/vanilla-js";
 import { Authenticator } from "../indexer-strategies/types";
-import { useAuthTypes } from "../auth/hooks/useAuthTypes";
+import {
+  useAuthTypes,
+  useSortedAuthenticators,
+} from "../auth/hooks/useAuthTypes";
 import { AuthenticatorItem } from "./AuthenticatorItem";
 import { AuthenticatorsLoadingSkeleton } from "./AuthenticatorsLoadingSkeleton";
 import { extractUserIdFromAuthenticator } from "../auth/utils/authenticator-helpers";
@@ -33,37 +36,14 @@ export const AuthenticatorsList: React.FC<AuthenticatorsListProps> = ({
       .filter((userId): userId is string => userId !== null);
   }, [authenticators]);
 
-  // Fetch auth types with error handling
-  const { data: authTypes, error, isLoading } = useAuthTypes(userIds);
+  // Fetch auth types with processed map
+  const { authTypesMap, error, isLoading } = useAuthTypes(userIds);
 
-  // Create a map for efficient lookups
-  const authTypesMap = useMemo(() => {
-    if (!authTypes) return new Map<string, string>();
-
-    return new Map(
-      Object.entries(authTypes).map(([userId, types]) => [
-        userId,
-        types?.[0] || "",
-      ]),
-    );
-  }, [authTypes]);
-
-  // Sort authenticators to show active session first - MUST be before early returns
-  const sortedAuthenticators = useMemo(() => {
-    if (!authenticators || authenticators.length === 0) return [];
-
-    return [...authenticators].sort((a, b) => {
-      const aIsActive = a.authenticatorIndex === currentAuthenticatorIndex;
-      const bIsActive = b.authenticatorIndex === currentAuthenticatorIndex;
-
-      // If one is active and the other isn't, active comes first
-      if (aIsActive && !bIsActive) return -1;
-      if (!aIsActive && bIsActive) return 1;
-
-      // If both are active or both are inactive, maintain original order
-      return 0;
-    });
-  }, [authenticators, currentAuthenticatorIndex]);
+  // Get sorted authenticators
+  const sortedAuthenticators = useSortedAuthenticators(
+    authenticators,
+    currentAuthenticatorIndex,
+  );
 
   // Handle error state
   if (error) {
