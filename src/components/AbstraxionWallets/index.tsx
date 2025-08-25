@@ -244,7 +244,9 @@ export const AbstraxionWallets = () => {
                 className={cn("ui-w-full", {
                   "ui-border-opacity-30": node.id === abstractAccount?.id,
                 })}
-                key={node.id}
+                // We are appending 'i' to deal with the case where a user
+                // has the same authenticator twice on the same meta account.
+                key={`${node.id}-${i}`}
                 subLabel={
                   <div className="ui-bg-white/10 ui-px-1.5 ui-py-0.5 ui-rounded-[4px] ui-text-xs ui-font-bold">
                     <span className="ui-text-white/80">

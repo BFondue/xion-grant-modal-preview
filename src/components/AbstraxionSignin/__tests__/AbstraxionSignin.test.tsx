@@ -13,6 +13,7 @@ import { AbstraxionSignin } from "../index";
 import { AbstraxionContext } from "../../AbstraxionContext";
 import type { ChainInfo } from "@burnt-labs/constants";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Dialog, DialogContent } from "../../ui";
 
 const stytchMock = createStytchMock();
 stytchMock.otps.email.loginOrCreate = vi
@@ -111,7 +112,11 @@ const renderSignin = async () => {
           apiUrl: "https://test-api.com",
         }}
       >
-        <AbstraxionSignin />
+        <Dialog open={true}>
+          <DialogContent>
+            <AbstraxionSignin />
+          </DialogContent>
+        </Dialog>
       </AbstraxionContext.Provider>
     </QueryClientProvider>,
   );

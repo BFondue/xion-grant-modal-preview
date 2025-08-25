@@ -9,12 +9,9 @@ import { useStytch } from "@stytch/react";
 import { get } from "@github/webauthn-json/browser-ponyfill";
 import {
   BaseButton,
-  Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   Input,
   KeplrLogo,
   MetamaskLogo,
@@ -275,160 +272,153 @@ export const AbstraxionSignin = () => {
   }, []);
 
   return (
-    <Dialog modal open={true} defaultOpen={true}>
-      <DialogTrigger className="ui-hidden"></DialogTrigger>
-      <DialogContent overApp={true} className="ui-gap-8">
-        {isOnOtpStep ? (
-          <>
-            <DialogHeader>
-              <DialogTitle>Input 6 Digit Code</DialogTitle>
-              <DialogDescription>
-                Please check your email for the verification code
-              </DialogDescription>
-            </DialogHeader>
-            <OtpForm
-              error={otpError}
-              setError={setOtpError}
-              handleOtp={handleOtp}
-              handleResendCode={handleEmail}
-            />
-          </>
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle>Welcome!</DialogTitle>
-              <DialogDescription>
-                Log in or sign up with your email
-              </DialogDescription>
-            </DialogHeader>
-            <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full">
-              <div className="ui-flex ui-flex-col ui-gap-4">
-                <Input
-                  baseInputClassName="!ui-text-[16px]"
-                  placeholder="Email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  error={emailError}
-                  onBlur={validateEmail}
-                  onKeyDown={(e) => e.key === "Enter" && handleEmail()}
-                />
-                <BaseButton
-                  onClick={handleEmail}
-                  disabled={!!emailError || isSendingEmail}
-                  className={"ui-mt-2"}
-                >
-                  {isSendingEmail ? (
-                    <SpinnerV2 size="sm" color="black" />
-                  ) : (
-                    "LOG IN / SIGN UP"
-                  )}
-                </BaseButton>
-              </div>
-              <div className="ui-flex ui-items-center ui-justify-center ui-gap-3">
-                <span className="ui-h-px ui-bg-border ui-w-full" />
-                <h6 className="ui-text-xs ui-text-secondary-text">OR</h6>
-                <span className="ui-h-px ui-bg-border ui-w-full" />
-              </div>
-              <div className="ui-flex ui-flex-col ui-gap-2">
-                <NavigationButton
-                  icon={<GoogleLogoIcon />}
-                  onClick={loginWithGoogle}
-                >
-                  Google
-                </NavigationButton>
-                {appleFlag && (
-                  <NavigationButton
-                    icon={<AppleLogoIcon />}
-                    onClick={loginWithApple}
-                  >
-                    Apple
-                  </NavigationButton>
+    <>
+      {isOnOtpStep ? (
+        <>
+          <DialogHeader>
+            <DialogTitle>Input 6 Digit Code</DialogTitle>
+            <DialogDescription>
+              Please check your email for the verification code
+            </DialogDescription>
+          </DialogHeader>
+          <OtpForm
+            error={otpError}
+            setError={setOtpError}
+            handleOtp={handleOtp}
+            handleResendCode={handleEmail}
+          />
+        </>
+      ) : (
+        <>
+          <DialogHeader>
+            <DialogTitle>Welcome!</DialogTitle>
+            <DialogDescription>
+              Log in or sign up with your email
+            </DialogDescription>
+          </DialogHeader>
+          <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full">
+            <div className="ui-flex ui-flex-col ui-gap-4">
+              <Input
+                baseInputClassName="!ui-text-[16px]"
+                placeholder="Email"
+                value={email}
+                onChange={handleEmailChange}
+                error={emailError}
+                onBlur={validateEmail}
+                onKeyDown={(e) => e.key === "Enter" && handleEmail()}
+              />
+              <BaseButton
+                onClick={handleEmail}
+                disabled={!!emailError || isSendingEmail}
+                className={"ui-mt-2"}
+              >
+                {isSendingEmail ? (
+                  <SpinnerV2 size="sm" color="black" />
+                ) : (
+                  "LOG IN / SIGN UP"
                 )}
-                {shouldEnableTikTok && (
-                  <NavigationButton
-                    icon={<TikTokLogoIcon />}
-                    onClick={loginWithTikTok}
-                  >
-                    TikTok
-                  </NavigationButton>
-                )}
-              </div>
+              </BaseButton>
             </div>
-            {shouldEnableOkx || shouldEnableMetamask ? (
-              <div className="ui-w-full ui-mb-12 sm:ui-mb-0 ui-flex ui-flex-col ui-gap-3">
-                <button
-                  className="group ui-flex ui-w-full ui-items-center ui-gap-3"
-                  onClick={() =>
-                    setShowAdvanced((showAdvanced) => !showAdvanced)
-                  }
+            <div className="ui-flex ui-items-center ui-justify-center ui-gap-3">
+              <span className="ui-h-px ui-bg-border ui-w-full" />
+              <h6 className="ui-text-xs ui-text-secondary-text">OR</h6>
+              <span className="ui-h-px ui-bg-border ui-w-full" />
+            </div>
+            <div className="ui-flex ui-flex-col ui-gap-2">
+              <NavigationButton
+                icon={<GoogleLogoIcon />}
+                onClick={loginWithGoogle}
+              >
+                Google
+              </NavigationButton>
+              {appleFlag && (
+                <NavigationButton
+                  icon={<AppleLogoIcon />}
+                  onClick={loginWithApple}
                 >
-                  Advanced Options
-                  <span className="ui-text-secondary-text">
-                    {"(Login Only)"}
-                  </span>
-                  {/* Down Caret */}
-                  <ChevronRightIcon
-                    className={cn(
-                      "ui-fill-white/50 ui-rotate-180 group-hover/base button:ui-fill-white",
-                      showAdvanced ? "-ui-rotate-[90deg]" : "ui-rotate-90",
-                    )}
-                  />
-                </button>
-                {showAdvanced ? (
-                  <div className="ui-flex ui-w-full ui-gap-2">
-                    {shouldEnableOkx ? (
-                      <BaseButton
-                        variant="secondary"
-                        size="icon-large"
-                        onClick={handleOkx}
-                      >
-                        <img
-                          src={okxLogo}
-                          height={82}
-                          width={50}
-                          alt="OKX Logo"
-                          className="ui-min-w-7"
-                        />
-                      </BaseButton>
-                    ) : null}
-                    {shouldEnableKeplr ? (
-                      <BaseButton
-                        variant="secondary"
-                        size="icon-large"
-                        onClick={handleKeplr}
-                      >
-                        <KeplrLogo className="ui-min-w-6 ui-min-h-6" />
-                      </BaseButton>
-                    ) : null}
-                    {shouldEnableMetamask ? (
-                      <BaseButton
-                        variant="secondary"
-                        size="icon-large"
-                        onClick={handleMetamask}
-                      >
-                        <MetamaskLogo className="ui-min-w-6 ui-min-h-6" />
-                      </BaseButton>
-                    ) : null}
-                    {shouldEnablePasskey ? (
-                      <BaseButton
-                        variant="secondary"
-                        size="icon-large"
-                        onClick={getPasskey}
-                        className="ui-relative"
-                      >
-                        <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500/50 ui-text-white ui-text-[10px] ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
-                          BETA
-                        </span>
-                        <PasskeyIcon className="ui-min-w-6 ui-min-h-6" />
-                      </BaseButton>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+                  Apple
+                </NavigationButton>
+              )}
+              {shouldEnableTikTok && (
+                <NavigationButton
+                  icon={<TikTokLogoIcon />}
+                  onClick={loginWithTikTok}
+                >
+                  TikTok
+                </NavigationButton>
+              )}
+            </div>
+          </div>
+          {shouldEnableOkx || shouldEnableMetamask ? (
+            <div className="ui-w-full ui-mb-12 sm:ui-mb-0 ui-flex ui-flex-col ui-gap-3">
+              <button
+                className="group ui-flex ui-w-full ui-items-center ui-gap-3"
+                onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
+              >
+                Advanced Options
+                <span className="ui-text-secondary-text">{"(Login Only)"}</span>
+                {/* Down Caret */}
+                <ChevronRightIcon
+                  className={cn(
+                    "ui-fill-white/50 ui-rotate-180 group-hover/base button:ui-fill-white",
+                    showAdvanced ? "-ui-rotate-[90deg]" : "ui-rotate-90",
+                  )}
+                />
+              </button>
+              {showAdvanced ? (
+                <div className="ui-flex ui-w-full ui-gap-2">
+                  {shouldEnableOkx ? (
+                    <BaseButton
+                      variant="secondary"
+                      size="icon-large"
+                      onClick={handleOkx}
+                    >
+                      <img
+                        src={okxLogo}
+                        height={82}
+                        width={50}
+                        alt="OKX Logo"
+                        className="ui-min-w-7"
+                      />
+                    </BaseButton>
+                  ) : null}
+                  {shouldEnableKeplr ? (
+                    <BaseButton
+                      variant="secondary"
+                      size="icon-large"
+                      onClick={handleKeplr}
+                    >
+                      <KeplrLogo className="ui-min-w-6 ui-min-h-6" />
+                    </BaseButton>
+                  ) : null}
+                  {shouldEnableMetamask ? (
+                    <BaseButton
+                      variant="secondary"
+                      size="icon-large"
+                      onClick={handleMetamask}
+                    >
+                      <MetamaskLogo className="ui-min-w-6 ui-min-h-6" />
+                    </BaseButton>
+                  ) : null}
+                  {shouldEnablePasskey ? (
+                    <BaseButton
+                      variant="secondary"
+                      size="icon-large"
+                      onClick={getPasskey}
+                      className="ui-relative"
+                    >
+                      <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500/50 ui-text-white ui-text-[10px] ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
+                        BETA
+                      </span>
+                      <PasskeyIcon className="ui-min-w-6 ui-min-h-6" />
+                    </BaseButton>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </>
+      )}
+    </>
   );
 };

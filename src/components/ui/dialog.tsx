@@ -1,6 +1,5 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { cn } from "../../utils/classname-util";
 import { CloseIcon } from "./icons/Close";
 
@@ -366,7 +365,6 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         <DialogPrimitive.Content
           role="dialog"
           aria-modal="true"
-          aria-labelledby="dialog-title"
           ref={handleRef}
           className={cn(
             "ui-fixed ui-z-50",
@@ -391,9 +389,6 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           )}
           {...props}
         >
-          <VisuallyHidden.Root>
-            <DialogPrimitive.Title id="dialog-title" />
-          </VisuallyHidden.Root>
           {closeButton && (
             <DialogClose
               className="ui-absolute ui-top-6 ui-right-6"

@@ -76,7 +76,14 @@ const providers = [
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        // Enable React Router v7 compatibility flags to prevent console warnings
+        // These flags prepare the app for v7 without changing current behavior
+        v7_startTransition: true, // Wraps state updates in React.startTransition
+        v7_relativeSplatPath: true, // Updates relative route resolution in splat routes
+      }}
+    >
       <QueryClientProvider client={queryClient}>
         <StytchProvider stytch={stytchClient}>
           <AbstraxionContextProvider>
