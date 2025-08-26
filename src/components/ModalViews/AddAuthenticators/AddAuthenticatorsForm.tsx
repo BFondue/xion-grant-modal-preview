@@ -46,6 +46,10 @@ import { cn } from "../../../utils/classname-util";
 import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
 import { FeatureKey } from "../../../types";
 import { useStytch, useStytchSession } from "@stytch/react";
+import {
+  createJwtAuthenticatorIdentifier,
+  validateNewAuthenticator,
+} from "../../../utils/authenticator-utils";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -289,6 +293,23 @@ export function AddAuthenticatorsForm({
       const { aud, sub } = decodeJwt(
         authResponseData.data.session_jwt,
       ) as JWTPayload;
+
+      // Create authenticator identifier and validate
+      const authenticatorIdentifier = createJwtAuthenticatorIdentifier(
+        aud,
+        sub,
+      );
+      const validation = validateNewAuthenticator(
+        abstractAccount.authenticators,
+        authenticatorIdentifier,
+        "Jwt",
+      );
+
+      if (!validation.isValid) {
+        setOtpError(validation.errorMessage || "Cannot add this authenticator");
+        return;
+      }
+
       const formattedAud = Array.isArray(aud) ? aud[0] : aud;
 
       const signature = Buffer.from(
@@ -312,7 +333,7 @@ export function AddAuthenticatorsForm({
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
         type: "Jwt",
-        authenticator: `${aud}.${sub}`,
+        authenticator: authenticatorIdentifier,
         authenticatorIndex: accountIndex,
       };
       await handleAddAuthenticator(msg, authenticatorStateData);
@@ -347,6 +368,20 @@ export function AddAuthenticatorsForm({
         shuttleAddress,
         new Uint8Array(signArbMessage),
       );
+
+      // Check for duplicate Keplr authenticator
+      const validation = validateNewAuthenticator(
+        abstractAccount.authenticators,
+        signArbRes.pub_key.value,
+        AAAlgo.secp256k1,
+      );
+
+      if (!validation.isValid) {
+        setErrorMessage(
+          validation.errorMessage || "This wallet is already added",
+        );
+        return;
+      }
 
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount?.authenticators,
@@ -398,6 +433,20 @@ export function AddAuthenticatorsForm({
         okxAccount.bech32Address,
         new Uint8Array(signArbMessage),
       );
+
+      // Check for duplicate OKX authenticator
+      const validation = validateNewAuthenticator(
+        abstractAccount.authenticators,
+        signArbRes.pub_key.value,
+        AAAlgo.secp256k1,
+      );
+
+      if (!validation.isValid) {
+        setErrorMessage(
+          validation.errorMessage || "This wallet is already added",
+        );
+        return;
+      }
 
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount?.authenticators,
@@ -455,6 +504,20 @@ export function AddAuthenticatorsForm({
         ethSignature.slice(2),
         "hex",
       ).toString("base64");
+
+      // Check for duplicate Ethereum wallet authenticator
+      const validation = validateNewAuthenticator(
+        abstractAccount.authenticators,
+        primaryAccount,
+        AAAlgo.ETHWALLET,
+      );
+
+      if (!validation.isValid) {
+        setErrorMessage(
+          validation.errorMessage || "This wallet is already added",
+        );
+        return;
+      }
 
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount?.authenticators,
@@ -533,6 +596,20 @@ export function AddAuthenticatorsForm({
       const base64EncodedCredential = Buffer.from(
         publicKeyCredentialJSON,
       ).toString("base64");
+
+      // Check for duplicate Passkey authenticator
+      const validation = validateNewAuthenticator(
+        abstractAccount.authenticators,
+        base64EncodedCredential,
+        AAAlgo.PASSKEY,
+      );
+
+      if (!validation.isValid) {
+        setErrorMessage(
+          validation.errorMessage || "This passkey is already added",
+        );
+        return;
+      }
 
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount?.authenticators,
@@ -632,6 +709,23 @@ export function AddAuthenticatorsForm({
       const { aud, sub } = decodeJwt(
         authResponseData.data.session_jwt,
       ) as JWTPayload;
+
+      // Create authenticator identifier and validate
+      const authenticatorIdentifier = createJwtAuthenticatorIdentifier(
+        aud,
+        sub,
+      );
+      const validation = validateNewAuthenticator(
+        abstractAccount.authenticators,
+        authenticatorIdentifier,
+        "Jwt",
+      );
+
+      if (!validation.isValid) {
+        setOtpError(validation.errorMessage || "Cannot add this authenticator");
+        return;
+      }
+
       const formattedAud = Array.isArray(aud) ? aud[0] : aud;
 
       const signature = Buffer.from(
@@ -655,7 +749,7 @@ export function AddAuthenticatorsForm({
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
         type: "Jwt",
-        authenticator: `${aud}.${sub}`,
+        authenticator: authenticatorIdentifier,
         authenticatorIndex: accountIndex,
       };
       await handleAddAuthenticator(msg, authenticatorStateData);
@@ -715,6 +809,7 @@ export function AddAuthenticatorsForm({
         onSubmit={addJwtAuthenticator}
         error={otpError}
         onError={setOtpError}
+        onClose={() => setIsOpen(false)}
       />
     );
   }

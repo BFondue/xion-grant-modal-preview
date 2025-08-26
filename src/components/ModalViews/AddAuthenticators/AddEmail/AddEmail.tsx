@@ -14,15 +14,18 @@ export function AddEmail({
   onSubmit,
   error,
   onError,
+  onClose,
 }: {
   onSubmit: (otp: string, methodId: string) => void;
   error: string | null;
   onError: (error: string) => void;
+  onClose?: () => void;
 }) {
   const [email, setEmail] = useState("");
   const [methodId, setMethodId] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [savedEmail, setSavedEmail] = useState("");
   const stytch = useStytch();
 
   useEffect(() => {
@@ -39,6 +42,7 @@ export function AddEmail({
         expiration_minutes: 2,
       });
       setMethodId(method_id);
+      setSavedEmail(email); // Save the email for display
       setIsCodeSent(true);
     } catch {
       onError("Error sending verification code");
@@ -63,11 +67,17 @@ export function AddEmail({
   return (
     <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center">
       <DialogHeader>
-        <DialogTitle>Add Authenticator</DialogTitle>
+        <DialogTitle>
+          {error && error.includes("already added")
+            ? "Duplicate Authenticator"
+            : "Add Authenticator"}
+        </DialogTitle>
         <DialogDescription>
-          {isCodeSent
-            ? `Input the 6 digit verification code. Please check your email for the verification code. You will be logged in with this account.`
-            : `Enter your email to receive a verification code. Input the email
+          {error && error.includes("already added")
+            ? "This email is already set up as an authenticator."
+            : isCodeSent
+              ? `Input the 6 digit verification code. Please check your email for the verification code. You will be logged in with this account.`
+              : `Enter your email to receive a verification code. Input the email
           address that you want to use as an authenticator.`}
         </DialogDescription>
       </DialogHeader>
@@ -88,7 +98,24 @@ export function AddEmail({
             SEND VERIFICATION CODE
           </BaseButton>
         </>
+      ) : error && error.includes("already added") ? (
+        // Show dedicated error screen for duplicate email
+        <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
+          <div className="ui-flex ui-flex-col ui-gap-2 ui-text-center">
+            <p className="ui-text-destructive ui-font-semibold">
+              Email Already Added
+            </p>
+            <p className="ui-text-secondary-text ui-text-sm">
+              The email <span className="ui-font-semibold">{savedEmail}</span>{" "}
+              is already linked as an authenticator for this account.
+            </p>
+          </div>
+          <BaseButton onClick={onClose || (() => {})} className="ui-w-full">
+            CLOSE
+          </BaseButton>
+        </div>
       ) : (
+        // Show OTP form for normal flow
         <OtpForm
           handleOtp={handleSubmit}
           handleResendCode={handleEmail}

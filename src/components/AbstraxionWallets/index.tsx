@@ -33,6 +33,10 @@ import { InboxIcon } from "../ui/icons/Inbox";
 import SadIcon from "../ui/icons/Sad";
 import { useQueryParams } from "../../hooks/useQueryParams";
 import { safeRedirectOrDisconnect } from "../../utils/redirect-utils";
+import {
+  deduplicateAccountsById,
+  findBestMatchingAuthenticator,
+} from "../../utils/authenticator-utils";
 
 export const AbstraxionWallets = () => {
   const {
@@ -61,6 +65,9 @@ export const AbstraxionWallets = () => {
 
   const [isGeneratingNewWallet, setIsGeneratingNewWallet] = useState(false);
   const [shouldAutoNavigate, setShouldAutoNavigate] = useState(false);
+
+  // Deduplicate accounts by ID to prevent showing the same account multiple times
+  const uniqueAccounts = useMemo(() => deduplicateAccountsById(data), [data]);
 
   const handleJwtAALoginOrCreate = useCallback(async () => {
     try {
@@ -136,17 +143,20 @@ export const AbstraxionWallets = () => {
       !isGeneratingNewWallet &&
       !abstraxionError
     ) {
-      if (data?.length === 1) {
+      if (uniqueAccounts.length === 1) {
         // Auto-select the single account
-        const node = data[0];
-        const authenticatorIndex = node.authenticators.find(
-          (authenticator) => authenticator.authenticator === loginAuthenticator,
-        )?.authenticatorIndex;
+        const node = uniqueAccounts[0];
 
-        if (authenticatorIndex !== undefined) {
+        // Find the best matching authenticator (handles duplicates)
+        const authenticatorToUse = findBestMatchingAuthenticator(
+          node.authenticators,
+          loginAuthenticator,
+        );
+
+        if (authenticatorToUse) {
           setAbstractAccount({
             ...node,
-            currentAuthenticatorIndex: authenticatorIndex,
+            currentAuthenticatorIndex: authenticatorToUse.authenticatorIndex,
           });
           setShouldAutoNavigate(true);
           // Only close modal if not in grant flow (grant flow will show permissions next)
@@ -154,14 +164,14 @@ export const AbstraxionWallets = () => {
             setIsOpen(false);
           }
         }
-      } else if (data?.length === 0 && connectionType === "stytch") {
+      } else if (uniqueAccounts.length === 0 && connectionType === "stytch") {
         // Auto-create account for users with no accounts
         setShouldAutoNavigate(true);
         handleJwtAALoginOrCreate();
       }
     }
   }, [
-    data,
+    uniqueAccounts,
     loading,
     isGeneratingNewWallet,
     isInLoginFlow,
@@ -238,8 +248,8 @@ export const AbstraxionWallets = () => {
                   : "Loading accounts..."
               }
             />
-          ) : data?.length >= 1 ? (
-            data?.map((node, i: number) => (
+          ) : uniqueAccounts.length >= 1 ? (
+            uniqueAccounts.map((node, i: number) => (
               <NavigationButton
                 className={cn("ui-w-full", {
                   "ui-border-opacity-30": node.id === abstractAccount?.id,
@@ -255,14 +265,19 @@ export const AbstraxionWallets = () => {
                   </div>
                 }
                 onClick={() => {
+                  // Find the best matching authenticator (handles duplicates)
+                  const authenticatorToUse =
+                    findBestMatchingAuthenticator(
+                      node.authenticators,
+                      loginAuthenticator,
+                    ) || node.authenticators[0]; // Fallback to first authenticator
+
                   setAbstractAccount({
                     authenticators: node.authenticators,
                     id: node.id,
                     codeId: node.codeId,
-                    currentAuthenticatorIndex: node.authenticators.find(
-                      (authenticator) =>
-                        authenticator.authenticator === loginAuthenticator,
-                    ).authenticatorIndex,
+                    currentAuthenticatorIndex:
+                      authenticatorToUse.authenticatorIndex,
                   });
                   setIsOpen(false);
                 }}
@@ -312,7 +327,9 @@ export const AbstraxionWallets = () => {
                   className="ui-w-full"
                   onClick={handleJwtAALoginOrCreate}
                   disabled={
-                    loading || isGeneratingNewWallet || data?.length > 0
+                    loading ||
+                    isGeneratingNewWallet ||
+                    uniqueAccounts.length > 0
                   }
                 >
                   CREATE NEW ACCOUNT
