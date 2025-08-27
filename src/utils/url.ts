@@ -21,9 +21,13 @@ export function isUrlSafe(url: string | undefined): boolean {
     // Sanitize the URL using @braintree/sanitize-url
     const sanitizedUrl = sanitizeUrl(url);
 
-    // Check if the sanitized URL is different from the original URL
+    // Normalize the original URL to handle trailing slashes
+    const normalizedUrl = new URL(url).href;
+    const normalizedSanitized = new URL(sanitizedUrl).href;
+
+    // Check if the normalized URLs are different
     // This indicates that potentially malicious content was removed
-    if (sanitizedUrl !== url) {
+    if (normalizedSanitized !== normalizedUrl) {
       return false;
     }
 
