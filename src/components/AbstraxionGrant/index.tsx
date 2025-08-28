@@ -44,7 +44,7 @@ import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
 import FallbackImage from "../FallbackImage";
 import { getDomainAndProtocol, isUrlSafe, urlsMatch } from "../../utils/url";
-import { ChevronDownIcon } from "../ui/icons";
+import { ChevronDownIcon, WarningIcon } from "../ui/icons";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -491,7 +491,7 @@ export const AbstraxionGrant = ({
                       }
                     >
                       <div className="ui-flex ui-items-center ui-gap-2">
-                        <span className="ui-text-[#ff9800] ui-text-xl">⚠️</span>
+                        <WarningIcon className="ui-text-[#ff9800] ui-w-5 ui-h-5" />
                         <span className="ui-text-[#ff9800] ui-font-semibold ui-text-base">
                           Potential Security Risk
                         </span>
@@ -549,7 +549,7 @@ export const AbstraxionGrant = ({
                 {grantError && (
                   <div className="ui-w-full ui-mb-4 ui-p-4 ui-bg-red-500/10 ui-border ui-border-red-500/20 ui-rounded-xl">
                     <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
-                      <span className="ui-text-red-500 ui-text-lg">⚠️</span>
+                      <WarningIcon className="ui-text-red-500 ui-w-4 ui-h-4" />
                       <span className="ui-text-red-500 ui-font-semibold ui-text-sm">
                         Grant Failed
                       </span>
@@ -591,7 +591,7 @@ export const AbstraxionGrant = ({
                 {grantError && (
                   <div className="ui-w-full ui-mb-4 ui-p-4 ui-bg-red-500/10 ui-border ui-border-red-500/20 ui-rounded-xl">
                     <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
-                      <span className="ui-text-red-500 ui-text-lg">⚠️</span>
+                      <WarningIcon className="ui-text-red-500 ui-w-4 ui-h-4" />
                       <span className="ui-text-red-500 ui-font-semibold ui-text-sm">
                         Grant Failed
                       </span>

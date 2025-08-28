@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { AbstraxionContextProps } from "../AbstraxionContext";
 import { AbstraxionContext } from "../AbstraxionContext";
 import { ExternalLinkIcon } from "../ui/icons/ExternalLink";
+import { WarningIcon } from "../ui/icons";
 
 interface WalletSendReviewProps {
   sendAmount: string;
@@ -158,6 +159,19 @@ export function WalletSendReview({
             </div>
           )}
         </div>
+
+        {/* USDC on Xion is not supported by exchanges, the below renders a small warning message for the user */}
+        {selectedCurrency.symbol === "USDC" && (
+          <div className="ui-w-full ui-p-4 ui-bg-[#2d1600] ui-border ui-border-[#ff9800] ui-rounded-xl">
+            <div className="ui-flex ui-items-center ui-gap-2">
+              <WarningIcon className="ui-h-5 ui-w-5 ui-text-[#ff9800] ui-flex-shrink-0" />
+              <p className="ui-text-sm ui-font-medium ui-text-[#ffb74d] ui-text-center">
+                Centralized exchanges may not support this type of asset. Avoid
+                transferring to centralized exchanges.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="ui-flex ui-gap-3">
           <BaseButton

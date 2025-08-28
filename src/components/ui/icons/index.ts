@@ -26,3 +26,4 @@ export { InfoIcon } from "./Info";
 export { AppleLogoIcon } from "./AppleLogo";
 export { GoogleLogoIcon } from "./GoogleLogo";
 export { GithubLogoIcon } from "./GithubLogo";
+export { WarningIcon } from "./Warning";
