@@ -1,6 +1,7 @@
 import React from "react";
+import { OAuthProviders } from "@stytch/core/public";
 import { Authenticator } from "../../indexer-strategies/types";
-import type { authenticatorTypes, JwtSubType } from "../../types";
+import type { authenticatorTypes } from "../../types";
 import {
   AccountWalletLogo,
   CosmosLogo,
@@ -10,6 +11,7 @@ import {
   AppleLogoIcon,
   GoogleLogoIcon,
   GithubLogoIcon,
+  XLogoIcon,
 } from "../../components/ui";
 
 /**
@@ -54,18 +56,22 @@ export const getAuthenticatorLabel = (type: authenticatorTypes): string => {
 };
 
 const getJwtLogo = (subType: string) => {
-  const normalizedType = subType.toLowerCase() as JwtSubType;
+  const normalizedType = subType.toLowerCase();
 
-  const logoMap: Record<JwtSubType, JSX.Element> = {
-    email: <EmailIcon className="ui-w-4 ui-h-4" />,
-    google: <GoogleLogoIcon />,
-    apple: <AppleLogoIcon />,
-    github: <GithubLogoIcon className="ui-w-4 ui-h-4" />,
-    twitter: <EmailIcon className="ui-w-4 ui-h-4" />, // Placeholder
-    x: <EmailIcon className="ui-w-4 ui-h-4" />, // Placeholder
-  };
-
-  return logoMap[normalizedType] || <EmailIcon className="ui-w-4 ui-h-4" />;
+  switch (normalizedType) {
+    case OAuthProviders.Google:
+      return <GoogleLogoIcon />;
+    case OAuthProviders.Apple:
+      return <AppleLogoIcon />;
+    case OAuthProviders.Github:
+      return <GithubLogoIcon />;
+    case OAuthProviders.Twitter:
+      return <XLogoIcon />;
+    case "email":
+      return <EmailIcon className="ui-w-4 ui-h-4" />;
+    default:
+      return <EmailIcon className="ui-w-4 ui-h-4" />;
+  }
 };
 
 export const getAuthenticatorLogo = (
