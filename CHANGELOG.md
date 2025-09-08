@@ -1,5 +1,57 @@
 # abstraxion-dashboard
 
+## 0.12.0
+
+### Minor Changes
+
+- [#260](https://github.com/burnt-labs/xion-dashboard-app/pull/260) [`22abce1`](https://github.com/burnt-labs/xion-dashboard-app/commit/22abce1638dc435c63ab59310619875b1007a3a5) Thanks [@justinbarry](https://github.com/justinbarry)! - Fix duplicate account selection and prevent duplicate authenticators
+
+  - Prevent adding duplicate email/OAuth authenticators to accounts
+  - Deduplicate accounts in wallet selection view to show each account only once
+  - Add duplicate validation for all authenticator types (Keplr, MetaMask, OKX, Passkey)
+  - Improve error UX with dedicated screen when duplicate email detected
+  - Handle existing duplicate authenticators gracefully by selecting lowest index
+  - Extract authenticator logic into testable utility functions with full test coverage
+
+- [#255](https://github.com/burnt-labs/xion-dashboard-app/pull/255) [`c798215`](https://github.com/burnt-labs/xion-dashboard-app/commit/c798215f3d6aac3fb963e899132153a10a52e72c) Thanks [@burnt-sun](https://github.com/burnt-sun)! - Add oAuth support. Apple login.
+
+### Patch Changes
+
+- [#270](https://github.com/burnt-labs/xion-dashboard-app/pull/270) [`c2763ad`](https://github.com/burnt-labs/xion-dashboard-app/commit/c2763ad318600de2e625808eb7cf786a4422cd50) Thanks [@justinbarry](https://github.com/justinbarry)! - Enable mainnet "Sign in with Apple" deploy
+
+- [#267](https://github.com/burnt-labs/xion-dashboard-app/pull/267) [`c860953`](https://github.com/burnt-labs/xion-dashboard-app/commit/c860953a3956136f96c8824ff5d8e87e283137e9) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - url will no longer be unsafe just by not having a trailing '/'
+
+- [#259](https://github.com/burnt-labs/xion-dashboard-app/pull/259) [`f1aa949`](https://github.com/burnt-labs/xion-dashboard-app/commit/f1aa94956849f37bdfc5417684d00c211c25695d) Thanks [@burnt-sun](https://github.com/burnt-sun)! - Fix env variable toggling apple login
+
+- [#261](https://github.com/burnt-labs/xion-dashboard-app/pull/261) [`4d91b0c`](https://github.com/burnt-labs/xion-dashboard-app/commit/4d91b0c39b78bee98787f96781e901d40595d611) Thanks [@justinbarry](https://github.com/justinbarry)! - Fix dialog accessibility warnings and console errors
+
+  - Remove nested Dialog wrapper from AbstraxionSignin component to fix dialog-within-dialog issue
+  - Fix duplicate key warning in AbstraxionWallets by using unique keys
+  - Add React Router v7 future flags to prevent deprecation warnings
+  - Add util polyfill to Vite config to resolve Node.js module warnings
+  - Clean up unused Dialog-related imports
+
+- [#266](https://github.com/burnt-labs/xion-dashboard-app/pull/266) [`556fada`](https://github.com/burnt-labs/xion-dashboard-app/commit/556fadae4d3bf7e915d17e5e7800717e5398b6c5) Thanks [@ertemann](https://github.com/ertemann)! - add warning when sending usdc - exchanges might not support xion usdc
+
+- [#262](https://github.com/burnt-labs/xion-dashboard-app/pull/262) [`c0da68d`](https://github.com/burnt-labs/xion-dashboard-app/commit/c0da68dc8f27f17111579b4490618bcda98e9cff) Thanks [@burnt-sun](https://github.com/burnt-sun)! - Fix display of Apple IDs using "Hide my email"
+
+- [#263](https://github.com/burnt-labs/xion-dashboard-app/pull/263) [`472e5ee`](https://github.com/burnt-labs/xion-dashboard-app/commit/472e5ee4fe10c95875790a099023b0f53451c8b1) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - - Treasury Strategy Pattern: Implemented configurable strategy pattern for loading
+  treasury configurations with three strategies:
+
+  - DaoDao Strategy: Fetches from DaoDao indexer API with 10-minute TTL caching
+  - Direct Query Strategy: Legacy approach querying blockchain directly
+  - Composite Strategy (default): DaoDao with automatic fallback to Direct Query
+  - Performance Improvements: Treasury config loading now ~48% faster (615ms vs
+    1196ms) through:
+    - Optimized single API call to /all endpoint (previously 2 separate calls)
+    - In-memory caching with 10-minute TTL reducing redundant API calls
+    - 30-second timeout protection preventing hanging requests
+  - Configuration: New VITE_TREASURY_STRATEGY environment variable to control strategy
+    selection
+  - Comprehensive Testing: Added 22 tests covering all strategies and edge cases
+
+- [#264](https://github.com/burnt-labs/xion-dashboard-app/pull/264) [`5a6c55f`](https://github.com/burnt-labs/xion-dashboard-app/commit/5a6c55f91c7e70529839f065e6cc7c483c42df54) Thanks [@burnt-sun](https://github.com/burnt-sun)! - refactor to use stytch type in authenticator list
+
 ## 0.11.0
 
 ### Minor Changes
