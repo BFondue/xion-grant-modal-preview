@@ -29,6 +29,15 @@
       ],
       "build": { "command": "npm run build:mainnet" },
     },
+    "mainnet-apple": {
+      "routes": [
+        {
+          "pattern": "b8f4ba346f2b6753settings.burnttesting.xyz",
+          "custom_domain": true,
+        },
+      ],
+      "build": { "command": "npm run build:mainnet" },
+    },
     "testnet": {
       "routes": [
         {
