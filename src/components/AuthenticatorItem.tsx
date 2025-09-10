@@ -16,7 +16,7 @@ interface AuthenticatorItemProps {
   authenticator: Authenticator;
   currentAuthenticatorIndex: number;
   isMainnet: boolean;
-  onRemove: (authenticator: Authenticator) => void;
+  onRemove: (authenticator: Authenticator, authType?: string) => void;
   user: User | null;
   authType?: string;
 }
@@ -78,7 +78,7 @@ const AuthenticatorItemComponent: React.FC<AuthenticatorItemProps> = ({
   };
 
   const handleRemove = () => {
-    onRemove(authenticator);
+    onRemove(authenticator, authType);
   };
 
   return (

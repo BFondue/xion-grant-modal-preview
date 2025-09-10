@@ -10,7 +10,7 @@ export default function RemoveAuthenticatorModal({
 }: {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
-  authenticator?: Authenticator;
+  authenticator?: { authenticator: Authenticator; authType?: string };
 }) {
   return (
     <Dialog modal onOpenChange={setIsOpen} open={isOpen}>
@@ -20,7 +20,8 @@ export default function RemoveAuthenticatorModal({
         closeButton
       >
         <RemoveAuthenticatorForm
-          authenticator={authenticator}
+          authenticator={authenticator?.authenticator}
+          authType={authenticator?.authType || undefined}
           setIsOpen={setIsOpen}
         />
       </DialogContent>

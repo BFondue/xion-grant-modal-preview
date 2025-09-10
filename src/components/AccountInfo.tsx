@@ -13,7 +13,7 @@ export const AccountInfo = () => {
   const [, setIsAddModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [authenticatorToRemove, setAuthenticatorToRemove] = useState<
-    Authenticator | undefined
+    { authenticator: Authenticator; authType?: string } | undefined
   >();
   const { isMainnet, abstractAccount, setAbstractAccount } =
     useContext(AbstraxionContext);
@@ -45,8 +45,11 @@ export const AccountInfo = () => {
     }
   }, [user, abstractAccount, setAbstractAccount]);
 
-  const handleRemoveAuthenticator = (authenticator: Authenticator) => {
-    setAuthenticatorToRemove(authenticator);
+  const handleRemoveAuthenticator = (
+    authenticator: Authenticator,
+    authType?: string,
+  ) => {
+    setAuthenticatorToRemove({ authenticator, authType });
     setIsRemoveModalOpen(true);
   };
 

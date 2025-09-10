@@ -1,17 +1,18 @@
-import React, { Dispatch, SetStateAction, useContext, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useState,
+  useMemo,
+} from "react";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import {
-  AccountWalletLogo,
   BaseButton,
-  CosmosLogo,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  EmailIcon,
-  EthereumLogo,
-  PasskeyIcon,
 } from "../../ui";
 import {
   AbstraxionContext,
@@ -25,12 +26,21 @@ import { removeRegistration } from "../../../utils/webauthn-utils";
 import { Loading } from "../../Loading";
 import { getEnvStringOrThrow } from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
+import { useAuthTypes } from "../../../auth/hooks/useAuthTypes";
+import {
+  extractUserIdFromAuthenticator,
+  getAuthenticatorLogo,
+  capitalizeFirstLetter,
+  getAuthenticatorLabel,
+} from "../../../auth/utils/authenticator-helpers";
 
 export function RemoveAuthenticatorForm({
   authenticator,
+  authType,
   setIsOpen,
 }: {
   authenticator?: Authenticator;
+  authType?: string;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }) {
   // General UI state
@@ -38,7 +48,9 @@ export function RemoveAuthenticatorForm({
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailWarning, setShowEmailWarning] = useState(
-    authenticator?.type.toUpperCase() === "JWT" ? true : false,
+    authenticator?.type.toUpperCase() === "JWT" && authType === "email"
+      ? true
+      : false,
   );
 
   // Context state
@@ -49,34 +61,42 @@ export function RemoveAuthenticatorForm({
   // Hooks
   const { client, getGasCalculation } = useAbstraxionSigningClient();
 
+  // Extract userId for JWT authenticators to get auth type
+  const userId = useMemo(() => {
+    if (!authenticator) return null;
+    return extractUserIdFromAuthenticator(
+      authenticator.authenticator,
+      authenticator.type,
+    );
+  }, [authenticator]);
+
+  // Fetch auth types for JWT authenticators
+  const { authTypesMap } = useAuthTypes(userId ? [userId] : []);
+
   const handleAuthenticatorLabels = (type: authenticatorTypes) => {
-    switch (type) {
-      case "SECP256K1":
-        return "Cosmos Wallet";
-      case "ETHWALLET":
-        return "EVM Wallet";
-      case "JWT":
-        return "Email";
-      case "PASSKEY":
-        return "Passkey";
-      default:
-        return "";
+    // For JWT authenticators, use the auth type from the API if available
+    if (type === "JWT" && userId) {
+      const authType = authTypesMap.get(userId);
+      if (authType) {
+        return capitalizeFirstLetter(authType);
+      }
     }
+
+    // Fallback to default labels
+    return getAuthenticatorLabel(type);
   };
 
   const handleAuthenticatorLogos = (type: authenticatorTypes) => {
-    switch (type) {
-      case "SECP256K1":
-        return <CosmosLogo />;
-      case "ETHWALLET":
-        return <EthereumLogo />;
-      case "JWT":
-        return <EmailIcon />;
-      case "PASSKEY":
-        return <PasskeyIcon />;
-      default:
-        return <AccountWalletLogo />;
+    // For JWT authenticators, use the auth type from the API if available
+    if (type === "JWT" && userId) {
+      const authType = authTypesMap.get(userId);
+      if (authType) {
+        return getAuthenticatorLogo(type, authType);
+      }
     }
+
+    // Fallback to default logos
+    return getAuthenticatorLogo(type);
   };
 
   const renderAuthenticator = () => {
@@ -166,7 +186,7 @@ export function RemoveAuthenticatorForm({
         import.meta.env.VITE_FEE_GRANTER_ADDRESS,
       );
       const isValidFeeGrant = await validateFeeGrant(
-        chainInfo?.rest,
+        chainInfo?.rest || "",
         feeGranterAddress,
         abstractAccount.id,
         [
@@ -184,14 +204,16 @@ export function RemoveAuthenticatorForm({
         abstractAccount.id,
         [removeMsg],
         "add-authenticator",
-        validFeeGranter,
+        validFeeGranter || undefined,
       );
       const fee = getGasCalculation(simmedGas);
 
       const deliverTxResponse = await client.signAndBroadcast(
         abstractAccount.id,
         [removeMsg],
-        validFeeGranter ? { ...fee, granter: validFeeGranter } : fee,
+        validFeeGranter && fee
+          ? { ...fee, granter: validFeeGranter }
+          : fee || "auto",
       );
 
       assertIsDeliverTxSuccess(deliverTxResponse);
@@ -204,7 +226,7 @@ export function RemoveAuthenticatorForm({
         ),
       });
 
-      if (authenticator.type === AAAlgo.Passkey) {
+      if (authenticator.type === AAAlgo.PASSKEY) {
         removeRegistration(abstractAccount.id, authenticator.authenticator);
       }
 

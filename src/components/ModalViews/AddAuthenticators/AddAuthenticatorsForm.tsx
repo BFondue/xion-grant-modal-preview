@@ -782,6 +782,9 @@ export function AddAuthenticatorsForm({
       });
     } catch (error) {
       console.error("Error starting Apple OAuth flow:", error);
+      setErrorMessage(
+        "There was an error starting the Apple OAuth flow.\n" + error,
+      );
     } finally {
       setIsLoading(false);
     }
