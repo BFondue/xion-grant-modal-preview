@@ -63,7 +63,7 @@ export const AbstraxionGrant = ({
 }: AbstraxionGrantProps) => {
   const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
-  const { redirect_uri } = useQueryParams(["redirect_uri"]);
+  const { redirect_uri, state } = useQueryParams(["redirect_uri", "state"]);
   const { xionDisconnect } = useXionDisconnect();
   const { chainInfo, abstraxionError, setAbstraxionError } = useContext(
     AbstraxionContext,
@@ -101,6 +101,7 @@ export const AbstraxionGrant = ({
             xionDisconnect,
             account?.id,
             true,
+            state || undefined,
           );
         }, 500);
 
@@ -113,6 +114,7 @@ export const AbstraxionGrant = ({
       account?.id,
       setAbstraxionError,
       xionDisconnect,
+      state,
     ],
   );
 
@@ -123,6 +125,7 @@ export const AbstraxionGrant = ({
       xionDisconnect,
       undefined,
       true,
+      state || undefined,
     );
   };
 

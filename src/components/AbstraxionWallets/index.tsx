@@ -50,7 +50,7 @@ export const AbstraxionWallets = () => {
     isInGrantFlow,
   } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
-  const { redirect_uri } = useQueryParams(["redirect_uri"]);
+  const { redirect_uri, state } = useQueryParams(["redirect_uri", "state"]);
   const isInLoginFlow = !abstractAccount;
 
   const stytchClient = useStytch();
@@ -205,6 +205,7 @@ export const AbstraxionWallets = () => {
       xionDisconnect,
       undefined,
       !redirect_uri,
+      state || undefined,
     );
   };
 
