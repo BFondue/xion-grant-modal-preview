@@ -1,5 +1,13 @@
 # abstraxion-dashboard
 
+## 0.15.0
+
+### Minor Changes
+
+- [#269](https://github.com/burnt-labs/xion-dashboard-app/pull/269) [`3f120ee`](https://github.com/burnt-labs/xion-dashboard-app/commit/3f120ee885e388c5e40a2fe98d8964cbe34db4de) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Removed the disabled "Disconnect" button when in the loading state of Creating An Account.
+  Fixed the weird showing of "No accounts" when loading accounts. Created a new component for the Account Dialog on the dashboard because of the complexity of the Accounts component used in the login.
+  Replaced the "Disconnect" button here with a primary button that says "Back to Login"
+
 ## 0.14.0
 
 ### Minor Changes
