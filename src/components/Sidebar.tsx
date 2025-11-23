@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AbstraxionContext, AbstraxionContextProps } from "./AbstraxionContext";
 import { CloseIcon, WalletIcon } from "./ui";
@@ -9,6 +9,7 @@ import { useAbstraxionAccount } from "../hooks";
 import { truncateAddress } from "../utils";
 import xionLogo from "../assets/logo.png";
 import { cn } from "../utils/classname-util";
+import { DashboardAccountDialog } from "./DashboardAccountDialog";
 
 interface SidebarProps {
   onClose?: VoidFunction;
@@ -21,6 +22,7 @@ export function Sidebar({ onClose }: SidebarProps) {
     AbstraxionContext,
   ) as AbstraxionContextProps;
   const { data: account } = useAbstraxionAccount();
+  const [showDashboardDialog, setShowDashboardDialog] = useState(false);
 
   const NAV_OPTIONS = React.useMemo(
     () => [
@@ -118,9 +120,22 @@ export function Sidebar({ onClose }: SidebarProps) {
               {account?.id && truncateAddress(account.id)}
             </span>
           </div>
-          <EllipsisButton onClick={() => setIsOpen(true)} />
+          <EllipsisButton
+            onClick={() => {
+              if (account?.id) {
+                setShowDashboardDialog(true);
+              } else {
+                setIsOpen(true);
+              }
+            }}
+          />
         </div>
       </div>
+
+      <DashboardAccountDialog
+        isOpen={showDashboardDialog}
+        onClose={() => setShowDashboardDialog(false)}
+      />
     </div>
   );
 }

@@ -30,27 +30,43 @@ export class NumiaIndexerStrategy implements IndexerStrategy {
   async fetchSmartAccounts(
     loginAuthenticator: string,
   ): Promise<SmartAccountWithCodeId[]> {
-    // Code id is only available with version 2 of the api
-    const encodedAuthenticator = encodeURIComponent(loginAuthenticator);
-    const url = `${this.baseURL}authenticators/${encodedAuthenticator}/smartAccounts/details`;
-    const { data } = await axios.get<NumiaSmartAccountResp[]>(url, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${this.authToken}`,
-      },
-    });
+    try {
+      // Code id is only available with version 2 of the api
+      const encodedAuthenticator = encodeURIComponent(loginAuthenticator);
+      const url = `${this.baseURL}authenticators/${encodedAuthenticator}/smartAccounts/details`;
+      const { data } = await axios.get<NumiaSmartAccountResp[]>(url, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${this.authToken}`,
+        },
+      });
 
-    return data?.map(({ smart_account, code_id, authenticators }) => ({
-      id: smart_account,
-      codeId: Number(code_id),
-      authenticators: authenticators.map(
-        ({ authenticator, authenticator_index, type }) => ({
-          id: `${smart_account}-${authenticator_index}`,
-          authenticator,
-          authenticatorIndex: Number(authenticator_index),
-          type,
-        }),
-      ),
-    }));
+      // Validate response data exists and is an array
+      if (!data || !Array.isArray(data)) {
+        console.warn(
+          "NumiaIndexerStrategy: Invalid response format, expected array",
+        );
+        return [];
+      }
+
+      return data.map(({ smart_account, code_id, authenticators }) => ({
+        id: smart_account,
+        codeId: Number(code_id),
+        authenticators: authenticators.map(
+          ({ authenticator, authenticator_index, type }) => ({
+            id: `${smart_account}-${authenticator_index}`,
+            authenticator,
+            authenticatorIndex: Number(authenticator_index),
+            type,
+          }),
+        ),
+      }));
+    } catch (error) {
+      console.error(
+        "NumiaIndexerStrategy: Failed to fetch smart accounts",
+        error,
+      );
+      return [];
+    }
   }
 }

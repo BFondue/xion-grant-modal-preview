@@ -142,8 +142,8 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
           )}
         </DialogContent>
       </Dialog>
-      {/* TOS Footer */}
-      <FooterLogin />
+      {/* TOS Footer - Only show during login flows, not when viewing wallets in dashboard */}
+      {!isConnected && <FooterLogin />}
     </>
   );
 };

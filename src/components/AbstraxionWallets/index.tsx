@@ -58,9 +58,12 @@ export const AbstraxionWallets = () => {
   const session_token = stytchClient.session.getTokens()?.session_token;
 
   const { loginAuthenticator } = useAbstraxionAccount();
-  const { data, loading, error } = useGetSmartAccountsStrategy(false, () => {
-    setIsGeneratingNewWallet(false);
-  });
+  const { data, loading, error, retry } = useGetSmartAccountsStrategy(
+    false,
+    () => {
+      setIsGeneratingNewWallet(false);
+    },
+  );
   const { xionDisconnect } = useXionDisconnect();
 
   const [isGeneratingNewWallet, setIsGeneratingNewWallet] = useState(false);
@@ -187,14 +190,24 @@ export const AbstraxionWallets = () => {
   const dialogTitle = useMemo(() => {
     if (isGeneratingNewWallet) return "Creating Account";
     if (loading || shouldAutoNavigate) return "Fetching Accounts";
+    if (error) return "Connection Error";
     return "Accounts";
-  }, [isGeneratingNewWallet, loading, shouldAutoNavigate]);
+  }, [isGeneratingNewWallet, loading, shouldAutoNavigate, error]);
 
   const dialogDescription = useMemo(() => {
     if (isGeneratingNewWallet) return "This will take a few seconds";
-    if (loading || shouldAutoNavigate) return "Loading your accounts";
+    if (loading || shouldAutoNavigate)
+      return "Querying the indexer for your accounts...";
+    if (error) return "Failed to connect to the indexer";
+    if (uniqueAccounts.length === 0) return "No accounts found on the network";
     return "Choose an account to continue";
-  }, [isGeneratingNewWallet, loading, shouldAutoNavigate]);
+  }, [
+    isGeneratingNewWallet,
+    loading,
+    shouldAutoNavigate,
+    error,
+    uniqueAccounts.length,
+  ]);
 
   const handleDisconnectClick = () => {
     // Only disconnect if there's no redirect_uri (button is labeled "DISCONNECT")
@@ -213,7 +226,11 @@ export const AbstraxionWallets = () => {
     return (
       <ErrorDisplay
         title="Failed to fetch accounts"
-        description="There was an error fetching your accounts. Please try reloading the page."
+        description="Unable to connect to the indexer. Please check your connection and try again."
+        buttonText="RETRY"
+        onButtonClick={() => {
+          retry();
+        }}
         onClose={() => {
           setAbstraxionError("");
           xionDisconnect();
@@ -240,15 +257,17 @@ export const AbstraxionWallets = () => {
           aria-label={dialogTitle}
         >
           {loading || isGeneratingNewWallet || shouldAutoNavigate ? (
-            <SpinnerV2
-              size="lg"
-              color="white"
-              aria-label={
-                isGeneratingNewWallet
-                  ? "Creating account..."
-                  : "Loading accounts..."
-              }
-            />
+            <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-py-16">
+              <SpinnerV2
+                size="lg"
+                color="white"
+                aria-label={
+                  isGeneratingNewWallet
+                    ? "Creating account..."
+                    : "Loading accounts..."
+                }
+              />
+            </div>
           ) : uniqueAccounts.length >= 1 ? (
             uniqueAccounts.map((node, i: number) => (
               <NavigationButton
@@ -294,12 +313,17 @@ export const AbstraxionWallets = () => {
                   <div className="ui-flex ui-items-center ui-justify-center ui-w-full ui-h-full">
                     <InboxIcon aria-hidden="true" />
                   </div>
-                  <p
-                    className="ui-font-bold ui-text-xl ui-leading-6"
-                    role="status"
-                  >
-                    No accounts found
-                  </p>
+                  <div className="ui-flex ui-flex-col ui-items-center ui-gap-2">
+                    <p
+                      className="ui-font-bold ui-text-xl ui-leading-6"
+                      role="status"
+                    >
+                      No accounts found
+                    </p>
+                    <p className="ui-text-sm ui-text-secondary-text ui-text-center">
+                      You don&apos;t have any accounts on this network yet
+                    </p>
+                  </div>
                 </>
               ) : (
                 <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-5 ui-px-8">
@@ -318,51 +342,69 @@ export const AbstraxionWallets = () => {
           )}
         </div>
       </div>
-      <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
-        <DialogFooter>
-          <div className="ui-flex ui-flex-col ui-gap-3 ui-w-full">
-            {connectionType === "stytch" &&
-              isInLoginFlow &&
-              !shouldAutoNavigate && (
+      {!(loading || isGeneratingNewWallet || shouldAutoNavigate) && (
+        <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
+          <DialogFooter>
+            <div className="ui-flex ui-flex-col ui-gap-3 ui-w-full">
+              {connectionType === "stytch" &&
+                isInLoginFlow &&
+                !shouldAutoNavigate && (
+                  <BaseButton
+                    className="ui-w-full"
+                    onClick={handleJwtAALoginOrCreate}
+                    disabled={
+                      loading ||
+                      isGeneratingNewWallet ||
+                      uniqueAccounts.length > 0
+                    }
+                  >
+                    CREATE NEW ACCOUNT
+                  </BaseButton>
+                )}
+              <div className="ui-flex ui-gap-3 ui-w-full">
+                {isInLoginFlow && isInGrantFlow && (
+                  <BaseButton
+                    variant="secondary"
+                    size="icon-large"
+                    className="ui-group/basebutton"
+                    disabled={loading || isGeneratingNewWallet}
+                    onClick={xionDisconnect}
+                  >
+                    <div className="ui-flex ui-items-center ui-justify-center">
+                      <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
+                      <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
+                    </div>
+                  </BaseButton>
+                )}
                 <BaseButton
-                  className="ui-w-full"
-                  onClick={handleJwtAALoginOrCreate}
-                  disabled={
-                    loading ||
-                    isGeneratingNewWallet ||
-                    uniqueAccounts.length > 0
+                  variant={
+                    connectionType !== "stytch" &&
+                    uniqueAccounts.length === 0 &&
+                    !redirect_uri
+                      ? "default"
+                      : "destructive"
                   }
-                >
-                  CREATE NEW ACCOUNT
-                </BaseButton>
-              )}
-            <div className="ui-flex ui-gap-3 ui-w-full">
-              {isInLoginFlow && isInGrantFlow && (
-                <BaseButton
-                  variant="secondary"
-                  size="icon-large"
-                  className="ui-group/basebutton"
+                  className="ui-w-full"
                   disabled={loading || isGeneratingNewWallet}
-                  onClick={xionDisconnect}
+                  onClick={handleDisconnectClick}
                 >
-                  <div className="ui-flex ui-items-center ui-justify-center">
-                    <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
-                    <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
-                  </div>
+                  {redirect_uri ? (
+                    "CANCEL"
+                  ) : connectionType !== "stytch" &&
+                    uniqueAccounts.length === 0 ? (
+                    <div className="ui-flex ui-items-center ui-justify-center ui-gap-2">
+                      <ChevronRightIcon className="ui-fill-current ui-rotate-180" />
+                      BACK TO LOGIN
+                    </div>
+                  ) : (
+                    "DISCONNECT"
+                  )}
                 </BaseButton>
-              )}
-              <BaseButton
-                variant="destructive"
-                className="ui-w-full"
-                disabled={loading || isGeneratingNewWallet}
-                onClick={handleDisconnectClick}
-              >
-                {redirect_uri ? "CANCEL" : "DISCONNECT"}
-              </BaseButton>
+              </div>
             </div>
-          </div>
-        </DialogFooter>
-      </div>
+          </DialogFooter>
+        </div>
+      )}
     </div>
   );
 };

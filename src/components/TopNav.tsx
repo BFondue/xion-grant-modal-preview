@@ -11,6 +11,7 @@ import { Sidebar } from "./Sidebar";
 import { truncateAddress } from "../utils";
 import { useBreakpoint } from "../hooks/useBreakpoint";
 import { cn } from "../utils/classname-util";
+import { DashboardAccountDialog } from "./DashboardAccountDialog";
 
 export function TopNav() {
   const location = useLocation();
@@ -20,6 +21,7 @@ export function TopNav() {
   ) as AbstraxionContextProps;
   const { data: account } = useAbstraxionAccount();
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showDashboardDialog, setShowDashboardDialog] = useState(false);
   const isAboveMobile = useBreakpoint("md");
 
   useEffect(() => {
@@ -103,7 +105,13 @@ export function TopNav() {
             <div className="ui-hidden md:ui-block">
               <BaseButton
                 size="small"
-                onClick={() => setIsOpen(true)}
+                onClick={() => {
+                  if (account?.id) {
+                    setShowDashboardDialog(true);
+                  } else {
+                    setIsOpen(true);
+                  }
+                }}
                 className="!ui-px-3 !ui-py-1.5 ui-bg-transparent hover:ui-bg-white/10"
               >
                 <div className="ui-flex ui-items-center ui-space-x-2">
@@ -152,6 +160,11 @@ export function TopNav() {
           <Sidebar onClose={() => setShowMobileSidebar(false)} />
         </div>
       </div>
+
+      <DashboardAccountDialog
+        isOpen={showDashboardDialog}
+        onClose={() => setShowDashboardDialog(false)}
+      />
     </>
   );
 }

@@ -28,6 +28,7 @@ export const useBaseSmartAccounts = (
   loading: false | true;
   error: unknown;
   isSuccess: boolean;
+  retry: () => void;
 } => {
   const { loginAuthenticator } = useAbstraxionAccount();
   const [shouldFetch, setShouldFetch] = useState(!waitToFetch);
@@ -54,6 +55,9 @@ export const useBaseSmartAccounts = (
     },
     refetchInterval: pollInterval,
     enabled: shouldFetch && Boolean(loginAuthenticator),
+    // Add retry configuration with exponential backoff
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const startPolling = (customInterval?: number) => {
@@ -63,11 +67,8 @@ export const useBaseSmartAccounts = (
     setShouldFetch(true);
   };
 
-  useEffect(() => {
-    if (query.error) {
-      setShouldFetch(false);
-    }
-  }, [query.error]);
+  // Don't automatically stop fetching on error - let retry logic handle it
+  // Users can manually retry if needed
 
   useEffect(() => {
     const { data } = query;
@@ -90,5 +91,6 @@ export const useBaseSmartAccounts = (
     error: query.error,
     startPolling,
     isSuccess,
+    retry: query.refetch,
   };
 };

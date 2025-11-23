@@ -35,12 +35,42 @@ export class NoIndexerStrategy implements IndexerStrategy {
   async fetchSmartAccounts(
     loginAuthenticator: string,
   ): Promise<SmartAccountWithCodeId[]> {
-    const [aud, sub] = loginAuthenticator.split(".");
-    const results = await fetch(
-      `${this.baseURL}/api/v1/jwt-accounts/${aud}/${sub}`,
-      {},
-    );
-    const resultsJson = await results.json();
-    return [resultsJson];
+    try {
+      // Validate authenticator format
+      const authenticatorParts = loginAuthenticator.split(".");
+      if (authenticatorParts.length < 2) {
+        console.warn(
+          "NoIndexerStrategy: Invalid authenticator format, expected 'aud.sub'",
+        );
+        return [];
+      }
+
+      const [aud, sub] = authenticatorParts;
+      const response = await fetch(
+        `${this.baseURL}/api/v1/jwt-accounts/${aud}/${sub}`,
+        {},
+      );
+
+      if (!response.ok) {
+        console.warn(
+          `NoIndexerStrategy: Failed to fetch account, status: ${response.status}`,
+        );
+        return [];
+      }
+
+      const resultsJson = await response.json();
+
+      // Validate the response has the expected structure
+      if (!resultsJson || typeof resultsJson !== "object") {
+        console.warn("NoIndexerStrategy: Invalid response format");
+        return [];
+      }
+
+      // If the response is already an array, return it; otherwise wrap in array
+      return Array.isArray(resultsJson) ? resultsJson : [resultsJson];
+    } catch (error) {
+      console.error("NoIndexerStrategy: Failed to fetch smart accounts", error);
+      return [];
+    }
   }
 }
