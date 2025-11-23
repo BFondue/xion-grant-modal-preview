@@ -83,10 +83,33 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
 
   if (!isOpen) return null;
 
+  // Determine content key to force remount on major content changes
+  const contentKey = useMemo(() => {
+    if (abstraxionError) return "error";
+    if (
+      account?.id &&
+      grantee &&
+      (contractsArray.length > 0 || stake || bankArray.length > 0 || treasury)
+    ) {
+      return "grant";
+    }
+    if (isConnected) return "wallets";
+    return "signin";
+  }, [
+    abstraxionError,
+    account?.id,
+    grantee,
+    contractsArray.length,
+    stake,
+    bankArray.length,
+    treasury,
+    isConnected,
+  ]);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent>
+        <DialogContent key={contentKey}>
           {abstraxionError ? (
             <ErrorDisplay
               description={abstraxionError}

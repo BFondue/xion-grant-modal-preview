@@ -27,8 +27,8 @@ const DialogOverlay = React.forwardRef<
         // Base positioning
         "ui-fixed ui-inset-0 ui-z-30",
         // Animations
-        "data-[state=open]:ui-animate-in data-[state=closed]:ui-animate-out",
-        "data-[state=closed]:ui-fade-out-0 data-[state=open]:ui-fade-in-0",
+        "ui-transition-opacity ui-duration-200",
+        "data-[state=closed]:ui-opacity-0 data-[state=open]:ui-opacity-100",
         className,
       )}
       ref={ref}
@@ -114,6 +114,16 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
       widthMeasurementTimeout: null as number | null,
       handleWindowResize: null as (() => void) | null,
     });
+
+    React.useEffect(() => {
+      const element = stateRef.current.element;
+      if (element) {
+        const dataState = element.getAttribute("data-state");
+        if (dataState === "closed") {
+          setIsTall(false);
+        }
+      }
+    }, [stateRef.current.element]);
 
     const measureNaturalContentSize = React.useCallback(() => {
       const { element } = stateRef.current;
@@ -369,22 +379,20 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           className={cn(
             "ui-fixed ui-z-50",
             !isTall
-              ? "ui-left-[50%] ui-top-[50%] ui-translate-x-[-50%] ui-translate-y-[-50%]"
-              : "ui-left-[50%] ui-translate-x-[-50%] ui-top-0 ui-translate-y-0",
+              ? "ui-left-0 ui-top-0 sm:ui-left-[50%] sm:ui-top-[50%] sm:-ui-translate-x-1/2 sm:-ui-translate-y-1/2"
+              : "ui-left-0 ui-top-0 sm:ui-left-[50%] sm:-ui-translate-x-1/2",
             !isTall && "ui-w-full sm:ui-max-w-lg md:ui-min-w-[560px]",
             isTall && "ui-max-w-full ui-w-full",
             "ui-p-10 ui-gap-12 !ui-flex ui-flex-col sm:ui-p-12 sm:ui-block sm:ui-flex-none",
             !isTall && "ui-justify-center",
-            "ui-bg-[#0A0A0A]/50 ui-backdrop-blur-2xl sm:ui-rounded-[48px] ui-shadow-[0_0_20px_10px_rgba(255,255,255,0.01)]",
+            "ui-bg-[#0A0A0A]/50 ui-backdrop-blur-2xl ui-rounded-none sm:ui-rounded-[48px] ui-shadow-[0_0_20px_10px_rgba(255,255,255,0.01)]",
             isTall && "!ui-rounded-none",
             !isTall
-              ? "ui-h-screen sm:ui-h-auto"
+              ? "ui-h-screen ui-max-h-screen sm:ui-max-h-[90vh] sm:ui-h-auto"
               : "ui-max-h-screen ui-h-full ui-overflow-y-auto",
-            "ui-duration-200",
-            "data-[state=closed]:ui-animate-out data-[state=closed]:ui-fade-out-0 data-[state=closed]:ui-zoom-out-95",
-            "data-[state=open]:ui-animate-in data-[state=open]:ui-fade-in-0 data-[state=open]:ui-zoom-in-95",
-            "data-[state=closed]:ui-slide-out-to-left-1/2 data-[state=closed]:ui-slide-out-to-top-[48%]",
-            "data-[state=open]:ui-slide-in-from-left-1/2 data-[state=open]:ui-slide-in-from-top-[48%]",
+            "ui-transition-all ui-duration-200",
+            "data-[state=closed]:ui-opacity-0",
+            "data-[state=open]:ui-opacity-100",
             className,
           )}
           {...props}
@@ -401,6 +409,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
             className={cn(
               "ui-flex ui-flex-col ui-gap-8",
               isTall && "ui-w-full ui-max-w-[464px] ui-mx-auto",
+              !isTall && "ui-overflow-y-auto ui-max-h-full",
             )}
           >
             {children}
