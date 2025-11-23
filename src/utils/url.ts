@@ -43,6 +43,16 @@ export function isUrlSafe(url: string | undefined): boolean {
       return false;
     }
 
+    // Check for URL spoofing using @ character
+    // This detects URLs like https://example.com@evil.com where the real domain is evil.com
+    if (
+      urlObj.pathname.includes("@") ||
+      urlObj.hostname.includes("@") ||
+      url.includes("@")
+    ) {
+      return false;
+    }
+
     // Check for suspicious patterns in the decoded URL
     const decodedUrl = decodeURIComponent(url);
 

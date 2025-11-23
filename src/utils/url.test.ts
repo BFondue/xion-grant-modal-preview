@@ -106,6 +106,21 @@ describe("isUrlSafe", () => {
     expect(isUrlSafe(maliciousUrl)).toBe(false);
   });
 
+  it("returns false for URLs with @ character used for spoofing", () => {
+    // Test the specific malicious URL from the issue description
+    const spoofingUrl =
+      "https://settings.burnt.com/?stake=true&grantee=xion13ytx3zs70865p709dmznne96j2slf8pyjlnjg5&redirect_uri=https%3A%2F%2Fstaking.burnt.com@withphp.com%2Fstaking%2F%3Futm_source%3Dimmunefi";
+    expect(isUrlSafe(spoofingUrl)).toBe(false);
+
+    // Test other variations of URL spoofing with @ character
+    expect(isUrlSafe("https://example.com@evil.com")).toBe(false);
+    expect(isUrlSafe("https://bank.com@phishing.com/login")).toBe(false);
+    expect(isUrlSafe("https://legitimate-site.com:password@attacker.com")).toBe(
+      false,
+    );
+    expect(isUrlSafe("https://user:pass@malicious.com")).toBe(false);
+  });
+
   it("returns false for invalid URLs", () => {
     expect(isUrlSafe("not-a-url")).toBe(false);
     expect(isUrlSafe("")).toBe(false);
