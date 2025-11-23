@@ -87,6 +87,7 @@ export const AuthenticatorsList: React.FC<AuthenticatorsListProps> = ({
             onRemove={onRemoveAuthenticator}
             user={user}
             authType={authType}
+            authenticators={authenticators}
           />
         );
       })}
