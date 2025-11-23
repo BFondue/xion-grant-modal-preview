@@ -126,7 +126,7 @@ describe("AuthenticatorItem", () => {
       expect(tooltipContent).toHaveTextContent("Remove authenticator");
 
       fireEvent.click(removeButton);
-      expect(mockOnRemove).toHaveBeenCalledWith(authenticators[1]);
+      expect(mockOnRemove).toHaveBeenCalledWith(authenticators[1], "email");
     });
 
     it("should allow removing passkey when authenticated with non-passkey", () => {
@@ -150,7 +150,7 @@ describe("AuthenticatorItem", () => {
 
       expect(removeButton).not.toBeDisabled();
       fireEvent.click(removeButton);
-      expect(mockOnRemove).toHaveBeenCalledWith(authenticators[1]);
+      expect(mockOnRemove).toHaveBeenCalledWith(authenticators[1], "email");
     });
 
     it("should prevent removing current authenticator regardless of type", () => {
@@ -196,7 +196,7 @@ describe("AuthenticatorItem", () => {
 
       expect(removeButton).not.toBeDisabled();
       fireEvent.click(removeButton);
-      expect(mockOnRemove).toHaveBeenCalledWith(authenticators[1]);
+      expect(mockOnRemove).toHaveBeenCalledWith(authenticators[1], "email");
     });
   });
 
