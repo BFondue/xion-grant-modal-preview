@@ -1,5 +1,13 @@
 # abstraxion-dashboard
 
+## 0.13.0
+
+### Minor Changes
+
+- [#276](https://github.com/burnt-labs/xion-dashboard-app/pull/276) [`9d1944d`](https://github.com/burnt-labs/xion-dashboard-app/commit/9d1944d494db944fe714b06168473935e770e2f8) Thanks [@btspoony](https://github.com/btspoony)! - feat(auth): add state field support for authentication
+
+- [#271](https://github.com/burnt-labs/xion-dashboard-app/pull/271) [`ee7bd05`](https://github.com/burnt-labs/xion-dashboard-app/commit/ee7bd052125dc1f4ee8b59ce3f1362f83032a470) Thanks [@burnt-sun](https://github.com/burnt-sun)! - feat(auth): enhance Apple auth error messaging and authenticator removal labeling
+
 ## 0.12.0
 
 ### Minor Changes
