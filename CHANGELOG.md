@@ -1,5 +1,19 @@
 # abstraxion-dashboard
 
+## 0.14.0
+
+### Minor Changes
+
+- [#237](https://github.com/burnt-labs/xion-dashboard-app/pull/237) [`87b4f4f`](https://github.com/burnt-labs/xion-dashboard-app/commit/87b4f4f6dd914f3bd51d673e1f71da8c91680e38) Thanks [@justinbarry](https://github.com/justinbarry)! - Fixed URL spoofing vulnerability by detecting and rejecting URLs with @ character that could be used for phishing attacks
+
+### Patch Changes
+
+- [#273](https://github.com/burnt-labs/xion-dashboard-app/pull/273) [`fd9c0fa`](https://github.com/burnt-labs/xion-dashboard-app/commit/fd9c0fa0c063669ec659ee281f238af7a2ba33fb) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - Fixes ENG-1273 (Dialog shifting issue)
+  Addresses mobile responsiveness concerns
+  Improves overall dialog UX
+
+- [#248](https://github.com/burnt-labs/xion-dashboard-app/pull/248) [`b0a60f6`](https://github.com/burnt-labs/xion-dashboard-app/commit/b0a60f618dcb8369a0beec126f3dfc0c00ec977c) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps): bump pbkdf2 from 3.1.2 to 3.1.3
+
 ## 0.13.0
 
 ### Minor Changes
