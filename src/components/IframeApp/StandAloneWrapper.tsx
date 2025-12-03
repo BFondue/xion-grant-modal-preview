@@ -28,7 +28,7 @@ export function StandAloneWrapper() {
 
       try {
         // Dynamic import of XionSDK
-        const { XionSDK } = await import('../../../../xion-auth-sdk/src/index');
+        const { XionSDK } = await import('@burnt-labs/xion-auth-sdk');
 
         // Initialize SDK pointing to the iframe route
         // Use alwaysVisible since we want the dashboard to stay visible after login
