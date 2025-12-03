@@ -12,7 +12,6 @@ import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import { truncateAddress } from "../../utils";
 import { cn } from "../../utils/classname-util";
 import { InteractiveTooltip } from "../ui/tooltip";
-import { Link } from "react-router-dom";
 import { AbstraxionContextProps } from "../AbstraxionContext";
 import { AbstraxionContext } from "../AbstraxionContext";
 import { ExternalLinkIcon } from "../ui/icons/ExternalLink";
@@ -92,8 +91,8 @@ export function WalletSendReview({
             <h5 className="ui-text-sm">From</h5>
             <InteractiveTooltip
               content={
-                <Link
-                  to={
+                <a
+                  href={
                     isMainnet
                       ? `https://www.mintscan.io/xion/address/${account.id}`
                       : chainInfo?.chainId === "xion-testnet-2"
@@ -109,7 +108,7 @@ export function WalletSendReview({
                     size={16}
                     className="ui-inline-block ui-align-text-bottom ui-ml-1"
                   />
-                </Link>
+                </a>
               }
             >
               <p className="ui-text-sm ui-font-bold">
@@ -122,8 +121,8 @@ export function WalletSendReview({
             <h5 className="ui-text-sm">To</h5>
             <InteractiveTooltip
               content={
-                <Link
-                  to={
+                <a
+                  href={
                     isMainnet
                       ? `https://www.mintscan.io/xion/address/${recipientAddress}`
                       : chainInfo?.chainId === "xion-testnet-2"
@@ -141,7 +140,7 @@ export function WalletSendReview({
                     size={16}
                     className="ui-inline-block ui-align-text-bottom ui-ml-1"
                   />
-                </Link>
+                </a>
               }
             >
               <p className="ui-text-sm ui-font-bold">

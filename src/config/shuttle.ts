@@ -5,34 +5,31 @@ export type NetworkInfo = {
   testnet: Network;
 };
 
-// TODO: generate from chain info / keplr config
-export const SHUTTLE_NETWORKS: NetworkInfo = {
-  mainnet: {
-    name: "XION",
-    chainId: "xion-mainnet-1",
-    chainPrefix: "xion",
-    rpc: "https://rpc.xion-mainnet-1.burnt.com",
-    rest: "https://api.xion-mainnet-1.burnt.com",
-    defaultCurrency: {
-      coinDenom: "XION",
-      coinMinimalDenom: "uxion",
-      coinDecimals: 6,
-      coinGeckoId: "xion-2",
-    },
-    gasPrice: "0.0005uxion",
-  },
-  testnet: {
-    name: "XION Testnet",
-    chainId: "xion-testnet-2",
-    chainPrefix: "xion",
-    rpc: "https://rpc.xion-testnet-2.burnt.com/",
-    rest: "https://api.xion-testnet-2.burnt.com/",
-    defaultCurrency: {
-      coinDenom: "XION",
-      coinMinimalDenom: "uxion",
-      coinDecimals: 6,
-      coinGeckoId: "xion-2",
-    },
-    gasPrice: "0.0005uxion",
-  },
-};
+const XION_ASSETS_BASE = "https://assets.xion.burnt.com/";
+
+/**
+ * Fetch Keplr chain configuration from xion-assets repo
+ * The Keplr format is compatible with Shuttle Network
+ */
+async function fetchChainConfig(chainName: string): Promise<Network> {
+  const url = `${XION_ASSETS_BASE}/${chainName}.json`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch chain config for ${chainName}: ${response.statusText}`
+    );
+  }
+  return response.json();
+}
+
+/**
+ * Load all network configurations from xion-assets
+ */
+export async function loadShuttleNetworks(): Promise<NetworkInfo> {
+  const [mainnet, testnet] = await Promise.all([
+    fetchChainConfig("keplr/cosmos/xion-mainnet"),
+    fetchChainConfig("keplr/cosmos/xion-testnet"),
+  ]);
+
+  return { mainnet, testnet };
+}

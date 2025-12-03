@@ -1,14 +1,20 @@
-import React from "react";
+// Polyfills must be imported first
+import { Buffer } from 'buffer';
+import process from 'process';
+
+// @ts-ignore
+window.Buffer = Buffer;
+// @ts-ignore
+window.process = process;
+// @ts-ignore
+window.global = window;
+
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import { StytchProvider } from "@stytch/react";
 import { KeplrExtensionProvider } from "@delphi-labs/shuttle";
-import { ShuttleProvider } from "@delphi-labs/shuttle-react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { stytchClient } from "./lib";
-import { AbstraxionContextProvider } from "./components/AbstraxionContext";
+import { QueryClient } from "@tanstack/react-query";
 import { App } from "./components/App";
-import { SHUTTLE_NETWORKS } from "./config/shuttle";
+import { AppProviders } from "./components/AppProviders";
+import { loadShuttleNetworks } from "./config/shuttle";
 
 import "./index.css";
 
@@ -67,35 +73,18 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
-// TODO: pull from asset repo before provider.
-const providers = [
-  new KeplrExtensionProvider({
-    networks: [SHUTTLE_NETWORKS.mainnet, SHUTTLE_NETWORKS.testnet],
-  }),
-];
+// Load networks and render app
+(async () => {
+  const shuttleNetworks = await loadShuttleNetworks();
+  const providers = [
+    new KeplrExtensionProvider({
+      networks: [shuttleNetworks.mainnet, shuttleNetworks.testnet],
+    }),
+  ];
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <BrowserRouter
-      future={{
-        // Enable React Router v7 compatibility flags to prevent console warnings
-        // These flags prepare the app for v7 without changing current behavior
-        v7_startTransition: true, // Wraps state updates in React.startTransition
-        v7_relativeSplatPath: true, // Updates relative route resolution in splat routes
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <StytchProvider stytch={stytchClient}>
-          <AbstraxionContextProvider>
-            <ShuttleProvider
-              extensionProviders={providers}
-              mobileProviders={[]}
-            >
-              <App />
-            </ShuttleProvider>
-          </AbstraxionContextProvider>
-        </StytchProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
-);
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <AppProviders queryClient={queryClient} extensionProviders={providers}>
+      <App />
+    </AppProviders>
+  );
+})();

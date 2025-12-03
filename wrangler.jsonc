@@ -5,13 +5,11 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "xion-dashboard",
-  "compatibility_date": "2025-04-04",
+  "compatibility_date": "2025-11-15",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "server/index.ts",
   "keep_vars": true,
   "assets": {
     "not_found_handling": "single-page-application",
-    "binding": "ASSETS",
     "directory": "./dist",
   },
   "observability": { "enabled": true },
@@ -51,5 +49,14 @@
       ],
       "build": { "command": "npm run build:testnet" },
     },
-  },
+    "testnet-iframe": {
+      "routes": [
+        {
+          "pattern": "auth-iframe.testnet.burnt.com",
+          "custom_domain": true,
+        },
+      ],
+      "build": { "command": "npm run build:iframe" },
+    }
+  }
 }

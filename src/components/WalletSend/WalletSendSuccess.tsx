@@ -10,7 +10,6 @@ import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import { truncateAddress } from "../../utils";
 import { InteractiveTooltip } from "../ui/tooltip";
 import { ExternalLinkIcon } from "../ui/icons/ExternalLink";
-import { Link } from "react-router-dom";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -85,8 +84,8 @@ export function WalletSendSuccess({
               <h5 className="ui-text-sm">From</h5>
               <InteractiveTooltip
                 content={
-                  <Link
-                    to={
+                  <a
+                    href={
                       isMainnet
                         ? `https://www.mintscan.io/xion/address/${account.id}`
                         : chainInfo?.chainId === "xion-testnet-2"
@@ -102,7 +101,7 @@ export function WalletSendSuccess({
                       size={16}
                       className="ui-inline-block ui-align-text-bottom ui-ml-1"
                     />
-                  </Link>
+                  </a>
                 }
               >
                 <p className="ui-text-sm ui-font-bold">
@@ -115,8 +114,8 @@ export function WalletSendSuccess({
               <h5 className="ui-text-sm">To</h5>
               <InteractiveTooltip
                 content={
-                  <Link
-                    to={
+                  <a
+                    href={
                       isMainnet
                         ? `https://www.mintscan.io/xion/address/${recipientAddress}`
                         : chainInfo?.chainId === "xion-testnet-2"
@@ -134,7 +133,7 @@ export function WalletSendSuccess({
                       size={16}
                       className="ui-inline-block ui-align-text-bottom ui-ml-1"
                     />
-                  </Link>
+                  </a>
                 }
               >
                 <p className="ui-text-sm ui-font-bold">
@@ -156,8 +155,8 @@ export function WalletSendSuccess({
           <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
             <div className="ui-flex ui-justify-between ui-gap-2">
               <p className="ui-text-sm">Transaction Link</p>
-              <Link
-                to={
+              <a
+                href={
                   isMainnet
                     ? `https://www.mintscan.io/xion/tx/${transactionHash}`
                     : chainInfo?.chainId === "xion-testnet-2"
@@ -173,7 +172,7 @@ export function WalletSendSuccess({
                   size={16}
                   className="ui-inline-block ui-align-text-bottom ui-ml-1"
                 />
-              </Link>
+              </a>
             </div>
           </div>
         </div>

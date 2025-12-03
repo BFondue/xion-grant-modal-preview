@@ -26,14 +26,23 @@ export const AuthenticatorsList: React.FC<AuthenticatorsListProps> = ({
 }) => {
   // Memoize userIds extraction to avoid recalculation on every render
   const userIds = useMemo(() => {
-    return authenticators
-      .map((authenticator) =>
-        extractUserIdFromAuthenticator(
+    console.log('[AuthenticatorsList] Authenticators:', authenticators);
+    const extracted = authenticators
+      .map((authenticator) => {
+        const userId = extractUserIdFromAuthenticator(
           authenticator.authenticator,
           authenticator.type,
-        ),
-      )
+        );
+        console.log('[AuthenticatorsList] Extracted userId:', {
+          authenticator: authenticator.authenticator,
+          type: authenticator.type,
+          userId,
+        });
+        return userId;
+      })
       .filter((userId): userId is string => userId !== null);
+    console.log('[AuthenticatorsList] Final userIds:', extracted);
+    return extracted;
   }, [authenticators]);
 
   // Fetch auth types with processed map

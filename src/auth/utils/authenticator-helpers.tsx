@@ -1,4 +1,3 @@
-import React from "react";
 import { OAuthProviders } from "@stytch/core/public";
 import { Authenticator } from "../../indexer-strategies/types";
 import type { authenticatorTypes } from "../../types";
@@ -74,10 +73,13 @@ const getJwtLogo = (subType: string) => {
   }
 };
 
+// @ts-ignore
 export const getAuthenticatorLogo = (
   type: authenticatorTypes,
   jwtSubType?: string,
+  // @ts-ignore
 ): JSX.Element => {
+  // @ts-ignore
   const logoMap: Record<authenticatorTypes, JSX.Element> = {
     SECP256K1: <CosmosLogo className="ui-w-4 ui-h-4" />,
     ETHWALLET: <EthereumLogo className="ui-w-4 ui-h-4" />,
@@ -97,7 +99,8 @@ export const extractUserIdFromAuthenticator = (
   type: string,
 ): string | null => {
   // Only JWT authenticators have the format "identifier.userid"
-  if (type === "Jwt") {
+  // Check both "Jwt" and "JWT" for case-insensitivity
+  if (type === "Jwt" || type === "JWT") {
     const parts = authenticator.split(".");
     return parts[1] || null;
   }

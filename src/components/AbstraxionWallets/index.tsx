@@ -95,10 +95,21 @@ export const AbstraxionWallets = () => {
       const { account_address, code_id } = body;
 
       // Create the authenticator data
-      const { aud, sub } = session_jwt
-        ? decodeJwt(session_jwt)
-        : { aud: undefined, sub: undefined };
-      const authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
+      let authenticator = "";
+      if (session_jwt) {
+        try {
+          const { aud, sub } = decodeJwt(session_jwt);
+          if (aud && sub) {
+            authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
+          }
+        } catch (e) {
+          console.warn('[AbstraxionWallets] Failed to decode JWT:', e);
+        }
+      }
+
+      if (!authenticator) {
+        throw new Error('Failed to extract authenticator from JWT');
+      }
 
       // Set the abstract account directly
       setAbstractAccount({

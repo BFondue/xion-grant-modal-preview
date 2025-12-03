@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useCallback, useEffect } from "react";
+import { useContext, useMemo, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +36,7 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
   ) as AbstraxionContextProps;
 
   // Fetch all accounts for the current authenticator
-  const { data: allAccounts, loading, retry } = useGetSmartAccountsStrategy();
+  const { data: allAccounts, loading } = useGetSmartAccountsStrategy();
 
   // Deduplicate accounts and ensure current account is included
   const uniqueAccounts = useMemo(() => {
@@ -57,14 +57,6 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
     return deduplicateAccountsById(accounts);
   }, [allAccounts, currentAccount]);
 
-  // Refetch accounts when dialog opens to ensure we have the latest data
-  // This happens in the background and won't block the UI
-  useEffect(() => {
-    if (isOpen && retry) {
-      retry();
-    }
-  }, [isOpen, retry]);
-
   const handleDisconnect = useCallback(() => {
     xionDisconnect();
     onClose();
@@ -77,7 +69,7 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
         // Find the authenticator that matches the current login method
         const matchingAuthenticator =
           selectedAccount.authenticators.find(
-            (auth) => auth.authenticator === loginAuthenticator,
+            (auth: any) => auth.authenticator === loginAuthenticator,
           ) || selectedAccount.authenticators[0];
 
         setAbstractAccount({

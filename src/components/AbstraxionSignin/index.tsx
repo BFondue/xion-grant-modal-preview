@@ -1,3 +1,13 @@
+/**
+ * AbstraxionSignin - Login UI component for XION authentication
+ *
+ * This component has been updated to use AuthStateManager for login state management.
+ * Key changes:
+ * - Uses startLogin, completeLogin, setOkxData from useAuthState
+ * - No more direct localStorage.setItem calls - AuthStateManager handles it
+ * - Cleaner flow: startLogin() when auth starts, completeLogin() when account is ready
+ */
+
 import React, {
   useCallback,
   useContext,
@@ -5,11 +15,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useStytch } from "@stytch/react";
+import { stytchClient as stytchClientSingleton } from "../../hooks/useStytchClient";
 import { get } from "@github/webauthn-json/browser-ponyfill";
 import {
   BaseButton,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   Input,
@@ -36,6 +47,10 @@ import { TikTokLogoIcon } from "../ui/icons/TikTokLogo";
 import { cn } from "../../utils/classname-util";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
+import xionLogo from "../../assets/logo.png";
+import { createJwtAbstractAccount } from "../../auth/account-creation";
+import { useAuthState } from "../../auth/useAuthState";
+import { getLoginAuthenticatorFromJWT } from "../../auth/session";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -47,7 +62,7 @@ const appleFlag = import.meta.env.VITE_APPLE_FLAG === "true";
 const shouldEnableTikTok = tiktokFlag;
 
 export const AbstraxionSignin = () => {
-  const stytchClient = useStytch();
+  const stytchClient = stytchClientSingleton;
 
   const [email, setEmail] = useState("");
   const [methodId, setMethodId] = useState("");
@@ -56,25 +71,85 @@ export const AbstraxionSignin = () => {
   const [isOnOtpStep, setIsOnOtpStep] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
+  const [isRedirectingToOAuth, setIsRedirectingToOAuth] = useState(false);
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const tokenProcessed = useRef(false);
 
   const { connect } = useShuttle();
 
-  const { setConnectionType, setAbstraxionError, chainInfo, isMainnet } =
+  // Use AuthStateManager via hook
+  const { startLogin, completeLogin, setOkxData, setError: setAuthError } = useAuthState();
+
+  // Keep context for backward compatibility
+  const { setConnectionType, setAbstraxionError, setAbstractAccount, apiUrl, chainInfo, isMainnet } =
     useContext(AbstraxionContext) as AbstraxionContextProps;
+
+  // Detect if running in iframe mode - browser extensions don't work directly in iframes
+  // but we can use popups to connect to wallets
+  const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
 
   // Variable to be true if not mainnet, otherwise check flags for mainnet
   const shouldEnableOkx = !isMainnet || (isMainnet && okxFlag);
   const shouldEnableMetamask = !isMainnet || (isMainnet && metamaskFlag);
   const shouldEnableKeplr = !isMainnet || (isMainnet && keplrFlag);
 
+  /**
+   * Handles post-authentication account creation/lookup.
+   * Called after successful Stytch authentication to create or retrieve the abstract account.
+   */
+  const handlePostAuthentication = useCallback(async (
+    sessionJwt: string,
+    sessionToken: string
+  ): Promise<boolean> => {
+    if (!apiUrl) {
+      console.error('[AbstraxionSignin] API URL not available');
+      setAbstraxionError('Configuration error: API URL not set');
+      setAuthError('Configuration error: API URL not set');
+      return false;
+    }
+
+    try {
+      setIsCreatingAccount(true);
+      console.log('[AbstraxionSignin] Creating/retrieving abstract account...');
+
+      // Start login via AuthStateManager
+      const loginAuthenticator = getLoginAuthenticatorFromJWT(sessionJwt);
+      if (loginAuthenticator) {
+        startLogin('stytch', loginAuthenticator);
+      }
+
+      const account = await createJwtAbstractAccount({
+        sessionJwt,
+        sessionToken,
+        apiUrl,
+      });
+
+      console.log('[AbstraxionSignin] Account ready:', account.id);
+
+      // Complete login via AuthStateManager
+      completeLogin(account);
+
+      // Also update context for backward compatibility
+      setAbstractAccount(account);
+      setConnectionType('stytch');
+
+      return true;
+    } catch (error: any) {
+      console.error('[AbstraxionSignin] Account creation failed:', error);
+      setAbstraxionError(`Account creation failed: ${error.message}`);
+      setAuthError(`Account creation failed: ${error.message}`);
+      return false;
+    } finally {
+      setIsCreatingAccount(false);
+    }
+  }, [apiUrl, setAbstractAccount, setConnectionType, setAbstraxionError, startLogin, completeLogin, setAuthError]);
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmailError("");
-    let newEmail;
-    if (chainInfo.chainId === "xion-testnet-1") {
+    let newEmail = e.currentTarget.value.toLowerCase().trim();
+    const chainId = chainInfo?.chainId || "";
+    if (chainId && chainId === "xion-testnet-1") {
       newEmail = e.currentTarget.value.toLowerCase();
-    } else {
-      newEmail = e.currentTarget.value.toLowerCase().trim();
     }
     setEmail(newEmail);
   };
@@ -89,50 +164,213 @@ export const AbstraxionSignin = () => {
   };
 
   const loginWithGoogle = useCallback(async () => {
+    setIsRedirectingToOAuth(true);
+
     const origin = window.location.origin;
-    const currentParams = window.location.search;
-    // Take url params into consideration on grant flow cases
+    // Redirect to our callback.html page
+    const redirectUrl = `${origin}/callback.html`;
 
-    const redirectUrl = `${origin}/${currentParams}`;
+    // Manually construct OAuth URL to open in popup instead of redirecting iframe
+    const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
+    const baseUrl = import.meta.env.VITE_XION_STYTCH_API || window.location.origin;
+    const googleOAuthUrl = `${baseUrl}/public/oauth/google/start?` +
+      `public_token=${publicToken}&` +
+      `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
+      `signup_redirect_url=${encodeURIComponent(redirectUrl)}&` +
+      `prompt=select_account`;
 
-    await stytchClient.oauth.google.start({
-      login_redirect_url: redirectUrl,
-      signup_redirect_url: redirectUrl,
-      // custom_scopes: (?)
-    });
-  }, [stytchClient]);
+    const popup = window.open(googleOAuthUrl, 'Google Login', 'width=500,height=600,popup=yes');
+
+    if (!popup) {
+      console.error('[AbstraxionSignin] Popup was blocked');
+      alert('Please allow popups for this site to sign in with Google');
+    }
+
+    // Listen for the OAuth callback message
+    const handleOAuthMessage = async (event: MessageEvent) => {
+      // In production, verify event.origin matches your domain
+      if (event.data.type === 'OAUTH_SUCCESS') {
+        window.removeEventListener('message', handleOAuthMessage);
+
+        try {
+          if (!stytchClient || !stytchClient.oauth) {
+            console.error('[AbstraxionSignin] Stytch client not properly initialized');
+            setIsRedirectingToOAuth(false);
+            return;
+          }
+
+          const response = await stytchClient.oauth.authenticate(event.data.token, {
+            session_duration_minutes: 60 * 24 * 3,
+          });
+
+          console.log('[AbstraxionSignin] OAuth authenticate response:', response);
+
+          // Create/retrieve abstract account after successful authentication
+          if (response.session_jwt && response.session_token) {
+            await handlePostAuthentication(response.session_jwt, response.session_token);
+          } else {
+            console.error('[AbstraxionSignin] Missing session credentials in response');
+          }
+          setIsRedirectingToOAuth(false);
+        } catch (error: any) {
+          console.error('[AbstraxionSignin] OAuth authentication error:', error);
+          setIsRedirectingToOAuth(false);
+        }
+      } else if (event.data.type === 'OAUTH_ERROR') {
+        console.error('[AbstraxionSignin] OAuth error:', event.data);
+        window.removeEventListener('message', handleOAuthMessage);
+        setIsRedirectingToOAuth(false);
+      }
+    };
+
+    window.addEventListener('message', handleOAuthMessage);
+  }, [stytchClient, handlePostAuthentication]);
 
   const loginWithApple = useCallback(async () => {
+    setIsRedirectingToOAuth(true);
+
     const origin = window.location.origin;
-    const currentParams = window.location.search;
-    // Take url params into consideration on grant flow cases
+    // Redirect to our callback.html page
+    const redirectUrl = `${origin}/callback.html`;
 
-    const redirectUrl = `${origin}/${currentParams}`;
+    const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
+    const baseUrl = import.meta.env.VITE_XION_STYTCH_API || window.location.origin;
+    const appleOAuthUrl = `${baseUrl}/public/oauth/apple/start?` +
+      `public_token=${publicToken}&` +
+      `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
+      `signup_redirect_url=${encodeURIComponent(redirectUrl)}`;
 
-    await stytchClient.oauth.apple.start({
-      login_redirect_url: redirectUrl,
-      signup_redirect_url: redirectUrl,
-      // custom_scopes: (?)
-    });
-  }, [stytchClient]);
+    const popup = window.open(appleOAuthUrl, 'Apple Login', 'width=500,height=600,popup=yes');
+
+    if (!popup) {
+      console.error('[AbstraxionSignin] Popup was blocked');
+      alert('Please allow popups for this site to sign in with Apple');
+      setIsRedirectingToOAuth(false);
+      return;
+    }
+
+    // Listen for the OAuth callback message
+    const handleOAuthMessage = async (event: MessageEvent) => {
+      // In production, verify event.origin matches your domain
+      if (event.data.type === 'OAUTH_SUCCESS') {
+        window.removeEventListener('message', handleOAuthMessage);
+
+        try {
+          if (!stytchClient || !stytchClient.oauth) {
+            console.error('[AbstraxionSignin] Stytch client not properly initialized');
+            setIsRedirectingToOAuth(false);
+            return;
+          }
+
+          const token = event.data.token;
+          console.log('[AbstraxionSignin] Received Apple OAuth token from popup');
+
+          // Authenticate with the token
+          const response = await stytchClient.oauth.authenticate(token, {
+            session_duration_minutes: 60 * 24 * 30,
+          });
+
+          console.log('[AbstraxionSignin] Apple OAuth authenticate response:', response);
+
+          // Create/retrieve abstract account after successful authentication
+          if (response.session_jwt && response.session_token) {
+            await handlePostAuthentication(response.session_jwt, response.session_token);
+          } else {
+            console.error('[AbstraxionSignin] Missing session credentials in response');
+          }
+          setIsRedirectingToOAuth(false);
+        } catch (error) {
+          console.error('[AbstraxionSignin] Apple OAuth authentication failed:', error);
+          setAbstraxionError("Apple authentication failed");
+          setIsRedirectingToOAuth(false);
+        }
+      } else if (event.data.type === 'OAUTH_ERROR') {
+        console.error('[AbstraxionSignin] Apple OAuth error:', event.data);
+        window.removeEventListener('message', handleOAuthMessage);
+        setIsRedirectingToOAuth(false);
+      }
+    };
+
+    window.addEventListener('message', handleOAuthMessage);
+  }, [stytchClient, setAbstraxionError, handlePostAuthentication]);
 
   const loginWithTikTok = useCallback(async () => {
+    setIsRedirectingToOAuth(true);
+
     const origin = window.location.origin;
-    const currentParams = window.location.search;
-    // Take url params into consideration on grant flow cases
+    // Redirect to our callback.html page
+    const redirectUrl = `${origin}/callback.html`;
 
-    const redirectUrl = `${origin}/${currentParams}`;
+    const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
+    const baseUrl = import.meta.env.VITE_XION_STYTCH_API || window.location.origin;
+    const tiktokOAuthUrl = `${baseUrl}/public/oauth/tiktok/start?` +
+      `public_token=${publicToken}&` +
+      `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
+      `signup_redirect_url=${encodeURIComponent(redirectUrl)}`;
 
-    await stytchClient.oauth.tiktok.start({
-      login_redirect_url: redirectUrl,
-      signup_redirect_url: redirectUrl,
-      // custom_scopes: (?)
-    });
-  }, [stytchClient]);
+    const popup = window.open(tiktokOAuthUrl, 'TikTok Login', 'width=500,height=600,popup=yes');
+
+    if (!popup) {
+      console.error('[AbstraxionSignin] Popup was blocked');
+      alert('Please allow popups for this site to sign in with TikTok');
+      setIsRedirectingToOAuth(false);
+      return;
+    }
+
+    // Listen for the OAuth callback message
+    const handleOAuthMessage = async (event: MessageEvent) => {
+      // In production, verify event.origin matches your domain
+      if (event.data.type === 'OAUTH_SUCCESS') {
+        window.removeEventListener('message', handleOAuthMessage);
+
+        try {
+          if (!stytchClient || !stytchClient.oauth) {
+            console.error('[AbstraxionSignin] Stytch client not properly initialized');
+            setIsRedirectingToOAuth(false);
+            return;
+          }
+
+          const token = event.data.token;
+          console.log('[AbstraxionSignin] Received TikTok OAuth token from popup');
+
+          // Authenticate with the token
+          const response = await stytchClient.oauth.authenticate(token, {
+            session_duration_minutes: 60 * 24 * 30,
+          });
+
+          console.log('[AbstraxionSignin] TikTok OAuth authenticate response:', response);
+
+          // Create/retrieve abstract account after successful authentication
+          if (response.session_jwt && response.session_token) {
+            await handlePostAuthentication(response.session_jwt, response.session_token);
+          } else {
+            console.error('[AbstraxionSignin] Missing session credentials in response');
+          }
+          setIsRedirectingToOAuth(false);
+        } catch (error) {
+          console.error('[AbstraxionSignin] TikTok OAuth authentication failed:', error);
+          setAbstraxionError("TikTok authentication failed");
+          setIsRedirectingToOAuth(false);
+        }
+      } else if (event.data.type === 'OAUTH_ERROR') {
+        console.error('[AbstraxionSignin] TikTok OAuth error:', event.data);
+        window.removeEventListener('message', handleOAuthMessage);
+        setIsRedirectingToOAuth(false);
+      }
+    };
+
+    window.addEventListener('message', handleOAuthMessage);
+  }, [stytchClient, setAbstraxionError, handlePostAuthentication]);
 
   const handleEmail = async () => {
     if (!email) {
       setEmailError("Please enter your email");
+      return;
+    }
+
+    if (!stytchClient || !stytchClient.otps || !stytchClient.otps.email) {
+      console.error('[AbstraxionSignin] Stytch client not properly initialized');
+      setEmailError("Authentication service not available");
       return;
     }
 
@@ -146,25 +384,77 @@ export const AbstraxionSignin = () => {
       });
       setMethodId(emailRes.method_id);
       setIsOnOtpStep(true);
-    } catch {
+    } catch (error) {
+      console.error('[AbstraxionSignin] Error sending email:', error);
       setEmailError("Error sending email");
       setConnectionType("none");
+    } finally {
+      setIsSendingEmail(false);
     }
-    setIsSendingEmail(false);
   };
 
   const handleOtp = async (otpCode: string) => {
+    if (!stytchClient || !stytchClient.otps) {
+      console.error('[AbstraxionSignin] Stytch client not properly initialized');
+      setOtpError("Authentication service not available");
+      return;
+    }
+
     try {
-      await stytchClient.otps.authenticate(otpCode, methodId, {
+      const response = await stytchClient.otps.authenticate(otpCode, methodId, {
         session_duration_minutes: 60 * 24 * 3,
       });
-      localStorage.setItem("loginType", "stytch");
+
+      console.log('[AbstraxionSignin] OTP authenticate response:', response);
+
+      // Create/retrieve abstract account after successful authentication
+      if (response.session_jwt && response.session_token) {
+        await handlePostAuthentication(response.session_jwt, response.session_token);
+      } else {
+        console.error('[AbstraxionSignin] Missing session credentials in response');
+      }
     } catch {
       setOtpError("Error Verifying OTP Code");
     }
   };
 
   function handleKeplr() {
+    console.log('[AbstraxionSignin] handleKeplr called, isInIframe:', isInIframe);
+
+    // In iframe mode, use popup to connect to wallet
+    if (isInIframe) {
+      const origin = window.location.origin;
+      const callbackUrl = `${origin}/callback.html?wallet=keplr`;
+      const popup = window.open(callbackUrl, 'Keplr Wallet', 'width=500,height=600,popup=yes');
+
+      if (!popup) {
+        alert('Please allow popups for this site to connect with Keplr');
+        return;
+      }
+
+      const handleWalletMessage = (event: MessageEvent) => {
+        if (event.data.type === 'WALLET_SUCCESS' && event.data.data.walletType === 'keplr') {
+          window.removeEventListener('message', handleWalletMessage);
+          const { authenticator, address, name } = event.data.data;
+          console.log('[AbstraxionSignin] Keplr connected via popup:', { authenticator, address, name });
+
+          // Use AuthStateManager
+          startLogin('shuttle', authenticator);
+
+          // Also update context for backward compatibility
+          setConnectionType('shuttle');
+        } else if (event.data.type === 'WALLET_ERROR' && event.data.walletType === 'keplr') {
+          window.removeEventListener('message', handleWalletMessage);
+          console.error('[AbstraxionSignin] Keplr error:', event.data.error);
+          setAbstraxionError(event.data.error || 'Keplr wallet connect error');
+        }
+      };
+
+      window.addEventListener('message', handleWalletMessage);
+      return;
+    }
+
+    // Direct connection (not in iframe)
     if (!window.keplr) {
       alert("Please install the Keplr wallet extension");
       return;
@@ -172,50 +462,159 @@ export const AbstraxionSignin = () => {
 
     try {
       connect({
-        chainId: chainInfo.chainId,
+        chainId: `${chainInfo?.chainId}`,
         extensionProviderId: "keplr",
       });
 
-      localStorage.setItem("loginType", "");
+      // Use AuthStateManager - authenticator will be set when wallet connects
+      startLogin('shuttle', ''); // Will be updated when wallet connects
       setConnectionType("shuttle");
+      console.log('[AbstraxionSignin] Keplr connection initiated');
     } catch (error) {
       console.error("Error connecting to Keplr:", error);
     }
   }
 
   async function handleOkx() {
+    console.log('[AbstraxionSignin] handleOkx called, isInIframe:', isInIframe);
+
+    // In iframe mode, use popup to connect to wallet
+    if (isInIframe) {
+      const origin = window.location.origin;
+      const callbackUrl = `${origin}/callback.html?wallet=okx`;
+      const popup = window.open(callbackUrl, 'OKX Wallet', 'width=500,height=600,popup=yes');
+
+      if (!popup) {
+        alert('Please allow popups for this site to connect with OKX');
+        return;
+      }
+
+      const handleWalletMessage = (event: MessageEvent) => {
+        if (event.data.type === 'WALLET_SUCCESS' && event.data.data.walletType === 'okx') {
+          window.removeEventListener('message', handleWalletMessage);
+          const { authenticator, address, name } = event.data.data;
+          console.log('[AbstraxionSignin] OKX connected via popup:', { authenticator, address, name });
+
+          // Use AuthStateManager
+          startLogin('okx', authenticator);
+          setOkxData(address, name || '');
+
+          // Also update context for backward compatibility
+          setConnectionType('okx');
+        } else if (event.data.type === 'WALLET_ERROR' && event.data.walletType === 'okx') {
+          window.removeEventListener('message', handleWalletMessage);
+          console.error('[AbstraxionSignin] OKX error:', event.data.error);
+          setAbstraxionError(event.data.error || 'OKX wallet connect error');
+        }
+      };
+
+      window.addEventListener('message', handleWalletMessage);
+      return;
+    }
+
+    // Direct connection (not in iframe)
     if (!window.okxwallet) {
       alert("Please install the OKX wallet extension");
       return;
     }
     try {
-      await window.okxwallet.keplr.enable(chainInfo.chainId);
-      const okxAccount = await window.okxwallet.keplr.getKey(chainInfo.chainId);
+      if (!chainInfo) {
+        throw new Error("No chain info available");
+      }
+      const keplr = window.okxwallet.keplr;
+      if (!keplr) {
+        throw new Error("OKX Keplr extension not found");
+      }
+      console.log('[AbstraxionSignin] Enabling OKX wallet for chainId:', chainInfo.chainId);
+
+      // First, try to suggest the chain (OKX might not have Xion configured)
+      try {
+        await keplr.experimentalSuggestChain(chainInfo as any);
+        console.log('[AbstraxionSignin] OKX chain suggested successfully');
+      } catch (suggestError) {
+        console.log('[AbstraxionSignin] Chain already exists or suggest failed:', suggestError);
+        // Continue anyway - chain might already be added
+      }
+
+      await keplr.enable(chainInfo.chainId);
+      const okxAccount = await keplr.getKey(chainInfo.chainId);
       const authenticator = getHumanReadablePubkey(okxAccount.pubKey);
+      console.log('[AbstraxionSignin] OKX account:', okxAccount);
+      console.log('[AbstraxionSignin] OKX authenticator:', authenticator);
+
+      // Use AuthStateManager
+      startLogin('okx', authenticator);
+      setOkxData(okxAccount.bech32Address, okxAccount.name);
+
+      // Also update context for backward compatibility
       setConnectionType("okx");
-      localStorage.setItem("loginType", "okx");
-      localStorage.setItem("loginAuthenticator", authenticator);
-      localStorage.setItem("okxXionAddress", okxAccount.bech32Address);
-      localStorage.setItem("okxWalletName", okxAccount.name);
-    } catch {
+      console.log('[AbstraxionSignin] OKX wallet connected');
+    } catch (error) {
+      console.error('[AbstraxionSignin] OKX error:', error);
       setAbstraxionError("OKX wallet connect error");
     }
   }
 
   async function handleMetamask() {
+    console.log('[AbstraxionSignin] handleMetamask called, isInIframe:', isInIframe);
+
+    // In iframe mode, use popup to connect to wallet
+    if (isInIframe) {
+      const origin = window.location.origin;
+      const callbackUrl = `${origin}/callback.html?wallet=metamask`;
+      const popup = window.open(callbackUrl, 'MetaMask Wallet', 'width=500,height=600,popup=yes');
+
+      if (!popup) {
+        alert('Please allow popups for this site to connect with MetaMask');
+        return;
+      }
+
+      const handleWalletMessage = (event: MessageEvent) => {
+        if (event.data.type === 'WALLET_SUCCESS' && event.data.data.walletType === 'metamask') {
+          window.removeEventListener('message', handleWalletMessage);
+          const { authenticator } = event.data.data;
+          console.log('[AbstraxionSignin] MetaMask connected via popup:', authenticator);
+
+          // Use AuthStateManager
+          startLogin('metamask', authenticator);
+
+          // Also update context for backward compatibility
+          setConnectionType('metamask');
+        } else if (event.data.type === 'WALLET_ERROR' && event.data.walletType === 'metamask') {
+          window.removeEventListener('message', handleWalletMessage);
+          console.error('[AbstraxionSignin] MetaMask error:', event.data.error);
+          setAbstraxionError(event.data.error || 'MetaMask connect error');
+        }
+      };
+
+      window.addEventListener('message', handleWalletMessage);
+      return;
+    }
+
+    // Direct connection (not in iframe)
     if (!window.ethereum) {
       alert("Please install the Metamask wallet extension");
       return;
     }
     try {
+      console.log('[AbstraxionSignin] Requesting Metamask accounts');
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
-      });
+      }) as Array<string>;
+      console.log('[AbstraxionSignin] Metamask accounts:', accounts);
+      if (!accounts || accounts.length === 0) {
+        throw new Error("No accounts found in Metamask");
+      }
       const primaryAccount = accounts[0];
+
+      // Use AuthStateManager
+      startLogin('metamask', primaryAccount);
+
+      // Also update context for backward compatibility
       setConnectionType("metamask");
-      localStorage.setItem("loginType", "metamask");
-      localStorage.setItem("loginAuthenticator", primaryAccount);
-    } catch {
+      console.log('[AbstraxionSignin] Metamask connected:', primaryAccount);
+    } catch (error) {
+      console.error('[AbstraxionSignin] Metamask error:', error);
       setAbstraxionError("Metamask connect error");
     }
   }
@@ -232,12 +631,14 @@ export const AbstraxionSignin = () => {
 
       const publicKeyCredential = await get(options);
       if (!publicKeyCredential) throw new Error("Error getting webauthn key");
+
+      const credentialId = convertToStandardBase64(publicKeyCredential.id);
+
+      // Use AuthStateManager
+      startLogin('passkey', credentialId);
+
+      // Also update context for backward compatibility
       setConnectionType("passkey");
-      localStorage.setItem(
-        "loginAuthenticator",
-        convertToStandardBase64(publicKeyCredential.id),
-      );
-      localStorage.setItem("loginType", "passkey");
     } catch (error) {
       console.log(error);
     }
@@ -250,10 +651,24 @@ export const AbstraxionSignin = () => {
       if (token && !tokenProcessed.current) {
         tokenProcessed.current = true;
         try {
-          await stytchClient.oauth.authenticate(token, {
+          if (!stytchClient || !stytchClient.oauth) {
+            console.error('[AbstraxionSignin] Stytch client not properly initialized');
+            setAbstraxionError("Authentication service not available");
+            return;
+          }
+
+          const response = await stytchClient.oauth.authenticate(token, {
             session_duration_minutes: 60 * 24 * 3,
           });
-          localStorage.setItem("loginType", "stytch");
+
+          console.log('[AbstraxionSignin] URL token authenticate response:', response);
+
+          // Create/retrieve abstract account after successful authentication
+          if (response.session_jwt && response.session_token) {
+            await handlePostAuthentication(response.session_jwt, response.session_token);
+          } else {
+            console.error('[AbstraxionSignin] Missing session credentials in response');
+          }
         } catch {
           setAbstraxionError("Social authentication failed");
         } finally {
@@ -270,6 +685,33 @@ export const AbstraxionSignin = () => {
 
     authenticateUser();
   }, []);
+
+  if (isRedirectingToOAuth || isCreatingAccount) {
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>{isCreatingAccount ? 'Setting Up Account' : 'Verifying Login'}</DialogTitle>
+          <DialogDescription>
+            {isCreatingAccount
+              ? 'Creating your XION account...'
+              : 'Please complete the login in the popup window.'}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="ui-flex ui-items-center ui-justify-center ui-my-20">
+          <SpinnerV2 size="lg" color="white" />
+        </div>
+        <DialogFooter>
+          <img
+            src={xionLogo}
+            alt="XION Logo"
+            width="90"
+            height="32"
+            className="ui-mx-auto"
+          />
+        </DialogFooter>
+      </>
+    );
+  }
 
   return (
     <>
@@ -291,10 +733,23 @@ export const AbstraxionSignin = () => {
       ) : (
         <>
           <DialogHeader>
-            <DialogTitle>Welcome!</DialogTitle>
-            <DialogDescription>
-              Log in or sign up with your email
-            </DialogDescription>
+            <div className="ui-flex ui-flex-col ui-items-center ui-gap-2 ui-w-full">
+              <div className="ui-flex ui-items-center ui-space-x-3">
+                <img
+                  src={xionLogo}
+                  alt="XION Logo"
+                  width="108"
+                  height="39"
+                  className="ui-mb-2"
+                />
+                <div className="ui-flex ui-justify-between ui-items-center ui-h-[18px] ui-bg-testnet-bg ui-px-1 ui-py-0 ui-mb-2 ui-text-testnet ui-rounded-[4px] ui-text-[10px] ui-tracking-widest">
+                  {isMainnet ? 'MAINNET' : 'TESTNET'}
+                </div>
+              </div>
+              <DialogDescription>
+                Log in or sign up with your email
+              </DialogDescription>
+            </div>
           </DialogHeader>
           <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full">
             <div className="ui-flex ui-flex-col ui-gap-4">
@@ -419,6 +874,15 @@ export const AbstraxionSignin = () => {
           ) : null}
         </>
       )}
+
+      {/* Disclaimer */}
+      <div className="ui-text-xs ui-font-normal ui-leading-5 ui-text-center ui-max-w-[340px] ui-mx-auto ui-mt-4">
+        <span className="ui-text-secondary-text">By continuing, you agree to and acknowledge that you have read and understand the </span>
+        <a href="https://burnt.com/terms-and-conditions" target="_blank" rel="noreferrer" className="ui-text-white ui-underline ui-font-bold">
+          Disclaimer
+        </a>
+        <span className="ui-text-secondary-text">.</span>
+      </div>
     </>
   );
 };

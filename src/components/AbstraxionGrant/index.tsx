@@ -52,6 +52,12 @@ interface AbstraxionGrantProps {
   stake: boolean;
   bank: { denom: string; amount: string }[];
   treasury?: string;
+  /** Optional callback when grant is approved (for iframe mode) */
+  onApprove?: () => void;
+  /** Optional callback when grant is denied (for iframe mode) */
+  onDeny?: () => void;
+  /** Optional callback when grant fails with error (for iframe mode) */
+  onError?: (error: string) => void;
 }
 
 export const AbstraxionGrant = ({
@@ -60,14 +66,21 @@ export const AbstraxionGrant = ({
   stake,
   bank,
   treasury,
+  onApprove,
+  onDeny: onDenyCallback,
+  onError,
 }: AbstraxionGrantProps) => {
   const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
   const { redirect_uri, state } = useQueryParams(["redirect_uri", "state"]);
   const { xionDisconnect } = useXionDisconnect();
-  const { chainInfo, abstraxionError, setAbstraxionError } = useContext(
+  const { chainInfo, abstraxionError, setAbstraxionError, abstractAccount } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
+
+  // Use abstractAccount from context as fallback when account from indexer is not yet available
+  // This happens when the account is freshly created and indexer hasn't caught up
+  const accountToUse = account || abstractAccount;
 
   const [inProgress, setInProgress] = useState(false);
   const [isTreasuryQueryLoading, setIsTreasuryQueryLoading] = useState(
@@ -92,20 +105,31 @@ export const AbstraxionGrant = ({
     !urlsMatch(treasuryParams.redirect_url, redirect_uri);
 
   useEffect(
-    function redirectAfterSuccess() {
-      if (showSuccess && redirect_uri) {
-        const redirectTimer = setTimeout(() => {
-          safeRedirectOrDisconnect(
-            redirect_uri,
-            setAbstraxionError,
-            xionDisconnect,
-            account?.id,
-            true,
-            state || undefined,
-          );
-        }, 500);
+    function handleSuccessCallback() {
+      if (showSuccess) {
+        // If callback is provided (iframe mode), use it instead of redirect
+        if (onApprove) {
+          const timer = setTimeout(() => {
+            onApprove();
+          }, 500);
+          return () => clearTimeout(timer);
+        }
+        
+        // Otherwise, redirect (standalone mode)
+        if (redirect_uri) {
+          const redirectTimer = setTimeout(() => {
+            safeRedirectOrDisconnect(
+              redirect_uri,
+              setAbstraxionError,
+              xionDisconnect,
+              account?.id,
+              true,
+              state || undefined,
+            );
+          }, 500);
 
-        return () => clearTimeout(redirectTimer);
+          return () => clearTimeout(redirectTimer);
+        }
       }
     },
     [
@@ -115,10 +139,16 @@ export const AbstraxionGrant = ({
       setAbstraxionError,
       xionDisconnect,
       state,
+      onApprove,
     ],
   );
 
   const handleDeny = () => {
+    // If callback is provided (iframe mode), use it instead of redirect
+    if (onDenyCallback) {
+      onDenyCallback();
+      return;
+    }
     safeRedirectOrDisconnect(
       redirect_uri,
       setAbstraxionError,
@@ -297,13 +327,21 @@ export const AbstraxionGrant = ({
 
       setShowSuccess(true);
     } catch (error) {
-      if (error instanceof Error) {
-        setGrantError(error.message);
-      } else {
-        setGrantError("An unknown error occurred");
+      let errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+
+      // Detect authenticator not found error and provide a more helpful message
+      if (errorMessage.includes('Authenticator') && errorMessage.includes('not found')) {
+        console.error('[AbstraxionGrant] Authenticator not found error - account may need to be re-created');
+        errorMessage = 'Account setup incomplete. Please disconnect and try logging in again.';
       }
+
+      setGrantError(errorMessage);
       // Start 10 second cooldown
       setRetryCooldown(10);
+      // Notify iframe mode about the error (but don't close, let user retry or deny)
+      if (onError) {
+        onError(errorMessage);
+      }
     } finally {
       setInProgress(false);
     }
