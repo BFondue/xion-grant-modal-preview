@@ -39,15 +39,21 @@ export async function createJwtAbstractAccount(
 
   console.log('[AccountCreation] Creating JWT abstract account via AA API');
   
+  // Build request body - only include the session credential that has a value
+  const requestBody: { session_jwt?: string; session_token?: string } = {};
+  if (sessionJwt) {
+    requestBody.session_jwt = sessionJwt;
+  }
+  if (sessionToken) {
+    requestBody.session_token = sessionToken;
+  }
+  
   const response = await fetch(`${apiUrl}/api/v2/accounts/create/jwt`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      session_jwt: sessionJwt,
-      session_token: sessionToken,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {

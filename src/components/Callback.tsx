@@ -239,8 +239,9 @@ export function Callback() {
   };
 
   const handleOAuthCallback = (token: string, stytchTokenType: string | null) => {
+    // Check if this was opened as a popup (has opener)
     if (window.opener) {
-      console.log('[Callback] Sending OAuth token to opener');
+      console.log('[Callback] Sending OAuth token to opener (popup flow)');
       window.opener.postMessage(
         {
           type: 'OAUTH_SUCCESS',
@@ -258,9 +259,18 @@ export function Callback() {
         window.close();
       }, 1000);
     } else {
-      console.error('[Callback] No opener window found');
-      setStatus('error');
-      setMessage('No opener window found. Please close this window and try again.');
+      // Main window flow - redirect to root with token in hash
+      console.log('[Callback] Redirecting to main app with OAuth token (main window flow)');
+      setStatus('success');
+      setMessage('Authentication successful! Redirecting...');
+      
+      // Redirect to root with token in URL hash (more secure than query params)
+      const redirectUrl = new URL(window.location.origin);
+      redirectUrl.hash = `oauth_token=${encodeURIComponent(token)}&token_type=${encodeURIComponent(stytchTokenType || 'oauth')}`;
+      
+      setTimeout(() => {
+        window.location.href = redirectUrl.toString();
+      }, 500);
     }
   };
 

@@ -117,13 +117,9 @@ export const AbstraxionSignin = () => {
       });
 
       console.log('[AbstraxionSignin] Account ready:', account.id);
-
-      // Complete login via AuthStateManager
-      completeLogin(account);
-
-      // Also update context for backward compatibility
-      setAbstractAccount(account);
-      setConnectionType('stytch');
+      
+      // Don't call completeLogin here - baseSmartAccount hook will complete it with full data
+      // Don't set abstractAccount here - let baseSmartAccount hook fetch it with all authenticators
 
       return true;
     } catch (error: any) {
@@ -134,7 +130,7 @@ export const AbstraxionSignin = () => {
     } finally {
       setIsCreatingAccount(false);
     }
-  }, [apiUrl, setAbstractAccount, setConnectionType, setAbstraxionError, startLogin, completeLogin, setAuthError]);
+  }, [apiUrl, setAbstraxionError, startLogin, setAuthError]);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmailError("");
@@ -638,8 +634,13 @@ export const AbstraxionSignin = () => {
 
   useEffect(() => {
     const authenticateUser = async () => {
+      // Check both query params (popup flow) and hash params (main window flow)
       const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get("token");
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      
+      const token = urlParams.get("token") || hashParams.get("oauth_token");
+      // const tokenType = urlParams.get("stytch_token_type") || hashParams.get("token_type");
+      
       if (token && !tokenProcessed.current) {
         tokenProcessed.current = true;
         try {
@@ -653,23 +654,31 @@ export const AbstraxionSignin = () => {
             session_duration_minutes: 60 * 24 * 3,
           });
 
-          console.log('[AbstraxionSignin] URL token authenticate response:', response);
+          console.log('[AbstraxionSignin] OAuth authenticate response:', response);
 
           // Create/retrieve abstract account after successful authentication
-          if (response.session_jwt && response.session_token) {
-            await handlePostAuthentication(response.session_jwt, response.session_token);
+          // Use session_token if available, otherwise session_jwt
+          const sessionToken = response.session_token || '';
+          const sessionJwt = response.session_jwt || '';
+          
+          if (sessionJwt || sessionToken) {
+            await handlePostAuthentication(sessionJwt, sessionToken);
           } else {
             console.error('[AbstraxionSignin] Missing session credentials in response');
           }
-        } catch {
+        } catch (error) {
+          console.error('[AbstraxionSignin] OAuth authentication error:', error);
           setAbstraxionError("Social authentication failed");
         } finally {
-          // Only delete oauth token related params
+          // Clean up OAuth params from both URL and hash
           urlParams.delete("token");
           urlParams.delete("stytch_token_type");
+          
           const newUrl = urlParams.toString()
             ? `${window.location.origin}?${urlParams.toString()}`
-            : `${window.location.origin}`;
+            : window.location.origin;
+          
+          // Also clear hash
           window.history.replaceState(null, "", newUrl);
         }
       }

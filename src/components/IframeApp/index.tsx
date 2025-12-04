@@ -207,10 +207,8 @@ export function IframeApp({ isStandalone = false }: { isStandalone?: boolean }) 
           ...account,
           currentAuthenticatorIndex: authenticatorToUse.authenticatorIndex,
         };
-        // Update through AuthStateManager
+        // Update through AuthStateManager (this will also update context)
         completeLogin(fullAccount);
-        // Also update context for backward compatibility
-        setAbstractAccount(fullAccount);
       } else {
         console.warn('[IframeApp] No matching authenticator found');
       }

@@ -19,6 +19,7 @@ import {
   getAuthenticatorIndexFromJWT
 } from '../../../auth/session';
 import { useAuthState } from '../../../auth/useAuthState';
+import { AuthStateManager } from '../../../auth/AuthStateManager';
 
 interface UseIframeSessionOptions {
   currentOrigin: string | null;
@@ -101,6 +102,8 @@ export function useIframeSession({ currentOrigin, onAuthenticated, trigger = 0, 
       if (hasLocalSession) {
         console.warn('[useIframeSession] Session expired, clearing local session');
         SessionManager.clearSession(currentOrigin);
+        // Also logout from AuthStateManager to clear account state
+        AuthStateManager.logout();
         setAddressByOrigin(prev => {
           const updated = { ...prev };
           delete updated[currentOrigin];

@@ -15,7 +15,7 @@ export const mainnetConfig = {
   // URLs
   dashboardUrl: "https://settings.burnt.com",
   stytchProxyUrl: "https://stytch.mainnet.burnt.com",
-  abstraxionApiUrl: "https://aa-api.xion-mainnet-1.burnt.com",
+  abstraxionApiUrl: "https://aa-api.mainnet.burnt.com",
   xionApiUrl: "https://api.xion-mainnet-1.burnt.com",
   xionRpcUrl: "https://rpc.xion-mainnet-1.burnt.com",
 
