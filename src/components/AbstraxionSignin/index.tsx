@@ -167,8 +167,8 @@ export const AbstraxionSignin = () => {
     setIsRedirectingToOAuth(true);
 
     const origin = window.location.origin;
-    // Redirect to our callback.html page
-    const redirectUrl = `${origin}/callback.html`;
+    // Redirect to our callback page
+    const redirectUrl = `${origin}/callback`;
 
     // Manually construct OAuth URL to open in popup instead of redirecting iframe
     const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
@@ -230,8 +230,8 @@ export const AbstraxionSignin = () => {
     setIsRedirectingToOAuth(true);
 
     const origin = window.location.origin;
-    // Redirect to our callback.html page
-    const redirectUrl = `${origin}/callback.html`;
+    // Redirect to our callback page
+    const redirectUrl = `${origin}/callback`;
 
     const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
     const baseUrl = import.meta.env.VITE_XION_STYTCH_API || window.location.origin;
@@ -298,8 +298,8 @@ export const AbstraxionSignin = () => {
     setIsRedirectingToOAuth(true);
 
     const origin = window.location.origin;
-    // Redirect to our callback.html page
-    const redirectUrl = `${origin}/callback.html`;
+    // Redirect to our callback page
+    const redirectUrl = `${origin}/callback`;
 
     const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
     const baseUrl = import.meta.env.VITE_XION_STYTCH_API || window.location.origin;
@@ -424,7 +424,7 @@ export const AbstraxionSignin = () => {
     // In iframe mode, use popup to connect to wallet
     if (isInIframe) {
       const origin = window.location.origin;
-      const callbackUrl = `${origin}/callback.html?wallet=keplr`;
+      const callbackUrl = `${origin}/callback?wallet=keplr`;
       const popup = window.open(callbackUrl, 'Keplr Wallet', 'width=500,height=600,popup=yes');
 
       if (!popup) {
@@ -481,7 +481,7 @@ export const AbstraxionSignin = () => {
     // In iframe mode, use popup to connect to wallet
     if (isInIframe) {
       const origin = window.location.origin;
-      const callbackUrl = `${origin}/callback.html?wallet=okx`;
+      const callbackUrl = `${origin}/callback?wallet=okx`;
       const popup = window.open(callbackUrl, 'OKX Wallet', 'width=500,height=600,popup=yes');
 
       if (!popup) {
@@ -561,7 +561,7 @@ export const AbstraxionSignin = () => {
     // In iframe mode, use popup to connect to wallet
     if (isInIframe) {
       const origin = window.location.origin;
-      const callbackUrl = `${origin}/callback.html?wallet=metamask`;
+      const callbackUrl = `${origin}/callback?wallet=metamask`;
       const popup = window.open(callbackUrl, 'MetaMask Wallet', 'width=500,height=600,popup=yes');
 
       if (!popup) {

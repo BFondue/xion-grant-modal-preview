@@ -71,6 +71,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19.1.1",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.3",
     "@vitest/coverage-v8": "^4.0.13",
     "autoprefixer": "^10.4.13",

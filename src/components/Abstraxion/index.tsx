@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
@@ -9,6 +9,9 @@ import { useAbstraxionAccount } from "../../hooks";
 import { AbstraxionWallets } from "../../components/AbstraxionWallets";
 import { ErrorDisplay } from "../../components/ErrorDisplay";
 import { AbstraxionGrant } from "../AbstraxionGrant";
+import { useStytchSession, useStytch } from "@stytch/react";
+import { decodeJwt } from "jose";
+import { useAuthState } from "../../auth/useAuthState";
 
 import { useQueryParams } from "../../hooks/useQueryParams";
 import FooterLogin from "../ui/footerLogin";
@@ -32,11 +35,38 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
       "redirect_uri",
     ]);
 
-  const { abstraxionError, setAbstraxionError, isInGrantFlow } = useContext(
+  const { abstraxionError, setAbstraxionError, isInGrantFlow, setConnectionType } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
+  const { session } = useStytchSession();
+  const stytchClient = useStytch();
+  const { connectionType, startLogin } = useAuthState();
   const { isConnected, data: account } = useAbstraxionAccount();
+
+  // Sync Stytch session to auth state - ensures connectionType is 'stytch' when session exists
+  useEffect(() => {
+    if (session && connectionType === 'none') {
+      console.log('[Abstraxion] Detected Stytch session, syncing auth state');
+      localStorage.setItem('loginType', 'stytch');
+      setConnectionType('stytch');
+
+      // Extract authenticator from session JWT
+      try {
+        const sessionJwt = stytchClient.session.getTokens()?.session_jwt;
+        if (sessionJwt) {
+          const { aud, sub } = decodeJwt(sessionJwt);
+          if (aud && sub) {
+            const audStr = Array.isArray(aud) ? aud[0] : aud;
+            const authenticator = `${audStr}.${sub}`;
+            startLogin('stytch', authenticator);
+          }
+        }
+      } catch (e) {
+        console.warn('[Abstraxion] Failed to extract authenticator from session:', e);
+      }
+    }
+  }, [session, connectionType, setConnectionType, startLogin, stytchClient]);
 
   let bankArray;
   try {
@@ -85,16 +115,27 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
 
   // Determine content key to force remount on major content changes
   const contentKey = useMemo(() => {
-    if (abstraxionError) return "error";
-    if (
-      account?.id &&
-      grantee &&
-      (contractsArray.length > 0 || stake || bankArray.length > 0 || treasury)
-    ) {
-      return "grant";
-    }
-    if (isConnected) return "wallets";
-    return "signin";
+    const result = (() => {
+      if (abstraxionError) return "error";
+      if (
+        account?.id &&
+        grantee &&
+        (contractsArray.length > 0 || stake || bankArray.length > 0 || treasury)
+      ) {
+        return "grant";
+      }
+      if (isConnected) return "wallets";
+      return "signin";
+    })();
+
+    console.log('[Abstraxion] Content decision:', result, {
+      hasError: !!abstraxionError,
+      accountId: account?.id,
+      isConnected,
+      redirect_uri,
+    });
+
+    return result;
   }, [
     abstraxionError,
     account?.id,

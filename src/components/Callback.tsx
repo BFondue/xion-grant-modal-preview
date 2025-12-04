@@ -1,23 +1,39 @@
-// Polyfills must be imported first
-import { Buffer } from 'buffer';
-import process from 'process';
-
-// @ts-ignore
-window.Buffer = Buffer;
-// @ts-ignore
-window.process = process;
-// @ts-ignore
-window.global = window;
-
-import React from 'react';
 import { useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import '../index.css';
 import { getHumanReadablePubkey } from '../utils';
 import { loadShuttleNetworks } from '../config/shuttle';
 import type { Network } from '@delphi-labs/shuttle';
+import { isUrlSafe } from '../utils/url';
 
-type CallbackType = 'oauth' | 'keplr' | 'okx' | 'metamask' | null;
+type CallbackType = 'oauth' | 'external-oauth' | 'keplr' | 'okx' | 'metamask' | null;
+
+// Configuration for the external Identity Provider (demo app)
+const IDP_CONFIG = {
+  tokenEndpoint: import.meta.env.VITE_IDP_TOKEN_URL || "http://localhost:4000/oauth/token",
+  clientId: import.meta.env.VITE_IDP_CLIENT_ID || "xion-dashboard-local",
+  redirectUri: import.meta.env.VITE_IDP_REDIRECT_URI || "http://localhost:3000/oauth/callback",
+  trustedAuthProfileId: import.meta.env.VITE_TRUSTED_AUTH_PROFILE_ID || "",
+};
+
+const STYTCH_PROXY_URL = import.meta.env.VITE_XION_STYTCH_API || "http://localhost:8787";
+
+// Parse JWT without verification (for extracting claims)
+function parseJwt(token: string): Record<string, unknown> {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const jsonPayload = decodeURIComponent(
+    atob(base64)
+      .split("")
+      .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+      .join("")
+  );
+  return JSON.parse(jsonPayload);
+}
+
+interface OAuthContext {
+  originalRedirectUri: string;
+  originalState: string | null;
+  codeVerifier: string;
+}
 
 export function Callback() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -33,13 +49,26 @@ export function Callback() {
         const stytchTokenType = urlParams.get('stytch_token_type');
         const walletType = urlParams.get('wallet') as 'keplr' | 'okx' | 'metamask' | null;
 
+        // External OAuth flow params (from external IDP like demo app)
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+
         console.log('[Callback] Received params:', {
           token: token ? 'present' : 'missing',
+          code: code ? 'present' : 'missing',
+          state: state ? 'present' : 'missing',
           stytchTokenType,
           walletType,
         });
 
-        // Handle OAuth callback
+        // Handle external OAuth callback (from demo app IDP)
+        if (code) {
+          setCallbackType('external-oauth');
+          await handleExternalOAuthCallback(code, state);
+          return;
+        }
+
+        // Handle OAuth callback (Google/Apple popup flow)
         if (token) {
           setCallbackType('oauth');
           handleOAuthCallback(token, stytchTokenType);
@@ -55,7 +84,7 @@ export function Callback() {
 
         // No valid callback type
         setStatus('error');
-        setMessage('Invalid callback - no token or wallet type specified');
+        setMessage('Invalid callback - no token, code, or wallet type specified');
       } catch (err) {
         console.error('[Callback] Error:', err);
         setStatus('error');
@@ -65,6 +94,153 @@ export function Callback() {
 
     handleCallback();
   }, []);
+
+  // Handle external OAuth callback from IDP (e.g., demo app)
+  const handleExternalOAuthCallback = async (code: string, idpState: string | null) => {
+    console.log('[Callback] Handling external OAuth callback');
+
+    // Validate state
+    const savedState = sessionStorage.getItem("oauth_state");
+    if (idpState !== savedState) {
+      setStatus('error');
+      setMessage("State mismatch - possible CSRF attack");
+      return;
+    }
+
+    // Get stored context
+    const contextStr = sessionStorage.getItem("oauth_context");
+    if (!contextStr) {
+      setStatus('error');
+      setMessage("OAuth session expired");
+      return;
+    }
+
+    const context: OAuthContext = JSON.parse(contextStr);
+
+    try {
+      // Exchange code for tokens
+      setMessage('Verifying authentication...');
+      const tokens = await exchangeCodeForTokens(code, context.codeVerifier);
+
+      // Create XION account
+      setMessage('Creating your XION account...');
+      const { address, email } = await createXionAccountFromExternalToken(tokens.id_token);
+
+      // Clean up
+      sessionStorage.removeItem("oauth_context");
+      sessionStorage.removeItem("oauth_state");
+
+      // If there's an original redirect URI, redirect back with account info
+      if (context.originalRedirectUri && isUrlSafe(context.originalRedirectUri)) {
+        setStatus('success');
+        setMessage('Connected! Redirecting...');
+        
+        const redirectUrl = new URL(context.originalRedirectUri);
+        redirectUrl.searchParams.set("xion_address", address);
+        if (context.originalState) {
+          redirectUrl.searchParams.set("state", context.originalState);
+        }
+        if (email) {
+          redirectUrl.searchParams.set("email", email);
+        }
+
+        // Redirect after a short delay to show success
+        setTimeout(() => {
+          window.location.href = redirectUrl.toString();
+        }, 1500);
+      } else {
+        // No redirect URI - just show success
+        setStatus('success');
+        setMessage(`XION account created: ${address}`);
+      }
+    } catch (e) {
+      console.error("[Callback] External OAuth error:", e);
+      setStatus('error');
+      setMessage(e instanceof Error ? e.message : "Authentication failed");
+    }
+  };
+
+  // Exchange authorization code for tokens from external IDP
+  const exchangeCodeForTokens = async (authCode: string, codeVerifier: string) => {
+    const response = await fetch(IDP_CONFIG.tokenEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code: authCode,
+        redirect_uri: IDP_CONFIG.redirectUri,
+        client_id: IDP_CONFIG.clientId,
+        code_verifier: codeVerifier,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error_description || errorData.error || "Token exchange failed");
+    }
+
+    return response.json();
+  };
+
+  // Create XION account from external IDP token via Trusted Auth Tokens
+  const createXionAccountFromExternalToken = async (idToken: string): Promise<{ address: string; email: string | null }> => {
+    const apiUrl = import.meta.env.VITE_ABSTRAXION_API_URL || "https://aa-api.testnet.burnt.com";
+
+    // Parse the ID token to get user info
+    const claims = parseJwt(idToken);
+    console.log("[Callback] ID token claims:", claims);
+    const email = (claims.email as string) || null;
+
+    // First, attest the external JWT to get a Stytch session
+    if (!IDP_CONFIG.trustedAuthProfileId) {
+      throw new Error("Trusted Auth Token profile ID not configured. Set VITE_TRUSTED_AUTH_PROFILE_ID.");
+    }
+
+    console.log("[Callback] Attesting external token with Stytch...");
+    const attestResponse = await fetch(`${STYTCH_PROXY_URL}/v1/sessions/attest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        profile_id: IDP_CONFIG.trustedAuthProfileId,
+        token: idToken,
+        session_duration_minutes: 60 * 24 * 30, // 30 days
+      }),
+    });
+
+    if (!attestResponse.ok) {
+      const errorData = await attestResponse.json().catch(() => ({}));
+      console.error("[Callback] Attest failed:", errorData);
+      throw new Error(errorData.error_message || errorData.error || "Failed to attest external token");
+    }
+
+    const attestData = await attestResponse.json();
+    console.log("[Callback] External token attested successfully");
+
+    // Now create the XION account using the Stytch session
+    console.log("[Callback] Creating XION account with Stytch session...");
+    const res = await fetch(`${apiUrl}/api/v2/accounts/create/jwt`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        session_jwt: attestData.session_jwt,
+        session_token: attestData.session_token,
+      }),
+    });
+
+    const body = await res.json();
+    if (!res.ok) {
+      throw new Error(body.error?.message || body.error || "Failed to create account");
+    }
+
+    console.log("[Callback] XION account created:", body.account_address);
+    return { address: body.account_address, email };
+  };
 
   const handleOAuthCallback = (token: string, stytchTokenType: string | null) => {
     if (window.opener) {
@@ -211,13 +387,13 @@ export function Callback() {
         <p style={{ margin: 0, opacity: 0.9 }}>{message}</p>
         
         {callbackType && (
-          <p style={{ 
-            margin: '0.5rem 0 0', 
-            fontSize: '0.875rem', 
+          <p style={{
+            margin: '0.5rem 0 0',
+            fontSize: '0.875rem',
             opacity: 0.6,
             textTransform: 'capitalize',
           }}>
-            {callbackType === 'oauth' ? 'OAuth' : callbackType} Authentication
+            {callbackType === 'oauth' ? 'OAuth' : callbackType === 'external-oauth' ? 'External Identity' : callbackType} Authentication
           </p>
         )}
       </div>
@@ -305,13 +481,3 @@ async function connectMetamask(): Promise<{ type: string; data: any }> {
   };
 }
 
-// Initialize the app
-const rootElement = document.getElementById('root');
-if (rootElement) {
-  const root = createRoot(rootElement);
-  root.render(
-    <React.StrictMode>
-      <Callback />
-    </React.StrictMode>
-  );
-}

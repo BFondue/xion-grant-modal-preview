@@ -126,7 +126,8 @@ export const AbstraxionWallets = () => {
         currentAuthenticatorIndex: 0,
       });
 
-      // Only close the modal if not in grant flow (grant flow will show permissions next)
+      // Only close the modal if not in grant flow
+      // (grant flow will show permissions dialog next)
       if (!isInGrantFlow) {
         setIsOpen(false);
       }
@@ -164,7 +165,7 @@ export const AbstraxionWallets = () => {
         // Find the best matching authenticator (handles duplicates)
         const authenticatorToUse = findBestMatchingAuthenticator(
           node.authenticators,
-          loginAuthenticator,
+          loginAuthenticator || "",
         );
 
         if (authenticatorToUse) {
@@ -173,7 +174,8 @@ export const AbstraxionWallets = () => {
             currentAuthenticatorIndex: authenticatorToUse.authenticatorIndex,
           });
           setShouldAutoNavigate(true);
-          // Only close modal if not in grant flow (grant flow will show permissions next)
+          // Only close modal if not in grant flow
+          // (grant flow will show permissions dialog next)
           if (!isInGrantFlow) {
             setIsOpen(false);
           }
@@ -300,7 +302,7 @@ export const AbstraxionWallets = () => {
                   const authenticatorToUse =
                     findBestMatchingAuthenticator(
                       node.authenticators,
-                      loginAuthenticator,
+                      loginAuthenticator || "",
                     ) || node.authenticators[0]; // Fallback to first authenticator
 
                   setAbstractAccount({
@@ -310,7 +312,10 @@ export const AbstraxionWallets = () => {
                     currentAuthenticatorIndex:
                       authenticatorToUse.authenticatorIndex,
                   });
-                  setIsOpen(false);
+                  // Only close modal if not in grant flow
+                  if (!isInGrantFlow) {
+                    setIsOpen(false);
+                  }
                 }}
                 aria-label={`Select Personal Account ${i + 1}`}
               >

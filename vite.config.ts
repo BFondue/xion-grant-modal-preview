@@ -59,13 +59,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false, // Disable for production (source maps are too large for Cloudflare)
-    rollupOptions: {
-      input: {
-        main: './index.html',
-        iframe: './iframe.html',
-        callback: './callback.html',
-      },
-    },
+    // Single entry point - all routes handled by SPA routing
   },
   define: {
     // Fix process.env references
