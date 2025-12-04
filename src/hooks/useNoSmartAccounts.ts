@@ -1,13 +1,8 @@
 import { NoIndexerStrategy } from "../indexer-strategies/no-indexer-strategy";
 import { useBaseSmartAccounts } from "./baseSmartAccount";
-import { getEnvStringOrThrow } from "../utils";
+import { DEFAULT_INDEXER_URL } from "../config";
 
-const baseUrl = getEnvStringOrThrow(
-  "VITE_DEFAULT_INDEXER_URL",
-  import.meta.env.VITE_DEFAULT_INDEXER_URL,
-);
-
-const noIndexerStrategy = new NoIndexerStrategy(baseUrl);
+const noIndexerStrategy = new NoIndexerStrategy(DEFAULT_INDEXER_URL);
 
 export const useNoSmartAccounts = (
   waitToFetch: boolean = false,

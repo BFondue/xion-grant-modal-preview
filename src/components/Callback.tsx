@@ -3,18 +3,9 @@ import { getHumanReadablePubkey } from '../utils';
 import { loadShuttleNetworks } from '../config/shuttle';
 import type { Network } from '@delphi-labs/shuttle';
 import { isUrlSafe } from '../utils/url';
+import { OAUTH_CALLBACK_URL, STYTCH_PROXY_URL, ABSTRAXION_API_URL, CHAIN_ID } from '../config';
 
 type CallbackType = 'oauth' | 'external-oauth' | 'keplr' | 'okx' | 'metamask' | null;
-
-// Configuration for the external Identity Provider (demo app)
-const IDP_CONFIG = {
-  tokenEndpoint: import.meta.env.VITE_IDP_TOKEN_URL || "http://localhost:4000/oauth/token",
-  clientId: import.meta.env.VITE_IDP_CLIENT_ID || "xion-dashboard-local",
-  redirectUri: import.meta.env.VITE_IDP_REDIRECT_URI || "http://localhost:3000/oauth/callback",
-  trustedAuthProfileId: import.meta.env.VITE_TRUSTED_AUTH_PROFILE_ID || "",
-};
-
-const STYTCH_PROXY_URL = import.meta.env.VITE_XION_STYTCH_API || "http://localhost:8787";
 
 // Parse JWT without verification (for extracting claims)
 function parseJwt(token: string): Record<string, unknown> {
@@ -33,6 +24,11 @@ interface OAuthContext {
   originalRedirectUri: string;
   originalState: string | null;
   codeVerifier: string;
+  // IDP info from the initiating request
+  idpTokenEndpoint: string;
+  idpClientId: string;
+  // Stytch Trusted Auth Token profile ID for this IDP
+  trustedAuthProfileId: string;
 }
 
 export function Callback() {
@@ -117,14 +113,21 @@ export function Callback() {
 
     const context: OAuthContext = JSON.parse(contextStr);
 
+    // Validate required IDP info
+    if (!context.idpTokenEndpoint || !context.idpClientId) {
+      setStatus('error');
+      setMessage("Invalid OAuth context - missing IDP configuration");
+      return;
+    }
+
     try {
       // Exchange code for tokens
       setMessage('Verifying authentication...');
-      const tokens = await exchangeCodeForTokens(code, context.codeVerifier);
+      const tokens = await exchangeCodeForTokens(code, context.codeVerifier, context);
 
       // Create XION account
       setMessage('Creating your XION account...');
-      const { address, email } = await createXionAccountFromExternalToken(tokens.id_token);
+      const { address, email } = await createXionAccountFromExternalToken(tokens.id_token, context.trustedAuthProfileId);
 
       // Clean up
       sessionStorage.removeItem("oauth_context");
@@ -161,8 +164,8 @@ export function Callback() {
   };
 
   // Exchange authorization code for tokens from external IDP
-  const exchangeCodeForTokens = async (authCode: string, codeVerifier: string) => {
-    const response = await fetch(IDP_CONFIG.tokenEndpoint, {
+  const exchangeCodeForTokens = async (authCode: string, codeVerifier: string, context: OAuthContext) => {
+    const response = await fetch(context.idpTokenEndpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -170,8 +173,8 @@ export function Callback() {
       body: new URLSearchParams({
         grant_type: "authorization_code",
         code: authCode,
-        redirect_uri: IDP_CONFIG.redirectUri,
-        client_id: IDP_CONFIG.clientId,
+        redirect_uri: OAUTH_CALLBACK_URL,
+        client_id: context.idpClientId,
         code_verifier: codeVerifier,
       }),
     });
@@ -185,18 +188,11 @@ export function Callback() {
   };
 
   // Create XION account from external IDP token via Trusted Auth Tokens
-  const createXionAccountFromExternalToken = async (idToken: string): Promise<{ address: string; email: string | null }> => {
-    const apiUrl = import.meta.env.VITE_ABSTRAXION_API_URL || "https://aa-api.testnet.burnt.com";
-
+  const createXionAccountFromExternalToken = async (idToken: string, trustedAuthProfileId: string): Promise<{ address: string; email: string | null }> => {
     // Parse the ID token to get user info
     const claims = parseJwt(idToken);
     console.log("[Callback] ID token claims:", claims);
     const email = (claims.email as string) || null;
-
-    // First, attest the external JWT to get a Stytch session
-    if (!IDP_CONFIG.trustedAuthProfileId) {
-      throw new Error("Trusted Auth Token profile ID not configured. Set VITE_TRUSTED_AUTH_PROFILE_ID.");
-    }
 
     console.log("[Callback] Attesting external token with Stytch...");
     const attestResponse = await fetch(`${STYTCH_PROXY_URL}/v1/sessions/attest`, {
@@ -205,7 +201,7 @@ export function Callback() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        profile_id: IDP_CONFIG.trustedAuthProfileId,
+        profile_id: trustedAuthProfileId,
         token: idToken,
         session_duration_minutes: 60 * 24 * 30, // 30 days
       }),
@@ -222,7 +218,7 @@ export function Callback() {
 
     // Now create the XION account using the Stytch session
     console.log("[Callback] Creating XION account with Stytch session...");
-    const res = await fetch(`${apiUrl}/api/v2/accounts/create/jwt`, {
+    const res = await fetch(`${ABSTRAXION_API_URL}/api/v2/accounts/create/jwt`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -274,8 +270,7 @@ export function Callback() {
     try {
       // Load chain info
       const networks = await loadShuttleNetworks();
-      const chainId = import.meta.env.VITE_XION_CHAIN_ID || 'xion-testnet-2';
-      const network = chainId.includes('mainnet') ? networks.mainnet : networks.testnet;
+      const network = CHAIN_ID.includes('mainnet') ? networks.mainnet : networks.testnet;
 
       let result: { type: string; data: any };
 

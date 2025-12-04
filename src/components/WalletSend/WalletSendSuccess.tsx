@@ -1,4 +1,3 @@
-import React, { useContext } from "react";
 import {
   BaseButton,
   DialogDescription,
@@ -10,10 +9,7 @@ import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import { truncateAddress } from "../../utils";
 import { InteractiveTooltip } from "../ui/tooltip";
 import { ExternalLinkIcon } from "../ui/icons/ExternalLink";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../AbstraxionContext";
+import { getExplorerTxUrl, getExplorerAddressUrl } from "../../config";
 
 interface WalletSendSuccessProps {
   sendAmount: string;
@@ -37,10 +33,6 @@ export function WalletSendSuccess({
   const handleConfirmClick = () => {
     onFinish();
   };
-
-  const { isMainnet, chainInfo } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
 
   return (
     <>
@@ -85,13 +77,7 @@ export function WalletSendSuccess({
               <InteractiveTooltip
                 content={
                   <a
-                    href={
-                      isMainnet
-                        ? `https://www.mintscan.io/xion/address/${account.id}`
-                        : chainInfo?.chainId === "xion-testnet-2"
-                          ? `https://www.mintscan.io/xion-testnet/address/${account.id}`
-                          : `https://explorer.burnt.com/xion-testnet-1/address/${account.id}`
-                    }
+                    href={getExplorerAddressUrl(account.id)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
@@ -115,13 +101,7 @@ export function WalletSendSuccess({
               <InteractiveTooltip
                 content={
                   <a
-                    href={
-                      isMainnet
-                        ? `https://www.mintscan.io/xion/address/${recipientAddress}`
-                        : chainInfo?.chainId === "xion-testnet-2"
-                          ? `https://www.mintscan.io/xion-testnet/address/${recipientAddress}`
-                          : `https://explorer.burnt.com/xion-testnet-1/address/${recipientAddress}`
-                    }
+                    href={getExplorerAddressUrl(recipientAddress)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
@@ -156,13 +136,7 @@ export function WalletSendSuccess({
             <div className="ui-flex ui-justify-between ui-gap-2">
               <p className="ui-text-sm">Transaction Link</p>
               <a
-                href={
-                  isMainnet
-                    ? `https://www.mintscan.io/xion/tx/${transactionHash}`
-                    : chainInfo?.chainId === "xion-testnet-2"
-                      ? `https://www.mintscan.io/xion-testnet/tx/${transactionHash}`
-                      : `https://explorer.burnt.com/xion-testnet-1/tx/${transactionHash}`
-                }
+                href={getExplorerTxUrl(transactionHash)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="ui-text-sm ui-text-white hover:ui-underline ui-inline-block"

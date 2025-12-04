@@ -51,15 +51,7 @@ import xionLogo from "../../assets/logo.png";
 import { createJwtAbstractAccount } from "../../auth/account-creation";
 import { useAuthState } from "../../auth/useAuthState";
 import { getLoginAuthenticatorFromJWT } from "../../auth/session";
-
-const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
-const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
-const shouldEnablePasskey = import.meta.env.VITE_PASSKEY_FLAG === "true";
-const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
-const tiktokFlag = import.meta.env.VITE_TIKTOK_FLAG === "true";
-const appleFlag = import.meta.env.VITE_APPLE_FLAG === "true";
-
-const shouldEnableTikTok = tiktokFlag;
+import { NETWORK, FEATURE_FLAGS, STYTCH_PUBLIC_TOKEN, STYTCH_PROXY_URL } from "../../config";
 
 export const AbstraxionSignin = () => {
   const stytchClient = stytchClientSingleton;
@@ -81,17 +73,17 @@ export const AbstraxionSignin = () => {
   const { startLogin, completeLogin, setOkxData, setError: setAuthError } = useAuthState();
 
   // Keep context for backward compatibility
-  const { setConnectionType, setAbstraxionError, setAbstractAccount, apiUrl, chainInfo, isMainnet } =
+  const { setConnectionType, setAbstraxionError, setAbstractAccount, apiUrl, chainInfo } =
     useContext(AbstraxionContext) as AbstraxionContextProps;
 
   // Detect if running in iframe mode - browser extensions don't work directly in iframes
   // but we can use popups to connect to wallets
   const isInIframe = typeof window !== 'undefined' && window.self !== window.top;
 
-  // Variable to be true if not mainnet, otherwise check flags for mainnet
-  const shouldEnableOkx = !isMainnet || (isMainnet && okxFlag);
-  const shouldEnableMetamask = !isMainnet || (isMainnet && metamaskFlag);
-  const shouldEnableKeplr = !isMainnet || (isMainnet && keplrFlag);
+  // Feature flags from config already account for mainnet/testnet
+  const shouldEnableOkx = FEATURE_FLAGS.okx;
+  const shouldEnableMetamask = FEATURE_FLAGS.metamask;
+  const shouldEnableKeplr = FEATURE_FLAGS.keplr;
 
   /**
    * Handles post-authentication account creation/lookup.
@@ -171,8 +163,8 @@ export const AbstraxionSignin = () => {
     const redirectUrl = `${origin}/callback`;
 
     // Manually construct OAuth URL to open in popup instead of redirecting iframe
-    const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
-    const baseUrl = import.meta.env.VITE_XION_STYTCH_API || window.location.origin;
+    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const googleOAuthUrl = `${baseUrl}/public/oauth/google/start?` +
       `public_token=${publicToken}&` +
       `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
@@ -233,8 +225,8 @@ export const AbstraxionSignin = () => {
     // Redirect to our callback page
     const redirectUrl = `${origin}/callback`;
 
-    const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
-    const baseUrl = import.meta.env.VITE_XION_STYTCH_API || window.location.origin;
+    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const appleOAuthUrl = `${baseUrl}/public/oauth/apple/start?` +
       `public_token=${publicToken}&` +
       `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
@@ -301,8 +293,8 @@ export const AbstraxionSignin = () => {
     // Redirect to our callback page
     const redirectUrl = `${origin}/callback`;
 
-    const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
-    const baseUrl = import.meta.env.VITE_XION_STYTCH_API || window.location.origin;
+    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const tiktokOAuthUrl = `${baseUrl}/public/oauth/tiktok/start?` +
       `public_token=${publicToken}&` +
       `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
@@ -743,7 +735,7 @@ export const AbstraxionSignin = () => {
                   className="ui-mb-2"
                 />
                 <div className="ui-flex ui-justify-between ui-items-center ui-h-[18px] ui-bg-testnet-bg ui-px-1 ui-py-0 ui-mb-2 ui-text-testnet ui-rounded-[4px] ui-text-[10px] ui-tracking-widest">
-                  {isMainnet ? 'MAINNET' : 'TESTNET'}
+                  {NETWORK.toUpperCase()}
                 </div>
               </div>
               <DialogDescription>
@@ -786,7 +778,7 @@ export const AbstraxionSignin = () => {
               >
                 Google
               </NavigationButton>
-              {appleFlag && (
+              {FEATURE_FLAGS.apple && (
                 <NavigationButton
                   icon={<AppleLogoIcon />}
                   onClick={loginWithApple}
@@ -794,7 +786,7 @@ export const AbstraxionSignin = () => {
                   Apple
                 </NavigationButton>
               )}
-              {shouldEnableTikTok && (
+              {FEATURE_FLAGS.tiktok && (
                 <NavigationButton
                   icon={<TikTokLogoIcon />}
                   onClick={loginWithTikTok}
@@ -855,7 +847,7 @@ export const AbstraxionSignin = () => {
                       <MetamaskLogo className="ui-min-w-6 ui-min-h-6" />
                     </BaseButton>
                   ) : null}
-                  {shouldEnablePasskey ? (
+                  {FEATURE_FLAGS.passkey ? (
                     <BaseButton
                       variant="secondary"
                       size="icon-large"

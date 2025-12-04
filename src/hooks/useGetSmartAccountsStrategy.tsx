@@ -1,18 +1,13 @@
-import { getEnvStringOrThrow } from "../utils";
 import { useSubquerySmartAccounts } from "./useSubquerySmartAccounts";
 import { useNumiaSmartAccounts } from "./useNumiaSmartAccounts";
 import { useNoSmartAccounts } from "./useNoSmartAccounts";
+import { INDEXER_STRATEGY } from "../config";
 
 enum SmartAccountsStrategy {
   no = "no",
   numia = "numia",
   subquery = "subquery",
 }
-
-const INDEXER_STRATEGY = getEnvStringOrThrow(
-  "VITE_INDEXER_STRATEGY",
-  import.meta.env.VITE_INDEXER_STRATEGY,
-);
 
 // This hook will return the strategy set in the env vars
 export const useGetSmartAccountsStrategy = (

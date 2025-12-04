@@ -1,14 +1,14 @@
 import { useStytch } from '@stytch/react';
 import { StytchHeadlessClient } from '@stytch/vanilla-js/headless';
+import { STYTCH_PROXY_URL, STYTCH_PUBLIC_TOKEN } from '../config';
 
-export const XION_STYTCH_API = import.meta.env.VITE_XION_STYTCH_API || 'http://localhost:8787';
+// Re-export for backwards compatibility
+export const XION_STYTCH_API = STYTCH_PROXY_URL;
 
 // Create a singleton instance for StytchProvider initialization
 let stytchClientInstance: StytchHeadlessClient | null = null;
 
 export function getStytchClient(): StytchHeadlessClient | null {
-  const STYTCH_PUBLIC_TOKEN = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
-  
   if (!STYTCH_PUBLIC_TOKEN) {
     console.error('Missing STYTCH_PUBLIC_TOKEN environment variable');
     return null;

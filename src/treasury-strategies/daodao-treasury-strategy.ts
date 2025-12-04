@@ -6,6 +6,7 @@ import type {
 } from "../types/treasury-types";
 import { treasuryCacheManager } from "../utils/cache";
 import { isUrlSafe } from "../utils/url";
+import { DAODAO_TREASURY_INDEXER_URL } from "../config";
 
 // DaoDao indexer response formats
 interface TreasuryIndexerGrantConfig {
@@ -47,9 +48,7 @@ export class DaoDaoTreasuryStrategy implements TreasuryStrategy {
 
   constructor(indexerUrl?: string) {
     this.indexerBaseUrl =
-      indexerUrl ||
-      import.meta.env.VITE_DAODAO_TREASURY_INDEXER_URL ||
-      "https://daodaoindexer.burnt.com";
+      indexerUrl || DAODAO_TREASURY_INDEXER_URL;
   }
 
   async fetchTreasuryConfig(

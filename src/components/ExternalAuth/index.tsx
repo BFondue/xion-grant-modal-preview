@@ -22,16 +22,7 @@ import {
 } from "../ui/dialog";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-
-// Configuration for the external Identity Provider (demo app)
-const IDP_CONFIG = {
-  // The demo app's authorization endpoint
-  authorizationEndpoint: import.meta.env.VITE_IDP_AUTH_URL || "http://localhost:4000",
-  // Our client ID registered with the IDP
-  clientId: import.meta.env.VITE_IDP_CLIENT_ID || "xion-dashboard-local",
-  // Our callback URL (handled by Callback.tsx)
-  redirectUri: import.meta.env.VITE_IDP_REDIRECT_URI || "http://localhost:3000/oauth/callback",
-};
+import { OAUTH_CALLBACK_URL } from "../../config";
 
 type FlowState = "loading" | "redirecting" | "error";
 
@@ -39,6 +30,9 @@ interface OAuthContext {
   originalRedirectUri: string;
   originalState: string | null;
   codeVerifier: string;
+  // IDP info stored for callback to use
+  idpTokenEndpoint: string;
+  idpClientId: string;
 }
 
 // PKCE helpers
@@ -62,7 +56,12 @@ export function ExternalOAuthFlow() {
   const [searchParams] = useSearchParams();
   const flowStartedRef = useRef(false);
 
-  // Params from the original requesting app (if any)
+  // IDP configuration from query params (required)
+  const idpAuthEndpoint = searchParams.get("idp_auth_url");
+  const idpTokenEndpoint = searchParams.get("idp_token_url");
+  const idpClientId = searchParams.get("client_id");
+
+  // Params from the original requesting app (where to redirect after success)
   const originalRedirectUri = searchParams.get("redirect_uri");
   const originalState = searchParams.get("state");
 
@@ -78,6 +77,13 @@ export function ExternalOAuthFlow() {
     }
     flowStartedRef.current = true;
 
+    // Validate required params
+    if (!idpAuthEndpoint || !idpTokenEndpoint || !idpClientId) {
+      setError("Missing required IDP configuration. Required params: idp_auth_url, idp_token_url, client_id");
+      setFlowState("error");
+      return;
+    }
+
     setFlowState("redirecting");
 
     try {
@@ -91,14 +97,16 @@ export function ExternalOAuthFlow() {
         originalRedirectUri: originalRedirectUri || "",
         originalState: originalState,
         codeVerifier,
+        idpTokenEndpoint,
+        idpClientId,
       };
       sessionStorage.setItem("oauth_context", JSON.stringify(context));
       sessionStorage.setItem("oauth_state", state);
 
-      // Build authorization URL
-      const authUrl = new URL(IDP_CONFIG.authorizationEndpoint);
-      authUrl.searchParams.set("client_id", IDP_CONFIG.clientId);
-      authUrl.searchParams.set("redirect_uri", IDP_CONFIG.redirectUri);
+      // Build authorization URL to external IDP
+      const authUrl = new URL(idpAuthEndpoint);
+      authUrl.searchParams.set("client_id", idpClientId);
+      authUrl.searchParams.set("redirect_uri", OAUTH_CALLBACK_URL);
       authUrl.searchParams.set("response_type", "code");
       authUrl.searchParams.set("scope", "openid profile email");
       authUrl.searchParams.set("state", state);
@@ -114,7 +122,7 @@ export function ExternalOAuthFlow() {
       setError("Failed to start authentication");
       setFlowState("error");
     }
-  }, [originalRedirectUri, originalState]);
+  }, [idpAuthEndpoint, idpTokenEndpoint, idpClientId, originalRedirectUri, originalState]);
 
   // Start the OAuth flow on mount
   useEffect(() => {

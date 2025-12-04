@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BaseButton,
   DialogDescription,
   DialogHeader,
   DialogTitle,
   Input,
-} from "../../../ui";
+} from "../../ui";
 import { useStytch } from "@stytch/react";
-import OtpForm from "../../../OtpForm";
-import { Loading } from "../../../Loading";
+import OtpForm from "../../OtpForm";
+import { Loading } from "../../Loading";
 
 export function AddEmail({
   onSubmit,

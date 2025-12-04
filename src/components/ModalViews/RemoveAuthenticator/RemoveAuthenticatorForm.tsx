@@ -1,4 +1,4 @@
-import React, {
+import {
   Dispatch,
   SetStateAction,
   useContext,
@@ -24,7 +24,7 @@ import { Authenticator } from "../../../indexer-strategies/types";
 import { AAAlgo } from "../../../signers";
 import { removeRegistration } from "../../../utils/webauthn-utils";
 import { Loading } from "../../Loading";
-import { getEnvStringOrThrow } from "../../../utils";
+import { FEE_GRANTER_ADDRESS } from "../../../config";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { useAuthTypes } from "../../../auth/hooks/useAuthTypes";
 import {
@@ -181,13 +181,9 @@ export function RemoveAuthenticatorForm({
         }),
       };
       // Check if fee grant exists
-      const feeGranterAddress = getEnvStringOrThrow(
-        "VITE_FEE_GRANTER_ADDRESS",
-        import.meta.env.VITE_FEE_GRANTER_ADDRESS,
-      );
       const isValidFeeGrant = await validateFeeGrant(
         chainInfo?.rest || "",
-        feeGranterAddress,
+        FEE_GRANTER_ADDRESS,
         abstractAccount.id,
         [
           "/cosmos.authz.v1beta1.MsgGrant",
@@ -198,7 +194,7 @@ export function RemoveAuthenticatorForm({
         abstractAccount.id,
       );
 
-      const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
+      const validFeeGranter = isValidFeeGrant ? FEE_GRANTER_ADDRESS : null;
 
       const simmedGas = await client.simulate(
         abstractAccount.id,

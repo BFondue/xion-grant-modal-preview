@@ -11,12 +11,9 @@ import {
   AbstraxionContextProps,
 } from "../components/AbstraxionContext";
 import { testnetChainInfo } from "@burnt-labs/constants";
-import { getEnvStringOrThrow } from "../utils";
 import { AAPasskeySigner } from "../signers/signers/passkey-signer";
 import { formatGasPrice, getGasCalculation } from "../utils/gas-utils";
-
-
-const VITE_XION_STYTCH_API = import.meta.env.VITE_XION_STYTCH_API;
+import { STYTCH_PROXY_URL } from "../config";
 
 export const useAbstraxionSigningClient = () => {
   const { connectionType, abstractAccount, chainInfo, isChainInfoLoading } =
@@ -86,11 +83,7 @@ export const useAbstraxionSigningClient = () => {
       case "stytch":
         {
           // Use Stytch proxy API, remove trailing /v1 if present since jwt-signer adds it
-          let stytchApiUrl = getEnvStringOrThrow(
-            "VITE_XION_STYTCH_API",
-            VITE_XION_STYTCH_API
-          );
-          stytchApiUrl = stytchApiUrl.replace(/\/v1$/, '');
+          let stytchApiUrl = STYTCH_PROXY_URL.replace(/\/v1$/, '');
           
           signer = new AbstractAccountJWTSigner(
             abstractAccount.id,

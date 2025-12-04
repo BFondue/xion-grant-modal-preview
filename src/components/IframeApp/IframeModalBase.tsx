@@ -1,7 +1,7 @@
-import { ReactNode, useContext } from 'react';
+import { ReactNode } from 'react';
 import { DialogHeader, DialogDescription, DialogFooter } from '../ui/dialog';
-import { AbstraxionContext, AbstraxionContextProps } from '../AbstraxionContext';
 import xionLogo from '../../assets/logo.png';
+import { NETWORK } from '../../config';
 
 interface IframeModalBaseProps {
   /** Main title shown at the top */
@@ -30,7 +30,6 @@ export function IframeModalBase({
   showDisclaimer = true,
   showLogo = true,
 }: IframeModalBaseProps) {
-  const { isMainnet } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
   return (
     <>
@@ -53,7 +52,7 @@ export function IframeModalBase({
                   color: 'var(--modal-badge-text, #FF4A4A)'
                 }}
               >
-                {isMainnet ? 'MAINNET' : 'TESTNET'}
+                {NETWORK.toUpperCase()}
               </div>
             </div>
             {description && (

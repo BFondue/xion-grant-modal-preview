@@ -2,7 +2,6 @@ export { cn } from './classname-util';
 export * from './jwt-decoder';
 export * from './webauthn-utils';
 export * from './authenticator-utils';
-export * from './chain-utils';
 export { basicFormatCurrency, basicFormatTokenAmount } from './formatters';
 
 export function truncateAddress(
@@ -98,8 +97,6 @@ export function isValidWalletAddress(address: string) {
 
   return true;
 }
-
-export { chainId, isMainnet } from "./chain-utils";
 
 export {
   formatIBCAddresses,

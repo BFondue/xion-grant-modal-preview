@@ -1,5 +1,5 @@
-import { getEnvStringOrThrow } from "../../utils";
 import axios from "axios";
+import { ABSTRAXION_API_URL } from "../../config";
 
 export interface AuthenticatorTypeResponse {
   data: {
@@ -10,10 +10,7 @@ export interface AuthenticatorTypeResponse {
 export async function getAuthenticatorTypes(userIds: string[]) {
   try {
     const response = await axios.post<AuthenticatorTypeResponse>(
-      `${getEnvStringOrThrow(
-        "VITE_DEFAULT_API_URL",
-        import.meta.env.VITE_DEFAULT_API_URL,
-      )}/api/v1/jwt-accounts/authenticator-types`,
+      `${ABSTRAXION_API_URL}/api/v1/jwt-accounts/authenticator-types`,
       {
         user_ids: userIds,
       },

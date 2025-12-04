@@ -3,14 +3,13 @@ import { useAbstraxionAccount, useAbstraxionSigningClient } from "../hooks";
 import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";
 import { useBalances } from "./useBalances";
 import { useAssetList } from "./useAssetList";
-import { chainId as envChainId } from "../utils";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate/build/stargateclient";
 
 export function useAccountBalance() {
   const { data: account } = useAbstraxionAccount();
   const { client, getGasCalculation } = useAbstraxionSigningClient();
   const { data: balances, refetch: refetchBalances } = useBalances(account?.id);
-  const { data: assetList } = useAssetList(envChainId);
+  const { data: assetList } = useAssetList();
 
   const { processedBalances, totalDollarValue } = useMemo(() => {
     if (!assetList || !balances)

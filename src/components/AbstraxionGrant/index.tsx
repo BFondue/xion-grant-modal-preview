@@ -17,7 +17,7 @@ import {
   generateContractGrant,
 } from "./generateContractGrant";
 import { generateStakeAndGovGrant } from "./generateStakeAndGovGrant";
-import { getEnvStringOrThrow } from "../../utils";
+import { FEE_GRANTER_ADDRESS } from "../../config";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import {
   AbstraxionContext,
@@ -292,13 +292,9 @@ export const AbstraxionGrant = ({
       );
 
       // Check if fee grant exists
-      const feeGranterAddress = getEnvStringOrThrow(
-        "VITE_FEE_GRANTER_ADDRESS",
-        import.meta.env.VITE_FEE_GRANTER_ADDRESS,
-      );
       const isValidFeeGrant = await validateFeeGrant(
         chainInfo?.rest,
-        feeGranterAddress,
+        FEE_GRANTER_ADDRESS,
         granter,
         [
           "/cosmos.authz.v1beta1.MsgGrant",
@@ -309,7 +305,7 @@ export const AbstraxionGrant = ({
         account.id,
       );
 
-      const validFeeGranter = isValidFeeGrant ? feeGranterAddress : undefined;
+      const validFeeGranter = isValidFeeGrant ? FEE_GRANTER_ADDRESS : undefined;
 
       if (treasury) {
         await grantTreasuryPermissions(

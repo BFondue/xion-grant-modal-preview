@@ -1,4 +1,3 @@
-import React, { useContext } from "react";
 import {
   BaseButton,
   DialogDescription,
@@ -12,10 +11,9 @@ import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import { truncateAddress } from "../../utils";
 import { cn } from "../../utils/classname-util";
 import { InteractiveTooltip } from "../ui/tooltip";
-import { AbstraxionContextProps } from "../AbstraxionContext";
-import { AbstraxionContext } from "../AbstraxionContext";
 import { ExternalLinkIcon } from "../ui/icons/ExternalLink";
 import { WarningIcon } from "../ui/icons";
+import { getExplorerAddressUrl } from "../../config";
 
 interface WalletSendReviewProps {
   sendAmount: string;
@@ -38,10 +36,6 @@ export function WalletSendReview({
   onBack,
   triggerSend,
 }: WalletSendReviewProps) {
-  const { isMainnet, chainInfo } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
-
   const handleBackClick = () => {
     onBack();
   };
@@ -92,13 +86,7 @@ export function WalletSendReview({
             <InteractiveTooltip
               content={
                 <a
-                  href={
-                    isMainnet
-                      ? `https://www.mintscan.io/xion/address/${account.id}`
-                      : chainInfo?.chainId === "xion-testnet-2"
-                        ? `https://www.mintscan.io/xion-testnet/address/${account.id}`
-                        : `https://explorer.burnt.com/xion-testnet-1/address/${account.id}`
-                  }
+                  href={getExplorerAddressUrl(account.id)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
@@ -122,13 +110,7 @@ export function WalletSendReview({
             <InteractiveTooltip
               content={
                 <a
-                  href={
-                    isMainnet
-                      ? `https://www.mintscan.io/xion/address/${recipientAddress}`
-                      : chainInfo?.chainId === "xion-testnet-2"
-                        ? `https://www.mintscan.io/xion-testnet/address/${recipientAddress}`
-                        : `https://explorer.burnt.com/xion-testnet-1/address/${recipientAddress}`
-                  }
+                  href={getExplorerAddressUrl(recipientAddress)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"

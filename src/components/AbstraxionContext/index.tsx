@@ -12,11 +12,11 @@
  */
 
 import React, { createContext, ReactNode, useState, useEffect } from "react";
-import { getEnvStringOrThrow, chainId, isMainnet } from "../../utils";
+import { isMainnet } from "../../config";
 import { ChainInfo } from "@burnt-labs/constants";
 import { SelectedSmartAccount } from "../../indexer-strategies/types";
 import axios from "axios";
-import { getChainRegistryUrl } from "../../config";
+import { getChainRegistryUrl, ABSTRAXION_API_URL } from "../../config";
 import { useQueryParams } from "../../hooks/useQueryParams";
 import { ContractContextProvider } from "../ContractContext";
 import { AuthStateManager, ConnectionType as AuthConnectionType } from "../../auth/AuthStateManager";
@@ -161,18 +161,12 @@ export const AbstraxionContextProvider = ({
     grantee && (contracts || stake || bank || treasury),
   );
 
-  const apiUrl = getEnvStringOrThrow(
-    "VITE_NEW_CONTRACT_API_URL",
-    import.meta.env.VITE_NEW_CONTRACT_API_URL,
-  );
+  const apiUrl = ABSTRAXION_API_URL;
 
   useEffect(() => {
     const fetchChainInfo = async () => {
       try {
-        if (!chainId) {
-          throw new Error("Chain ID is not defined");
-        }
-        const chainRegistryUrl = getChainRegistryUrl(chainId);
+        const chainRegistryUrl = getChainRegistryUrl();
 
         const response = await axios.get(chainRegistryUrl);
 
