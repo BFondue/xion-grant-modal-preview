@@ -2,9 +2,6 @@ import { useStytch } from '@stytch/react';
 import { StytchHeadlessClient } from '@stytch/vanilla-js/headless';
 import { STYTCH_PROXY_URL, STYTCH_PUBLIC_TOKEN } from '../config';
 
-// Re-export for backwards compatibility
-export const XION_STYTCH_API = STYTCH_PROXY_URL;
-
 // Create a singleton instance for StytchProvider initialization
 let stytchClientInstance: StytchHeadlessClient | null = null;
 
@@ -23,7 +20,7 @@ export function getStytchClient(): StytchHeadlessClient | null {
         endpointOptions: {
           dfppaDomain: "stytchauth.burnt.com",
         },
-        customBaseUrl: XION_STYTCH_API,
+        customBaseUrl: STYTCH_PROXY_URL,
       });
     } catch (error) {
       console.error('Failed to initialize Stytch client:', error);

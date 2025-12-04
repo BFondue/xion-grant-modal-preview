@@ -82,8 +82,7 @@ export const useAbstraxionSigningClient = () => {
     switch (connectionType) {
       case "stytch":
         {
-          // Use Stytch proxy API, remove trailing /v1 if present since jwt-signer adds it
-          let stytchApiUrl = STYTCH_PROXY_URL.replace(/\/v1$/, '');
+          let stytchApiUrl = STYTCH_PROXY_URL;
           
           signer = new AbstractAccountJWTSigner(
             abstractAccount.id,

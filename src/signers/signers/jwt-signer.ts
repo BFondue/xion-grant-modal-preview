@@ -3,6 +3,7 @@ import { SignDoc } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { sha256 } from "@cosmjs/crypto";
 import { AAccountData, AASigner } from "../interfaces/AASigner";
 import { AAAlgo } from "../interfaces/smartAccount";
+import { STYTCH_PROXY_URL } from "../../config";
 
 export class AbstractAccountJWTSigner extends AASigner {
   // requires a session token already created
@@ -18,7 +19,8 @@ export class AbstractAccountJWTSigner extends AASigner {
     super(abstractAccount);
     this.sessionToken = sessionToken;
     this.accountAuthenticatorIndex = accountAuthenticatorIndex;
-    this.apiUrl = apiUrl || "https://stytch.testnet.burnt.com";
+    // Remove /v1 from the URL since we add it in the fetch call below
+    this.apiUrl = apiUrl || STYTCH_PROXY_URL
   }
 
   async getAccounts(): Promise<readonly AAccountData[]> {

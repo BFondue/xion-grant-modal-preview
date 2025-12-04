@@ -49,14 +49,27 @@
       ],
       "build": { "command": "npm run build:testnet" },
     },
-    "testnet-iframe": {
+    "testnet-beta": {
       "routes": [
         {
-          "pattern": "auth-iframe.testnet.burnt.com",
+          "pattern": "auth-beta.testnet.burnt.com",
           "custom_domain": true,
         },
       ],
-      "build": { "command": "npm run build:iframe" },
+      "build": { "command": "npm run build:testnet-beta" },
+    },
+    "mainnet-beta": {
+      "routes": [
+        {
+          "pattern": "auth-beta.burnt.com",
+          "custom_domain": true,
+        },
+        {
+          "pattern": "auth-beta.mainnet.burnt.com",
+          "custom_domain": true,
+        },
+      ],
+      "build": { "command": "npm run build:mainnet-beta" },
     }
   }
 }

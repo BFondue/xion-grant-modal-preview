@@ -24,12 +24,24 @@ function resolveNodePolyfillShims(): Plugin {
   };
 }
 
-export default defineConfig({
-  plugins: [
-    resolveNodePolyfillShims(),
-    react(),
-    cloudflare(), // Cloudflare Workers runtime integration
-    nodePolyfills({
+export default defineConfig(({ mode }) => {
+  // Map Vite mode to Cloudflare environment
+  // For mainnet-beta and testnet-beta, use the mode as the environment
+  // For mainnet and testnet, also use the mode
+  const cloudflareEnv = ['mainnet', 'testnet', 'mainnet-beta', 'testnet-beta'].includes(mode) 
+    ? mode 
+    : undefined;
+
+  return {
+    plugins: [
+      resolveNodePolyfillShims(),
+      react(),
+      // @ts-ignore
+      cloudflare({
+        // Pass the environment to Cloudflare plugin
+        ...(cloudflareEnv && { environment: cloudflareEnv }),
+      }),
+      nodePolyfills({
       // Enable polyfills for browser globals needed by Cosmos libraries
       globals: {
         Buffer: true,
@@ -74,4 +86,5 @@ export default defineConfig({
     },
     include: ['buffer', 'process'],
   },
+};
 });

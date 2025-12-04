@@ -123,6 +123,7 @@ export const XION_RPC_URL =
 
 export const STYTCH_PROXY_URL =
   import.meta.env.VITE_XION_STYTCH_API || networkConfig.stytchProxyUrl;
+console.log("STYTCH_PROXY_URL:", STYTCH_PROXY_URL);
 
 export const ABSTRAXION_API_URL =
   import.meta.env.VITE_ABSTRAXION_API_URL || networkConfig.abstraxionApiUrl;
