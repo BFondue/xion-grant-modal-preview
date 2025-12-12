@@ -7,6 +7,8 @@ export const useAuthTypes = (userIds: string[]) => {
   const query = useQuery({
     queryKey: ["auth-types", userIds],
     queryFn: () => getAuthenticatorTypes(userIds),
+    enabled:
+      userIds.length > 0 && userIds.every((id) => id.startsWith("user-")), // Only enable for Stytch user IDs
   });
 
   // Create a map for efficient lookups with Apple ID special handling

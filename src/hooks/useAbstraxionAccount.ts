@@ -67,7 +67,7 @@ export const useAbstraxionAccount = () => {
         break;
       }
       case "shuttle":
-        authenticator = shuttleAccount?.pubkey;
+        authenticator = shuttleAccount?.pubkey || loginAuthenticator || "";
         break;
       case "metamask":
         authenticator = loginAuthenticator || "";
@@ -178,9 +178,9 @@ export const useAbstraxionAccount = () => {
           : connectionType === "metamask"
             ? window.ethereum.isConnected()
             : connectionType === "okx"
-              ? localStorage.getItem("loginAuthenticator")
+              ? !!localStorage.getItem("loginAuthenticator")
               : connectionType === "passkey"
-                ? localStorage.getItem("loginAuthenticator")
+                ? !!localStorage.getItem("loginAuthenticator")
                 : false,
   };
 };

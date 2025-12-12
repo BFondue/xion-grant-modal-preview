@@ -11,7 +11,7 @@ import {
   AbstraxionContextProps,
 } from "../components/AbstraxionContext";
 import { testnetChainInfo } from "@burnt-labs/constants";
-import { getEnvStringOrThrow } from "../utils";
+import { getEnvStringOrThrow, getEthWalletAddress } from "../utils";
 import { AAPasskeySigner } from "../signers/signers/passkey-signer";
 import { formatGasPrice, getGasCalculation } from "../utils/gas-utils";
 
@@ -55,12 +55,10 @@ export const useAbstraxionSigningClient = () => {
   }
 
   async function ethSigningFn(msg) {
-    const accounts = await window.ethereum?.request({
-      method: "eth_requestAccounts",
-    });
+    const ethAddress = await getEthWalletAddress();
     return window.ethereum?.request<string>({
       method: "personal_sign",
-      params: [msg, accounts[0]],
+      params: [msg, ethAddress],
     });
   }
 

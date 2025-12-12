@@ -23,7 +23,12 @@ import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../AbstraxionContext";
-import { getHumanReadablePubkey } from "../../utils";
+import {
+  getHumanReadablePubkey,
+  getEthWalletAddress,
+  getSecp256k1Pubkey,
+  WalletAccountError,
+} from "../../utils";
 import {
   convertToStandardBase64,
   registeredCredentials,
@@ -164,9 +169,14 @@ export const AbstraxionSignin = () => {
     }
   };
 
-  function handleKeplr() {
+  async function handleKeplr() {
     if (!window.keplr) {
       alert("Please install the Keplr wallet extension");
+      return;
+    }
+
+    if (!chainInfo) {
+      console.error("Chain info not loaded");
       return;
     }
 
@@ -176,7 +186,12 @@ export const AbstraxionSignin = () => {
         extensionProviderId: "keplr",
       });
 
-      localStorage.setItem("loginType", "");
+      // Get the pubkey and store it for session persistence
+      const key = await window.keplr.getKey(chainInfo.chainId);
+      const pubkeyBase64 = getHumanReadablePubkey(key.pubKey);
+
+      localStorage.setItem("loginType", "shuttle");
+      localStorage.setItem("loginAuthenticator", pubkeyBase64);
       setConnectionType("shuttle");
     } catch (error) {
       console.error("Error connecting to Keplr:", error);
@@ -184,39 +199,45 @@ export const AbstraxionSignin = () => {
   }
 
   async function handleOkx() {
-    if (!window.okxwallet) {
-      alert("Please install the OKX wallet extension");
+    if (!chainInfo) {
+      console.error("Chain info not loaded");
       return;
     }
+
     try {
-      await window.okxwallet.keplr.enable(chainInfo.chainId);
-      const okxAccount = await window.okxwallet.keplr.getKey(chainInfo.chainId);
-      const authenticator = getHumanReadablePubkey(okxAccount.pubKey);
+      const { pubkeyHex, address: walletAddress } = await getSecp256k1Pubkey(
+        chainInfo.chainId,
+        "okx",
+      );
+      const authenticator = getHumanReadablePubkey(
+        Buffer.from(pubkeyHex, "hex"),
+      );
       setConnectionType("okx");
       localStorage.setItem("loginType", "okx");
       localStorage.setItem("loginAuthenticator", authenticator);
-      localStorage.setItem("okxXionAddress", okxAccount.bech32Address);
-      localStorage.setItem("okxWalletName", okxAccount.name);
-    } catch {
-      setAbstraxionError("OKX wallet connect error");
+      localStorage.setItem("okxXionAddress", walletAddress);
+      // Note: wallet name not available from getSecp256k1Pubkey
+    } catch (error) {
+      const errorMessage =
+        error instanceof WalletAccountError
+          ? error.userMessage
+          : "OKX wallet connect error";
+      setAbstraxionError(errorMessage);
     }
   }
 
   async function handleMetamask() {
-    if (!window.ethereum) {
-      alert("Please install the Metamask wallet extension");
-      return;
-    }
     try {
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-      const primaryAccount = accounts[0];
+      const ethAddress = await getEthWalletAddress();
       setConnectionType("metamask");
       localStorage.setItem("loginType", "metamask");
-      localStorage.setItem("loginAuthenticator", primaryAccount);
-    } catch {
-      setAbstraxionError("Metamask connect error");
+      localStorage.setItem("loginAuthenticator", ethAddress);
+    } catch (error) {
+      const errorMessage =
+        error instanceof WalletAccountError
+          ? error.userMessage
+          : "Metamask connect error";
+      setAbstraxionError(errorMessage);
     }
   }
 
@@ -356,7 +377,6 @@ export const AbstraxionSignin = () => {
                 onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
               >
                 Advanced Options
-                <span className="ui-text-secondary-text">{"(Login Only)"}</span>
                 {/* Down Caret */}
                 <ChevronRightIcon
                   className={cn(

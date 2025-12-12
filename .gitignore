@@ -37,3 +37,5 @@ wrangler.toml
 # Ignore vite build output
 /dist
 
+# ignore local docs
+.docs/

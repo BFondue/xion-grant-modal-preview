@@ -46,6 +46,9 @@ export class NoIndexerStrategy implements IndexerStrategy {
       }
 
       const [aud, sub] = authenticatorParts;
+      // NOTE: This endpoint remains on V1 as V2 doesn't have an equivalent aud/sub lookup
+      // V2 requires the full JWT token for /api/v2/account/check/jwt/{jwt}
+      // TODO: Consider adding a V2 endpoint for aud/sub lookup or restructure to use JWT token
       const response = await fetch(
         `${this.baseURL}/api/v1/jwt-accounts/${aud}/${sub}`,
         {},

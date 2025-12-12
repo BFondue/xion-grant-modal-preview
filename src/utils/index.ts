@@ -99,3 +99,5 @@ export {
   formatIBCAddresses,
   IBC_ADDRESS_PATTERN,
 } from "./format-ibc-addresses";
+
+export * from "./wallet-utils";

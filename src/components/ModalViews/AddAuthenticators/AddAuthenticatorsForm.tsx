@@ -38,7 +38,12 @@ import {
   AddAuthenticator,
   AddJwtAuthenticator,
 } from "../../../signers/interfaces";
-import { getEnvStringOrThrow } from "../../../utils";
+import {
+  getEnvStringOrThrow,
+  getEthWalletAddress,
+  getSecp256k1Pubkey,
+  WalletAccountError,
+} from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
 import { AddEmail } from "./AddEmail/AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
@@ -419,18 +424,18 @@ export function AddAuthenticatorsForm({
     try {
       setIsLoading(true);
 
-      if (!window.okxwallet) {
-        return alert("Install OKX Wallet");
-      }
+      const { address: walletAddress } = await getSecp256k1Pubkey(
+        chainInfo.chainId,
+        "okx",
+      );
 
       const encoder = new TextEncoder();
       const signArbMessage = Buffer.from(encoder.encode(abstractAccount?.id));
 
       await window.okxwallet.keplr.enable(chainInfo.chainId);
-      const okxAccount = await window.okxwallet.keplr.getKey(chainInfo.chainId);
       const signArbRes = await window.okxwallet.keplr.signArbitrary(
         chainInfo.chainId,
-        okxAccount.bech32Address,
+        walletAddress,
         new Uint8Array(signArbMessage),
       );
 
@@ -467,14 +472,18 @@ export function AddAuthenticatorsForm({
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
         type: AAAlgo.secp256k1,
-        authenticator: okxAccount.bech32Address,
+        authenticator: walletAddress,
         authenticatorIndex: accountIndex,
       };
 
       await handleAddAuthenticator(msg, authenticatorStateData);
     } catch (error) {
       console.warn(error);
-      setErrorMessage("Something went wrong trying to add authenticator");
+      const errorMessage =
+        error instanceof WalletAccountError
+          ? error.userMessage
+          : "Something went wrong trying to add authenticator";
+      setErrorMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -484,20 +493,13 @@ export function AddAuthenticatorsForm({
     try {
       setIsLoading(true);
 
-      if (!window.ethereum) {
-        return alert("Please install wallet extension");
-      }
-
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-      const primaryAccount = accounts[0];
+      const ethAddress = await getEthWalletAddress();
 
       const challenge = `0x${Buffer.from(abstractAccount?.id, "utf8").toString("hex")}`;
 
       const ethSignature = await window.ethereum.request<string>({
         method: "personal_sign",
-        params: [challenge, primaryAccount],
+        params: [challenge, ethAddress],
       });
 
       const base64Signature = Buffer.from(
@@ -508,7 +510,7 @@ export function AddAuthenticatorsForm({
       // Check for duplicate Ethereum wallet authenticator
       const validation = validateNewAuthenticator(
         abstractAccount.authenticators,
-        primaryAccount,
+        ethAddress,
         AAAlgo.ETHWALLET,
       );
 
@@ -528,7 +530,7 @@ export function AddAuthenticatorsForm({
           add_authenticator: {
             EthWallet: {
               id: accountIndex,
-              address: primaryAccount,
+              address: ethAddress,
               signature: base64Signature,
             },
           },
@@ -538,14 +540,18 @@ export function AddAuthenticatorsForm({
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
         type: AAAlgo.ETHWALLET,
-        authenticator: primaryAccount,
+        authenticator: ethAddress,
         authenticatorIndex: accountIndex,
       };
 
       await handleAddAuthenticator(msg, authenticatorStateData);
     } catch (error) {
       console.warn(error);
-      setErrorMessage("Something went wrong trying to add authenticator");
+      const errorMessage =
+        error instanceof WalletAccountError
+          ? error.userMessage
+          : "Something went wrong trying to add authenticator";
+      setErrorMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
