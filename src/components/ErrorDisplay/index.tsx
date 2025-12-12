@@ -26,17 +26,24 @@ export const ErrorDisplay = ({
   buttonText?: string;
   onButtonClick?: VoidFunction;
 }) => {
-  const { setAbstraxionError } = useContext(
+  const { setAbstraxionError, setConnectionType } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
   const handleButtonClick = () => {
+    // Reset login state so user can try a different authenticator
+    localStorage.removeItem("loginType");
+    localStorage.removeItem("loginAuthenticator");
+    localStorage.removeItem("okxXionAddress");
+    localStorage.removeItem("okxWalletName");
+    setConnectionType("none");
+    setAbstraxionError("");
+
     if (onButtonClick) {
       onButtonClick();
     } else {
       onClose?.();
     }
-    setAbstraxionError("");
   };
 
   return (

@@ -4,19 +4,15 @@ import { getAuthenticatorTypes } from "../lib/auth-types";
 import { Authenticator } from "../../indexer-strategies/types";
 
 export const useAuthTypes = (userIds: string[]) => {
-  const hasUserIds = userIds.length > 0;
   type AuthTypesRecord = Record<string, string[]>;
   const emptyAuthTypes: AuthTypesRecord = {};
 
   const query = useQuery<AuthTypesRecord>({
     queryKey: ["auth-types", userIds],
-    queryFn: () => {
-      if (!hasUserIds) {
-        return Promise.resolve(emptyAuthTypes);
-      }
-      return getAuthenticatorTypes(userIds).then((data) => data ?? emptyAuthTypes);
-    },
-    enabled: hasUserIds,
+    queryFn: () =>
+      getAuthenticatorTypes(userIds).then((data) => data ?? emptyAuthTypes),
+    enabled:
+      userIds.length > 0 && userIds.every((id) => id.startsWith("user-")), // Only enable for Stytch user IDs
   });
 
   // Create a map for efficient lookups with Apple ID special handling

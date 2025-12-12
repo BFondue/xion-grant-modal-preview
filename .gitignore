@@ -35,3 +35,15 @@ worker-configuration.d.ts
 .wrangler
 .dev.vars*
 coverage
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# Ignore vite build output
+/dist
+
+# ignore local docs
+.docs/

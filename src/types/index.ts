@@ -1,6 +1,7 @@
 import { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
 export * from "./migration";
 export * from "./treasury-types";
+export * from "./wallet-account-types";
 
 export type authenticatorTypes = "SECP256K1" | "ETHWALLET" | "JWT" | "PASSKEY";
 export type JwtSubType =

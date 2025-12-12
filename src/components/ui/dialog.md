@@ -121,10 +121,7 @@
         className="ui-flex ui-text-white ui-text-sm ui-w-full ui-items-center ui-gap-3"
         onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
       >
-        <span className="ui-text-base">
-          Advanced Options{" "}
-          <span className="ui-text-secondary-text">{"(Login Only)"}</span>
-        </span>
+        <span className="ui-text-base">Advanced Options</span>
         {/* Down Caret */}
         <ChevronRightIcon
           className={cn(

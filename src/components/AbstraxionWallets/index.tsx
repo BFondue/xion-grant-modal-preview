@@ -37,15 +37,23 @@ import {
   deduplicateAccountsById,
   findBestMatchingAuthenticator,
 } from "../../utils/authenticator-utils";
+import {
+  createAccountWithMetaMask,
+  createAccountWithCosmosWallet,
+} from "../../hooks";
+import { getErrorMessageForUI, WalletAccountError } from "../../utils";
+import { AAAlgo } from "../../signers";
 
 export const AbstraxionWallets = () => {
   const {
     connectionType,
+    setConnectionType,
     abstractAccount,
     setAbstractAccount,
     abstraxionError,
     setAbstraxionError,
     apiUrl,
+    chainInfo,
     setIsOpen,
     isInGrantFlow,
   } = useContext(AbstraxionContext) as AbstraxionContextProps;
@@ -75,13 +83,12 @@ export const AbstraxionWallets = () => {
   const handleJwtAALoginOrCreate = useCallback(async () => {
     try {
       setIsGeneratingNewWallet(true);
-      const res = await fetch(`${apiUrl}/api/v1/jwt-accounts/create`, {
+      const res = await fetch(`${apiUrl}/api/v2/accounts/create/jwt`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          salt: Date.now().toString(),
           session_jwt,
           session_token,
         }),
@@ -150,6 +157,103 @@ export const AbstraxionWallets = () => {
     setShouldAutoNavigate,
   ]);
 
+  const handleExternalWalletAALoginOrCreate = useCallback(
+    async (walletType: "metamask" | "keplr" | "okx" | "leap") => {
+      try {
+        setIsGeneratingNewWallet(true);
+        setAbstraxionError("");
+
+        if (!chainInfo) {
+          throw new Error("Chain information not loaded");
+        }
+
+        let result;
+        let walletInfo;
+
+        // Create account based on wallet type
+        if (walletType === "metamask") {
+          const accountData = await createAccountWithMetaMask(apiUrl);
+          result = accountData;
+          walletInfo = accountData.walletInfo;
+        } else {
+          // For Cosmos wallets (keplr, okx, leap)
+          const walletName =
+            walletType === "okx"
+              ? "okx"
+              : walletType === "leap"
+                ? "leap"
+                : "keplr";
+          const accountData = await createAccountWithCosmosWallet(
+            apiUrl,
+            chainInfo.chainId,
+            walletName,
+          );
+          result = accountData;
+          walletInfo = accountData.walletInfo;
+        }
+
+        // Set the abstract account with the correct authenticator type
+        const authenticatorType =
+          walletInfo.type === "EthWallet" ? AAAlgo.ETHWALLET : AAAlgo.secp256k1;
+
+        // Store the authenticator identifier in localStorage for indexer queries
+        localStorage.setItem("loginAuthenticator", walletInfo.identifier);
+
+        // Map wallet type to connection type (keplr and leap both use "shuttle")
+        const connType =
+          walletType === "keplr" || walletType === "leap"
+            ? "shuttle"
+            : walletType;
+        localStorage.setItem("loginType", connType);
+
+        // Update connection type to trigger state updates
+        setConnectionType(connType);
+
+        setAbstractAccount({
+          id: result.accountAddress,
+          codeId: result.codeId,
+          authenticators: [
+            {
+              id: `${result.accountAddress}-0`,
+              type: authenticatorType,
+              authenticator: walletInfo.identifier,
+              authenticatorIndex: 0,
+            },
+          ],
+          currentAuthenticatorIndex: 0,
+        });
+
+        // Only close the modal if not in grant flow (grant flow will show permissions next)
+        if (!isInGrantFlow) {
+          setIsOpen(false);
+        }
+      } catch (error) {
+        console.error("Error creating wallet account:", error);
+
+        // Use simple error message for UI
+        const userMessage =
+          error instanceof WalletAccountError
+            ? error.userMessage
+            : getErrorMessageForUI(error);
+
+        setAbstraxionError(userMessage);
+        setShouldAutoNavigate(false);
+      } finally {
+        setIsGeneratingNewWallet(false);
+      }
+    },
+    [
+      apiUrl,
+      chainInfo?.chainId,
+      setIsGeneratingNewWallet,
+      setAbstraxionError,
+      setAbstractAccount,
+      setIsOpen,
+      isInGrantFlow,
+      setShouldAutoNavigate,
+    ],
+  );
+
   // Handle auto-navigation for 0 or 1 account scenarios
   useEffect(() => {
     if (
@@ -180,10 +284,26 @@ export const AbstraxionWallets = () => {
             setIsOpen(false);
           }
         }
-      } else if (uniqueAccounts.length === 0 && connectionType === "stytch") {
+      } else if (uniqueAccounts.length === 0) {
         // Auto-create account for users with no accounts
-        setShouldAutoNavigate(true);
-        handleJwtAALoginOrCreate();
+        if (connectionType === "stytch") {
+          setShouldAutoNavigate(true);
+          handleJwtAALoginOrCreate();
+        } else if (
+          connectionType === "metamask" ||
+          connectionType === "shuttle" ||
+          connectionType === "okx"
+        ) {
+          // Auto-create account for wallet-based connections
+          setShouldAutoNavigate(true);
+          const walletType =
+            connectionType === "metamask"
+              ? "metamask"
+              : connectionType === "shuttle"
+                ? "keplr"
+                : "okx";
+          handleExternalWalletAALoginOrCreate(walletType);
+        }
       }
     }
   }, [
@@ -195,6 +315,7 @@ export const AbstraxionWallets = () => {
     setAbstractAccount,
     connectionType,
     handleJwtAALoginOrCreate,
+    handleExternalWalletAALoginOrCreate,
     isInGrantFlow,
     setIsOpen,
     abstraxionError,
@@ -362,21 +483,31 @@ export const AbstraxionWallets = () => {
         <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
           <DialogFooter>
             <div className="ui-flex ui-flex-col ui-gap-3 ui-w-full">
-              {connectionType === "stytch" &&
-                isInLoginFlow &&
-                !shouldAutoNavigate && (
-                  <BaseButton
-                    className="ui-w-full"
-                    onClick={handleJwtAALoginOrCreate}
-                    disabled={
-                      loading ||
-                      isGeneratingNewWallet ||
-                      uniqueAccounts.length > 0
+              {isInLoginFlow && !shouldAutoNavigate && (
+                <BaseButton
+                  className="ui-w-full"
+                  onClick={() => {
+                    if (connectionType === "stytch") {
+                      handleJwtAALoginOrCreate();
+                    } else if (connectionType === "metamask") {
+                      handleExternalWalletAALoginOrCreate("metamask");
+                    } else if (connectionType === "shuttle") {
+                      handleExternalWalletAALoginOrCreate("keplr");
+                    } else if (connectionType === "okx") {
+                      handleExternalWalletAALoginOrCreate("okx");
                     }
-                  >
-                    CREATE NEW ACCOUNT
-                  </BaseButton>
-                )}
+                  }}
+                  disabled={
+                    loading ||
+                    isGeneratingNewWallet ||
+                    uniqueAccounts.length > 0 ||
+                    connectionType === "passkey" ||
+                    connectionType === "none"
+                  }
+                >
+                  CREATE NEW ACCOUNT
+                </BaseButton>
+              )}
               <div className="ui-flex ui-gap-3 ui-w-full">
                 {isInLoginFlow && isInGrantFlow && (
                   <BaseButton
