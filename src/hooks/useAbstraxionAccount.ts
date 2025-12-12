@@ -70,7 +70,10 @@ export const useAbstraxionAccount = () => {
     const handleAccountsChanged = (accounts: string[]) => {
       if (connectionType === "metamask" && accounts.length > 0) {
         // Account changed - need to reset and re-authenticate
-        console.log('[useAbstraxionAccount] MetaMask account changed:', accounts[0]);
+        console.log(
+          "[useAbstraxionAccount] MetaMask account changed:",
+          accounts[0],
+        );
         // Clear the current account so user needs to re-login
         logout(window.location.origin);
       }
@@ -94,7 +97,9 @@ export const useAbstraxionAccount = () => {
           okxData.address !== accounts.account.XION_TEST ||
           okxData.name !== accounts.name
         ) {
-          console.log('[useAbstraxionAccount] OKX account changed, logging out');
+          console.log(
+            "[useAbstraxionAccount] OKX account changed, logging out",
+          );
           await logout(window.location.origin);
         }
       }
@@ -113,10 +118,12 @@ export const useAbstraxionAccount = () => {
   useEffect(() => {
     const handleAccountsChanged = () => {
       if (connectionType === "shuttle") {
-        console.log('[useAbstraxionAccount] Keplr account changed, clearing account');
+        console.log(
+          "[useAbstraxionAccount] Keplr account changed, clearing account",
+        );
         // Clear account so it gets re-fetched with new key
         if (account) {
-          updateAccount({ ...account, id: '' } as any);
+          updateAccount({ ...account, id: "" } as any);
         }
       }
     };
@@ -134,8 +141,11 @@ export const useAbstraxionAccount = () => {
       // Note: .pubkey is already a base64 string, not .pubKey which is Uint8Array
       const walletAuthenticator = recentWallet.account?.pubkey;
       if (walletAuthenticator) {
-        console.log('[useAbstraxionAccount] Shuttle wallet connected, setting authenticator:', walletAuthenticator);
-        startLogin('shuttle', walletAuthenticator);
+        console.log(
+          "[useAbstraxionAccount] Shuttle wallet connected, setting authenticator:",
+          walletAuthenticator,
+        );
+        startLogin("shuttle", walletAuthenticator);
       }
     }
   }, [connectionType, recentWallet, authenticator, startLogin]);
@@ -150,20 +160,26 @@ export const useAbstraxionAccount = () => {
 
     // Fallback checks during the connecting phase (before account is loaded)
     switch (connectionType) {
-      case 'stytch':
+      case "stytch":
         return !!session;
-      case 'shuttle':
+      case "shuttle":
         return !!recentWallet;
-      case 'metamask':
+      case "metamask":
         return window.ethereum?.isConnected?.() ?? false;
-      case 'okx':
-      case 'passkey':
+      case "okx":
+      case "passkey":
         return !!authenticator;
-      case 'none':
+      case "none":
       default:
         return false;
     }
-  }, [authStateIsConnected, connectionType, session, recentWallet, authenticator]);
+  }, [
+    authStateIsConnected,
+    connectionType,
+    session,
+    recentWallet,
+    authenticator,
+  ]);
 
   return {
     updateAbstractAccountCodeId,

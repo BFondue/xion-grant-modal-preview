@@ -234,9 +234,9 @@ export function AddAuthenticatorsForm({
     );
     const fee = getGasCalculation(simmedGas);
 
-    let stdFee = fee || "auto" as const;  
+    let stdFee = fee || ("auto" as const);
     if (fee && isValidFeeGrant) {
-      stdFee = { ...fee, granter: feeGranterAddress }
+      stdFee = { ...fee, granter: feeGranterAddress };
     }
     const deliverTxResponse = await client.signAndBroadcast(
       abstractAccount.id,
@@ -522,9 +522,9 @@ export function AddAuthenticatorsForm({
         return alert("No abstract account found.");
       }
 
-      const accounts = await window.ethereum.request({
+      const accounts = (await window.ethereum.request({
         method: "eth_requestAccounts",
-      }) as string[];
+      })) as string[];
       const primaryAccount = accounts[0];
 
       const challenge = `0x${Buffer.from(abstractAccount?.id, "utf8").toString("hex")}`;

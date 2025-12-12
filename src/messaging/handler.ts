@@ -1,5 +1,5 @@
-import { MessageChannelResponder } from './channel';
-import { VALID_MESSAGE_TARGETS } from './types';
+import { MessageChannelResponder } from "./channel";
+import { VALID_MESSAGE_TARGETS } from "./types";
 import type {
   IframeMessage,
   ConnectResponse,
@@ -12,8 +12,8 @@ import type {
   RemoveAuthenticatorPayload,
   RemoveAuthenticatorResponse,
   RequestGrantPayload,
-  RequestGrantResponse
-} from './types';
+  RequestGrantResponse,
+} from "./types";
 
 /**
  * Callbacks for handling different message types
@@ -22,19 +22,34 @@ export interface MessageHandlerCallbacks {
   /** Called when SDK requests authentication */
   onConnect: (origin: string, payload?: any) => Promise<ConnectResponse>;
   /** Called when SDK requests transaction signing */
-  onSignTransaction: (origin: string, payload: SignTransactionPayload) => Promise<SignTransactionResponse>;
+  onSignTransaction: (
+    origin: string,
+    payload: SignTransactionPayload,
+  ) => Promise<SignTransactionResponse>;
   /** Called when SDK requests transaction signing and broadcasting */
-  onSignAndBroadcast: (origin: string, payload: SignTransactionPayload) => Promise<any>;
+  onSignAndBroadcast: (
+    origin: string,
+    payload: SignTransactionPayload,
+  ) => Promise<any>;
   /** Called when SDK requests current address */
   onGetAddress: (origin: string) => GetAddressResponse;
   /** Called when SDK requests disconnect */
   onDisconnect: (origin: string) => Promise<DisconnectResponse>;
   /** Called when SDK requests to add an authenticator */
-  onAddAuthenticator: (origin: string, payload: AddAuthenticatorPayload) => Promise<AddAuthenticatorResponse>;
+  onAddAuthenticator: (
+    origin: string,
+    payload: AddAuthenticatorPayload,
+  ) => Promise<AddAuthenticatorResponse>;
   /** Called when SDK requests to remove an authenticator */
-  onRemoveAuthenticator: (origin: string, payload: RemoveAuthenticatorPayload) => Promise<RemoveAuthenticatorResponse>;
+  onRemoveAuthenticator: (
+    origin: string,
+    payload: RemoveAuthenticatorPayload,
+  ) => Promise<RemoveAuthenticatorResponse>;
   /** Called when SDK requests treasury grant permissions */
-  onRequestGrant: (origin: string, payload: RequestGrantPayload) => Promise<RequestGrantResponse>;
+  onRequestGrant: (
+    origin: string,
+    payload: RequestGrantPayload,
+  ) => Promise<RequestGrantResponse>;
 }
 
 /**
@@ -54,7 +69,7 @@ export class IframeMessageHandler {
   private rateLimiter = new Map<string, RateLimitState>();
   private processedRequests = new Set<string>();
   private cleanupInterval?: number;
-  
+
   // Rate limit configuration
   private readonly MAX_REQUESTS_PER_WINDOW = 20; // requests
   private readonly RATE_LIMIT_WINDOW = 60000; // 1 minute in ms
@@ -64,23 +79,27 @@ export class IframeMessageHandler {
   constructor(private callbacks: MessageHandlerCallbacks) {
     this.boundHandler = this.handleMessage.bind(this);
     this.setupListener();
-    
+
     // Clean up old rate limit entries every 5 minutes
-    this.cleanupInterval = window.setInterval(() => this.cleanupRateLimiter(), 300000);
+    this.cleanupInterval = window.setInterval(
+      () => this.cleanupRateLimiter(),
+      300000,
+    );
   }
 
   /**
    * Set up the message listener on window
    */
   private setupListener(): void {
-    window.addEventListener('message', this.boundHandler);
+    window.addEventListener("message", this.boundHandler);
   }
 
   /**
    * Validate origin is from allowed domain
    * NOTE: Iframe is open to ANY origin - restrictions are only on SDK usage
    */
-  private isAllowedOrigin(origin: string): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private isAllowedOrigin(_origin: string): boolean {
     // Iframe accepts messages from any origin
     // The SDK itself enforces domain restrictions (*.testnet.burnt.com, *.mainnet.burnt.com)
     return true;
@@ -92,14 +111,14 @@ export class IframeMessageHandler {
   private isSecureOrigin(origin: string): boolean {
     try {
       const url = new URL(origin);
-      
+
       // Allow http for localhost development
-      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
         return true;
       }
-      
+
       // Require HTTPS for all other origins
-      return url.protocol === 'https:';
+      return url.protocol === "https:";
     } catch {
       return false;
     }
@@ -111,20 +130,20 @@ export class IframeMessageHandler {
   private checkRateLimit(origin: string): boolean {
     const now = Date.now();
     const limit = this.rateLimiter.get(origin);
-    
+
     if (!limit || now > limit.resetAt) {
       // Reset or initialize
-      this.rateLimiter.set(origin, { 
-        count: 1, 
-        resetAt: now + this.RATE_LIMIT_WINDOW 
+      this.rateLimiter.set(origin, {
+        count: 1,
+        resetAt: now + this.RATE_LIMIT_WINDOW,
       });
       return true;
     }
-    
+
     if (limit.count >= this.MAX_REQUESTS_PER_WINDOW) {
       return false;
     }
-    
+
     limit.count++;
     return true;
   }
@@ -165,31 +184,36 @@ export class IframeMessageHandler {
     }
 
     const message = event.data as IframeMessage;
-    
+
     // Validate message target
-    if (message.target && !VALID_MESSAGE_TARGETS.includes(message.target as any)) {
+    if (
+      message.target &&
+      !VALID_MESSAGE_TARGETS.includes(message.target as any)
+    ) {
       // Not a message for us
       return;
     }
 
     // Capture and validate origin
     const origin = event.origin;
-    if (!origin || origin === 'null') {
+    if (!origin || origin === "null") {
       MessageChannelResponder.sendError(
         port,
-        'Invalid origin',
-        'INVALID_ORIGIN'
+        "Invalid origin",
+        "INVALID_ORIGIN",
       );
       return;
     }
 
     // Validate origin is from allowed domain
     if (!this.isAllowedOrigin(origin)) {
-      console.warn(`[Iframe] Rejected request from unauthorized origin: ${origin}`);
+      console.warn(
+        `[Iframe] Rejected request from unauthorized origin: ${origin}`,
+      );
       MessageChannelResponder.sendError(
         port,
-        'Origin not allowed. Must be from *.testnet.burnt.com or *.mainnet.burnt.com',
-        'FORBIDDEN_ORIGIN'
+        "Origin not allowed. Must be from *.testnet.burnt.com or *.mainnet.burnt.com",
+        "FORBIDDEN_ORIGIN",
       );
       return;
     }
@@ -199,8 +223,8 @@ export class IframeMessageHandler {
       console.warn(`[Iframe] Rejected insecure origin: ${origin}`);
       MessageChannelResponder.sendError(
         port,
-        'HTTPS required',
-        'INSECURE_ORIGIN'
+        "HTTPS required",
+        "INSECURE_ORIGIN",
       );
       return;
     }
@@ -210,8 +234,8 @@ export class IframeMessageHandler {
       console.warn(`[Iframe] Rate limit exceeded for origin: ${origin}`);
       MessageChannelResponder.sendError(
         port,
-        'Too many requests. Please try again later.',
-        'RATE_LIMIT_EXCEEDED'
+        "Too many requests. Please try again later.",
+        "RATE_LIMIT_EXCEEDED",
       );
       return;
     }
@@ -221,8 +245,8 @@ export class IframeMessageHandler {
       console.warn(`[Iframe] Payload too large from origin: ${origin}`);
       MessageChannelResponder.sendError(
         port,
-        'Request payload too large',
-        'PAYLOAD_TOO_LARGE'
+        "Request payload too large",
+        "PAYLOAD_TOO_LARGE",
       );
       return;
     }
@@ -230,18 +254,20 @@ export class IframeMessageHandler {
     // Check for duplicate request ID (replay attack protection)
     if (message.requestId) {
       if (this.processedRequests.has(message.requestId)) {
-        console.warn(`[Iframe] Duplicate request ID detected: ${message.requestId}`);
+        console.warn(
+          `[Iframe] Duplicate request ID detected: ${message.requestId}`,
+        );
         MessageChannelResponder.sendError(
           port,
-          'Duplicate request',
-          'DUPLICATE_REQUEST'
+          "Duplicate request",
+          "DUPLICATE_REQUEST",
         );
         return;
       }
-      
+
       // Mark request as processed
       this.processedRequests.add(message.requestId);
-      
+
       // Prevent memory leak - remove oldest if over limit
       if (this.processedRequests.size > this.MAX_PROCESSED_REQUESTS) {
         const firstId = this.processedRequests.values().next().value;
@@ -256,35 +282,51 @@ export class IframeMessageHandler {
 
     try {
       switch (message.type) {
-        case 'CONNECT':
+        case "CONNECT":
           await this.handleConnect(port, origin, (message as any).payload);
           break;
 
-        case 'SIGN_TRANSACTION':
-          await this.handleSignTransaction((message as any).payload, port, origin);
+        case "SIGN_TRANSACTION":
+          await this.handleSignTransaction(
+            (message as any).payload,
+            port,
+            origin,
+          );
           break;
 
-        case 'SIGN_AND_BROADCAST':
-          await this.handleSignAndBroadcast((message as any).payload, port, origin);
+        case "SIGN_AND_BROADCAST":
+          await this.handleSignAndBroadcast(
+            (message as any).payload,
+            port,
+            origin,
+          );
           break;
 
-        case 'GET_ADDRESS':
+        case "GET_ADDRESS":
           this.handleGetAddress(port, origin);
           break;
 
-        case 'DISCONNECT':
+        case "DISCONNECT":
           await this.handleDisconnect(port, origin);
           break;
 
-        case 'ADD_AUTHENTICATOR':
-          await this.handleAddAuthenticator((message as any).payload, port, origin);
+        case "ADD_AUTHENTICATOR":
+          await this.handleAddAuthenticator(
+            (message as any).payload,
+            port,
+            origin,
+          );
           break;
 
-        case 'REMOVE_AUTHENTICATOR':
-          await this.handleRemoveAuthenticator((message as any).payload, port, origin);
+        case "REMOVE_AUTHENTICATOR":
+          await this.handleRemoveAuthenticator(
+            (message as any).payload,
+            port,
+            origin,
+          );
           break;
 
-        case 'REQUEST_GRANT':
+        case "REQUEST_GRANT":
           await this.handleRequestGrant((message as any).payload, port, origin);
           break;
 
@@ -292,13 +334,14 @@ export class IframeMessageHandler {
           MessageChannelResponder.sendError(
             port,
             `Unknown message type: ${message.type}`,
-            'UNKNOWN_MESSAGE_TYPE'
+            "UNKNOWN_MESSAGE_TYPE",
           );
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('[Iframe] Error handling message:', errorMessage);
-      MessageChannelResponder.sendError(port, errorMessage, 'HANDLER_ERROR');
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      console.error("[Iframe] Error handling message:", errorMessage);
+      MessageChannelResponder.sendError(port, errorMessage, "HANDLER_ERROR");
     }
   }
 
@@ -311,12 +354,12 @@ export class IframeMessageHandler {
       // Simple console logging for now
       // In production, this could send to analytics service
       console.debug(`[Iframe] Request from ${origin}: ${messageType}`);
-      
+
       // Could extend to track usage patterns:
       // - Count requests per origin
       // - Track authentication success/failure rates
       // - Monitor for suspicious patterns
-    } catch (error) {
+    } catch {
       // Silently ignore logging errors
     }
   }
@@ -325,13 +368,18 @@ export class IframeMessageHandler {
    * Handle CONNECT request
    * Triggers authentication flow and returns user's address
    */
-  private async handleConnect(port: MessagePort, origin: string, payload?: any): Promise<void> {
+  private async handleConnect(
+    port: MessagePort,
+    origin: string,
+    payload?: any,
+  ): Promise<void> {
     try {
       const response = await this.callbacks.onConnect(origin, payload);
       MessageChannelResponder.sendSuccess(port, response);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
-      MessageChannelResponder.sendError(port, errorMessage, 'AUTH_FAILED');
+      const errorMessage =
+        error instanceof Error ? error.message : "Authentication failed";
+      MessageChannelResponder.sendError(port, errorMessage, "AUTH_FAILED");
     }
   }
 
@@ -342,10 +390,14 @@ export class IframeMessageHandler {
   private async handleSignTransaction(
     payload: SignTransactionPayload,
     port: MessagePort,
-    origin: string
+    origin: string,
   ): Promise<void> {
     if (!payload || !payload.transaction) {
-      MessageChannelResponder.sendError(port, 'Missing transaction data', 'INVALID_PAYLOAD');
+      MessageChannelResponder.sendError(
+        port,
+        "Missing transaction data",
+        "INVALID_PAYLOAD",
+      );
       return;
     }
 
@@ -353,8 +405,9 @@ export class IframeMessageHandler {
       const response = await this.callbacks.onSignTransaction(origin, payload);
       MessageChannelResponder.sendSuccess(port, response);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Signing failed';
-      MessageChannelResponder.sendError(port, errorMessage, 'SIGNING_FAILED');
+      const errorMessage =
+        error instanceof Error ? error.message : "Signing failed";
+      MessageChannelResponder.sendError(port, errorMessage, "SIGNING_FAILED");
     }
   }
 
@@ -365,10 +418,14 @@ export class IframeMessageHandler {
   private async handleSignAndBroadcast(
     payload: SignTransactionPayload,
     port: MessagePort,
-    origin: string
+    origin: string,
   ): Promise<void> {
     if (!payload || !payload.transaction) {
-      MessageChannelResponder.sendError(port, 'Missing transaction data', 'INVALID_PAYLOAD');
+      MessageChannelResponder.sendError(
+        port,
+        "Missing transaction data",
+        "INVALID_PAYLOAD",
+      );
       return;
     }
 
@@ -376,8 +433,13 @@ export class IframeMessageHandler {
       const response = await this.callbacks.onSignAndBroadcast(origin, payload);
       MessageChannelResponder.sendSuccess(port, response);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
-      MessageChannelResponder.sendError(port, errorMessage, 'TRANSACTION_FAILED');
+      const errorMessage =
+        error instanceof Error ? error.message : "Transaction failed";
+      MessageChannelResponder.sendError(
+        port,
+        errorMessage,
+        "TRANSACTION_FAILED",
+      );
     }
   }
 
@@ -390,8 +452,13 @@ export class IframeMessageHandler {
       const response = this.callbacks.onGetAddress(origin);
       MessageChannelResponder.sendSuccess(port, response);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to get address';
-      MessageChannelResponder.sendError(port, errorMessage, 'GET_ADDRESS_FAILED');
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to get address";
+      MessageChannelResponder.sendError(
+        port,
+        errorMessage,
+        "GET_ADDRESS_FAILED",
+      );
     }
   }
 
@@ -399,13 +466,21 @@ export class IframeMessageHandler {
    * Handle DISCONNECT request
    * Clears session and returns success
    */
-  private async handleDisconnect(port: MessagePort, origin: string): Promise<void> {
+  private async handleDisconnect(
+    port: MessagePort,
+    origin: string,
+  ): Promise<void> {
     try {
       const response = await this.callbacks.onDisconnect(origin);
       MessageChannelResponder.sendSuccess(port, response);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Disconnect failed';
-      MessageChannelResponder.sendError(port, errorMessage, 'DISCONNECT_FAILED');
+      const errorMessage =
+        error instanceof Error ? error.message : "Disconnect failed";
+      MessageChannelResponder.sendError(
+        port,
+        errorMessage,
+        "DISCONNECT_FAILED",
+      );
     }
   }
 
@@ -415,14 +490,19 @@ export class IframeMessageHandler {
   private async handleAddAuthenticator(
     payload: AddAuthenticatorPayload,
     port: MessagePort,
-    origin: string
+    origin: string,
   ): Promise<void> {
     try {
       const response = await this.callbacks.onAddAuthenticator(origin, payload);
       MessageChannelResponder.sendSuccess(port, response);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to add authenticator';
-      MessageChannelResponder.sendError(port, errorMessage, 'ADD_AUTHENTICATOR_FAILED');
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to add authenticator";
+      MessageChannelResponder.sendError(
+        port,
+        errorMessage,
+        "ADD_AUTHENTICATOR_FAILED",
+      );
     }
   }
 
@@ -432,14 +512,24 @@ export class IframeMessageHandler {
   private async handleRemoveAuthenticator(
     payload: RemoveAuthenticatorPayload,
     port: MessagePort,
-    origin: string
+    origin: string,
   ): Promise<void> {
     try {
-      const response = await this.callbacks.onRemoveAuthenticator(origin, payload);
+      const response = await this.callbacks.onRemoveAuthenticator(
+        origin,
+        payload,
+      );
       MessageChannelResponder.sendSuccess(port, response);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove authenticator';
-      MessageChannelResponder.sendError(port, errorMessage, 'REMOVE_AUTHENTICATOR_FAILED');
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to remove authenticator";
+      MessageChannelResponder.sendError(
+        port,
+        errorMessage,
+        "REMOVE_AUTHENTICATOR_FAILED",
+      );
     }
   }
 
@@ -449,14 +539,19 @@ export class IframeMessageHandler {
   private async handleRequestGrant(
     payload: RequestGrantPayload,
     port: MessagePort,
-    origin: string
+    origin: string,
   ): Promise<void> {
     try {
       const response = await this.callbacks.onRequestGrant(origin, payload);
       MessageChannelResponder.sendSuccess(port, response);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to request grant';
-      MessageChannelResponder.sendError(port, errorMessage, 'REQUEST_GRANT_FAILED');
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to request grant";
+      MessageChannelResponder.sendError(
+        port,
+        errorMessage,
+        "REQUEST_GRANT_FAILED",
+      );
     }
   }
 
@@ -464,17 +559,17 @@ export class IframeMessageHandler {
    * Cleanup - remove event listeners and clear resources
    */
   destroy(): void {
-    window.removeEventListener('message', this.boundHandler);
-    
+    window.removeEventListener("message", this.boundHandler);
+
     // Clear cleanup interval
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = undefined;
     }
-    
+
     // Clear rate limiter
     this.rateLimiter.clear();
-    
+
     // Clear processed requests
     this.processedRequests.clear();
   }

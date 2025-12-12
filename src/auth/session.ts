@@ -45,19 +45,20 @@ export interface DecodedJWT {
  */
 export function decodeJWT(jwt: string): DecodedJWT {
   try {
-    const parts = jwt.split('.');
+    const parts = jwt.split(".");
     if (parts.length !== 3) {
-      throw new Error('Invalid JWT format: expected 3 parts');
+      throw new Error("Invalid JWT format: expected 3 parts");
     }
 
     // Decode the payload (middle part)
     const payload = parts[1];
     // Handle URL-safe base64
-    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(decoded);
   } catch (error) {
     throw new Error(
-      'Failed to decode JWT: ' + (error instanceof Error ? error.message : 'Unknown error')
+      "Failed to decode JWT: " +
+        (error instanceof Error ? error.message : "Unknown error"),
     );
   }
 }
@@ -76,21 +77,25 @@ export function decodeJWT(jwt: string): DecodedJWT {
  */
 const CLAIM_PATHS: Array<(source: any) => any> = [
   // 1. Modern: direct xion claims at root
-  (source) => source['https://xion.burnt.com/claims'],
+  (source) => source["https://xion.burnt.com/claims"],
 
   // 2. Legacy: Stytch session wrapper with xion claims
   (source) =>
-    source['https://stytch.com/session']?.custom_claims?.['https://xion.burnt.com/claims'],
+    source["https://stytch.com/session"]?.custom_claims?.[
+      "https://xion.burnt.com/claims"
+    ],
 
   // 3. Old: Stytch session wrapper with direct claims
-  (source) => source['https://stytch.com/session']?.custom_claims,
+  (source) => source["https://stytch.com/session"]?.custom_claims,
 
   // 4. Session object: custom_claims with xion namespace
-  (source) => source?.custom_claims?.['https://xion.burnt.com/claims'],
+  (source) => source?.custom_claims?.["https://xion.burnt.com/claims"],
 
   // 5. Nested session: stytch_session wrapper
   (source) =>
-    source?.stytch_session?.session?.custom_claims?.['https://xion.burnt.com/claims'],
+    source?.stytch_session?.session?.custom_claims?.[
+      "https://xion.burnt.com/claims"
+    ],
 
   // 6. Fallback: direct properties at root level
   (source) => source,
@@ -104,7 +109,7 @@ const CLAIM_PATHS: Array<(source: any) => any> = [
  * @returns XionClaims with address and authenticatorIndex
  */
 export function extractXionClaims(source: any): XionClaims {
-  if (!source || typeof source !== 'object') {
+  if (!source || typeof source !== "object") {
     return { address: null, authenticatorIndex: 0 };
   }
 
@@ -136,7 +141,7 @@ export function getAddressFromJWT(jwt: string): string | null {
     const decoded = decodeJWT(jwt);
     return extractXionClaims(decoded).address;
   } catch (error) {
-    console.warn('[session] Failed to extract address from JWT:', error);
+    console.warn("[session] Failed to extract address from JWT:", error);
     return null;
   }
 }
@@ -152,7 +157,10 @@ export function getAuthenticatorIndexFromJWT(jwt: string): number {
     const decoded = decodeJWT(jwt);
     return extractXionClaims(decoded).authenticatorIndex;
   } catch (error) {
-    console.warn('[session] Failed to extract authenticator index from JWT:', error);
+    console.warn(
+      "[session] Failed to extract authenticator index from JWT:",
+      error,
+    );
     return 0;
   }
 }
@@ -198,7 +206,10 @@ export function getLoginAuthenticatorFromJWT(jwt: string): string | null {
 
     return null;
   } catch (error) {
-    console.warn('[session] Failed to extract login authenticator from JWT:', error);
+    console.warn(
+      "[session] Failed to extract login authenticator from JWT:",
+      error,
+    );
     return null;
   }
 }
@@ -244,7 +255,7 @@ export function getJWTExpiration(jwt: string): number | null {
 // Session Storage Management
 // ============================================================================
 
-const STORAGE_KEY_PREFIX = 'xion_session';
+const STORAGE_KEY_PREFIX = "xion_session";
 
 /**
  * Per-origin session data
@@ -278,7 +289,9 @@ export class SessionManager {
   /**
    * Get session data for a specific origin
    */
-  static getSessionData(origin: string): { address: string; authenticatorIndex: number } | null {
+  static getSessionData(
+    origin: string,
+  ): { address: string; authenticatorIndex: number } | null {
     try {
       const data = sessionStorage.getItem(this.getStorageKey(origin));
       if (!data) return null;
@@ -288,14 +301,16 @@ export class SessionManager {
 
       // Check inactivity timeout
       if (now - parsed.lastActivity > this.INACTIVITY_TIMEOUT) {
-        console.warn('[SessionManager] Session expired due to inactivity');
+        console.warn("[SessionManager] Session expired due to inactivity");
         this.clearSession(origin);
         return null;
       }
 
       // Check maximum session lifetime
       if (now - parsed.createdAt > this.MAX_SESSION_LIFETIME) {
-        console.warn('[SessionManager] Session expired due to maximum lifetime');
+        console.warn(
+          "[SessionManager] Session expired due to maximum lifetime",
+        );
         this.clearSession(origin);
         return null;
       }
@@ -309,7 +324,7 @@ export class SessionManager {
         authenticatorIndex: parsed.authenticatorIndex || 0,
       };
     } catch (error) {
-      console.error('Error reading session data from sessionStorage:', error);
+      console.error("Error reading session data from sessionStorage:", error);
       return null;
     }
   }
@@ -328,25 +343,30 @@ export class SessionManager {
 
       // Check inactivity timeout
       if (now - parsed.lastActivity > this.INACTIVITY_TIMEOUT) {
-        console.warn('[SessionManager] Session expired due to inactivity');
+        console.warn("[SessionManager] Session expired due to inactivity");
         this.clearSession(origin);
         return null;
       }
 
       // Check maximum session lifetime
       if (now - parsed.createdAt > this.MAX_SESSION_LIFETIME) {
-        console.warn('[SessionManager] Session expired due to maximum lifetime');
+        console.warn(
+          "[SessionManager] Session expired due to maximum lifetime",
+        );
         this.clearSession(origin);
         return null;
       }
 
       // Update last activity timestamp
       parsed.lastActivity = now;
-      sessionStorage.setItem(this.getStorageKey(origin), JSON.stringify(parsed));
+      sessionStorage.setItem(
+        this.getStorageKey(origin),
+        JSON.stringify(parsed),
+      );
 
       return parsed.jwt;
     } catch (error) {
-      console.error('Error reading session from sessionStorage:', error);
+      console.error("Error reading session from sessionStorage:", error);
       return null;
     }
   }
@@ -362,7 +382,7 @@ export class SessionManager {
       const parsed: OriginSessionData = JSON.parse(data);
       return parsed.token || null;
     } catch (error) {
-      console.error('Error reading session token from sessionStorage:', error);
+      console.error("Error reading session token from sessionStorage:", error);
       return null;
     }
   }
@@ -375,7 +395,7 @@ export class SessionManager {
     jwt: string,
     sessionToken?: string,
     address?: string,
-    authenticatorIndex?: number
+    authenticatorIndex?: number,
   ): void {
     try {
       const now = Date.now();
@@ -389,7 +409,7 @@ export class SessionManager {
       };
       sessionStorage.setItem(this.getStorageKey(origin), JSON.stringify(data));
     } catch (error) {
-      console.error('Error storing session in sessionStorage:', error);
+      console.error("Error storing session in sessionStorage:", error);
     }
   }
 
@@ -400,7 +420,7 @@ export class SessionManager {
     try {
       sessionStorage.removeItem(this.getStorageKey(origin));
     } catch (error) {
-      console.error('Error clearing session from sessionStorage:', error);
+      console.error("Error clearing session from sessionStorage:", error);
     }
   }
 
@@ -416,9 +436,9 @@ export class SessionManager {
           keysToRemove.push(key);
         }
       }
-      keysToRemove.forEach(key => sessionStorage.removeItem(key));
+      keysToRemove.forEach((key) => sessionStorage.removeItem(key));
     } catch (error) {
-      console.error('Error clearing all sessions from sessionStorage:', error);
+      console.error("Error clearing all sessions from sessionStorage:", error);
     }
   }
 
@@ -448,7 +468,7 @@ export class SessionManager {
       const result = await stytchClient.session.authenticate();
       return result && result.status_code === 200;
     } catch (error) {
-      console.error('Error validating session with Stytch:', error);
+      console.error("Error validating session with Stytch:", error);
       return false;
     }
   }

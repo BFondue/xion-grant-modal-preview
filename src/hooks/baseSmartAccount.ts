@@ -42,7 +42,9 @@ export const useBaseSmartAccounts = (
   // This ensures we start fetching when a new authenticator is set
   useEffect(() => {
     if (loginAuthenticator && !waitToFetch) {
-      console.log('[baseSmartAccount] loginAuthenticator changed, enabling fetch');
+      console.log(
+        "[baseSmartAccount] loginAuthenticator changed, enabling fetch",
+      );
       setShouldFetch(true);
     }
   }, [loginAuthenticator, waitToFetch]);
@@ -53,8 +55,10 @@ export const useBaseSmartAccounts = (
   }, [waitToFetch]);
 
   // Debug logging
-  console.log('[baseSmartAccount] Hook state:', {
-    loginAuthenticator: loginAuthenticator ? loginAuthenticator.substring(0, 20) + '...' : null,
+  console.log("[baseSmartAccount] Hook state:", {
+    loginAuthenticator: loginAuthenticator
+      ? loginAuthenticator.substring(0, 20) + "..."
+      : null,
     shouldFetch,
     waitToFetch,
     hasAbstractAccount: !!abstractAccount,
@@ -68,9 +72,17 @@ export const useBaseSmartAccounts = (
   >({
     queryKey,
     queryFn: async () => {
-      console.log('[baseSmartAccount] Fetching smart accounts for:', loginAuthenticator);
-      const result = await indexerStrategy.fetchSmartAccounts(loginAuthenticator);
-      console.log('[baseSmartAccount] Fetched smart accounts:', result?.length || 0, 'accounts');
+      console.log(
+        "[baseSmartAccount] Fetching smart accounts for:",
+        loginAuthenticator,
+      );
+      const result =
+        await indexerStrategy.fetchSmartAccounts(loginAuthenticator);
+      console.log(
+        "[baseSmartAccount] Fetched smart accounts:",
+        result?.length || 0,
+        "accounts",
+      );
       return result;
     },
     refetchInterval: pollInterval,
@@ -92,23 +104,32 @@ export const useBaseSmartAccounts = (
 
   useEffect(() => {
     const { data } = query;
-    console.log('[baseSmartAccount] Effect triggered - data:', data?.length || 0, 'accounts, abstractAccount:', !!abstractAccount, 'shouldFetch:', shouldFetch);
+    console.log(
+      "[baseSmartAccount] Effect triggered - data:",
+      data?.length || 0,
+      "accounts, abstractAccount:",
+      !!abstractAccount,
+      "shouldFetch:",
+      shouldFetch,
+    );
 
     // Only stop fetching when:
     // 1. We have an abstractAccount selected (success case), OR
     // 2. We got empty data (no accounts found)
     if (abstractAccount) {
       // Account is selected, stop polling
-      console.log('[baseSmartAccount] AbstractAccount set, stopping fetch');
+      console.log("[baseSmartAccount] AbstractAccount set, stopping fetch");
       setShouldFetch(false);
       setIsSuccess(true);
       handleSuccess?.();
     } else if (data?.length === 0) {
       // No accounts found, keep shouldFetch as is (will continue polling)
-      console.log('[baseSmartAccount] No accounts found, continuing to poll');
+      console.log("[baseSmartAccount] No accounts found, continuing to poll");
       return;
     } else if (data && data.length > 0) {
-      console.log('[baseSmartAccount] Accounts fetched but no abstractAccount yet, waiting for selection');
+      console.log(
+        "[baseSmartAccount] Accounts fetched but no abstractAccount yet, waiting for selection",
+      );
     }
     // If data exists but no abstractAccount yet, keep fetching so IframeApp can pick up the accounts
   }, [query.data, abstractAccount]);

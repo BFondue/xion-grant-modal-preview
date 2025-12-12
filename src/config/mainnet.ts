@@ -21,7 +21,8 @@ export const mainnetConfig = {
 
   // Indexer
   indexerStrategy: "numia" as const,
-  defaultIndexerUrl: "https://api.subquery.network/sq/burnt-labs/xion-mainnet-indexer",
+  defaultIndexerUrl:
+    "https://api.subquery.network/sq/burnt-labs/xion-mainnet-indexer",
   numiaUrl: "https://xion.numia.xyz/v3/",
   daodaoTreasuryIndexerUrl: "https://indexer.daodao.zone/",
 

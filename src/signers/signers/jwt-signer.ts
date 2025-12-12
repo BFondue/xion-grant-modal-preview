@@ -20,7 +20,7 @@ export class AbstractAccountJWTSigner extends AASigner {
     this.sessionToken = sessionToken;
     this.accountAuthenticatorIndex = accountAuthenticatorIndex;
     // Remove /v1 from the URL since we add it in the fetch call below
-    this.apiUrl = apiUrl || STYTCH_PROXY_URL
+    this.apiUrl = apiUrl || STYTCH_PROXY_URL;
   }
 
   async getAccounts(): Promise<readonly AAccountData[]> {
@@ -80,9 +80,9 @@ export class AbstractAccountJWTSigner extends AASigner {
 
     // Stytch proxy returns { session_jwt, session, ... } directly (no data wrapper)
     const sessionJwt = authResponseData.session_jwt;
-    
+
     if (!sessionJwt) {
-      console.error('[JWT Signer] Response:', authResponseData);
+      console.error("[JWT Signer] Response:", authResponseData);
       throw new Error("No session_jwt in response");
     }
 
@@ -142,9 +142,9 @@ export class AbstractAccountJWTSigner extends AASigner {
 
     // Stytch proxy returns { session_jwt, session, ... } directly (no data wrapper)
     const sessionJwt = authResponseData.session_jwt;
-    
+
     if (!sessionJwt) {
-      console.error('[JWT Signer] Response:', authResponseData);
+      console.error("[JWT Signer] Response:", authResponseData);
       throw new Error("No session_jwt in response");
     }
 

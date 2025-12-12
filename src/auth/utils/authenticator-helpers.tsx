@@ -73,13 +73,13 @@ const getJwtLogo = (subType: string) => {
   }
 };
 
-// @ts-ignore
+// @ts-expect-error - Authenticator type handling
 export const getAuthenticatorLogo = (
   type: authenticatorTypes,
   jwtSubType?: string,
-  // @ts-ignore
+  // @ts-expect-error - Return type inference
 ): JSX.Element => {
-  // @ts-ignore
+  // @ts-expect-error - Logo map type
   const logoMap: Record<authenticatorTypes, JSX.Element> = {
     SECP256K1: <CosmosLogo className="ui-w-4 ui-h-4" />,
     ETHWALLET: <EthereumLogo className="ui-w-4 ui-h-4" />,

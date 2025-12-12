@@ -15,11 +15,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Banner, Dialog, DialogContent, BaseButton } from "../ui";
-import {
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "../ui/dialog";
+import { DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { OAUTH_CALLBACK_URL } from "../../config";
@@ -79,7 +75,9 @@ export function ExternalOAuthFlow() {
 
     // Validate required params
     if (!idpAuthEndpoint || !idpTokenEndpoint || !idpClientId) {
-      setError("Missing required IDP configuration. Required params: idp_auth_url, idp_token_url, client_id");
+      setError(
+        "Missing required IDP configuration. Required params: idp_auth_url, idp_token_url, client_id",
+      );
       setFlowState("error");
       return;
     }
@@ -113,7 +111,10 @@ export function ExternalOAuthFlow() {
       authUrl.searchParams.set("code_challenge", codeChallenge);
       authUrl.searchParams.set("code_challenge_method", "S256");
 
-      console.log("[ExternalOAuthFlow] Redirecting to IDP:", authUrl.toString());
+      console.log(
+        "[ExternalOAuthFlow] Redirecting to IDP:",
+        authUrl.toString(),
+      );
 
       // Redirect to IDP
       window.location.href = authUrl.toString();
@@ -122,7 +123,13 @@ export function ExternalOAuthFlow() {
       setError("Failed to start authentication");
       setFlowState("error");
     }
-  }, [idpAuthEndpoint, idpTokenEndpoint, idpClientId, originalRedirectUri, originalState]);
+  }, [
+    idpAuthEndpoint,
+    idpTokenEndpoint,
+    idpClientId,
+    originalRedirectUri,
+    originalState,
+  ]);
 
   // Start the OAuth flow on mount
   useEffect(() => {
@@ -160,13 +167,18 @@ export function ExternalOAuthFlow() {
               {error || "Something went wrong. Please try again."}
             </p>
             <DialogFooter>
-              <BaseButton variant="secondary" onClick={() => window.history.back()}>
+              <BaseButton
+                variant="secondary"
+                onClick={() => window.history.back()}
+              >
                 Go Back
               </BaseButton>
-              <BaseButton onClick={() => {
-                flowStartedRef.current = false;
-                startOAuthFlow();
-              }}>
+              <BaseButton
+                onClick={() => {
+                  flowStartedRef.current = false;
+                  startOAuthFlow();
+                }}
+              >
                 Try Again
               </BaseButton>
             </DialogFooter>
@@ -182,9 +194,7 @@ export function ExternalOAuthFlow() {
     <div className="ui-flex ui-w-full ui-h-svh ui-items-center ui-justify-center ui-bg-background">
       <Banner className="ui-fixed ui-top-0 ui-left-0 ui-z-[10001]" />
       <Dialog open={true} onOpenChange={() => {}}>
-        <DialogContent>
-          {renderContent()}
-        </DialogContent>
+        <DialogContent>{renderContent()}</DialogContent>
       </Dialog>
     </div>
   );

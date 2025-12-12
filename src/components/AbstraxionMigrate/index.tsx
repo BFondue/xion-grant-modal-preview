@@ -11,7 +11,11 @@ import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
 import { validateFeeGrant } from "../../utils/validate-fee-grant";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MigrationDialog } from "./MigrationDialog";
-import { DEFAULT_ACCOUNT_CONTRACT_CODE_ID, FEE_GRANTER_ADDRESS, XION_API_URL } from "../../config";
+import {
+  DEFAULT_ACCOUNT_CONTRACT_CODE_ID,
+  FEE_GRANTER_ADDRESS,
+  XION_API_URL,
+} from "../../config";
 
 type AbstraxionMigrateProps = {
   currentCodeId: number;
@@ -78,14 +82,14 @@ export const AbstraxionMigrate = ({
       );
       const fee = getGasCalculation(simmedGas);
 
-     let stdFee = fee || "auto" as const;
+      let stdFee = fee || ("auto" as const);
       if (fee && isValidFeeGrant) {
-        stdFee = { ...fee, granter: FEE_GRANTER_ADDRESS } 
+        stdFee = { ...fee, granter: FEE_GRANTER_ADDRESS };
       }
       const deliverTxRes = await client.signAndBroadcast(
         account.id,
         [migrateMsg],
-        stdFee
+        stdFee,
       );
 
       assertIsDeliverTxSuccess(deliverTxRes);

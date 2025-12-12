@@ -1,4 +1,4 @@
-import type { MessageResponse } from './types';
+import type { MessageResponse } from "./types";
 
 /**
  * Utility class for sending responses via MessageChannel
@@ -10,7 +10,7 @@ export class MessageChannelResponder {
   static sendSuccess<T>(port: MessagePort, data: T): void {
     const response: MessageResponse<T> = {
       success: true,
-      data
+      data,
     };
     port.postMessage(response);
   }
@@ -22,7 +22,7 @@ export class MessageChannelResponder {
     const response: MessageResponse = {
       success: false,
       error,
-      code
+      code,
     };
     port.postMessage(response);
   }

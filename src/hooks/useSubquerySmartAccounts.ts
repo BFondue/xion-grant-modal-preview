@@ -7,7 +7,9 @@ import {
 } from "../components/AbstraxionContext";
 import { DEFAULT_INDEXER_URL } from "../config";
 
-const subqueryIndexerStrategy = new SubqueryIndexerStrategy(DEFAULT_INDEXER_URL);
+const subqueryIndexerStrategy = new SubqueryIndexerStrategy(
+  DEFAULT_INDEXER_URL,
+);
 
 export const useSubquerySmartAccounts = (
   waitToFetch: boolean = false,

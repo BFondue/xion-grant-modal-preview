@@ -10,7 +10,7 @@ export function OAuthLoading() {
           <div className="ui-absolute ui-inset-0 ui-border-4 ui-border-white/20 ui-rounded-full"></div>
           <div className="ui-absolute ui-inset-0 ui-border-4 ui-border-transparent ui-border-t-white ui-rounded-full ui-animate-spin"></div>
         </div>
-        
+
         {/* Loading text */}
         <div className="ui-flex ui-flex-col ui-items-center ui-gap-2">
           <p className="ui-text-white ui-text-lg ui-font-medium">Loading...</p>

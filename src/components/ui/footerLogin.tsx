@@ -1,7 +1,6 @@
 import xionLogo from "../../assets/logo.png";
 import { isMainnet, NETWORK } from "../../config";
 
-
 const FooterLogin = () => {
   return (
     <div className="ui-self-end ui-pointer-events-auto ui-w-full ui-z-[30] ui-flex ui-flex-col ui-gap-2 sm:ui-gap-12 ui-pb-safe ui-items-center sm:ui-flex-row sm:ui-justify-between sm:ui-items-end">

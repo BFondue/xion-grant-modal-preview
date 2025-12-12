@@ -10,9 +10,9 @@
 export function decodeJwt(jwt: string): any | null {
   try {
     // JWT structure: header.payload.signature
-    const parts = jwt.split('.');
+    const parts = jwt.split(".");
     if (parts.length !== 3) {
-      console.error('Invalid JWT format');
+      console.error("Invalid JWT format");
       return null;
     }
 
@@ -20,14 +20,14 @@ export function decodeJwt(jwt: string): any | null {
     const payload = parts[1];
 
     // Add padding if necessary
-    const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
+    const paddedPayload = payload + "=".repeat((4 - (payload.length % 4)) % 4);
 
     // Decode base64url
-    const decoded = atob(paddedPayload.replace(/-/g, '+').replace(/_/g, '/'));
+    const decoded = atob(paddedPayload.replace(/-/g, "+").replace(/_/g, "/"));
 
     return JSON.parse(decoded);
   } catch (error) {
-    console.error('Error decoding JWT:', error);
+    console.error("Error decoding JWT:", error);
     return null;
   }
 }
@@ -67,9 +67,19 @@ export function extractCustomClaims(jwt: string): Record<string, any> {
 
   // Standard JWT claims to exclude
   const standardClaims = [
-    'iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti',
+    "iss",
+    "sub",
+    "aud",
+    "exp",
+    "nbf",
+    "iat",
+    "jti",
     // Stytch-specific standard claims
-    'session_id', 'user_id', 'email', 'phone_number', 'name'
+    "session_id",
+    "user_id",
+    "email",
+    "phone_number",
+    "name",
   ];
 
   // Filter out standard claims to get only custom ones

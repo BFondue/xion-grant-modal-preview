@@ -47,8 +47,7 @@ export class DaoDaoTreasuryStrategy implements TreasuryStrategy {
   private readonly indexerBaseUrl: string;
 
   constructor(indexerUrl?: string) {
-    this.indexerBaseUrl =
-      indexerUrl || DAODAO_TREASURY_INDEXER_URL;
+    this.indexerBaseUrl = indexerUrl || DAODAO_TREASURY_INDEXER_URL;
   }
 
   async fetchTreasuryConfig(

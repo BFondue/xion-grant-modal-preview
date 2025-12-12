@@ -1,12 +1,12 @@
 // Polyfills must be imported first
-import { Buffer } from 'buffer';
-import process from 'process';
+import { Buffer } from "buffer";
+import process from "process";
 
-// @ts-ignore
+// @ts-expect-error - Adding Buffer to window for polyfill
 window.Buffer = Buffer;
-// @ts-ignore
+// @ts-expect-error - Adding process to window for polyfill
 window.process = process;
-// @ts-ignore
+// @ts-expect-error - Adding global to window for polyfill
 window.global = window;
 
 import ReactDOM from "react-dom/client";
@@ -20,8 +20,8 @@ import { AppProviders } from "./components/AppProviders";
 import { loadShuttleNetworks } from "./config/shuttle";
 
 import "./index.css";
-import { StandAloneWrapper } from './components/IframeApp/StandAloneWrapper';
-import { IframeApp } from './components/IframeApp';
+import { StandAloneWrapper } from "./components/IframeApp/StandAloneWrapper";
+import { IframeApp } from "./components/IframeApp";
 
 (function captureOAuthTokens() {
   if (typeof window !== "undefined") {
@@ -95,9 +95,8 @@ const queryClient = new QueryClient();
         <Route path="/oauth/external" element={<ExternalOAuthFlow />} />
         <Route path="/dashboard" element={<StandAloneWrapper />} />
         <Route path="/iframe" element={<IframeApp />} />
-        <Route path="/*" element={<App />} /> 
+        <Route path="/*" element={<App />} />
       </Routes>
-    </AppProviders>
+    </AppProviders>,
   );
 })();
-  

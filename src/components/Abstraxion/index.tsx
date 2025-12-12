@@ -35,9 +35,12 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
       "redirect_uri",
     ]);
 
-  const { abstraxionError, setAbstraxionError, isInGrantFlow, setConnectionType } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
+  const {
+    abstraxionError,
+    setAbstraxionError,
+    isInGrantFlow,
+    setConnectionType,
+  } = useContext(AbstraxionContext) as AbstraxionContextProps;
 
   const { session } = useStytchSession();
   const stytchClient = useStytch();
@@ -46,10 +49,10 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
 
   // Sync Stytch session to auth state - ensures connectionType is 'stytch' when session exists
   useEffect(() => {
-    if (session && connectionType === 'none') {
-      console.log('[Abstraxion] Detected Stytch session, syncing auth state');
-      localStorage.setItem('loginType', 'stytch');
-      setConnectionType('stytch');
+    if (session && connectionType === "none") {
+      console.log("[Abstraxion] Detected Stytch session, syncing auth state");
+      localStorage.setItem("loginType", "stytch");
+      setConnectionType("stytch");
 
       // Extract authenticator from session JWT
       try {
@@ -59,11 +62,14 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
           if (aud && sub) {
             const audStr = Array.isArray(aud) ? aud[0] : aud;
             const authenticator = `${audStr}.${sub}`;
-            startLogin('stytch', authenticator);
+            startLogin("stytch", authenticator);
           }
         }
       } catch (e) {
-        console.warn('[Abstraxion] Failed to extract authenticator from session:', e);
+        console.warn(
+          "[Abstraxion] Failed to extract authenticator from session:",
+          e,
+        );
       }
     }
   }, [session, connectionType, setConnectionType, startLogin, stytchClient]);
@@ -128,7 +134,7 @@ export const Abstraxion = ({ isOpen, onClose }: ModalProps) => {
       return "signin";
     })();
 
-    console.log('[Abstraxion] Content decision:', result, {
+    console.log("[Abstraxion] Content decision:", result, {
       hasError: !!abstraxionError,
       accountId: account?.id,
       isConnected,

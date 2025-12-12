@@ -1,8 +1,8 @@
-export { cn } from './classname-util';
-export * from './jwt-decoder';
-export * from './webauthn-utils';
-export * from './authenticator-utils';
-export { basicFormatCurrency, basicFormatTokenAmount } from './formatters';
+export { cn } from "./classname-util";
+export * from "./jwt-decoder";
+export * from "./webauthn-utils";
+export * from "./authenticator-utils";
+export { basicFormatCurrency, basicFormatTokenAmount } from "./formatters";
 
 export function truncateAddress(
   address: string | undefined,

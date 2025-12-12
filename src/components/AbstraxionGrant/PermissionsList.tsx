@@ -29,8 +29,7 @@ export const PermissionsList: React.FC<PermissionsListProps> = ({
   permissions,
   isLoading = false,
 }) => {
-  const { data: assetData, isLoading: isLoadingAssets } =
-    useAssetList();
+  const { data: assetData, isLoading: isLoadingAssets } = useAssetList();
 
   const { getAssetByDenom } = assetData || { getAssetByDenom: () => undefined };
 

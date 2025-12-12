@@ -2,21 +2,21 @@
  * Message types for SDK <-> Iframe communication
  */
 export type IframeMessageType =
-  | 'IFRAME_READY'
-  | 'CONNECT'
-  | 'DISCONNECT'
-  | 'GET_ADDRESS'
-  | 'SIGN_TRANSACTION'
-  | 'SIGN_AND_BROADCAST'
-  | 'ADD_AUTHENTICATOR'
-  | 'REMOVE_AUTHENTICATOR'
-  | 'REQUEST_GRANT';
+  | "IFRAME_READY"
+  | "CONNECT"
+  | "DISCONNECT"
+  | "GET_ADDRESS"
+  | "SIGN_TRANSACTION"
+  | "SIGN_AND_BROADCAST"
+  | "ADD_AUTHENTICATOR"
+  | "REMOVE_AUTHENTICATOR"
+  | "REQUEST_GRANT";
 
 /**
  * Valid message targets for iframe communication
  */
-export const VALID_MESSAGE_TARGETS = ['xion_iframe', 'xion_sdk'] as const;
-export type MessageTarget = typeof VALID_MESSAGE_TARGETS[number];
+export const VALID_MESSAGE_TARGETS = ["xion_iframe", "xion_sdk"] as const;
+export type MessageTarget = (typeof VALID_MESSAGE_TARGETS)[number];
 
 /**
  * Generic message structure received from SDK
@@ -93,6 +93,7 @@ export interface SignTransactionResponse {
 /**
  * Get address payload (no data)
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface GetAddressPayload {}
 
 /**
@@ -105,23 +106,25 @@ export interface GetAddressResponse {
 /**
  * Disconnect payload (no data)
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DisconnectPayload {}
 
 /**
  * Disconnect response (no data)
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DisconnectResponse {}
 
 /**
  * Authenticator types supported by the system
  */
 export type AuthenticatorType =
-  | 'keplr'
-  | 'okx'
-  | 'metamask'
-  | 'passkey'
-  | 'email'
-  | 'apple';
+  | "keplr"
+  | "okx"
+  | "metamask"
+  | "passkey"
+  | "email"
+  | "apple";
 
 /**
  * Authenticator data structure

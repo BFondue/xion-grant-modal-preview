@@ -1,13 +1,13 @@
-import { useStytch } from '@stytch/react';
-import { StytchHeadlessClient } from '@stytch/vanilla-js/headless';
-import { STYTCH_PROXY_URL, STYTCH_PUBLIC_TOKEN } from '../config';
+import { useStytch } from "@stytch/react";
+import { StytchHeadlessClient } from "@stytch/vanilla-js/headless";
+import { STYTCH_PROXY_URL, STYTCH_PUBLIC_TOKEN } from "../config";
 
 // Create a singleton instance for StytchProvider initialization
 let stytchClientInstance: StytchHeadlessClient | null = null;
 
 export function getStytchClient(): StytchHeadlessClient | null {
   if (!STYTCH_PUBLIC_TOKEN) {
-    console.error('Missing STYTCH_PUBLIC_TOKEN environment variable');
+    console.error("Missing STYTCH_PUBLIC_TOKEN environment variable");
     return null;
   }
 
@@ -15,7 +15,7 @@ export function getStytchClient(): StytchHeadlessClient | null {
     try {
       stytchClientInstance = new StytchHeadlessClient(STYTCH_PUBLIC_TOKEN, {
         cookieOptions: {
-          jwtCookieName: 'stytch_session_jwt',
+          jwtCookieName: "stytch_session_jwt",
         },
         endpointOptions: {
           dfppaDomain: "stytchauth.burnt.com",
@@ -23,7 +23,7 @@ export function getStytchClient(): StytchHeadlessClient | null {
         customBaseUrl: STYTCH_PROXY_URL,
       });
     } catch (error) {
-      console.error('Failed to initialize Stytch client:', error);
+      console.error("Failed to initialize Stytch client:", error);
       return null;
     }
   }

@@ -20,4 +20,19 @@ export default [
   { languageOptions: { globals: globals.browser } },
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
+  {
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+    rules: {
+      // React 17+ with new JSX transform doesn't require React in scope
+      "react/react-in-jsx-scope": "off",
+      // Disable prop-types as we use TypeScript
+      "react/prop-types": "off",
+      // Downgrade explicit any to warning - should be fixed incrementally
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
 ];

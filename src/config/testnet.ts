@@ -5,7 +5,8 @@
 export const testnetConfig = {
   // Chain
   chainId: "xion-testnet-2",
-  chainRegistryBaseUrl: "https://assets.xion.burnt.com/chain-registry/testnets/xiontestnet2",
+  chainRegistryBaseUrl:
+    "https://assets.xion.burnt.com/chain-registry/testnets/xiontestnet2",
   network: "testnet-2",
 
   // USDC denom
@@ -21,7 +22,8 @@ export const testnetConfig = {
 
   // Indexer
   indexerStrategy: "numia" as const,
-  defaultIndexerUrl: "https://api.subquery.network/sq/burnt-labs/xion-testnet-2-indexer",
+  defaultIndexerUrl:
+    "https://api.subquery.network/sq/burnt-labs/xion-testnet-2-indexer",
   numiaUrl: "https://xion-testnet-2.numia.xyz/v3/",
   daodaoTreasuryIndexerUrl: "https://indexer.testnet.daodao.zone/",
 

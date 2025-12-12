@@ -20,11 +20,11 @@ export function useXionDisconnect() {
 
   const xionDisconnect = async () => {
     // Disconnect Shuttle wallet if that's the connection type
-    if (connectionType === 'shuttle') {
+    if (connectionType === "shuttle") {
       try {
         disconnect();
       } catch (error) {
-        console.warn('[useXionDisconnect] Error disconnecting shuttle:', error);
+        console.warn("[useXionDisconnect] Error disconnecting shuttle:", error);
       }
     }
 

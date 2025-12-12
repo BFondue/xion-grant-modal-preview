@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { IframeMessageHandler } from '../../../messaging/handler';
+import { useEffect } from "react";
+import { IframeMessageHandler } from "../../../messaging/handler";
 import type {
   ConnectResponse,
   SignTransactionPayload,
@@ -9,18 +9,33 @@ import type {
   RemoveAuthenticatorPayload,
   RemoveAuthenticatorResponse,
   RequestGrantPayload,
-  RequestGrantResponse
-} from '../../../messaging/types';
+  RequestGrantResponse,
+} from "../../../messaging/types";
 
 interface MessageHandlerCallbacks {
   onConnect: (origin: string) => Promise<ConnectResponse>;
-  onSignTransaction: (origin: string, payload: SignTransactionPayload) => Promise<SignTransactionResponse>;
-  onSignAndBroadcast: (origin: string, payload: SignTransactionPayload) => Promise<any>;
+  onSignTransaction: (
+    origin: string,
+    payload: SignTransactionPayload,
+  ) => Promise<SignTransactionResponse>;
+  onSignAndBroadcast: (
+    origin: string,
+    payload: SignTransactionPayload,
+  ) => Promise<any>;
   onGetAddress: (origin: string) => { address: string | null };
-  onDisconnect: (origin: string) => Promise<{}>;
-  onAddAuthenticator: (origin: string, payload: AddAuthenticatorPayload) => Promise<AddAuthenticatorResponse>;
-  onRemoveAuthenticator: (origin: string, payload: RemoveAuthenticatorPayload) => Promise<RemoveAuthenticatorResponse>;
-  onRequestGrant: (origin: string, payload: RequestGrantPayload) => Promise<RequestGrantResponse>;
+  onDisconnect: (origin: string) => Promise<object>;
+  onAddAuthenticator: (
+    origin: string,
+    payload: AddAuthenticatorPayload,
+  ) => Promise<AddAuthenticatorResponse>;
+  onRemoveAuthenticator: (
+    origin: string,
+    payload: RemoveAuthenticatorPayload,
+  ) => Promise<RemoveAuthenticatorResponse>;
+  onRequestGrant: (
+    origin: string,
+    payload: RequestGrantPayload,
+  ) => Promise<RequestGrantResponse>;
 }
 
 /**
@@ -42,11 +57,11 @@ export function useIframeMessageHandler(callbacks: MessageHandlerCallbacks) {
     callbacks.onDisconnect,
     callbacks.onAddAuthenticator,
     callbacks.onRemoveAuthenticator,
-    callbacks.onRequestGrant
+    callbacks.onRequestGrant,
   ]);
 
   // Notify parent that iframe is ready
   useEffect(() => {
-    window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
+    window.parent.postMessage({ type: "IFRAME_READY" }, "*");
   }, []);
 }

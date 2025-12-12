@@ -8,18 +8,18 @@
  * - No more manual storage event dispatch - AuthStateManager handles it
  */
 
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { useStytch, useStytchSession } from '@stytch/react';
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useStytch, useStytchSession } from "@stytch/react";
 import {
   SessionManager,
   getLoginAuthenticatorFromJWT,
   getAddressFromSession,
   getAddressFromJWT,
   getAuthenticatorIndexFromSession,
-  getAuthenticatorIndexFromJWT
-} from '../../../auth/session';
-import { useAuthState } from '../../../auth/useAuthState';
-import { AuthStateManager } from '../../../auth/AuthStateManager';
+  getAuthenticatorIndexFromJWT,
+} from "../../../auth/session";
+import { useAuthState } from "../../../auth/useAuthState";
+import { AuthStateManager } from "../../../auth/AuthStateManager";
 
 interface UseIframeSessionOptions {
   currentOrigin: string | null;
@@ -32,10 +32,17 @@ interface UseIframeSessionOptions {
  * Custom hook to manage iframe session extraction and authentication
  * Consolidates the complex session logic from IframeApp
  */
-export function useIframeSession({ currentOrigin, onAuthenticated, trigger = 0, isDisconnecting = false }: UseIframeSessionOptions) {
+export function useIframeSession({
+  currentOrigin,
+  onAuthenticated,
+  trigger = 0,
+  isDisconnecting = false,
+}: UseIframeSessionOptions) {
   const { session } = useStytchSession();
   const stytch = useStytch();
-  const [addressByOrigin, setAddressByOrigin] = useState<Record<string, string>>({});
+  const [addressByOrigin, setAddressByOrigin] = useState<
+    Record<string, string>
+  >({});
 
   // Use AuthStateManager via hook
   const { startLogin } = useAuthState();
@@ -49,7 +56,9 @@ export function useIframeSession({ currentOrigin, onAuthenticated, trigger = 0, 
   useEffect(() => {
     // Don't process session during disconnect to prevent race conditions
     if (isDisconnecting) {
-      console.log('[useIframeSession] Skipping session processing during disconnect');
+      console.log(
+        "[useIframeSession] Skipping session processing during disconnect",
+      );
       return;
     }
 
@@ -66,28 +75,37 @@ export function useIframeSession({ currentOrigin, onAuthenticated, trigger = 0, 
     const sessionToken = tokens.session_token;
 
     // Extract address from session or JWT using centralized utilities
-    const extractedAddress = getAddressFromSession(session) || getAddressFromJWT(sessionJwt);
-    const authenticatorIndex = getAuthenticatorIndexFromSession(session) ?? getAuthenticatorIndexFromJWT(sessionJwt);
+    const extractedAddress =
+      getAddressFromSession(session) || getAddressFromJWT(sessionJwt);
+    const authenticatorIndex =
+      getAuthenticatorIndexFromSession(session) ??
+      getAuthenticatorIndexFromJWT(sessionJwt);
 
     // Extract and store login authenticator using AuthStateManager
     const loginAuthenticator = getLoginAuthenticatorFromJWT(sessionJwt);
     if (loginAuthenticator) {
       // Use AuthStateManager to handle all storage and event dispatch
-      startLogin('stytch', loginAuthenticator);
-      console.log('[useIframeSession] Started login via AuthStateManager:', loginAuthenticator.substring(0, 20) + '...');
+      startLogin("stytch", loginAuthenticator);
+      console.log(
+        "[useIframeSession] Started login via AuthStateManager:",
+        loginAuthenticator.substring(0, 20) + "...",
+      );
     }
 
     // Store session for this origin
     SessionManager.setSession(
       currentOrigin,
       sessionJwt,
-      sessionToken || '',
+      sessionToken || "",
       extractedAddress || undefined,
-      authenticatorIndex ?? undefined
+      authenticatorIndex ?? undefined,
     );
 
     if (extractedAddress) {
-      setAddressByOrigin(prev => ({ ...prev, [currentOrigin]: extractedAddress }));
+      setAddressByOrigin((prev) => ({
+        ...prev,
+        [currentOrigin]: extractedAddress,
+      }));
       onAuthenticatedRef.current?.(extractedAddress);
     }
   }, [session, currentOrigin, stytch, trigger, isDisconnecting, startLogin]);
@@ -100,11 +118,13 @@ export function useIframeSession({ currentOrigin, onAuthenticated, trigger = 0, 
     if (!session && currentOrigin) {
       const hasLocalSession = SessionManager.getSession(currentOrigin);
       if (hasLocalSession) {
-        console.warn('[useIframeSession] Session expired, clearing local session');
+        console.warn(
+          "[useIframeSession] Session expired, clearing local session",
+        );
         SessionManager.clearSession(currentOrigin);
         // Also logout from AuthStateManager to clear account state
         AuthStateManager.logout();
-        setAddressByOrigin(prev => {
+        setAddressByOrigin((prev) => {
           const updated = { ...prev };
           delete updated[currentOrigin];
           return updated;
@@ -113,29 +133,35 @@ export function useIframeSession({ currentOrigin, onAuthenticated, trigger = 0, 
     }
   }, [session, currentOrigin, isDisconnecting]);
 
-  const getAddressForOrigin = useCallback((origin: string) => addressByOrigin[origin] || null, [addressByOrigin]);
+  const getAddressForOrigin = useCallback(
+    (origin: string) => addressByOrigin[origin] || null,
+    [addressByOrigin],
+  );
 
-  const clearSessionForOrigin = useCallback(async (origin: string) => {
-    SessionManager.clearSession(origin);
-    setAddressByOrigin(prev => {
-      const updated = { ...prev };
-      delete updated[origin];
-      return updated;
-    });
+  const clearSessionForOrigin = useCallback(
+    async (origin: string) => {
+      SessionManager.clearSession(origin);
+      setAddressByOrigin((prev) => {
+        const updated = { ...prev };
+        delete updated[origin];
+        return updated;
+      });
 
-    // Revoke Stytch session if available
-    try {
-      // Check if we have a session before trying to revoke
-      const tokens = stytch?.session?.getTokens();
-      if (tokens) {
-        await stytch.session.revoke();
+      // Revoke Stytch session if available
+      try {
+        // Check if we have a session before trying to revoke
+        const tokens = stytch?.session?.getTokens();
+        if (tokens) {
+          await stytch.session.revoke();
+        }
+      } catch (error) {
+        // Ignore 401 errors as it means we're already logged out
+        // Log other errors
+        console.warn("[useIframeSession] Error revoking session:", error);
       }
-    } catch (error) {
-      // Ignore 401 errors as it means we're already logged out
-      // Log other errors
-      console.warn('[useIframeSession] Error revoking session:', error);
-    }
-  }, [stytch]);
+    },
+    [stytch],
+  );
 
   return {
     addressByOrigin,

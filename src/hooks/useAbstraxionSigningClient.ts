@@ -20,7 +20,7 @@ export const useAbstraxionSigningClient = () => {
     useContext(AbstraxionContext) as AbstraxionContextProps;
 
   const stytch = useStytch();
-  
+
   // Get session token from Stytch SDK - the single source of truth
   const sessionToken = stytch.session.getTokens()?.session_token;
 
@@ -51,16 +51,17 @@ export const useAbstraxionSigningClient = () => {
       throw new Error("Please install the OKX wallet extension");
     }
     await window.okxwallet.keplr.enable(chainInfo?.chainId || "");
-    const signDataNew = typeof signBytes === 'string' 
-      ? signBytes 
-      : Uint8Array.from(Object.values(signBytes));
+    const signDataNew =
+      typeof signBytes === "string"
+        ? signBytes
+        : Uint8Array.from(Object.values(signBytes));
     return window.okxwallet.keplr.signArbitrary(chainId, account, signDataNew);
   }
 
   async function ethSigningFn(msg: any) {
-    const accounts = await window.ethereum?.request({
+    const accounts = (await window.ethereum?.request({
       method: "eth_requestAccounts",
-    }) as any;
+    })) as any;
     return window.ethereum?.request({
       method: "personal_sign",
       params: [msg, accounts[0]],
@@ -82,8 +83,8 @@ export const useAbstraxionSigningClient = () => {
     switch (connectionType) {
       case "stytch":
         {
-          let stytchApiUrl = STYTCH_PROXY_URL;
-          
+          const stytchApiUrl = STYTCH_PROXY_URL;
+
           signer = new AbstractAccountJWTSigner(
             abstractAccount.id,
             abstractAccount.currentAuthenticatorIndex,

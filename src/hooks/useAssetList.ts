@@ -8,7 +8,12 @@ import type {
   Asset,
   PriceData,
 } from "../types/assets";
-import { isMainnet, COINGECKO_API_URL, getAssetEndpoint, networkConfig } from "../config";
+import {
+  isMainnet,
+  COINGECKO_API_URL,
+  getAssetEndpoint,
+  networkConfig,
+} from "../config";
 import mainnetAssets from "../data/mainnet/assetlist.json";
 import testnetAssets from "../data/testnet/assetlist.json";
 

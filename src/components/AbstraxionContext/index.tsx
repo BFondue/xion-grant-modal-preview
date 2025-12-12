@@ -19,7 +19,10 @@ import axios from "axios";
 import { getChainRegistryUrl, ABSTRAXION_API_URL } from "../../config";
 import { useQueryParams } from "../../hooks/useQueryParams";
 import { ContractContextProvider } from "../ContractContext";
-import { AuthStateManager, ConnectionType as AuthConnectionType } from "../../auth/AuthStateManager";
+import {
+  AuthStateManager,
+  ConnectionType as AuthConnectionType,
+} from "../../auth/AuthStateManager";
 
 export type ConnectionType = AuthConnectionType;
 
@@ -73,12 +76,14 @@ export const AbstraxionContextProvider = ({
 
   // Local state - will be synced with AuthStateManager
   const [connectionType, setConnectionType] = useState<ConnectionType>(
-    initialState.connectionType
+    initialState.connectionType,
   );
   const [abstractAccount, setAbstractAccount] = useState<
     SelectedSmartAccount | undefined
   >(initialState.account);
-  const [abstraxionError, setAbstraxionError] = useState(initialState.error || "");
+  const [abstraxionError, setAbstraxionError] = useState(
+    initialState.error || "",
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [chainInfo, setChainInfo] = useState<ChainInfo | null>(null);
   const [isChainInfoLoading, setIsChainInfoLoading] = useState(true);
@@ -107,9 +112,9 @@ export const AbstraxionContextProvider = ({
 
   // When context setters are called, also update AuthStateManager
   // This maintains backward compatibility with components that set state directly
-  const wrappedSetConnectionType: React.Dispatch<React.SetStateAction<ConnectionType>> = (
-    action
-  ) => {
+  const wrappedSetConnectionType: React.Dispatch<
+    React.SetStateAction<ConnectionType>
+  > = (action) => {
     setConnectionType((prev) => {
       const newValue = typeof action === "function" ? action(prev) : action;
       // Note: We don't update AuthStateManager here because it should be
@@ -120,7 +125,9 @@ export const AbstraxionContextProvider = ({
     });
   };
 
-  const wrappedSetAbstractAccount: React.Dispatch<SelectedSmartAccount> = (account) => {
+  const wrappedSetAbstractAccount: React.Dispatch<SelectedSmartAccount> = (
+    account,
+  ) => {
     setAbstractAccount(account);
     // Sync to AuthStateManager if this is a new/different account
     // This is needed for backward compatibility with components like AbstraxionWallets
@@ -128,16 +135,20 @@ export const AbstraxionContextProvider = ({
     if (account && account.id) {
       const currentAccount = AuthStateManager.getAccount();
       // Only update if account is different to prevent circular updates
-      if (!currentAccount || currentAccount.id !== account.id ||
-          currentAccount.currentAuthenticatorIndex !== account.currentAuthenticatorIndex) {
+      if (
+        !currentAccount ||
+        currentAccount.id !== account.id ||
+        currentAccount.currentAuthenticatorIndex !==
+          account.currentAuthenticatorIndex
+      ) {
         AuthStateManager.completeLogin(account);
       }
     }
   };
 
-  const wrappedSetAbstraxionError: React.Dispatch<React.SetStateAction<string>> = (
-    action
-  ) => {
+  const wrappedSetAbstraxionError: React.Dispatch<
+    React.SetStateAction<string>
+  > = (action) => {
     setAbstraxionError((prev) => {
       const newValue = typeof action === "function" ? action(prev) : action;
       if (newValue) {

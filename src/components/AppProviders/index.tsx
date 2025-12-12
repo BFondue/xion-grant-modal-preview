@@ -1,10 +1,10 @@
-import React, { ReactNode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import { StytchProvider } from '@stytch/react';
-import { ShuttleProvider } from '@delphi-labs/shuttle-react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { stytchClient } from '../../hooks/useStytchClient';
-import { AbstraxionContextProvider } from '../AbstraxionContext';
+import React, { ReactNode } from "react";
+import { BrowserRouter } from "react-router-dom";
+import { StytchProvider } from "@stytch/react";
+import { ShuttleProvider } from "@delphi-labs/shuttle-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { stytchClient } from "../../hooks/useStytchClient";
+import { AbstraxionContextProvider } from "../AbstraxionContext";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -16,10 +16,10 @@ interface AppProvidersProps {
  * Shared provider wrapper for both main app and iframe
  * Includes all necessary context providers in the correct order
  */
-export function AppProviders({ 
-  children, 
+export function AppProviders({
+  children,
   queryClient: customQueryClient,
-  extensionProviders
+  extensionProviders,
 }: AppProvidersProps) {
   const queryClient = customQueryClient || new QueryClient();
 
@@ -39,8 +39,9 @@ export function AppProviders({
               </AbstraxionContextProvider>
             </StytchProvider>
           ) : (
-            <div style={{ padding: '20px', color: 'red' }}>
-              Error: Stytch client failed to initialize. Please check VITE_STYTCH_PUBLIC_TOKEN configuration.
+            <div style={{ padding: "20px", color: "red" }}>
+              Error: Stytch client failed to initialize. Please check
+              VITE_STYTCH_PUBLIC_TOKEN configuration.
             </div>
           )}
         </QueryClientProvider>

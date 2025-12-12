@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 /**
  * Main App component - wrapper for standalone mode
@@ -11,46 +11,53 @@ export function StandAloneWrapper() {
   // Listen for disconnect message from SDK iframe
   useEffect(() => {
     const handleDisconnect = (event: MessageEvent) => {
-      if (event.data.type === 'DISCONNECTED') {
-        console.log('[StandaloneWrapper] Received disconnect, refreshing page...');
+      if (event.data.type === "DISCONNECTED") {
+        console.log(
+          "[StandaloneWrapper] Received disconnect, refreshing page...",
+        );
         window.location.reload();
       }
     };
-    window.addEventListener('message', handleDisconnect);
-    return () => window.removeEventListener('message', handleDisconnect);
+    window.addEventListener("message", handleDisconnect);
+    return () => window.removeEventListener("message", handleDisconnect);
   }, []);
 
   useEffect(() => {
     // Initialize XionSDK for standalone mode
     const initSDK = async () => {
-      if (typeof window === 'undefined' || sdkInitialized.current) return;
+      if (typeof window === "undefined" || sdkInitialized.current) return;
       sdkInitialized.current = true;
 
       try {
         // Dynamic import of XionSDK
-        const { XionSDK } = await import('@burnt-labs/xion-auth-sdk');
+        const { XionSDK } = await import("@burnt-labs/xion-auth-sdk");
 
         // Initialize SDK pointing to the iframe route
         // Use alwaysVisible since we want the dashboard to stay visible after login
         const sdk = new XionSDK({
-          iframeUrl: window.location.origin + '/iframe',
+          iframeUrl: window.location.origin + "/iframe",
           alwaysVisible: true,
         });
 
         // Store SDK instance globally for debugging
         (window as any).__xionSDK = sdk;
 
-        console.log('[StandaloneWrapper] XionSDK initialized, calling connect...');
+        console.log(
+          "[StandaloneWrapper] XionSDK initialized, calling connect...",
+        );
 
         // Connect immediately - the SDK will create the iframe and wait for it to be ready
         try {
           const result = await sdk.connect();
-          console.log('[StandaloneWrapper] Connected:', result);
+          console.log("[StandaloneWrapper] Connected:", result);
         } catch (error) {
-          console.log('[StandaloneWrapper] User cancelled or error:', error);
+          console.log("[StandaloneWrapper] User cancelled or error:", error);
         }
       } catch (error) {
-        console.error('[StandaloneWrapper] Failed to initialize XionSDK:', error);
+        console.error(
+          "[StandaloneWrapper] Failed to initialize XionSDK:",
+          error,
+        );
       }
     };
 

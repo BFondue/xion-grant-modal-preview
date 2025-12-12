@@ -115,6 +115,7 @@ src/
 ## Features
 
 ### Standalone Mode
+
 - 🏠 **Dashboard Interface**: Full account management UI
 - 👤 **Account Overview**: View balances, authenticators, and account details
 - 🔐 **Multi-Auth Support**: Email, SMS, OAuth, WebAuthn, Passkeys, Web3 wallets
@@ -124,6 +125,7 @@ src/
 - 🌐 **Network Support**: Mainnet and testnet configurations
 
 ### Iframe Mode
+
 - 🔒 **Secure Isolation**: Runs in cross-origin iframe, JWTs never leave this context
 - 💬 **MessageChannel Communication**: Type-safe communication with parent SDK
 - 🎯 **Transaction Signing**: Sign transactions with user approval
@@ -153,6 +155,7 @@ src/
 ### Adding Authenticators
 
 Users can add multiple authenticators to their account through the "Add Authenticator" modal. The app validates:
+
 - No duplicate authenticators
 - Proper signature verification
 - Available authenticator indices
@@ -166,6 +169,7 @@ Users can remove authenticators (except the last one) through the "Remove Authen
 ### Account Abstraction API
 
 The app integrates with the AA-API for:
+
 - Authenticator type resolution (`/api/v1/jwt-accounts/authenticator-types`)
 - Session authentication without creating users (`/api/v1/sessions/authenticate-no-session`)
 - OAuth authentication (`/api/v1/sessions/authenticate-oauth-no-session`)
@@ -204,9 +208,11 @@ Parent App (SDK)          Iframe (This App)
 ### Message Types
 
 #### CONNECT
+
 Request user authentication.
 
 **Response:**
+
 ```typescript
 {
   address: string;
@@ -215,9 +221,11 @@ Request user authentication.
 ```
 
 #### SIGN_TRANSACTION
+
 Request transaction signing.
 
 **Payload:**
+
 ```typescript
 {
   transaction: {
@@ -229,6 +237,7 @@ Request transaction signing.
 ```
 
 **Response:**
+
 ```typescript
 {
   signedTx: SignedTransaction;
@@ -236,9 +245,11 @@ Request transaction signing.
 ```
 
 #### GET_ADDRESS
+
 Get current authenticated address.
 
 **Response:**
+
 ```typescript
 {
   address: string | null;
@@ -246,11 +257,14 @@ Get current authenticated address.
 ```
 
 #### DISCONNECT
+
 Clear session and disconnect.
 
 **Response:**
+
 ```typescript
-{}
+{
+}
 ```
 
 ### Testing Iframe Mode Locally
@@ -313,7 +327,8 @@ Clear session and disconnect.
 ### Authentication Issues
 
 **Problem**: OTP/OAuth not working
-**Solution**: 
+**Solution**:
+
 - Verify `VITE_STYTCH_PUBLIC_TOKEN` is correct
 - Check that AA-API endpoint is accessible
 - Ensure network configuration matches (testnet vs mainnet)
@@ -322,6 +337,7 @@ Clear session and disconnect.
 
 **Problem**: Iframe not showing in parent app
 **Solution**:
+
 - Check that SDK is initializing iframe correctly
 - Verify iframe URL is accessible
 - Check browser console for CORS errors
@@ -331,6 +347,7 @@ Clear session and disconnect.
 
 **Problem**: Fee grant validation failing
 **Solution**:
+
 - Verify `VITE_FEE_GRANTER_ADDRESS` is correct for your network
 - Check that fee grant exists on-chain for the user's address
 - Ensure REST endpoint is accessible
@@ -338,6 +355,7 @@ Clear session and disconnect.
 ## Contributing
 
 When adding new features:
+
 1. Follow existing patterns
 2. Add TypeScript types
 3. Test in both standalone and iframe modes

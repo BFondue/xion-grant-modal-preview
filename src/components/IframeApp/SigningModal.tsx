@@ -1,4 +1,11 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, BaseButton } from "../ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  BaseButton,
+} from "../ui";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import { useState } from "react";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
@@ -74,7 +81,9 @@ export function SigningModal({
                     </p>
                   </div>
                   <div className="ui-flex ui-flex-col ui-gap-2">
-                    <h6 className="ui-text-sm ui-text-secondary-text">Details</h6>
+                    <h6 className="ui-text-sm ui-text-secondary-text">
+                      Details
+                    </h6>
                     <pre className="ui-text-xs ui-font-mono ui-bg-black/30 ui-p-3 ui-rounded ui-overflow-x-auto ui-max-h-48">
                       {JSON.stringify(msg.value, null, 2)}
                     </pre>
@@ -88,16 +97,20 @@ export function SigningModal({
             {/* Fee Details */}
             <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
               <h5 className="ui-text-sm ui-font-bold">Fee Details</h5>
-              
+
               <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
                 <h6 className="ui-text-sm">Gas Limit</h6>
-                <p className="ui-text-sm ui-font-bold ui-font-mono">{transaction.fee.gas}</p>
+                <p className="ui-text-sm ui-font-bold ui-font-mono">
+                  {transaction.fee.gas}
+                </p>
               </div>
 
               <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
                 <h6 className="ui-text-sm">Fee Amount</h6>
                 <p className="ui-text-sm ui-font-bold ui-font-mono">
-                  {transaction.fee.amount.map((a: any) => `${a.amount} ${a.denom.toUpperCase()}`).join(', ')}
+                  {transaction.fee.amount
+                    .map((a: any) => `${a.amount} ${a.denom.toUpperCase()}`)
+                    .join(", ")}
                 </p>
               </div>
 
@@ -105,7 +118,8 @@ export function SigningModal({
                 <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
                   <h6 className="ui-text-sm">Paid By (Treasury)</h6>
                   <p className="ui-text-sm ui-font-bold ui-font-mono ui-text-green-400">
-                    {transaction.fee.granter.slice(0, 12)}...{transaction.fee.granter.slice(-8)}
+                    {transaction.fee.granter.slice(0, 12)}...
+                    {transaction.fee.granter.slice(-8)}
                   </p>
                 </div>
               )}
@@ -143,7 +157,11 @@ export function SigningModal({
               className="ui-w-full"
               disabled={isLoading}
             >
-              {isLoading ? <SpinnerV2 size="sm" color="black" /> : "APPROVE & SIGN"}
+              {isLoading ? (
+                <SpinnerV2 size="sm" color="black" />
+              ) : (
+                "APPROVE & SIGN"
+              )}
             </BaseButton>
           </div>
         </div>

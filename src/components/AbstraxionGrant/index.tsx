@@ -74,13 +74,11 @@ export const AbstraxionGrant = ({
   const { data: account } = useAbstraxionAccount();
   const { redirect_uri, state } = useQueryParams(["redirect_uri", "state"]);
   const { xionDisconnect } = useXionDisconnect();
-  const { chainInfo, abstraxionError, setAbstraxionError, abstractAccount } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
+  const { chainInfo, abstraxionError, setAbstraxionError } =
+    useContext(AbstraxionContext) as AbstraxionContextProps;
 
-  // Use abstractAccount from context as fallback when account from indexer is not yet available
+  // abstractAccount from context can be used as fallback when account from indexer is not yet available
   // This happens when the account is freshly created and indexer hasn't caught up
-  const accountToUse = account || abstractAccount;
 
   const [inProgress, setInProgress] = useState(false);
   const [isTreasuryQueryLoading, setIsTreasuryQueryLoading] = useState(
@@ -114,7 +112,7 @@ export const AbstraxionGrant = ({
           }, 500);
           return () => clearTimeout(timer);
         }
-        
+
         // Otherwise, redirect (standalone mode)
         if (redirect_uri) {
           const redirectTimer = setTimeout(() => {
@@ -323,12 +321,19 @@ export const AbstraxionGrant = ({
 
       setShowSuccess(true);
     } catch (error) {
-      let errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      let errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
 
       // Detect authenticator not found error and provide a more helpful message
-      if (errorMessage.includes('Authenticator') && errorMessage.includes('not found')) {
-        console.error('[AbstraxionGrant] Authenticator not found error - account may need to be re-created');
-        errorMessage = 'Account setup incomplete. Please disconnect and try logging in again.';
+      if (
+        errorMessage.includes("Authenticator") &&
+        errorMessage.includes("not found")
+      ) {
+        console.error(
+          "[AbstraxionGrant] Authenticator not found error - account may need to be re-created",
+        );
+        errorMessage =
+          "Account setup incomplete. Please disconnect and try logging in again.";
       }
 
       setGrantError(errorMessage);

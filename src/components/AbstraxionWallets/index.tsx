@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useStytch } from "@stytch/react";
 import { decodeJwt } from "jose";
 import {
@@ -110,12 +104,12 @@ export const AbstraxionWallets = () => {
             authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
           }
         } catch (e) {
-          console.warn('[AbstraxionWallets] Failed to decode JWT:', e);
+          console.warn("[AbstraxionWallets] Failed to decode JWT:", e);
         }
       }
 
       if (!authenticator) {
-        throw new Error('Failed to extract authenticator from JWT');
+        throw new Error("Failed to extract authenticator from JWT");
       }
 
       // Set the abstract account directly

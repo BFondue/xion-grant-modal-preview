@@ -18,9 +18,9 @@
  * ```
  */
 
-import { useSyncExternalStore, useCallback } from 'react';
-import { AuthStateManager, ConnectionType } from './AuthStateManager';
-import { SelectedSmartAccount } from '../indexer-strategies/types';
+import { useSyncExternalStore, useCallback } from "react";
+import { AuthStateManager, ConnectionType } from "./AuthStateManager";
+import { SelectedSmartAccount } from "../indexer-strategies/types";
 
 /**
  * React hook for accessing and managing auth state
@@ -36,7 +36,7 @@ export function useAuthState() {
     // Get snapshot function
     () => AuthStateManager.getState(),
     // Get server snapshot (same for client-only app)
-    () => AuthStateManager.getState()
+    () => AuthStateManager.getState(),
   );
 
   // --- Action Methods ---
@@ -45,9 +45,12 @@ export function useAuthState() {
    * Start login process
    * Call this when user initiates login with a specific method
    */
-  const startLogin = useCallback((type: ConnectionType, authenticator: string) => {
-    AuthStateManager.startLogin(type, authenticator);
-  }, []);
+  const startLogin = useCallback(
+    (type: ConnectionType, authenticator: string) => {
+      AuthStateManager.startLogin(type, authenticator);
+    },
+    [],
+  );
 
   /**
    * Complete login with the fetched account
@@ -123,13 +126,13 @@ export function useAuthState() {
 
     // --- Computed Properties ---
     /** True if fully connected with an account */
-    isConnected: state.status === 'connected' && !!state.account,
+    isConnected: state.status === "connected" && !!state.account,
     /** True if in connecting state */
-    isConnecting: state.status === 'connecting',
+    isConnecting: state.status === "connecting",
     /** True if in disconnecting state */
-    isDisconnecting: state.status === 'disconnecting',
+    isDisconnecting: state.status === "disconnecting",
     /** True if disconnected */
-    isDisconnected: state.status === 'disconnected',
+    isDisconnected: state.status === "disconnected",
     /** Shortcut to account address */
     address: state.account?.id ?? null,
 

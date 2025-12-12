@@ -32,10 +32,12 @@ export const isMainnet = (): boolean => {
 };
 
 // Select network config based on environment
-export const networkConfig = 
-  NETWORK === "mainnet" ? mainnetConfig :  
-  NETWORK === "devnet" ? devnetConfig : 
-  testnetConfig; 
+export const networkConfig =
+  NETWORK === "mainnet"
+    ? mainnetConfig
+    : NETWORK === "devnet"
+      ? devnetConfig
+      : testnetConfig;
 
 // Re-export network config type
 export type NetworkConfig = typeof networkConfig;
@@ -61,10 +63,10 @@ export interface ChainConfig {
 }
 
 // Chain ID (env override for local development)
-export const CHAIN_ID =
-  import.meta.env.VITE_CHAIN_ID || networkConfig.chainId;
+export const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || networkConfig.chainId;
 
-const CHAIN_REGISTRY_BASE_URL = import.meta.env.VITE_CHAIN_REGISTRY_BASE_URL ||
+const CHAIN_REGISTRY_BASE_URL =
+  import.meta.env.VITE_CHAIN_REGISTRY_BASE_URL ||
   networkConfig.chainRegistryBaseUrl;
 
 export const getAssetEndpoint = () => {
@@ -84,8 +86,9 @@ export const getDefaultGasPrice = (chainConfig: ChainConfig) => {
   return feeToken.fixed_min_gas_price || feeToken.average_gas_price;
 };
 
-export const COINGECKO_API_URL = 
-  import.meta.env.VITE_COINGECKO_API_URL || "https://api.coingecko.com/api/v3/simple/price";
+export const COINGECKO_API_URL =
+  import.meta.env.VITE_COINGECKO_API_URL ||
+  "https://api.coingecko.com/api/v3/simple/price";
 
 export const getRestApiUrl = (chainInfo: { rest: string }) => {
   return chainInfo.rest;
@@ -101,8 +104,10 @@ export const REST_ENDPOINTS = {
 
 export const getExplorerUrl = () => networkConfig.explorerUrl;
 export const getStakingUrl = () => networkConfig.stakingUrl;
-export const getExplorerTxUrl = (txHash: string) => `${networkConfig.explorerUrl}/txs/${txHash}`;
-export const getExplorerAddressUrl = (address: string) => `${networkConfig.explorerUrl}/account/${address}`;
+export const getExplorerTxUrl = (txHash: string) =>
+  `${networkConfig.explorerUrl}/txs/${txHash}`;
+export const getExplorerAddressUrl = (address: string) =>
+  `${networkConfig.explorerUrl}/account/${address}`;
 
 // =============================================================================
 // Asset Configuration
@@ -182,7 +187,7 @@ export const GAS_MARGIN = import.meta.env.VITE_GAS_MARGIN
 // Helper to parse feature flag env vars (explicit true/false, falls back to network default)
 const parseFeatureFlag = (
   envValue: string | undefined,
-  defaultValue: boolean
+  defaultValue: boolean,
 ): boolean => {
   if (envValue === "true") return true;
   if (envValue === "false") return false;
@@ -192,27 +197,27 @@ const parseFeatureFlag = (
 export const FEATURE_FLAGS = {
   okx: parseFeatureFlag(
     import.meta.env.VITE_OKX_FLAG,
-    networkConfig.featureFlags.okx
+    networkConfig.featureFlags.okx,
   ),
   metamask: parseFeatureFlag(
     import.meta.env.VITE_METAMASK_FLAG,
-    networkConfig.featureFlags.metamask
+    networkConfig.featureFlags.metamask,
   ),
   passkey: parseFeatureFlag(
     import.meta.env.VITE_PASSKEY_FLAG,
-    networkConfig.featureFlags.passkey
+    networkConfig.featureFlags.passkey,
   ),
   keplr: parseFeatureFlag(
     import.meta.env.VITE_KEPLR_FLAG,
-    networkConfig.featureFlags.keplr
+    networkConfig.featureFlags.keplr,
   ),
   tiktok: parseFeatureFlag(
     import.meta.env.VITE_TIKTOK_FLAG,
-    networkConfig.featureFlags.tiktok
+    networkConfig.featureFlags.tiktok,
   ),
   apple: parseFeatureFlag(
     import.meta.env.VITE_APPLE_FLAG,
-    networkConfig.featureFlags.apple
+    networkConfig.featureFlags.apple,
   ),
 };
 
@@ -223,7 +228,7 @@ export const FEATURE_FLAGS = {
 // Required for Stytch SDK initialization
 export const STYTCH_PUBLIC_TOKEN = getEnvOrThrow(
   "VITE_STYTCH_PUBLIC_TOKEN",
-  "Stytch public token for SDK initialization"
+  "Stytch public token for SDK initialization",
 );
 
 // =============================================================================

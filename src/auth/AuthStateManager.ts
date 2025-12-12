@@ -15,14 +15,24 @@
  * - Easy to debug/log all state transitions
  */
 
-import { SelectedSmartAccount } from '../indexer-strategies/types';
-import { SessionManager } from './session';
+import { SelectedSmartAccount } from "../indexer-strategies/types";
+import { SessionManager } from "./session";
 
 // Connection types supported
-export type ConnectionType = 'stytch' | 'shuttle' | 'metamask' | 'okx' | 'passkey' | 'none';
+export type ConnectionType =
+  | "stytch"
+  | "shuttle"
+  | "metamask"
+  | "okx"
+  | "passkey"
+  | "none";
 
 // Auth state machine states
-export type AuthStatus = 'disconnected' | 'connecting' | 'connected' | 'disconnecting';
+export type AuthStatus =
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "disconnecting";
 
 // Full auth state
 export interface AuthState {
@@ -34,23 +44,32 @@ export interface AuthState {
 }
 
 // Listener type for state changes
-export type AuthStateListener = (state: AuthState, prevState: AuthState) => void;
+export type AuthStateListener = (
+  state: AuthState,
+  prevState: AuthState,
+) => void;
 
 // Storage keys - centralized in one place
 export const AUTH_STORAGE_KEYS = {
-  LOGIN_TYPE: 'loginType',
-  LOGIN_AUTHENTICATOR: 'loginAuthenticator',
-  OKX_XION_ADDRESS: 'okxXionAddress',
-  OKX_WALLET_NAME: 'okxWalletName',
+  LOGIN_TYPE: "loginType",
+  LOGIN_AUTHENTICATOR: "loginAuthenticator",
+  OKX_XION_ADDRESS: "okxXionAddress",
+  OKX_WALLET_NAME: "okxWalletName",
 } as const;
 
 // Valid connection types for validation
-const VALID_CONNECTION_TYPES: ConnectionType[] = ['stytch', 'shuttle', 'metamask', 'okx', 'passkey'];
+const VALID_CONNECTION_TYPES: ConnectionType[] = [
+  "stytch",
+  "shuttle",
+  "metamask",
+  "okx",
+  "passkey",
+];
 
 class AuthStateManagerClass {
   private state: AuthState = {
-    status: 'disconnected',
-    connectionType: 'none',
+    status: "disconnected",
+    connectionType: "none",
     account: undefined,
     authenticator: null,
     error: null,
@@ -70,26 +89,30 @@ class AuthStateManagerClass {
     if (this.initialized) return;
 
     const storedType = localStorage.getItem(AUTH_STORAGE_KEYS.LOGIN_TYPE);
-    const storedAuth = localStorage.getItem(AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR);
+    const storedAuth = localStorage.getItem(
+      AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR,
+    );
 
     // Validate stored type is a valid connection type
-    const isValidType = storedType && VALID_CONNECTION_TYPES.includes(storedType as ConnectionType);
+    const isValidType =
+      storedType &&
+      VALID_CONNECTION_TYPES.includes(storedType as ConnectionType);
 
     if (isValidType && storedAuth) {
       this.state = {
         ...this.state,
-        status: 'connecting', // Will become 'connected' once account is loaded
+        status: "connecting", // Will become 'connected' once account is loaded
         connectionType: storedType as ConnectionType,
         authenticator: storedAuth,
       };
       // Update snapshot to reflect initialized state
       this.stateSnapshot = { ...this.state };
-      console.log('[AuthStateManager] Initialized with stored credentials:', {
+      console.log("[AuthStateManager] Initialized with stored credentials:", {
         type: storedType,
-        authenticator: storedAuth.substring(0, 20) + '...',
+        authenticator: storedAuth.substring(0, 20) + "...",
       });
     } else {
-      console.log('[AuthStateManager] Initialized in disconnected state');
+      console.log("[AuthStateManager] Initialized in disconnected state");
     }
 
     this.initialized = true;
@@ -116,21 +139,21 @@ class AuthStateManagerClass {
    * Check if fully connected (has account)
    */
   isConnected(): boolean {
-    return this.state.status === 'connected' && !!this.state.account;
+    return this.state.status === "connected" && !!this.state.account;
   }
 
   /**
    * Check if in connecting state
    */
   isConnecting(): boolean {
-    return this.state.status === 'connecting';
+    return this.state.status === "connecting";
   }
 
   /**
    * Check if in disconnecting state
    */
   isDisconnecting(): boolean {
-    return this.state.status === 'disconnecting';
+    return this.state.status === "disconnecting";
   }
 
   /**
@@ -172,7 +195,7 @@ class AuthStateManagerClass {
 
     this.state = {
       ...this.state,
-      status: 'connecting',
+      status: "connecting",
       connectionType: type,
       authenticator,
       error: null,
@@ -182,13 +205,16 @@ class AuthStateManagerClass {
     localStorage.setItem(AUTH_STORAGE_KEYS.LOGIN_TYPE, type);
     localStorage.setItem(AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR, authenticator);
 
-    console.log('[AuthStateManager] Login started:', {
+    console.log("[AuthStateManager] Login started:", {
       type,
-      authenticator: authenticator.substring(0, 20) + '...',
+      authenticator: authenticator.substring(0, 20) + "...",
     });
 
     this.notifyListeners(prevState);
-    this.dispatchStorageEvent(AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR, authenticator);
+    this.dispatchStorageEvent(
+      AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR,
+      authenticator,
+    );
   }
 
   /**
@@ -200,12 +226,12 @@ class AuthStateManagerClass {
 
     this.state = {
       ...this.state,
-      status: 'connected',
+      status: "connected",
       account,
       error: null,
     };
 
-    console.log('[AuthStateManager] Login completed:', {
+    console.log("[AuthStateManager] Login completed:", {
       address: account.id,
       authenticatorIndex: account.currentAuthenticatorIndex,
     });
@@ -219,7 +245,7 @@ class AuthStateManagerClass {
   setOkxData(address: string, name: string): void {
     localStorage.setItem(AUTH_STORAGE_KEYS.OKX_XION_ADDRESS, address);
     localStorage.setItem(AUTH_STORAGE_KEYS.OKX_WALLET_NAME, name);
-    console.log('[AuthStateManager] OKX data set:', { address, name });
+    console.log("[AuthStateManager] OKX data set:", { address, name });
   }
 
   /**
@@ -242,29 +268,32 @@ class AuthStateManagerClass {
     // Transition to disconnecting
     this.state = {
       ...this.state,
-      status: 'disconnecting',
+      status: "disconnecting",
     };
     this.notifyListeners(prevState);
 
-    console.log('[AuthStateManager] Logout started');
+    console.log("[AuthStateManager] Logout started");
 
     // Revoke Stytch session if applicable
-    if (prevState.connectionType === 'stytch' && stytchClient) {
+    if (prevState.connectionType === "stytch" && stytchClient) {
       try {
         const tokens = stytchClient.session?.getTokens?.();
         if (tokens) {
           await stytchClient.session.revoke();
-          console.log('[AuthStateManager] Stytch session revoked');
+          console.log("[AuthStateManager] Stytch session revoked");
         }
       } catch (error) {
-        console.warn('[AuthStateManager] Error revoking Stytch session:', error);
+        console.warn(
+          "[AuthStateManager] Error revoking Stytch session:",
+          error,
+        );
       }
     }
 
     // Clear sessionStorage for origin
     if (origin) {
       SessionManager.clearSession(origin);
-      console.log('[AuthStateManager] Session cleared for origin:', origin);
+      console.log("[AuthStateManager] Session cleared for origin:", origin);
     }
 
     // Clear all localStorage auth data
@@ -276,21 +305,21 @@ class AuthStateManagerClass {
     // Final state - fully disconnected
     const disconnectingState = { ...this.state };
     this.state = {
-      status: 'disconnected',
-      connectionType: 'none',
+      status: "disconnected",
+      connectionType: "none",
       account: undefined,
       authenticator: null,
       error: null,
     };
 
-    console.log('[AuthStateManager] Logout completed');
+    console.log("[AuthStateManager] Logout completed");
 
     this.notifyListeners(disconnectingState);
     this.dispatchStorageEvent(AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR, null);
 
     // Notify parent window (for iframe scenarios)
     try {
-      window.parent.postMessage({ type: 'DISCONNECTED' }, '*');
+      window.parent.postMessage({ type: "DISCONNECTED" }, "*");
     } catch {
       // Ignore if not in iframe context
     }
@@ -302,7 +331,7 @@ class AuthStateManagerClass {
   setError(error: string): void {
     const prevState = { ...this.state };
     this.state = { ...this.state, error };
-    console.error('[AuthStateManager] Error:', error);
+    console.error("[AuthStateManager] Error:", error);
     this.notifyListeners(prevState);
   }
 
@@ -325,9 +354,9 @@ class AuthStateManagerClass {
     this.state = {
       ...this.state,
       account,
-      status: 'connected', // Ensure we're in connected state
+      status: "connected", // Ensure we're in connected state
     };
-    console.log('[AuthStateManager] Account updated:', {
+    console.log("[AuthStateManager] Account updated:", {
       address: account.id,
       authenticatorIndex: account.currentAuthenticatorIndex,
     });
@@ -341,13 +370,13 @@ class AuthStateManagerClass {
   resetState(): void {
     const prevState = { ...this.state };
     this.state = {
-      status: 'disconnected',
-      connectionType: 'none',
+      status: "disconnected",
+      connectionType: "none",
       account: undefined,
       authenticator: null,
       error: null,
     };
-    console.log('[AuthStateManager] State reset');
+    console.log("[AuthStateManager] State reset");
     this.notifyListeners(prevState);
   }
 
@@ -357,22 +386,24 @@ class AuthStateManagerClass {
     // Create new snapshot - this signals to useSyncExternalStore that state changed
     this.stateSnapshot = { ...this.state };
 
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(this.stateSnapshot, prevState);
       } catch (error) {
-        console.error('[AuthStateManager] Listener error:', error);
+        console.error("[AuthStateManager] Listener error:", error);
       }
     });
   }
 
   private dispatchStorageEvent(key: string, value: string | null): void {
     // Dispatch storage event for cross-window/cross-component sync
-    window.dispatchEvent(new StorageEvent('storage', {
-      key,
-      newValue: value,
-      storageArea: localStorage,
-    }));
+    window.dispatchEvent(
+      new StorageEvent("storage", {
+        key,
+        newValue: value,
+        storageArea: localStorage,
+      }),
+    );
   }
 }
 

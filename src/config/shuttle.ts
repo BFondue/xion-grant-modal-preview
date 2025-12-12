@@ -16,7 +16,7 @@ async function fetchChainConfig(chainName: string): Promise<Network> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch chain config for ${chainName}: ${response.statusText}`
+      `Failed to fetch chain config for ${chainName}: ${response.statusText}`,
     );
   }
   return response.json();
