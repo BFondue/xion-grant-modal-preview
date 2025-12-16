@@ -55,22 +55,19 @@ export class AbstractAccountJWTSigner extends AASigner {
     const hashSignBytes = sha256(signBytes);
     const message = Buffer.from(hashSignBytes).toString("base64");
 
-    const authResponse = await fetch(
-      `${this.apiUrl}/sessions/authenticate`,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          session_token: this.sessionToken,
-          session_duration_minutes: 60 * 24 * 30,
-          session_custom_claims: {
-            transaction_hash: message,
-          },
-        }),
+    const authResponse = await fetch(`${this.apiUrl}/sessions/authenticate`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        session_token: this.sessionToken,
+        session_duration_minutes: 60 * 24 * 30,
+        session_custom_claims: {
+          transaction_hash: message,
+        },
+      }),
+    });
 
     if (!authResponse.ok) {
       throw new Error("Failed to authenticate with stytch");
@@ -117,22 +114,19 @@ export class AbstractAccountJWTSigner extends AASigner {
     const hashSignBytes = new Uint8Array(Buffer.from(message, "utf-8"));
     const hashedMessage = Buffer.from(hashSignBytes).toString("base64");
 
-    const authResponse = await fetch(
-      `${this.apiUrl}/sessions/authenticate`,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          session_token: customToken || this.sessionToken,
-          session_duration_minutes: 60 * 24 * 30,
-          session_custom_claims: {
-            transaction_hash: hashedMessage,
-          },
-        }),
+    const authResponse = await fetch(`${this.apiUrl}/sessions/authenticate`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        session_token: customToken || this.sessionToken,
+        session_duration_minutes: 60 * 24 * 30,
+        session_custom_claims: {
+          transaction_hash: hashedMessage,
+        },
+      }),
+    });
 
     if (!authResponse.ok) {
       throw new Error("Failed to authenticate with stytch");

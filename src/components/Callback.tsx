@@ -238,20 +238,17 @@ export function Callback() {
     const email = (claims.email as string) || null;
 
     console.log("[Callback] Attesting external token with Stytch...");
-    const attestResponse = await fetch(
-      `${STYTCH_PROXY_URL}/sessions/attest`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          profile_id: trustedAuthProfileId,
-          token: idToken,
-          session_duration_minutes: 60 * 24 * 30, // 30 days
-        }),
+    const attestResponse = await fetch(`${STYTCH_PROXY_URL}/sessions/attest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        profile_id: trustedAuthProfileId,
+        token: idToken,
+        session_duration_minutes: 60 * 24 * 30, // 30 days
+      }),
+    });
 
     if (!attestResponse.ok) {
       const errorData = await attestResponse.json().catch(() => ({}));
