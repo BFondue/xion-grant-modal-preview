@@ -4,7 +4,7 @@ import { SignDoc } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
 // Mock config
 vi.mock("../../config", () => ({
-  STYTCH_PROXY_URL: "https://mock-stytch.com",
+  STYTCH_PROXY_URL: "https://mock-stytch.com/v1",
 }));
 
 describe("AbstractAccountJWTSigner", () => {

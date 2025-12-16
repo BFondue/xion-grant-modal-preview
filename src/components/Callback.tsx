@@ -239,7 +239,7 @@ export function Callback() {
 
     console.log("[Callback] Attesting external token with Stytch...");
     const attestResponse = await fetch(
-      `${STYTCH_PROXY_URL}/v1/sessions/attest`,
+      `${STYTCH_PROXY_URL}/sessions/attest`,
       {
         method: "POST",
         headers: {

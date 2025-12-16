@@ -56,7 +56,7 @@ export class AbstractAccountJWTSigner extends AASigner {
     const message = Buffer.from(hashSignBytes).toString("base64");
 
     const authResponse = await fetch(
-      `${this.apiUrl}/v1/sessions/authenticate`,
+      `${this.apiUrl}/sessions/authenticate`,
       {
         method: "POST",
         headers: {
@@ -118,7 +118,7 @@ export class AbstractAccountJWTSigner extends AASigner {
     const hashedMessage = Buffer.from(hashSignBytes).toString("base64");
 
     const authResponse = await fetch(
-      `${this.apiUrl}/v1/sessions/authenticate`,
+      `${this.apiUrl}/sessions/authenticate`,
       {
         method: "POST",
         headers: {
