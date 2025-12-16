@@ -40,6 +40,8 @@ jobs:
       - name: 🏗️ Build
         id: build-the-repo
         run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
 
       - name: Load SSH signing key
         run: |
