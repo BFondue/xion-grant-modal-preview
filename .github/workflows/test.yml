@@ -42,5 +42,5 @@ jobs:
           echo "VITE_GAS_MARGIN=5000" >> $GITHUB_ENV
           echo "VITE_INDEXER_STRATEGY=numia" >> $GITHUB_ENV
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: npm run test:coverage
