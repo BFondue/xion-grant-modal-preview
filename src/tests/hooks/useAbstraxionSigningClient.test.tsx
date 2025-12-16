@@ -4,10 +4,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useAbstraxionSigningClient } from "../../hooks/useAbstraxionSigningClient";
 import { AbstraxionContext } from "../../components/AbstraxionContext";
 
-import { AADirectSigner, AAEthSigner, AbstractAccountJWTSigner, AAClient } from "../../signers";
+import {
+  AADirectSigner,
+  AAEthSigner,
+  AbstractAccountJWTSigner,
+  AAClient,
+} from "../../signers";
 
 const { mockGetTokens } = vi.hoisted(() => {
-  const mockGetTokens = vi.fn().mockReturnValue({ session_token: "mock-token" });
+  const mockGetTokens = vi
+    .fn()
+    .mockReturnValue({ session_token: "mock-token" });
   return { mockGetTokens };
 });
 
@@ -107,7 +114,8 @@ describe("useAbstraxionSigningClient", () => {
 
   it("should return client when initialized with stytch", async () => {
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
-      wrapper: (props) => wrapper({ ...props, contextValue: { connectionType: "stytch" } }),
+      wrapper: (props) =>
+        wrapper({ ...props, contextValue: { connectionType: "stytch" } }),
     });
 
     await waitFor(() => {
@@ -117,7 +125,8 @@ describe("useAbstraxionSigningClient", () => {
 
   it("should return client when initialized with shuttle (keplr)", async () => {
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
-      wrapper: (props) => wrapper({ ...props, contextValue: { connectionType: "shuttle" } }),
+      wrapper: (props) =>
+        wrapper({ ...props, contextValue: { connectionType: "shuttle" } }),
     });
 
     await waitFor(() => {
@@ -127,7 +136,8 @@ describe("useAbstraxionSigningClient", () => {
 
   it("should return client when initialized with metamask", async () => {
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
-      wrapper: (props) => wrapper({ ...props, contextValue: { connectionType: "metamask" } }),
+      wrapper: (props) =>
+        wrapper({ ...props, contextValue: { connectionType: "metamask" } }),
     });
 
     await waitFor(() => {
@@ -137,7 +147,8 @@ describe("useAbstraxionSigningClient", () => {
 
   it("should return client when initialized with okx", async () => {
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
-      wrapper: (props) => wrapper({ ...props, contextValue: { connectionType: "okx" } }),
+      wrapper: (props) =>
+        wrapper({ ...props, contextValue: { connectionType: "okx" } }),
     });
 
     await waitFor(() => {
@@ -147,7 +158,8 @@ describe("useAbstraxionSigningClient", () => {
 
   it("should return client when initialized with passkey", async () => {
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
-      wrapper: (props) => wrapper({ ...props, contextValue: { connectionType: "passkey" } }),
+      wrapper: (props) =>
+        wrapper({ ...props, contextValue: { connectionType: "passkey" } }),
     });
 
     await waitFor(() => {
@@ -157,7 +169,8 @@ describe("useAbstraxionSigningClient", () => {
 
   it("should return undefined client if chain info is loading", async () => {
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
-      wrapper: (props) => wrapper({ ...props, contextValue: { isChainInfoLoading: true } }),
+      wrapper: (props) =>
+        wrapper({ ...props, contextValue: { isChainInfoLoading: true } }),
     });
 
     expect(result.current.client).toBeUndefined();
@@ -165,7 +178,8 @@ describe("useAbstraxionSigningClient", () => {
 
   it("should return undefined client if abstract account is missing", async () => {
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
-      wrapper: (props) => wrapper({ ...props, contextValue: { abstractAccount: undefined } }),
+      wrapper: (props) =>
+        wrapper({ ...props, contextValue: { abstractAccount: undefined } }),
     });
 
     expect(result.current.client).toBeUndefined();
@@ -173,7 +187,8 @@ describe("useAbstraxionSigningClient", () => {
 
   it("should return undefined client if chain info is missing", async () => {
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
-      wrapper: (props) => wrapper({ ...props, contextValue: { chainInfo: undefined } }),
+      wrapper: (props) =>
+        wrapper({ ...props, contextValue: { chainInfo: undefined } }),
     });
 
     expect(result.current.client).toBeUndefined();
@@ -238,7 +253,7 @@ describe("useAbstraxionSigningClient", () => {
     // Mock window.keplr to be undefined for shuttle connection
     const originalKeplr = window.keplr;
     delete (window as any).keplr;
-    
+
     const { result } = renderHook(() => useAbstraxionSigningClient(), {
       wrapper: ({ children }) =>
         wrapper({ children, contextValue: { connectionType: "shuttle" } }),
@@ -247,7 +262,7 @@ describe("useAbstraxionSigningClient", () => {
     await waitFor(() => {
       expect(result.current.client).toBeUndefined();
     });
-    
+
     // Restore keplr
     window.keplr = originalKeplr;
   });
@@ -268,17 +283,29 @@ describe("useAbstraxionSigningClient", () => {
 
     // Test okxSignArb
     // Mock window.okxwallet.keplr.signArbitrary
-    (window.okxwallet as any).keplr.signArbitrary.mockResolvedValue("signed-message");
+    (window.okxwallet as any).keplr.signArbitrary.mockResolvedValue(
+      "signed-message",
+    );
 
     const signResult = await okxSignArb("chain-id", "account", "message");
     expect(signResult).toBe("signed-message");
-    expect((window.okxwallet as any).keplr.enable).toHaveBeenCalledWith("xion-testnet-1");
-    expect((window.okxwallet as any).keplr.signArbitrary).toHaveBeenCalledWith("chain-id", "account", "message");
+    expect((window.okxwallet as any).keplr.enable).toHaveBeenCalledWith(
+      "xion-testnet-1",
+    );
+    expect((window.okxwallet as any).keplr.signArbitrary).toHaveBeenCalledWith(
+      "chain-id",
+      "account",
+      "message",
+    );
 
     // Test with Uint8Array
     const uint8ArrayMessage = new Uint8Array([1, 2, 3]);
     await okxSignArb("chain-id", "account", uint8ArrayMessage);
-    expect((window.okxwallet as any).keplr.signArbitrary).toHaveBeenCalledWith("chain-id", "account", uint8ArrayMessage);
+    expect((window.okxwallet as any).keplr.signArbitrary).toHaveBeenCalledWith(
+      "chain-id",
+      "account",
+      uint8ArrayMessage,
+    );
   });
 
   it("should throw error in okxSignArb if okxwallet is missing", async () => {
@@ -292,12 +319,14 @@ describe("useAbstraxionSigningClient", () => {
     });
 
     const okxSignArb = (AADirectSigner as any).mock.calls[0][3];
-    
+
     // Remove okxwallet
     const originalOkx = window.okxwallet;
     delete (window as any).okxwallet;
 
-    await expect(okxSignArb("chain-id", "account", "message")).rejects.toThrow("Please install the OKX wallet extension");
+    await expect(okxSignArb("chain-id", "account", "message")).rejects.toThrow(
+      "Please install the OKX wallet extension",
+    );
 
     window.okxwallet = originalOkx;
   });
@@ -317,17 +346,20 @@ describe("useAbstraxionSigningClient", () => {
 
     // Mock window.ethereum.request
     (window.ethereum as any).request.mockImplementation(({ method }: any) => {
-      if (method === "eth_requestAccounts") return Promise.resolve(["0xaccount"]);
+      if (method === "eth_requestAccounts")
+        return Promise.resolve(["0xaccount"]);
       if (method === "personal_sign") return Promise.resolve("signed-message");
       return Promise.resolve(null);
     });
 
     const signResult = await ethSigningFn("message");
     expect(signResult).toBe("signed-message");
-    expect((window.ethereum as any).request).toHaveBeenCalledWith({ method: "eth_requestAccounts" });
-    expect((window.ethereum as any).request).toHaveBeenCalledWith({ 
-      method: "personal_sign", 
-      params: ["message", "0xaccount"] 
+    expect((window.ethereum as any).request).toHaveBeenCalledWith({
+      method: "eth_requestAccounts",
+    });
+    expect((window.ethereum as any).request).toHaveBeenCalledWith({
+      method: "personal_sign",
+      params: ["message", "0xaccount"],
     });
   });
 
@@ -361,7 +393,7 @@ describe("useAbstraxionSigningClient", () => {
     });
 
     const ethSigningFn = (AAEthSigner as any).mock.calls[0][2];
-    
+
     // Remove ethereum
     const originalEth = window.ethereum;
     delete (window as any).ethereum;
@@ -373,7 +405,7 @@ describe("useAbstraxionSigningClient", () => {
     // accounts will be undefined.
     // Then window.ethereum?.request(...) will be undefined.
     // So it returns undefined.
-    
+
     const signResult = await ethSigningFn("message");
     expect(signResult).toBeUndefined();
 
@@ -392,13 +424,13 @@ describe("useAbstraxionSigningClient", () => {
     await waitFor(() => {
       expect(result.current.client).toBeDefined();
     });
-    
+
     // Verify that AbstractAccountJWTSigner was called with undefined session token
     expect(AbstractAccountJWTSigner).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
       undefined, // sessionToken
-      expect.anything()
+      expect.anything(),
     );
 
     // Restore mock
@@ -423,7 +455,7 @@ describe("useAbstraxionSigningClient", () => {
 
     // Restore keplr and trigger event
     window.keplr = originalKeplr;
-    
+
     act(() => {
       window.dispatchEvent(new Event("keplr_keystorechange"));
     });

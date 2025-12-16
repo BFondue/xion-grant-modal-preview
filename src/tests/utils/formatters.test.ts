@@ -1,5 +1,11 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { basicFormatCurrency, basicFormatTokenAmount, detectUserLocale, formatCoins, DENOM_DECIMALS } from "../../utils/formatters";
+import {
+  basicFormatCurrency,
+  basicFormatTokenAmount,
+  detectUserLocale,
+  formatCoins,
+  DENOM_DECIMALS,
+} from "../../utils/formatters";
 import type { FormattedAssetAmount, Asset } from "../../types/assets";
 import { USDC_DENOM } from "../../config";
 
@@ -70,50 +76,50 @@ describe("detectUserLocale", () => {
   });
 
   it("returns navigator.language if available", () => {
-    Object.defineProperty(global, 'navigator', {
-      value: { language: 'fr-FR', languages: ['fr-FR'] },
+    Object.defineProperty(global, "navigator", {
+      value: { language: "fr-FR", languages: ["fr-FR"] },
       writable: true,
-      configurable: true
+      configurable: true,
     });
     expect(detectUserLocale()).toBe("fr-FR");
   });
 
   it("returns first of navigator.languages if language is not available", () => {
-     Object.defineProperty(global, 'navigator', {
-      value: { language: undefined, languages: ['es-ES'] },
+    Object.defineProperty(global, "navigator", {
+      value: { language: undefined, languages: ["es-ES"] },
       writable: true,
-      configurable: true
+      configurable: true,
     });
     expect(detectUserLocale()).toBe("es-ES");
   });
 
   it("returns process.env.LANG if navigator is undefined", () => {
-    // @ts-ignore
+    // @ts-expoect-error
     global.navigator = undefined;
     process.env.LANG = "de_DE.UTF-8";
     expect(detectUserLocale()).toBe("de-DE");
   });
 
   it("returns en-US if navigator properties are missing", () => {
-    Object.defineProperty(global, 'navigator', {
+    Object.defineProperty(global, "navigator", {
       value: { language: undefined, languages: undefined },
       writable: true,
-      configurable: true
+      configurable: true,
     });
     expect(detectUserLocale()).toBe("en-US");
   });
 
   it("returns en-US if process.env.LANG is missing", () => {
-    // @ts-ignore
+    // @ts-expoect-error
     global.navigator = undefined;
     delete process.env.LANG;
     expect(detectUserLocale()).toBe("en-US");
   });
 
   it("returns en-US as fallback", () => {
-    // @ts-ignore
+    // @ts-expoect-error
     global.navigator = undefined;
-    // @ts-ignore
+    // @ts-expoect-error
     global.process = undefined;
     expect(detectUserLocale()).toBe("en-US");
   });
@@ -127,7 +133,7 @@ describe("formatCoins", () => {
   it("formats USDC correctly", () => {
     expect(formatCoins(`1000000${USDC_DENOM}`)).toBe("1 USDC");
   });
-  
+
   it("formats known denoms (xion) correctly", () => {
     expect(formatCoins("1000000uxion")).toBe("1 XION");
   });
@@ -138,11 +144,13 @@ describe("formatCoins", () => {
   });
 
   it("formats multiple coins", () => {
-    expect(formatCoins("1000000uxion,100uunknown")).toBe("1 XION, 100 UUNKNOWN");
+    expect(formatCoins("1000000uxion,100uunknown")).toBe(
+      "1 XION, 100 UUNKNOWN",
+    );
   });
-  
+
   it("handles invalid coin strings gracefully", () => {
-      expect(formatCoins("invalid")).toBe("");
+    expect(formatCoins("invalid")).toBe("");
   });
 
   it("formats known denom without 'u' prefix (falls back to default formatting)", () => {
@@ -154,13 +162,13 @@ describe("formatCoins", () => {
   it("falls back to uppercase denom if display map entry is missing", () => {
     // Temporarily add a denom to DENOM_DECIMALS that isn't in DENOM_DISPLAY_MAP
     // to test the fallback logic
-    
+
     // We need to bypass the readonly nature for testing
     Object.defineProperty(DENOM_DECIMALS, "missing", {
       value: 6,
       writable: true,
       configurable: true,
-      enumerable: true
+      enumerable: true,
     });
 
     expect(formatCoins("1000000umissing")).toBe("1 MISSING");

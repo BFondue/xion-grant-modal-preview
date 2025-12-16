@@ -63,7 +63,7 @@ describe("Checkbox", () => {
     const handleChange = vi.fn(() => {});
     // Ensure length is 0
     Object.defineProperty(handleChange, "length", { value: 0 });
-    
+
     const { user } = await render(
       <Checkbox onChange={handleChange} id="test-checkbox-no-args" />,
     );

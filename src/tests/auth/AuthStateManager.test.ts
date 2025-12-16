@@ -486,9 +486,7 @@ describe("AuthStateManager", () => {
 
       await AuthStateManager.logout("https://example.com");
 
-      expect(clearSessionSpy).toHaveBeenCalledWith(
-        "https://example.com",
-      );
+      expect(clearSessionSpy).toHaveBeenCalledWith("https://example.com");
     });
 
     it("should revoke Stytch session if applicable", async () => {

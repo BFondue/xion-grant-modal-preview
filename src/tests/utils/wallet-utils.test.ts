@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   WalletAccountError,
   getErrorMessageForUI,
@@ -24,19 +24,41 @@ describe("getErrorMessageForUI", () => {
   });
 
   it("maps common error messages", () => {
-    expect(getErrorMessageForUI(new Error("User rejected request"))).toBe("Signature cancelled");
-    expect(getErrorMessageForUI(new Error("Provider not installed"))).toBe("Wallet not found");
-    expect(getErrorMessageForUI(new Error("pubkey recovered from signature does not match"))).toBe("Signature verification failed");
-    expect(getErrorMessageForUI(new Error("signature is invalid"))).toBe("Invalid signature");
-    expect(getErrorMessageForUI(new Error("authorization not found"))).toBe("Service error. Please contact support");
-    expect(getErrorMessageForUI(new Error("fee-grant not found"))).toBe("Fee grant not found. Please contact support");
-    expect(getErrorMessageForUI(new Error("account already exists"))).toBe("Account already exists");
-    expect(getErrorMessageForUI(new Error("network error"))).toBe("Network error. Check your connection");
+    expect(getErrorMessageForUI(new Error("User rejected request"))).toBe(
+      "Signature cancelled",
+    );
+    expect(getErrorMessageForUI(new Error("Provider not installed"))).toBe(
+      "Wallet not found",
+    );
+    expect(
+      getErrorMessageForUI(
+        new Error("pubkey recovered from signature does not match"),
+      ),
+    ).toBe("Signature verification failed");
+    expect(getErrorMessageForUI(new Error("signature is invalid"))).toBe(
+      "Invalid signature",
+    );
+    expect(getErrorMessageForUI(new Error("authorization not found"))).toBe(
+      "Service error. Please contact support",
+    );
+    expect(getErrorMessageForUI(new Error("fee-grant not found"))).toBe(
+      "Fee grant not found. Please contact support",
+    );
+    expect(getErrorMessageForUI(new Error("account already exists"))).toBe(
+      "Account already exists",
+    );
+    expect(getErrorMessageForUI(new Error("network error"))).toBe(
+      "Network error. Check your connection",
+    );
   });
 
   it("returns default message for unknown errors", () => {
-    expect(getErrorMessageForUI(new Error("unknown error"))).toBe("Something went wrong. Please try again");
-    expect(getErrorMessageForUI("string error")).toBe("Something went wrong. Please try again");
+    expect(getErrorMessageForUI(new Error("unknown error"))).toBe(
+      "Something went wrong. Please try again",
+    );
+    expect(getErrorMessageForUI("string error")).toBe(
+      "Something went wrong. Please try again",
+    );
   });
 });
 
@@ -46,7 +68,9 @@ describe("getEthWalletAddress", () => {
   });
 
   it("throws if ethereum is not installed", async () => {
-    await expect(getEthWalletAddress()).rejects.toThrow("MetaMask not installed");
+    await expect(getEthWalletAddress()).rejects.toThrow(
+      "MetaMask not installed",
+    );
   });
 
   it("returns address if accounts found", async () => {
@@ -68,7 +92,9 @@ describe("getEthWalletAddress", () => {
     window.ethereum = {
       request: vi.fn().mockRejectedValue(new Error("Unknown")),
     } as any;
-    await expect(getEthWalletAddress()).rejects.toThrow("Failed to get Ethereum address");
+    await expect(getEthWalletAddress()).rejects.toThrow(
+      "Failed to get Ethereum address",
+    );
   });
 });
 
@@ -78,15 +104,21 @@ describe("getSecp256k1Pubkey", () => {
   });
 
   it("throws if wallet not installed (keplr)", async () => {
-    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow("Keplr not installed");
+    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
+      "Keplr not installed",
+    );
   });
 
   it("throws if wallet not installed (leap)", async () => {
-    await expect(getSecp256k1Pubkey("chain-id", "leap")).rejects.toThrow("Leap not installed");
+    await expect(getSecp256k1Pubkey("chain-id", "leap")).rejects.toThrow(
+      "Leap not installed",
+    );
   });
 
   it("throws if wallet not installed (okx)", async () => {
-    await expect(getSecp256k1Pubkey("chain-id", "okx")).rejects.toThrow("OKX not installed");
+    await expect(getSecp256k1Pubkey("chain-id", "okx")).rejects.toThrow(
+      "OKX not installed",
+    );
   });
 
   it("returns pubkey info for keplr", async () => {
@@ -138,35 +170,47 @@ describe("getSecp256k1Pubkey", () => {
 
   it("throws if okxwallet.keplr is not available", async () => {
     window.okxwallet = {} as any;
-    await expect(getSecp256k1Pubkey("chain-id", "okx")).rejects.toThrow("OKX Keplr integration not found");
+    await expect(getSecp256k1Pubkey("chain-id", "okx")).rejects.toThrow(
+      "OKX Keplr integration not found",
+    );
   });
 
   it("throws if no pubkey returned", async () => {
     window.keplr = {
       getKey: vi.fn().mockResolvedValue({ bech32Address: "xion1addr" }),
     } as any;
-    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow("No public key found");
+    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
+      "No public key found",
+    );
   });
 
   it("throws if key is null", async () => {
     window.keplr = {
       getKey: vi.fn().mockResolvedValue(null),
     } as any;
-    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow("No public key found");
+    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
+      "No public key found",
+    );
   });
 
   it("wraps unknown errors", async () => {
     window.keplr = {
       getKey: vi.fn().mockRejectedValue(new Error("Unknown error")),
     } as any;
-    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow("Failed to get public key");
+    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
+      "Failed to get public key",
+    );
   });
 
   it("re-throws WalletAccountError", async () => {
     window.keplr = {
-      getKey: vi.fn().mockRejectedValue(new WalletAccountError("tech", "user denied")),
+      getKey: vi
+        .fn()
+        .mockRejectedValue(new WalletAccountError("tech", "user denied")),
     } as any;
-    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow("tech");
+    await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
+      "tech",
+    );
   });
 });
 
@@ -176,7 +220,9 @@ describe("signWithEthWallet", () => {
   });
 
   it("throws if ethereum not installed", async () => {
-    await expect(signWithEthWallet("msg", "addr")).rejects.toThrow("MetaMask not installed");
+    await expect(signWithEthWallet("msg", "addr")).rejects.toThrow(
+      "MetaMask not installed",
+    );
   });
 
   it("returns signature", async () => {
@@ -191,19 +237,25 @@ describe("signWithEthWallet", () => {
     window.ethereum = {
       request: vi.fn().mockResolvedValue(null),
     } as any;
-    await expect(signWithEthWallet("msg", "addr")).rejects.toThrow("No signature returned");
+    await expect(signWithEthWallet("msg", "addr")).rejects.toThrow(
+      "No signature returned",
+    );
   });
 
   it("wraps unknown errors", async () => {
     window.ethereum = {
       request: vi.fn().mockRejectedValue(new Error("Unknown error")),
     } as any;
-    await expect(signWithEthWallet("msg", "addr")).rejects.toThrow("Failed to sign with Ethereum wallet");
+    await expect(signWithEthWallet("msg", "addr")).rejects.toThrow(
+      "Failed to sign with Ethereum wallet",
+    );
   });
 
   it("re-throws WalletAccountError", async () => {
     window.ethereum = {
-      request: vi.fn().mockRejectedValue(new WalletAccountError("tech", "user denied")),
+      request: vi
+        .fn()
+        .mockRejectedValue(new WalletAccountError("tech", "user denied")),
     } as any;
     await expect(signWithEthWallet("msg", "addr")).rejects.toThrow("tech");
   });
@@ -215,15 +267,21 @@ describe("signWithSecp256k1Wallet", () => {
   });
 
   it("throws if keplr wallet not installed", async () => {
-    await expect(signWithSecp256k1Wallet("msg", "chain", "addr", "keplr")).rejects.toThrow("Keplr not installed");
+    await expect(
+      signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
+    ).rejects.toThrow("Keplr not installed");
   });
 
   it("throws if leap wallet not installed", async () => {
-    await expect(signWithSecp256k1Wallet("msg", "chain", "addr", "leap")).rejects.toThrow("Leap not installed");
+    await expect(
+      signWithSecp256k1Wallet("msg", "chain", "addr", "leap"),
+    ).rejects.toThrow("Leap not installed");
   });
 
   it("throws if okx wallet not installed", async () => {
-    await expect(signWithSecp256k1Wallet("msg", "chain", "addr", "okx")).rejects.toThrow("OKX not installed");
+    await expect(
+      signWithSecp256k1Wallet("msg", "chain", "addr", "okx"),
+    ).rejects.toThrow("OKX not installed");
   });
 
   it("returns hex signature for keplr", async () => {
@@ -265,27 +323,37 @@ describe("signWithSecp256k1Wallet", () => {
     window.keplr = {
       signArbitrary: vi.fn().mockResolvedValue(null),
     } as any;
-    await expect(signWithSecp256k1Wallet("msg", "chain", "addr", "keplr")).rejects.toThrow("No signature returned");
+    await expect(
+      signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
+    ).rejects.toThrow("No signature returned");
   });
 
   it("throws if signature object has no signature property", async () => {
     window.keplr = {
       signArbitrary: vi.fn().mockResolvedValue({ pub_key: "key" }),
     } as any;
-    await expect(signWithSecp256k1Wallet("msg", "chain", "addr", "keplr")).rejects.toThrow("No signature returned");
+    await expect(
+      signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
+    ).rejects.toThrow("No signature returned");
   });
 
   it("wraps unknown errors", async () => {
     window.keplr = {
       signArbitrary: vi.fn().mockRejectedValue(new Error("Unknown error")),
     } as any;
-    await expect(signWithSecp256k1Wallet("msg", "chain", "addr", "keplr")).rejects.toThrow("Failed to sign with Cosmos wallet");
+    await expect(
+      signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
+    ).rejects.toThrow("Failed to sign with Cosmos wallet");
   });
 
   it("re-throws WalletAccountError", async () => {
     window.keplr = {
-      signArbitrary: vi.fn().mockRejectedValue(new WalletAccountError("tech", "user denied")),
+      signArbitrary: vi
+        .fn()
+        .mockRejectedValue(new WalletAccountError("tech", "user denied")),
     } as any;
-    await expect(signWithSecp256k1Wallet("msg", "chain", "addr", "keplr")).rejects.toThrow("tech");
+    await expect(
+      signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
+    ).rejects.toThrow("tech");
   });
 });

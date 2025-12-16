@@ -22,7 +22,11 @@ describe("AAEthSigner", () => {
   });
 
   it("should return empty accounts if abstract account is undefined", async () => {
-    const signer = new AAEthSigner(undefined as any, mockIndex, mockPersonalSign);
+    const signer = new AAEthSigner(
+      undefined as any,
+      mockIndex,
+      mockPersonalSign,
+    );
     const accounts = await signer.getAccounts();
     expect(accounts).toHaveLength(0);
   });

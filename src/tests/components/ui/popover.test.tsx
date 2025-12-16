@@ -1,7 +1,11 @@
 import React from "react";
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { render, screen } from "../..";
-import { Popover, PopoverTrigger, PopoverContent } from "../../../components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "../../../components/ui/popover";
 
 // Mock ResizeObserver
 class ResizeObserverMock {

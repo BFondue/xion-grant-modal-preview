@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { validateFeeGrant, validateActions } from "../../utils/validate-fee-grant";
+import {
+  validateFeeGrant,
+  validateActions,
+} from "../../utils/validate-fee-grant";
 import { Allowance } from "../../types/allowance-types";
 
 describe("validateFeeGrant", () => {
@@ -34,7 +37,12 @@ describe("validateFeeGrant", () => {
       json: async () => mockResponse,
     } as Response);
 
-    const result = await validateFeeGrant(restUrl, feeGranter, granter, requestedActions);
+    const result = await validateFeeGrant(
+      restUrl,
+      feeGranter,
+      granter,
+      requestedActions,
+    );
     expect(result).toBe(true);
   });
 
@@ -43,7 +51,12 @@ describe("validateFeeGrant", () => {
       ok: false,
     } as Response);
 
-    const result = await validateFeeGrant(restUrl, feeGranter, granter, requestedActions);
+    const result = await validateFeeGrant(
+      restUrl,
+      feeGranter,
+      granter,
+      requestedActions,
+    );
     expect(result).toBe(false);
   });
 
@@ -51,7 +64,12 @@ describe("validateFeeGrant", () => {
     vi.mocked(global.fetch).mockRejectedValue(new Error("Network error"));
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const result = await validateFeeGrant(restUrl, feeGranter, granter, requestedActions);
+    const result = await validateFeeGrant(
+      restUrl,
+      feeGranter,
+      granter,
+      requestedActions,
+    );
     expect(result).toBe(false);
     expect(consoleSpy).toHaveBeenCalled();
     consoleSpy.mockRestore();
@@ -66,8 +84,12 @@ describe("validateActions", () => {
       allowance: { "@type": "basic" } as any,
     };
 
-    expect(validateActions(["/cosmos.bank.v1beta1.MsgSend"], allowance)).toBe(true);
-    expect(validateActions(["/cosmos.staking.v1beta1.MsgDelegate"], allowance)).toBe(false);
+    expect(validateActions(["/cosmos.bank.v1beta1.MsgSend"], allowance)).toBe(
+      true,
+    );
+    expect(
+      validateActions(["/cosmos.staking.v1beta1.MsgDelegate"], allowance),
+    ).toBe(false);
   });
 
   it("validates ContractsAllowance", () => {
@@ -81,8 +103,20 @@ describe("validateActions", () => {
       },
     };
 
-    expect(validateActions(["/cosmwasm.wasm.v1.MsgExecuteContract"], allowance, "xion1contract")).toBe(true);
-    expect(validateActions(["/cosmwasm.wasm.v1.MsgExecuteContract"], allowance, "xion1other")).toBe(false);
+    expect(
+      validateActions(
+        ["/cosmwasm.wasm.v1.MsgExecuteContract"],
+        allowance,
+        "xion1contract",
+      ),
+    ).toBe(true);
+    expect(
+      validateActions(
+        ["/cosmwasm.wasm.v1.MsgExecuteContract"],
+        allowance,
+        "xion1other",
+      ),
+    ).toBe(false);
   });
 
   it("validates MultiAnyAllowance", () => {
@@ -102,9 +136,15 @@ describe("validateActions", () => {
       ],
     };
 
-    expect(validateActions(["/cosmos.bank.v1beta1.MsgSend"], allowance)).toBe(true);
-    expect(validateActions(["/cosmos.staking.v1beta1.MsgDelegate"], allowance)).toBe(true);
-    expect(validateActions(["/cosmos.gov.v1beta1.MsgVote"], allowance)).toBe(false);
+    expect(validateActions(["/cosmos.bank.v1beta1.MsgSend"], allowance)).toBe(
+      true,
+    );
+    expect(
+      validateActions(["/cosmos.staking.v1beta1.MsgDelegate"], allowance),
+    ).toBe(true);
+    expect(validateActions(["/cosmos.gov.v1beta1.MsgVote"], allowance)).toBe(
+      false,
+    );
   });
 
   it("returns false for unknown allowance type", () => {

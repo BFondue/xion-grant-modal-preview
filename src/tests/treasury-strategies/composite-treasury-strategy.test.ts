@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CompositeTreasuryStrategy } from "../../treasury-strategies/composite-treasury-strategy";
-import type { TreasuryStrategy, TreasuryConfig } from "../../treasury-strategies/types";
+import type {
+  TreasuryStrategy,
+  TreasuryConfig,
+} from "../../treasury-strategies/types";
 import type { AAClient } from "../../signers";
 
 describe("CompositeTreasuryStrategy", () => {

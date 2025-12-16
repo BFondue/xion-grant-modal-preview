@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { formatCoins, formatXionAmount, queryTreasuryContract } from "../../utils/query-treasury-contract";
+import {
+  formatCoins,
+  formatXionAmount,
+  queryTreasuryContract,
+} from "../../utils/query-treasury-contract";
 import { USDC_DENOM } from "../../config";
 import { AuthorizationTypes } from "@burnt-labs/abstraxion-core";
 
@@ -47,7 +51,9 @@ describe("formatCoins", () => {
   });
 
   it("handles multiple coins with some invalid", () => {
-    expect(formatCoins("1000000uxion,invalid,100uatom")).toBe("1 XION, 100 UATOM");
+    expect(formatCoins("1000000uxion,invalid,100uatom")).toBe(
+      "1 XION, 100 UATOM",
+    );
   });
 });
 
@@ -82,221 +88,277 @@ describe("queryTreasuryContract", () => {
   });
 
   it("throws if arguments are missing", async () => {
-    await expect(queryTreasuryContract(undefined, mockClient, "account")).rejects.toThrow("Missing contract address");
-    await expect(queryTreasuryContract("addr", undefined, "account")).rejects.toThrow("Missing client");
-    await expect(queryTreasuryContract("addr", mockClient, undefined)).rejects.toThrow("Missing account");
+    await expect(
+      queryTreasuryContract(undefined, mockClient, "account"),
+    ).rejects.toThrow("Missing contract address");
+    await expect(
+      queryTreasuryContract("addr", undefined, "account"),
+    ).rejects.toThrow("Missing client");
+    await expect(
+      queryTreasuryContract("addr", mockClient, undefined),
+    ).rejects.toThrow("Missing account");
   });
 
   it("throws if treasury config fetch fails", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue(null);
-    await expect(queryTreasuryContract("addr", mockClient, "account")).rejects.toThrow("Something went wrong");
+    await expect(
+      queryTreasuryContract("addr", mockClient, "account"),
+    ).rejects.toThrow("Something went wrong");
   });
 
   it("processes generic authorization", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.Generic,
-      data: { msg: "/cosmos.bank.v1beta1.MsgSend" }
+      data: { msg: "/cosmos.bank.v1beta1.MsgSend" },
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("Permission to send tokens");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "Permission to send tokens",
+    );
   });
 
   it("processes send authorization", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.Send,
       data: {
         spendLimit: [{ amount: "1000000", denom: "uxion" }],
-        allowList: ["addr1", "addr2"]
-      }
+        allowList: ["addr1", "addr2"],
+      },
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("Permission to send tokens with spend limit: 1 XION and allow list: addr1, addr2");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "Permission to send tokens with spend limit: 1 XION and allow list: addr1, addr2",
+    );
   });
 
   it("processes ibc transfer authorization", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.IbcTransfer,
       data: {
-        allocations: [{
-          spendLimit: [{ amount: "1000000", denom: "uxion" }],
-          allowList: ["channel-0"]
-        }]
-      }
+        allocations: [
+          {
+            spendLimit: [{ amount: "1000000", denom: "uxion" }],
+            allowList: ["channel-0"],
+          },
+        ],
+      },
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("Permission to transfer tokens via IBC with the following limits: 1 XION to channel-0");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "Permission to transfer tokens via IBC with the following limits: 1 XION to channel-0",
+    );
   });
 
   it("processes ibc transfer authorization with empty allowList", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.IbcTransfer,
       data: {
-        allocations: [{
-          spendLimit: [{ amount: "1000000", denom: "uxion" }],
-          allowList: []
-        }]
-      }
+        allocations: [
+          {
+            spendLimit: [{ amount: "1000000", denom: "uxion" }],
+            allowList: [],
+          },
+        ],
+      },
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("to any channel");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "to any channel",
+    );
   });
 
   it("processes stake authorization", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.Stake,
       data: {
         allowList: { address: ["val1"] },
-        maxTokens: { amount: "1000000", denom: "uxion" }
-      }
+        maxTokens: { amount: "1000000", denom: "uxion" },
+      },
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("Permission to stake tokens with allowed validators: val1 without denied validators and max tokens: 1 XION");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "Permission to stake tokens with allowed validators: val1 without denied validators and max tokens: 1 XION",
+    );
   });
 
   it("processes stake authorization with denyList", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.Stake,
       data: {
         denyList: { address: ["badval1", "badval2"] },
-        maxTokens: { amount: "1000000", denom: "uxion" }
-      }
+        maxTokens: { amount: "1000000", denom: "uxion" },
+      },
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("without specified validators");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("denying validators: badval1, badval2");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "without specified validators",
+    );
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "denying validators: badval1, badval2",
+    );
   });
 
   it("processes stake authorization without maxTokens", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.Stake,
       data: {
-        allowList: { address: ["val1"] }
+        allowList: { address: ["val1"] },
         // no maxTokens
-      }
+      },
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("with allowed validators: val1");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("max tokens:");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "with allowed validators: val1",
+    );
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "max tokens:",
+    );
   });
 
   it("processes contract execution authorization", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.ContractExecution,
       data: {
-        grants: [{ address: "contract1" }]
-      }
+        grants: [{ address: "contract1" }],
+      },
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("Permission to execute smart contracts");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "Permission to execute smart contracts",
+    );
     expect(result.permissionDescriptions[0].contracts).toContain("contract1");
   });
 
   it("throws error for contract execution authorization if grant address matches account", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: AuthorizationTypes.ContractExecution,
       data: {
-        grants: [{ address: "account" }]
-      }
+        grants: [{ address: "account" }],
+      },
     } as any);
 
-    await expect(queryTreasuryContract("addr", mockClient, "account")).rejects.toThrow("Misconfigured treasury contract");
+    await expect(
+      queryTreasuryContract("addr", mockClient, "account"),
+    ).rejects.toThrow("Misconfigured treasury contract");
   });
 
   it("handles unknown authorization type", async () => {
     mockStrategy.fetchTreasuryConfig.mockResolvedValue({
-      grantConfigs: [{
-        authorization: { type_url: "type", value: "val" },
-        description: "dapp desc"
-      }],
-      params: {}
+      grantConfigs: [
+        {
+          authorization: { type_url: "type", value: "val" },
+          description: "dapp desc",
+        },
+      ],
+      params: {},
     });
 
     vi.mocked(decodeAuthorization).mockReturnValue({
       type: "unknown",
-      data: {}
+      data: {},
     } as any);
 
     const result = await queryTreasuryContract("addr", mockClient, "account");
-    expect(result.permissionDescriptions[0].authorizationDescription).toContain("Unknown Authorization Type: unknown");
+    expect(result.permissionDescriptions[0].authorizationDescription).toContain(
+      "Unknown Authorization Type: unknown",
+    );
   });
 });

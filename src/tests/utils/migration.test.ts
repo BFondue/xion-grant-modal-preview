@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { getPromotedFeatures, fetchContractChecksum, accountFeatures } from "../../utils/migration";
+import {
+  getPromotedFeatures,
+  fetchContractChecksum,
+  accountFeatures,
+} from "../../utils/migration";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 
 describe("getPromotedFeatures", () => {

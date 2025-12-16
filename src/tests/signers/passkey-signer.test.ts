@@ -63,6 +63,8 @@ describe("AAPasskeySigner", () => {
   it("should throw error if abstract account is undefined during sign", async () => {
     const signer = new AAPasskeySigner(undefined as any, mockIndex);
     const mockSignDoc = SignDoc.fromPartial({});
-    await expect(signer.signDirect("user", mockSignDoc)).rejects.toThrow("No abstract account");
+    await expect(signer.signDirect("user", mockSignDoc)).rejects.toThrow(
+      "No abstract account",
+    );
   });
 });

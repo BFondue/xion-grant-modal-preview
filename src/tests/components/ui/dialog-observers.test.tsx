@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Dialog, DialogContent, DialogTrigger } from "../../../components/ui/dialog";
+import { Dialog, DialogContent } from "../../../components/ui/dialog";
 
 // Mock ResizeObserver
 const mockResizeObserver = vi.fn();
@@ -55,7 +55,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent ref={ref}>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
     expect(ref.current).toBeDefined();
   });
@@ -65,7 +65,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent ref={refCallback}>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
     expect(refCallback).toHaveBeenCalled();
   });
@@ -74,7 +74,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     // Wait for setTimeout(..., 0) in handleRef
@@ -83,12 +83,12 @@ describe("Dialog Observers", () => {
     });
 
     expect(mockMutationObserve).toHaveBeenCalled();
-    
+
     // Wait for setTimeout(..., 300) in setupObservers
     await act(async () => {
       vi.runAllTimers();
     });
-    
+
     expect(mockObserve).toHaveBeenCalled();
   });
 
@@ -96,7 +96,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -118,7 +118,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -127,12 +127,12 @@ describe("Dialog Observers", () => {
 
     // Get the mutation callback
     const mutationCallback = mockMutationObserver.mock.calls[0][0];
-    
+
     // Trigger mutation
     const element = screen.getByRole("dialog");
     // Mock getAttribute
     vi.spyOn(element, "getAttribute").mockReturnValue("open");
-    
+
     act(() => {
       mutationCallback([
         {
@@ -152,7 +152,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -162,7 +162,7 @@ describe("Dialog Observers", () => {
     // Get the resize callback
     // Note: ResizeObserver is instantiated inside setupObservers which is called after timeout
     const resizeCallback = mockResizeObserver.mock.calls[0][0];
-    
+
     act(() => {
       resizeCallback();
     });
@@ -177,7 +177,7 @@ describe("Dialog Observers", () => {
     const { unmount } = render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -194,7 +194,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -202,7 +202,7 @@ describe("Dialog Observers", () => {
     });
 
     const resizeCallback = mockResizeObserver.mock.calls[0][0];
-    
+
     // Trigger twice
     act(() => {
       resizeCallback();
@@ -219,7 +219,7 @@ describe("Dialog Observers", () => {
     const { unmount } = render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     // Wait for ref to be set
@@ -245,7 +245,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     // The new element will have the spy if we spy on prototype? No.
@@ -262,7 +262,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -293,7 +293,7 @@ describe("Dialog Observers", () => {
         <DialogContent>
           <div style={{ height: "500px" }}>Tall content</div>
         </DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -334,7 +334,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -368,7 +368,7 @@ describe("Dialog Observers", () => {
     const { unmount } = render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -391,7 +391,7 @@ describe("Dialog Observers", () => {
     const { unmount } = render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -406,7 +406,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {
@@ -432,7 +432,7 @@ describe("Dialog Observers", () => {
     render(
       <Dialog open={true}>
         <DialogContent>Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
 
     await act(async () => {

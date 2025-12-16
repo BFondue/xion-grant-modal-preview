@@ -3,7 +3,6 @@ import { AAClient } from "../../../signers/signers/utils/client";
 import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
 import { AASigner } from "../../../signers/interfaces/AASigner";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { Account } from "@cosmjs/stargate";
 
 const { mockSimulate } = vi.hoisted(() => ({ mockSimulate: vi.fn() }));
 
@@ -32,7 +31,9 @@ vi.mock("@cosmjs/cosmwasm-stargate", () => {
       getQueryClient = vi.fn();
       forceGetQueryClient = vi.fn();
       // Define sign as a method on the prototype, not an instance property
-      sign(...args: any[]) { return Promise.resolve({} as any); }
+      sign() {
+        return Promise.resolve({} as any);
+      }
       getChainId = vi.fn().mockResolvedValue("test-chain");
     },
     wasmTypes: [],
@@ -54,7 +55,7 @@ vi.mock("cosmjs-types/cosmos/tx/v1beta1/tx", () => ({
     fromPartial: vi.fn(() => ({})),
     encode: vi.fn(() => ({ finish: () => new Uint8Array() })),
   },
-  AuthInfo: { 
+  AuthInfo: {
     encode: vi.fn(() => ({ finish: () => new Uint8Array() })),
     fromPartial: vi.fn(() => ({})),
   },
@@ -66,7 +67,9 @@ vi.mock("../../../signers/signers/utils", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    customAccountFromAny: vi.fn().mockReturnValue({ address: "xion1z53wwe7md6cewz9sqwqzn0aavpaun0gw0exn2r" }),
+    customAccountFromAny: vi.fn().mockReturnValue({
+      address: "xion1z53wwe7md6cewz9sqwqzn0aavpaun0gw0exn2r",
+    }),
     makeAAuthInfo: vi.fn().mockReturnValue(new Uint8Array()),
   };
 });
@@ -89,9 +92,9 @@ describe("AAClient", () => {
         chainId: "test-chain",
         accountNumber: 1n,
       },
-      signature: { 
-        signature: Buffer.from("sig").toString("base64"), 
-        pub_key: { value: new Uint8Array() } 
+      signature: {
+        signature: Buffer.from("sig").toString("base64"),
+        pub_key: { value: new Uint8Array() },
       },
     }),
     accountAuthenticatorIndex: 0,
@@ -115,7 +118,7 @@ describe("AAClient", () => {
   it("should simulate transaction", async () => {
     (client as any).getSequence.mockResolvedValue({ sequence: 1 });
     (client as any).getQueryClient.mockReturnValue({});
-    
+
     mockSimulate.mockResolvedValue({
       gasInfo: { gasUsed: 100000 },
     });
@@ -144,42 +147,56 @@ describe("AAClient", () => {
     (client as any).getSequence.mockResolvedValue({ sequence: 1 });
     mockSigner.getAccounts = vi.fn().mockResolvedValue([]); // No accounts
 
-    await expect(client.simulate(mockAccountAddress, [], "memo")).rejects.toThrow("No account found.");
+    await expect(
+      client.simulate(mockAccountAddress, [], "memo"),
+    ).rejects.toThrow("No account found.");
   });
 
   it("should throw error if query client not found in simulate", async () => {
     (client as any).getSequence.mockResolvedValue({ sequence: 1 });
-    mockSigner.getAccounts = vi.fn().mockResolvedValue([{ address: mockAccountAddress }]);
+    mockSigner.getAccounts = vi
+      .fn()
+      .mockResolvedValue([{ address: mockAccountAddress }]);
     (client as any).getQueryClient.mockReturnValue(undefined);
 
-    await expect(client.simulate(mockAccountAddress, [], "memo")).rejects.toThrow("Couldn't get query client");
+    await expect(
+      client.simulate(mockAccountAddress, [], "memo"),
+    ).rejects.toThrow("Couldn't get query client");
   });
 
   it("should throw error if no gas info returned in simulate", async () => {
     (client as any).getSequence.mockResolvedValue({ sequence: 1 });
-    mockSigner.getAccounts = vi.fn().mockResolvedValue([{ address: mockAccountAddress }]);
+    mockSigner.getAccounts = vi
+      .fn()
+      .mockResolvedValue([{ address: mockAccountAddress }]);
     (client as any).getQueryClient.mockReturnValue({});
     mockSimulate.mockResolvedValue({}); // No gasInfo
 
-    await expect(client.simulate(mockAccountAddress, [], "memo")).rejects.toThrow("No gas info returned");
+    await expect(
+      client.simulate(mockAccountAddress, [], "memo"),
+    ).rejects.toThrow("No gas info returned");
   });
 
   it("should use default memo in simulate if not provided", async () => {
     (client as any).getSequence.mockResolvedValue({ sequence: 1 });
-    mockSigner.getAccounts = vi.fn().mockResolvedValue([{ address: mockAccountAddress }]);
+    mockSigner.getAccounts = vi
+      .fn()
+      .mockResolvedValue([{ address: mockAccountAddress }]);
     (client as any).getQueryClient.mockReturnValue({});
     mockSimulate.mockResolvedValue({ gasInfo: { gasUsed: 100000 } });
 
     await client.simulate(mockAccountAddress, [], undefined);
-    
+
     // We can verify that registry.encode was called with the default memo
     // But registry.encode is mocked to return Uint8Array
     // We can spy on registry.encode
-    expect((client as any).registry.encode).toHaveBeenCalledWith(expect.objectContaining({
-      value: expect.objectContaining({
-        memo: "AA Gas Simulation"
-      })
-    }));
+    expect((client as any).registry.encode).toHaveBeenCalledWith(
+      expect.objectContaining({
+        value: expect.objectContaining({
+          memo: "AA Gas Simulation",
+        }),
+      }),
+    );
   });
 
   it("should return null if account not found in getAccount", async () => {
@@ -193,27 +210,32 @@ describe("AAClient", () => {
     const account = await client.getAccount("non-existent-address");
     expect(account).toBeNull();
   });
-  
+
   it.skip("should sign transaction", async () => {
-      // Mock getAccount to return an account WITHOUT pubkey so it proceeds to AA signing
-      const mockAccount = {
-        address: mockAccountAddress,
-        accountNumber: 1,
-        sequence: 1,
-        pubkey: null, // Important: no pubkey
-      };
-      
-      // We need to mock getAccount method of client directly because it calls forceGetQueryClient().auth.account()
-      // and then customAccountFromAny.
-      // Instead of mocking the chain of calls, let's spy on getAccount
-      vi.spyOn(client, 'getAccount').mockResolvedValue(mockAccount as any);
-      
-      (client as any).getSequence.mockResolvedValue({ sequence: 1 });
-      
-      const result = await client.sign(mockAccountAddress, [], { amount: [], gas: "1000" }, "memo");
-      
-      expect(result).toBeDefined();
-      expect(mockSigner.signDirect).toHaveBeenCalled();
+    // Mock getAccount to return an account WITHOUT pubkey so it proceeds to AA signing
+    const mockAccount = {
+      address: mockAccountAddress,
+      accountNumber: 1,
+      sequence: 1,
+      pubkey: null, // Important: no pubkey
+    };
+
+    // We need to mock getAccount method of client directly because it calls forceGetQueryClient().auth.account()
+    // and then customAccountFromAny.
+    // Instead of mocking the chain of calls, let's spy on getAccount
+    vi.spyOn(client, "getAccount").mockResolvedValue(mockAccount as any);
+
+    (client as any).getSequence.mockResolvedValue({ sequence: 1 });
+
+    const result = await client.sign(
+      mockAccountAddress,
+      [],
+      { amount: [], gas: "1000" },
+      "memo",
+    );
+
+    expect(result).toBeDefined();
+    expect(mockSigner.signDirect).toHaveBeenCalled();
   });
 
   it("should sign with regular signer if account has pubkey", async () => {
@@ -221,13 +243,18 @@ describe("AAClient", () => {
       address: mockAccountAddress,
       pubkey: { typeUrl: "some-type", value: new Uint8Array() },
     };
-    vi.spyOn(client, 'getAccount').mockResolvedValue(mockAccount as any);
-    
-    const superSignSpy = vi.spyOn(SigningCosmWasmClient.prototype, 'sign');
+    vi.spyOn(client, "getAccount").mockResolvedValue(mockAccount as any);
+
+    const superSignSpy = vi.spyOn(SigningCosmWasmClient.prototype, "sign");
     superSignSpy.mockResolvedValue({} as any);
 
-    await client.sign(mockAccountAddress, [], { amount: [], gas: "1000" }, "memo");
-    
+    await client.sign(
+      mockAccountAddress,
+      [],
+      { amount: [], gas: "1000" },
+      "memo",
+    );
+
     expect(client.abstractSigner.abstractAccount).toBeUndefined();
     expect(superSignSpy).toHaveBeenCalled();
   });
@@ -237,17 +264,23 @@ describe("AAClient", () => {
       address: mockAccountAddress,
       pubkey: null,
     };
-    vi.spyOn(client, 'getAccount').mockResolvedValue(mockAccount as any);
+    vi.spyOn(client, "getAccount").mockResolvedValue(mockAccount as any);
     mockSigner.getAccounts = vi.fn().mockResolvedValue([]); // No accounts
 
-    await expect(client.sign(mockAccountAddress, [], { amount: [], gas: "1000" }, "memo")).rejects.toThrow("Failed to retrieve account from signer");
+    await expect(
+      client.sign(mockAccountAddress, [], { amount: [], gas: "1000" }, "memo"),
+    ).rejects.toThrow("Failed to retrieve account from signer");
   });
 
   it("should throw error if AA account not found on chain during sign", async () => {
-    vi.spyOn(client, 'getAccount').mockResolvedValue(null);
-    mockSigner.getAccounts = vi.fn().mockResolvedValue([{ address: mockAccountAddress, authenticatorId: 0 }]);
+    vi.spyOn(client, "getAccount").mockResolvedValue(null);
+    mockSigner.getAccounts = vi
+      .fn()
+      .mockResolvedValue([{ address: mockAccountAddress, authenticatorId: 0 }]);
 
-    await expect(client.sign(mockAccountAddress, [], { amount: [], gas: "1000" }, "memo")).rejects.toThrow("Failed to retrieve AA account from chain");
+    await expect(
+      client.sign(mockAccountAddress, [], { amount: [], gas: "1000" }, "memo"),
+    ).rejects.toThrow("Failed to retrieve AA account from chain");
   });
 
   it("should use explicit signer data if provided", async () => {
@@ -257,9 +290,15 @@ describe("AAClient", () => {
       accountNumber: 1,
       sequence: 1,
     };
-    vi.spyOn(client, 'getAccount').mockResolvedValue(mockAccount as any);
-    mockSigner.getAccounts = vi.fn().mockResolvedValue([{ address: mockAccountAddress, authenticatorId: 0, accountAddress: mockAccountAddress }]);
-    
+    vi.spyOn(client, "getAccount").mockResolvedValue(mockAccount as any);
+    mockSigner.getAccounts = vi.fn().mockResolvedValue([
+      {
+        address: mockAccountAddress,
+        authenticatorId: 0,
+        accountAddress: mockAccountAddress,
+      },
+    ]);
+
     const explicitSignerData = {
       accountNumber: 2,
       sequence: 2,
@@ -269,9 +308,15 @@ describe("AAClient", () => {
     // We need to mock the rest of the sign method to avoid errors
     // The sign method calls makeAAuthInfo, registry.encode, AuthInfo.encode, SignDoc.fromPartial, abstractSigner.signDirect, TxRaw.fromPartial
     // Most are mocked globally.
-    
-    await client.sign(mockAccountAddress, [], { amount: [], gas: "1000" }, "memo", explicitSignerData);
-    
+
+    await client.sign(
+      mockAccountAddress,
+      [],
+      { amount: [], gas: "1000" },
+      "memo",
+      explicitSignerData,
+    );
+
     // Verify that signDirect was called with the correct chainId from explicitSignerData
     // We can check the arguments passed to signDirect
     expect(mockSigner.signDirect).toHaveBeenCalled();
@@ -288,14 +333,25 @@ describe("AAClient", () => {
       accountNumber: 1,
       sequence: 1,
     };
-    vi.spyOn(client, 'getAccount').mockResolvedValue(mockAccount as any);
-    mockSigner.getAccounts = vi.fn().mockResolvedValue([{ address: mockAccountAddress, authenticatorId: 0, accountAddress: mockAccountAddress }]);
-    
+    vi.spyOn(client, "getAccount").mockResolvedValue(mockAccount as any);
+    mockSigner.getAccounts = vi.fn().mockResolvedValue([
+      {
+        address: mockAccountAddress,
+        authenticatorId: 0,
+        accountAddress: mockAccountAddress,
+      },
+    ]);
+
     // Mock getChainId
     (client as any).getChainId.mockResolvedValue("test-chain");
 
-    await client.sign(mockAccountAddress, [], { amount: [], gas: "1000" }, "memo");
-    
+    await client.sign(
+      mockAccountAddress,
+      [],
+      { amount: [], gas: "1000" },
+      "memo",
+    );
+
     expect(mockSigner.signDirect).toHaveBeenCalled();
     const signDocCall = (mockSigner.signDirect as any).mock.calls[0][1];
     expect(signDocCall.chainId).toBe("test-chain");

@@ -9,8 +9,12 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("../../config", () => ({
-  get GAS_ADJUSTMENT() { return mocks.GAS_ADJUSTMENT; },
-  get GAS_MARGIN() { return mocks.GAS_MARGIN; },
+  get GAS_ADJUSTMENT() {
+    return mocks.GAS_ADJUSTMENT;
+  },
+  get GAS_MARGIN() {
+    return mocks.GAS_MARGIN;
+  },
 }));
 
 vi.mock("@burnt-labs/constants", () => ({
@@ -52,9 +56,9 @@ describe("getGasCalculation", () => {
     const simmedGas = 100000;
     // Expected gas = ceil(100000 * 1.2 + 1000) = ceil(120000 + 1000) = 121000
     // Fee = 121000 * 0.01 = 1210 uxion
-    
+
     const fee = getGasCalculation(simmedGas, mockChainInfo as any);
-    
+
     expect(fee.amount[0].denom).toBe("uxion");
     expect(fee.amount[0].amount).toBe("1210");
     expect(fee.gas).toBe("121000");
@@ -63,13 +67,13 @@ describe("getGasCalculation", () => {
   it("calculates fee correctly with fallback values", () => {
     mocks.GAS_ADJUSTMENT = undefined as any;
     mocks.GAS_MARGIN = undefined as any;
-    
+
     const simmedGas = 100000;
     // Expected gas = ceil(100000 * 1.4 + 2000) = ceil(140000 + 2000) = 142000
     // Fee = 142000 * 0.01 = 1420 uxion
-    
+
     const fee = getGasCalculation(simmedGas, mockChainInfo as any);
-    
+
     expect(fee.amount[0].denom).toBe("uxion");
     expect(fee.amount[0].amount).toBe("1420");
     expect(fee.gas).toBe("142000");

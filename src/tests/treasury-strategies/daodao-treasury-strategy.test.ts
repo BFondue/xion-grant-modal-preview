@@ -163,12 +163,8 @@ describe("DaoDaoTreasuryStrategy", () => {
         const promise = fetcher();
         // Advance time to trigger timeout
         vi.advanceTimersByTime(30000);
-        try {
-          const data = await promise;
-          return { data, fromCache: false };
-        } catch (error) {
-          throw error;
-        }
+        const data = await promise;
+        return { data, fromCache: false };
       },
     );
 
@@ -177,9 +173,9 @@ describe("DaoDaoTreasuryStrategy", () => {
       return new Promise((resolve, reject) => {
         if (options?.signal) {
           if (options.signal.aborted) {
-             const error = new Error("The operation was aborted");
-             error.name = "AbortError";
-             return reject(error);
+            const error = new Error("The operation was aborted");
+            error.name = "AbortError";
+            return reject(error);
           }
           options.signal.addEventListener("abort", () => {
             const error = new Error("The operation was aborted");
@@ -426,7 +422,9 @@ describe("DaoDaoTreasuryStrategy", () => {
   });
 
   it("should use custom indexer URL when provided", async () => {
-    const customStrategy = new DaoDaoTreasuryStrategy("https://custom-indexer.com");
+    const customStrategy = new DaoDaoTreasuryStrategy(
+      "https://custom-indexer.com",
+    );
     const mockResponse = {
       grantConfigs: {},
       params: {
@@ -497,7 +495,9 @@ describe("DaoDaoTreasuryStrategy", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result?.grantConfigs[0].allowance?.type_url).toBe("/cosmos.feegrant.v1beta1.BasicAllowance");
+    expect(result?.grantConfigs[0].allowance?.type_url).toBe(
+      "/cosmos.feegrant.v1beta1.BasicAllowance",
+    );
     expect(result?.grantConfigs[0].maxDuration).toBe(3600);
   });
 

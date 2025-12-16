@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { 
-  render as customRender, 
+import { describe, it, expect, vi } from "vitest";
+import {
+  render as customRender,
   mockEnvironmentVariables,
   testCommonComponentProps,
   testRefForwarding,
   testFormInputBehavior,
-  createLocalStorageMock
+  createLocalStorageMock,
 } from "./utils";
 import React, { forwardRef } from "react";
 import { screen } from "@testing-library/react";
@@ -20,9 +20,9 @@ describe("utils.tsx", () => {
 
       const { click } = await customRender(<TestComponent />);
       const button = screen.getByText("Click me");
-      
+
       click(button);
-      
+
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
   });
@@ -30,9 +30,9 @@ describe("utils.tsx", () => {
   describe("mockEnvironmentVariables", () => {
     describe("restoring existing variables", () => {
       const VAR_NAME = "NODE_ENV";
-      
+
       mockEnvironmentVariables({
-        [VAR_NAME]: "mocked_value"
+        [VAR_NAME]: "mocked_value",
       });
 
       it("mocks the variable", () => {
@@ -42,9 +42,9 @@ describe("utils.tsx", () => {
 
     describe("restoring non-existing variables", () => {
       const VAR_NAME = "NON_EXISTENT_VAR_XYZ";
-      
+
       mockEnvironmentVariables({
-        [VAR_NAME]: "mocked_value"
+        [VAR_NAME]: "mocked_value",
       });
 
       it("mocks the variable", () => {
@@ -55,7 +55,9 @@ describe("utils.tsx", () => {
 
   describe("Component Testing Utilities", () => {
     const TestComponent = forwardRef<HTMLDivElement, any>((props, ref) => (
-      <div ref={ref} {...props}>Test</div>
+      <div ref={ref} {...props}>
+        Test
+      </div>
     ));
     TestComponent.displayName = "TestComponent";
 
@@ -69,9 +71,7 @@ describe("utils.tsx", () => {
   });
 
   describe("Form Testing Utilities", () => {
-    const TestInput = (props: any) => (
-      <input {...props} />
-    );
+    const TestInput = (props: any) => <input {...props} />;
 
     describe("testFormInputBehavior", () => {
       testFormInputBehavior(TestInput);
@@ -81,7 +81,7 @@ describe("utils.tsx", () => {
   describe("createLocalStorageMock", () => {
     it("creates a working localStorage mock", () => {
       const mock = createLocalStorageMock();
-      
+
       expect(window.localStorage).toBe(mock);
       expect(mock.getItem).toBeDefined();
       expect(mock.setItem).toBeDefined();

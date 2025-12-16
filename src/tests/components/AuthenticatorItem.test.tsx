@@ -257,7 +257,7 @@ describe("AuthenticatorItem", () => {
 
     it("should use authenticator label if auth type is empty", () => {
       mockExtractUserId.mockReturnValue("");
-      
+
       render(
         <AuthenticatorItem
           {...defaultProps}
@@ -273,13 +273,13 @@ describe("AuthenticatorItem", () => {
       // Since we see "Email" in failure, let's expect "Email".
       // The important part is that it fell back to the label because authType was empty.
       expect(screen.getByText("Email")).toBeInTheDocument();
-      
+
       mockExtractUserId.mockReturnValue("user123");
     });
 
     it("should not show email toggle button if email is empty", () => {
       mockGetUserEmail.mockReturnValue("");
-      
+
       render(
         <AuthenticatorItem
           {...defaultProps}
@@ -289,8 +289,10 @@ describe("AuthenticatorItem", () => {
         />,
       );
 
-      expect(screen.queryByRole("button", { name: "Show email" })).not.toBeInTheDocument();
-      
+      expect(
+        screen.queryByRole("button", { name: "Show email" }),
+      ).not.toBeInTheDocument();
+
       mockGetUserEmail.mockReturnValue("test@example.com");
     });
 

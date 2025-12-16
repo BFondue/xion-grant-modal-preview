@@ -17,12 +17,22 @@ describe("AADirectSigner", () => {
   });
 
   it("should initialize correctly", () => {
-    const signer = new AADirectSigner(mockOfflineSigner, mockAccount, mockIndex, mockSignArbFn);
+    const signer = new AADirectSigner(
+      mockOfflineSigner,
+      mockAccount,
+      mockIndex,
+      mockSignArbFn,
+    );
     expect(signer).toBeDefined();
   });
 
   it("should return accounts", async () => {
-    const signer = new AADirectSigner(mockOfflineSigner, mockAccount, mockIndex, mockSignArbFn);
+    const signer = new AADirectSigner(
+      mockOfflineSigner,
+      mockAccount,
+      mockIndex,
+      mockSignArbFn,
+    );
     const accounts = await signer.getAccounts();
     expect(accounts).toHaveLength(1);
     expect(accounts[0].address).toBe(mockAccount);
@@ -31,37 +41,61 @@ describe("AADirectSigner", () => {
   });
 
   it("should return empty accounts if abstract account is undefined", async () => {
-    const signer = new AADirectSigner(mockOfflineSigner, undefined as any, mockIndex, mockSignArbFn);
+    const signer = new AADirectSigner(
+      mockOfflineSigner,
+      undefined as any,
+      mockIndex,
+      mockSignArbFn,
+    );
     const accounts = await signer.getAccounts();
     expect(accounts).toHaveLength(0);
   });
 
   it("should return empty accounts if offline signer returns no accounts", async () => {
     const emptySigner = { getAccounts: vi.fn().mockResolvedValue([]) };
-    const signer = new AADirectSigner(emptySigner, mockAccount, mockIndex, mockSignArbFn);
+    const signer = new AADirectSigner(
+      emptySigner,
+      mockAccount,
+      mockIndex,
+      mockSignArbFn,
+    );
     const accounts = await signer.getAccounts();
     expect(accounts).toHaveLength(0);
   });
 
   it("should log warning if offline signer returns multiple accounts", async () => {
-    const multipleAccountsSigner = { 
-      getAccounts: vi.fn().mockResolvedValue([{ address: "addr1" }, { address: "addr2" }]) 
+    const multipleAccountsSigner = {
+      getAccounts: vi
+        .fn()
+        .mockResolvedValue([{ address: "addr1" }, { address: "addr2" }]),
     };
-    const signer = new AADirectSigner(multipleAccountsSigner, mockAccount, mockIndex, mockSignArbFn);
-    
+    const signer = new AADirectSigner(
+      multipleAccountsSigner,
+      mockAccount,
+      mockIndex,
+      mockSignArbFn,
+    );
+
     const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    
+
     const accounts = await signer.getAccounts();
-    
+
     expect(accounts).toHaveLength(1);
     expect(accounts[0].accountAddress).toBe("addr1");
-    expect(consoleSpy).toHaveBeenCalledWith("Signer returned more than 1 account");
-    
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Signer returned more than 1 account",
+    );
+
     consoleSpy.mockRestore();
   });
 
   it("should sign direct", async () => {
-    const signer = new AADirectSigner(mockOfflineSigner, mockAccount, mockIndex, mockSignArbFn);
+    const signer = new AADirectSigner(
+      mockOfflineSigner,
+      mockAccount,
+      mockIndex,
+      mockSignArbFn,
+    );
     const mockSignDoc = SignDoc.fromPartial({
       bodyBytes: new Uint8Array([1, 2, 3]),
       authInfoBytes: new Uint8Array([4, 5, 6]),
@@ -76,7 +110,7 @@ describe("AADirectSigner", () => {
     expect(mockSignArbFn).toHaveBeenCalledWith(
       "test-chain",
       mockSignerAddress,
-      expect.any(Uint8Array)
+      expect.any(Uint8Array),
     );
   });
 });

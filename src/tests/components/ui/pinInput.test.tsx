@@ -71,7 +71,9 @@ describe("PinInput", () => {
 
   it("handles paste correctly", async () => {
     const onComplete = vi.fn();
-    const { user } = await render(<PinInput {...defaultProps} onComplete={onComplete} />);
+    const { user } = await render(
+      <PinInput {...defaultProps} onComplete={onComplete} />,
+    );
     const inputs = screen.getAllByRole("textbox");
 
     // Paste "123456"

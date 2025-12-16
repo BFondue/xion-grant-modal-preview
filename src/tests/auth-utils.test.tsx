@@ -1,14 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { createStytchMock, fillOtpInputs } from "./auth-utils";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import React from "react";
 
 describe("auth-utils", () => {
   describe("createStytchMock", () => {
     it("should return a stytch mock object with expected structure", () => {
       const mock = createStytchMock();
-      
+
       expect(mock.oauth.google.start).toBeDefined();
       expect(mock.otps.email.loginOrCreate).toBeDefined();
       expect(mock.otps.authenticate).toBeDefined();
@@ -20,9 +19,9 @@ describe("auth-utils", () => {
 
     it("should have working mock functions", async () => {
       const mock = createStytchMock();
-      
+
       await expect(mock.oauth.google.start()).resolves.toBeUndefined();
-      
+
       const loginRes = await mock.otps.email.loginOrCreate();
       expect(loginRes).toEqual({
         method_id: "test-method-id",
@@ -37,13 +36,13 @@ describe("auth-utils", () => {
   describe("fillOtpInputs", () => {
     it("should fill otp inputs", async () => {
       const user = userEvent.setup();
-      
+
       render(
         <div>
           <input type="number" aria-label="otp-1" />
           <input type="number" aria-label="otp-2" />
           <input type="number" aria-label="otp-3" />
-        </div>
+        </div>,
       );
 
       // We need to mock screen.getAllByRole inside the test context if we were testing the implementation details,
@@ -61,7 +60,7 @@ describe("auth-utils", () => {
 
     it("should handle default code", async () => {
       const user = userEvent.setup();
-      
+
       render(
         <div>
           <input type="number" />
@@ -70,7 +69,7 @@ describe("auth-utils", () => {
           <input type="number" />
           <input type="number" />
           <input type="number" />
-        </div>
+        </div>,
       );
 
       await fillOtpInputs(user);
