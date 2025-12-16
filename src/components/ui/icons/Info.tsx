@@ -4,6 +4,7 @@ export const InfoIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       id="info circle"
+      data-testid="info-icon"
       width="24"
       height="24"
       viewBox="0 0 24 24"

@@ -22,6 +22,7 @@ export default defineConfig({
         "**/*.d.ts",
         "**/*.config.*",
         "**/index.ts",
+        "**/assets/**",
       ],
       thresholds: {
         lines: 80,

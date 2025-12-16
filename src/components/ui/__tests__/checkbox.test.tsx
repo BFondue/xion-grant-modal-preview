@@ -39,6 +39,38 @@ describe("Checkbox", () => {
     expect(handleChange).toHaveBeenCalledWith(true);
   });
 
+  it("calls onChange with synthetic event when handler expects an argument", async () => {
+    // This tests the branch where onChange.length > 0
+    const handleChange = vi.fn((e: React.ChangeEvent<HTMLInputElement>) => {
+      // Handler that explicitly takes an event parameter
+      return e.target.checked;
+    });
+    const { user } = await render(
+      <Checkbox onChange={handleChange} id="test-checkbox" />
+    );
+
+    await user.click(screen.getByRole("checkbox"));
+
+    expect(handleChange).toHaveBeenCalledTimes(1);
+    const eventArg = handleChange.mock.calls[0][0];
+    expect(eventArg.target.checked).toBe(true);
+    expect(eventArg.target.type).toBe("checkbox");
+    expect(eventArg.target.name).toBe("test-checkbox");
+  });
+
+  it("uses empty string for name in synthetic event when no id is provided", async () => {
+    const handleChange = vi.fn((e: React.ChangeEvent<HTMLInputElement>) => {
+      return e.target.checked;
+    });
+    const { user } = await render(<Checkbox onChange={handleChange} />);
+
+    await user.click(screen.getByRole("checkbox"));
+
+    expect(handleChange).toHaveBeenCalledTimes(1);
+    const eventArg = handleChange.mock.calls[0][0];
+    expect(eventArg.target.name).toBe("");
+  });
+
   it("responds to keyboard interactions", async () => {
     const handleChange = vi.fn();
     const { user } = await render(
@@ -100,6 +132,45 @@ describe("Checkbox", () => {
       // Tab to second checkbox
       await user.tab();
       expect(screen.getByText("Second checkbox").previousSibling).toHaveFocus();
+    });
+  });
+
+  describe("onChange handler types", () => {
+    it("generates unique ID when no id prop provided", async () => {
+      await render(<Checkbox label="No ID checkbox" />);
+      const checkbox = screen.getByRole("checkbox");
+      expect(checkbox.id).toMatch(/^checkbox-[a-z0-9]+$/);
+    });
+
+    it("clicking label toggles checkbox", async () => {
+      const handleChange = vi.fn();
+      const { user } = await render(
+        <Checkbox onChange={handleChange} label="Clickable label" />
+      );
+
+      await user.click(screen.getByText("Clickable label"));
+      expect(handleChange).toHaveBeenCalled();
+    });
+
+    it("does not have aria-labelledby when no label provided", async () => {
+      await render(<Checkbox />);
+      const checkbox = screen.getByRole("checkbox");
+      expect(checkbox).not.toHaveAttribute("aria-labelledby");
+    });
+
+    it("does nothing on keyboard when disabled", async () => {
+      const handleChange = vi.fn();
+      const { user } = await render(
+        <Checkbox disabled onChange={handleChange} label="Disabled" />
+      );
+
+      const checkbox = screen.getByRole("checkbox");
+      // Try to focus (won't work because tabIndex is -1)
+      checkbox.focus();
+      await user.keyboard("{Enter}");
+      await user.keyboard(" ");
+
+      expect(handleChange).not.toHaveBeenCalled();
     });
   });
 });

@@ -28,3 +28,4 @@ export { GoogleLogoIcon } from "./GoogleLogo";
 export { GithubLogoIcon } from "./GithubLogo";
 export { XLogoIcon } from "./XLogo";
 export { WarningIcon } from "./Warning";
+export { TikTokLogoIcon } from "./TikTokLogo";
