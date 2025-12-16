@@ -11,15 +11,17 @@ import {
   AbstraxionContextProps,
 } from "../components/AbstraxionContext";
 import { testnetChainInfo } from "@burnt-labs/constants";
-import { getEnvStringOrThrow, getEthWalletAddress } from "../utils";
 import { AAPasskeySigner } from "../signers/signers/passkey-signer";
 import { formatGasPrice, getGasCalculation } from "../utils/gas-utils";
+import { STYTCH_PROXY_URL } from "../config";
 
 export const useAbstraxionSigningClient = () => {
   const { connectionType, abstractAccount, chainInfo, isChainInfoLoading } =
     useContext(AbstraxionContext) as AbstraxionContextProps;
 
   const stytch = useStytch();
+
+  // Get session token from Stytch SDK - the single source of truth
   const sessionToken = stytch.session.getTokens()?.session_token;
 
   const [abstractClient, setAbstractClient] = useState<AAClient | undefined>(
@@ -43,27 +45,31 @@ export const useAbstraxionSigningClient = () => {
   async function okxSignArb(
     chainId: string,
     account: string,
-    signBytes: Uint8Array,
+    signBytes: string | Uint8Array,
   ) {
-    if (!window.okxwallet) {
-      alert("Please install the OKX wallet extension");
-      return;
+    if (!window.okxwallet?.keplr) {
+      throw new Error("Please install the OKX wallet extension");
     }
     await window.okxwallet.keplr.enable(chainInfo?.chainId || "");
-    const signDataNew = Uint8Array.from(Object.values(signBytes));
+    const signDataNew =
+      typeof signBytes === "string"
+        ? signBytes
+        : Uint8Array.from(Object.values(signBytes));
     return window.okxwallet.keplr.signArbitrary(chainId, account, signDataNew);
   }
 
-  async function ethSigningFn(msg) {
-    const ethAddress = await getEthWalletAddress();
-    return window.ethereum?.request<string>({
+  async function ethSigningFn(msg: any) {
+    const accounts = (await window.ethereum?.request({
+      method: "eth_requestAccounts",
+    })) as any;
+    return window.ethereum?.request({
       method: "personal_sign",
-      params: [msg, ethAddress],
-    });
+      params: [msg, accounts[0]],
+    }) as Promise<string>;
   }
 
   const getSigner = useCallback(async () => {
-    if (isChainInfoLoading || !chainInfo) {
+    if (isChainInfoLoading || !chainInfo || !abstractAccount) {
       return;
     }
 
@@ -76,21 +82,16 @@ export const useAbstraxionSigningClient = () => {
 
     switch (connectionType) {
       case "stytch":
-        signer = new AbstractAccountJWTSigner(
-          abstractAccount.id,
-          abstractAccount.currentAuthenticatorIndex,
-          sessionToken,
-          //  @TODO Will need to find a better pattern eventually
-          abstractAccount.codeId === 21
-            ? getEnvStringOrThrow(
-                "VITE_DEFAULT_API_URL",
-                import.meta.env.VITE_DEFAULT_API_URL,
-              )
-            : getEnvStringOrThrow(
-                "VITE_NEW_CONTRACT_API_URL",
-                import.meta.env.VITE_NEW_CONTRACT_API_URL,
-              ),
-        );
+        {
+          const stytchApiUrl = STYTCH_PROXY_URL;
+
+          signer = new AbstractAccountJWTSigner(
+            abstractAccount.id,
+            abstractAccount.currentAuthenticatorIndex,
+            sessionToken,
+            stytchApiUrl,
+          );
+        }
         break;
       case "shuttle":
         if (window.keplr) {
@@ -106,7 +107,7 @@ export const useAbstraxionSigningClient = () => {
         }
         break;
       case "okx":
-        if (window.okxwallet) {
+        if (window.okxwallet?.keplr) {
           const okxOfflineSigner = window.okxwallet.keplr.getOfflineSigner(
             chainInfo.chainId,
           );

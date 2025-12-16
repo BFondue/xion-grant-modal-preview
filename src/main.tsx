@@ -1,16 +1,27 @@
-import React from "react";
+// Polyfills must be imported first
+import { Buffer } from "buffer";
+import process from "process";
+
+// @ts-expect-error - Adding Buffer to window for polyfill
+window.Buffer = Buffer;
+// @ts-expect-error - Adding process to window for polyfill
+window.process = process;
+// @ts-expect-error - Adding global to window for polyfill
+window.global = window;
+
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import { StytchProvider } from "@stytch/react";
 import { KeplrExtensionProvider } from "@delphi-labs/shuttle";
-import { ShuttleProvider } from "@delphi-labs/shuttle-react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { stytchClient } from "./lib";
-import { AbstraxionContextProvider } from "./components/AbstraxionContext";
+import { QueryClient } from "@tanstack/react-query";
+import { Routes, Route } from "react-router-dom";
 import { App } from "./components/App";
-import { SHUTTLE_NETWORKS } from "./config/shuttle";
+import { Callback } from "./components/Callback";
+import { ExternalOAuthFlow } from "./components/ExternalAuth";
+import { AppProviders } from "./components/AppProviders";
+import { loadShuttleNetworks } from "./config/shuttle";
 
 import "./index.css";
+import { StandAloneWrapper } from "./components/IframeApp/StandAloneWrapper";
+import { IframeApp } from "./components/IframeApp";
 
 (function captureOAuthTokens() {
   if (typeof window !== "undefined") {
@@ -67,35 +78,25 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
-// TODO: pull from asset repo before provider.
-const providers = [
-  new KeplrExtensionProvider({
-    networks: [SHUTTLE_NETWORKS.mainnet, SHUTTLE_NETWORKS.testnet],
-  }),
-];
+// Load networks and render app
+(async () => {
+  const shuttleNetworks = await loadShuttleNetworks();
+  const providers = [
+    new KeplrExtensionProvider({
+      networks: [shuttleNetworks.mainnet, shuttleNetworks.testnet],
+    }),
+  ];
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <BrowserRouter
-      future={{
-        // Enable React Router v7 compatibility flags to prevent console warnings
-        // These flags prepare the app for v7 without changing current behavior
-        v7_startTransition: true, // Wraps state updates in React.startTransition
-        v7_relativeSplatPath: true, // Updates relative route resolution in splat routes
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <StytchProvider stytch={stytchClient}>
-          <AbstraxionContextProvider>
-            <ShuttleProvider
-              extensionProviders={providers}
-              mobileProviders={[]}
-            >
-              <App />
-            </ShuttleProvider>
-          </AbstraxionContextProvider>
-        </StytchProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
-);
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <AppProviders queryClient={queryClient} extensionProviders={providers}>
+      <Routes>
+        <Route path="/callback" element={<Callback />} />
+        <Route path="/oauth/callback" element={<Callback />} />
+        <Route path="/oauth/external" element={<ExternalOAuthFlow />} />
+        <Route path="/dashboard" element={<StandAloneWrapper />} />
+        <Route path="/iframe" element={<IframeApp />} />
+        <Route path="/*" element={<App />} />
+      </Routes>
+    </AppProviders>,
+  );
+})();

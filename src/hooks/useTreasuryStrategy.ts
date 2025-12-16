@@ -2,6 +2,7 @@ import { DaoDaoTreasuryStrategy } from "../treasury-strategies/daodao-treasury-s
 import { DirectQueryTreasuryStrategy } from "../treasury-strategies/direct-query-treasury-strategy";
 import { CompositeTreasuryStrategy } from "../treasury-strategies/composite-treasury-strategy";
 import type { TreasuryStrategy } from "../treasury-strategies/types";
+import { TREASURY_STRATEGY } from "../config";
 
 /**
  * Available treasury strategy options
@@ -17,7 +18,7 @@ export enum TreasuryStrategyType {
  * Defaults to composite strategy (DaoDao with fallback to direct query)
  */
 export function getTreasuryStrategy(): TreasuryStrategy {
-  const strategyType = (import.meta.env.VITE_TREASURY_STRATEGY ||
+  const strategyType = (TREASURY_STRATEGY ||
     TreasuryStrategyType.COMPOSITE) as TreasuryStrategyType;
 
   switch (strategyType) {

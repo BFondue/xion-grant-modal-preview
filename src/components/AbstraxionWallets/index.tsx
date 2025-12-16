@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useStytch } from "@stytch/react";
 import { decodeJwt } from "jose";
 import {
@@ -102,10 +96,21 @@ export const AbstraxionWallets = () => {
       const { account_address, code_id } = body;
 
       // Create the authenticator data
-      const { aud, sub } = session_jwt
-        ? decodeJwt(session_jwt)
-        : { aud: undefined, sub: undefined };
-      const authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
+      let authenticator = "";
+      if (session_jwt) {
+        try {
+          const { aud, sub } = decodeJwt(session_jwt);
+          if (aud && sub) {
+            authenticator = `${Array.isArray(aud) ? aud[0] : aud}.${sub}`;
+          }
+        } catch (e) {
+          console.warn("[AbstraxionWallets] Failed to decode JWT:", e);
+        }
+      }
+
+      if (!authenticator) {
+        throw new Error("Failed to extract authenticator from JWT");
+      }
 
       // Set the abstract account directly
       setAbstractAccount({
@@ -122,7 +127,8 @@ export const AbstraxionWallets = () => {
         currentAuthenticatorIndex: 0,
       });
 
-      // Only close the modal if not in grant flow (grant flow will show permissions next)
+      // Only close the modal if not in grant flow
+      // (grant flow will show permissions dialog next)
       if (!isInGrantFlow) {
         setIsOpen(false);
       }
@@ -257,7 +263,7 @@ export const AbstraxionWallets = () => {
         // Find the best matching authenticator (handles duplicates)
         const authenticatorToUse = findBestMatchingAuthenticator(
           node.authenticators,
-          loginAuthenticator,
+          loginAuthenticator || "",
         );
 
         if (authenticatorToUse) {
@@ -266,7 +272,8 @@ export const AbstraxionWallets = () => {
             currentAuthenticatorIndex: authenticatorToUse.authenticatorIndex,
           });
           setShouldAutoNavigate(true);
-          // Only close modal if not in grant flow (grant flow will show permissions next)
+          // Only close modal if not in grant flow
+          // (grant flow will show permissions dialog next)
           if (!isInGrantFlow) {
             setIsOpen(false);
           }
@@ -410,7 +417,7 @@ export const AbstraxionWallets = () => {
                   const authenticatorToUse =
                     findBestMatchingAuthenticator(
                       node.authenticators,
-                      loginAuthenticator,
+                      loginAuthenticator || "",
                     ) || node.authenticators[0]; // Fallback to first authenticator
 
                   setAbstractAccount({
@@ -420,7 +427,10 @@ export const AbstraxionWallets = () => {
                     currentAuthenticatorIndex:
                       authenticatorToUse.authenticatorIndex,
                   });
-                  setIsOpen(false);
+                  // Only close modal if not in grant flow
+                  if (!isInGrantFlow) {
+                    setIsOpen(false);
+                  }
                 }}
                 aria-label={`Select Personal Account ${i + 1}`}
               >

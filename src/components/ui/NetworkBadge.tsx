@@ -1,4 +1,4 @@
-import React from "react";
+import { NETWORK } from "../../config";
 import { cn } from "../../utils/classname-util";
 
 interface NetworkBadgeProps {
@@ -16,7 +16,7 @@ export function NetworkBadge({ isMainnet }: NetworkBadgeProps) {
         },
       )}
     >
-      {isMainnet ? "MAINNET" : "TESTNET"}
+      {NETWORK.toUpperCase()}
     </div>
   );
 }

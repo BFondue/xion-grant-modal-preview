@@ -8,19 +8,22 @@ import type {
   Asset,
   PriceData,
 } from "../types/assets";
-import { COINGECKO_API_URL, getAssetEndpoint } from "../config";
+import {
+  isMainnet,
+  COINGECKO_API_URL,
+  getAssetEndpoint,
+  networkConfig,
+} from "../config";
 import mainnetAssets from "../data/mainnet/assetlist.json";
 import testnetAssets from "../data/testnet/assetlist.json";
-import { isMainnet } from "../utils";
 
 /**
  * Fetches the asset list from the chain registry
- * @param chainId - The chain ID to fetch the asset list for
  * @returns The asset list and query info
  */
-export const fetchAssetList = async (chainId: string): Promise<AssetList> => {
+export const fetchAssetList = async (): Promise<AssetList> => {
   try {
-    const response = await axios.get(getAssetEndpoint(chainId));
+    const response = await axios.get(getAssetEndpoint());
     if (response.status !== 200) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -36,13 +39,12 @@ export const fetchAssetList = async (chainId: string): Promise<AssetList> => {
 
 /**
  * Hook to fetch the asset list from the chain registry
- * @param chainId - The chain ID to fetch the asset list for
  * @returns The asset list and query info
  */
-export const useAssetListQuery = (chainId: string) => {
+export const useAssetListQuery = () => {
   return useQuery({
-    queryKey: ["assetList", chainId],
-    queryFn: () => fetchAssetList(chainId),
+    queryKey: ["assetList", networkConfig.chainId],
+    queryFn: () => fetchAssetList(),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -123,12 +125,11 @@ export const usePrices = (assets: Asset[]) => {
 
 /**
  * Hook to fetch and format the asset list
- * @param chainId - The chain ID to fetch the asset list for
  * @returns The asset list and helper functions to work with the assets
  */
 
-export const useAssetList = (chainId: string) => {
-  const { data: assetList, ...queryInfo } = useAssetListQuery(chainId);
+export const useAssetList = () => {
+  const { data: assetList, ...queryInfo } = useAssetListQuery();
   const { data: priceData } = usePrices(assetList?.assets ?? []);
 
   const assets = useMemo(() => {

@@ -379,16 +379,16 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           className={cn(
             "ui-fixed ui-z-50",
             !isTall
-              ? "ui-left-0 ui-top-0 sm:ui-left-[50%] sm:ui-top-[50%] sm:-ui-translate-x-1/2 sm:-ui-translate-y-1/2"
-              : "ui-left-0 ui-top-0 sm:ui-left-[50%] sm:-ui-translate-x-1/2",
-            !isTall && "ui-w-full sm:ui-max-w-lg md:ui-min-w-[560px]",
+              ? "ui-left-0 ui-top-0 md:ui-left-[50%] md:ui-top-[50%] md:-ui-translate-x-1/2 md:-ui-translate-y-1/2"
+              : "ui-left-0 ui-top-0 md:ui-left-[50%] md:-ui-translate-x-1/2",
+            !isTall && "ui-w-full md:ui-max-w-lg lg:ui-min-w-[560px]",
             isTall && "ui-max-w-full ui-w-full",
-            "ui-p-10 ui-gap-12 !ui-flex ui-flex-col sm:ui-p-12 sm:ui-block sm:ui-flex-none",
+            "ui-p-10 ui-gap-12 !ui-flex ui-flex-col md:ui-p-12 md:ui-block md:ui-flex-none",
             !isTall && "ui-justify-center",
-            "ui-bg-[#0A0A0A]/50 ui-backdrop-blur-2xl ui-rounded-none sm:ui-rounded-[48px] ui-shadow-[0_0_20px_10px_rgba(255,255,255,0.01)]",
+            "ui-bg-[#0A0A0A]/50 ui-backdrop-blur-2xl ui-rounded-none md:ui-rounded-[48px] ui-shadow-[0_0_20px_10px_rgba(255,255,255,0.01)]",
             isTall && "!ui-rounded-none",
             !isTall
-              ? "ui-h-screen ui-max-h-screen sm:ui-max-h-[90vh] sm:ui-h-auto"
+              ? "ui-h-screen ui-max-h-screen md:ui-max-h-[90vh] md:ui-h-auto"
               : "ui-max-h-screen ui-h-full ui-overflow-y-auto",
             "ui-transition-all ui-duration-200",
             "data-[state=closed]:ui-opacity-0",

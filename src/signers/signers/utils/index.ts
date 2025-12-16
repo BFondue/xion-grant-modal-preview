@@ -8,7 +8,7 @@ import { coins, type Pubkey, StdFee } from "@cosmjs/amino";
 import { Uint64 } from "@cosmjs/math";
 import { AbstractAccount } from "../../types/generated/abstractaccount/v1/account";
 import { assert } from "@cosmjs/utils";
-import { accountFromAny } from "@cosmjs/stargate/build/accounts";
+import { accountFromAny } from "@cosmjs/stargate";
 
 export type INodes<T> = {
   nodes: Array<T>;

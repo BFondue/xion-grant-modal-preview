@@ -1,4 +1,4 @@
-import React, {
+import {
   Dispatch,
   SetStateAction,
   useContext,
@@ -38,14 +38,8 @@ import {
   AddAuthenticator,
   AddJwtAuthenticator,
 } from "../../../signers/interfaces";
-import {
-  getEnvStringOrThrow,
-  getEthWalletAddress,
-  getSecp256k1Pubkey,
-  WalletAccountError,
-} from "../../../utils";
 import { validateFeeGrant } from "../../../utils/validate-fee-grant";
-import { AddEmail } from "./AddEmail/AddEmail";
+import { AddEmail } from "./AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
 import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
@@ -55,6 +49,7 @@ import {
   createJwtAuthenticatorIdentifier,
   validateNewAuthenticator,
 } from "../../../utils/authenticator-utils";
+import { CHAIN_ID, FEE_GRANTER_ADDRESS, XION_API_URL } from "../../../config";
 
 const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
 const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
@@ -134,7 +129,7 @@ export function AddAuthenticatorsForm({
     try {
       setIsLoading(true);
       await connect({
-        chainId: chainInfo.chainId,
+        chainId: chainInfo?.chainId || CHAIN_ID,
         extensionProviderId: "keplr",
       });
     } catch (error) {
@@ -202,6 +197,10 @@ export function AddAuthenticatorsForm({
       throw new Error("No client");
     }
 
+    if (!abstractAccount) {
+      throw new Error("No abstract account");
+    }
+
     const addMsg: MsgExecuteContractEncodeObject = {
       typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
       value: MsgExecuteContract.fromPartial({
@@ -213,12 +212,9 @@ export function AddAuthenticatorsForm({
     };
 
     // Check if fee grant exists
-    const feeGranterAddress = getEnvStringOrThrow(
-      "VITE_FEE_GRANTER_ADDRESS",
-      import.meta.env.VITE_FEE_GRANTER_ADDRESS,
-    );
+    const feeGranterAddress = FEE_GRANTER_ADDRESS;
     const isValidFeeGrant = await validateFeeGrant(
-      chainInfo.rest,
+      chainInfo?.rest || XION_API_URL,
       feeGranterAddress,
       abstractAccount.id,
       [
@@ -230,20 +226,22 @@ export function AddAuthenticatorsForm({
       abstractAccount.id,
     );
 
-    const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
-
     const simmedGas = await client.simulate(
       abstractAccount.id,
       [addMsg],
       "add-authenticator",
-      validFeeGranter,
+      FEE_GRANTER_ADDRESS,
     );
     const fee = getGasCalculation(simmedGas);
 
+    let stdFee = fee || ("auto" as const);
+    if (fee && isValidFeeGrant) {
+      stdFee = { ...fee, granter: feeGranterAddress };
+    }
     const deliverTxResponse = await client.signAndBroadcast(
       abstractAccount.id,
       [addMsg],
-      validFeeGranter ? { ...fee, granter: validFeeGranter } : fee,
+      stdFee,
     );
 
     assertIsDeliverTxSuccess(deliverTxResponse);
@@ -266,6 +264,10 @@ export function AddAuthenticatorsForm({
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount?.authenticators,
       );
+
+      if (!abstractAccount) {
+        throw new Error("No abstract account");
+      }
 
       const hashSignBytes = new Uint8Array(
         Buffer.from(abstractAccount.id, "utf-8"),
@@ -298,6 +300,16 @@ export function AddAuthenticatorsForm({
       const { aud, sub } = decodeJwt(
         authResponseData.data.session_jwt,
       ) as JWTPayload;
+
+      if (!sub) {
+        setOtpError("Invalid JWT: missing subject");
+        return;
+      }
+
+      if (!aud) {
+        setOtpError("Invalid JWT: missing audience");
+        return;
+      }
 
       // Create authenticator identifier and validate
       const authenticatorIdentifier = createJwtAuthenticatorIdentifier(
@@ -362,6 +374,10 @@ export function AddAuthenticatorsForm({
         return alert("Please connect Keplr and try again.");
       }
 
+      if (!abstractAccount) {
+        return alert("No abstract account found.");
+      }
+
       const shuttleAccount = recentWallet.account;
       const shuttleAddress = shuttleAccount?.address;
 
@@ -369,7 +385,7 @@ export function AddAuthenticatorsForm({
       const signArbMessage = Buffer.from(encoder.encode(abstractAccount?.id));
 
       const signArbRes = await window.keplr.signArbitrary(
-        chainInfo.chainId,
+        chainInfo?.chainId || CHAIN_ID,
         shuttleAddress,
         new Uint8Array(signArbMessage),
       );
@@ -424,18 +440,27 @@ export function AddAuthenticatorsForm({
     try {
       setIsLoading(true);
 
-      const { address: walletAddress } = await getSecp256k1Pubkey(
-        chainInfo.chainId,
-        "okx",
-      );
+      if (!window.okxwallet) {
+        return alert("Install OKX Wallet");
+      }
 
+      if (!window.okxwallet.keplr) {
+        return alert("OKX Wallet Keplr integration not available");
+      }
+
+      if (!abstractAccount) {
+        return alert("No abstract account found.");
+      }
+
+      const chain_id = chainInfo?.chainId || CHAIN_ID;
       const encoder = new TextEncoder();
       const signArbMessage = Buffer.from(encoder.encode(abstractAccount?.id));
 
-      await window.okxwallet.keplr.enable(chainInfo.chainId);
+      await window.okxwallet.keplr.enable(chain_id);
+      const okxAccount = await window.okxwallet.keplr.getKey(chain_id);
       const signArbRes = await window.okxwallet.keplr.signArbitrary(
-        chainInfo.chainId,
-        walletAddress,
+        chain_id,
+        okxAccount.bech32Address,
         new Uint8Array(signArbMessage),
       );
 
@@ -472,18 +497,14 @@ export function AddAuthenticatorsForm({
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
         type: AAAlgo.secp256k1,
-        authenticator: walletAddress,
+        authenticator: okxAccount.bech32Address,
         authenticatorIndex: accountIndex,
       };
 
       await handleAddAuthenticator(msg, authenticatorStateData);
     } catch (error) {
       console.warn(error);
-      const errorMessage =
-        error instanceof WalletAccountError
-          ? error.userMessage
-          : "Something went wrong trying to add authenticator";
-      setErrorMessage(errorMessage);
+      setErrorMessage("Something went wrong trying to add authenticator");
     } finally {
       setIsLoading(false);
     }
@@ -493,14 +514,25 @@ export function AddAuthenticatorsForm({
     try {
       setIsLoading(true);
 
-      const ethAddress = await getEthWalletAddress();
+      if (!window.ethereum) {
+        return alert("Please install wallet extension");
+      }
+
+      if (!abstractAccount) {
+        return alert("No abstract account found.");
+      }
+
+      const accounts = (await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })) as string[];
+      const primaryAccount = accounts[0];
 
       const challenge = `0x${Buffer.from(abstractAccount?.id, "utf8").toString("hex")}`;
 
-      const ethSignature = await window.ethereum.request<string>({
+      const ethSignature = (await window.ethereum.request({
         method: "personal_sign",
-        params: [challenge, ethAddress],
-      });
+        params: [challenge, primaryAccount],
+      })) as string;
 
       const base64Signature = Buffer.from(
         ethSignature.slice(2),
@@ -510,7 +542,7 @@ export function AddAuthenticatorsForm({
       // Check for duplicate Ethereum wallet authenticator
       const validation = validateNewAuthenticator(
         abstractAccount.authenticators,
-        ethAddress,
+        primaryAccount,
         AAAlgo.ETHWALLET,
       );
 
@@ -530,7 +562,7 @@ export function AddAuthenticatorsForm({
           add_authenticator: {
             EthWallet: {
               id: accountIndex,
-              address: ethAddress,
+              address: primaryAccount,
               signature: base64Signature,
             },
           },
@@ -540,18 +572,14 @@ export function AddAuthenticatorsForm({
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
         type: AAAlgo.ETHWALLET,
-        authenticator: ethAddress,
+        authenticator: primaryAccount,
         authenticatorIndex: accountIndex,
       };
 
       await handleAddAuthenticator(msg, authenticatorStateData);
     } catch (error) {
       console.warn(error);
-      const errorMessage =
-        error instanceof WalletAccountError
-          ? error.userMessage
-          : "Something went wrong trying to add authenticator";
-      setErrorMessage(errorMessage);
+      setErrorMessage("Something went wrong trying to add authenticator");
     } finally {
       setIsLoading(false);
     }
@@ -560,6 +588,10 @@ export function AddAuthenticatorsForm({
   async function addPasskeyAuthenticator() {
     try {
       setIsLoading(true);
+
+      if (!abstractAccount) {
+        throw new Error("No abstract account");
+      }
 
       const challenge = Buffer.from(abstractAccount?.id);
       let RP_URL = window.location.href;
@@ -669,10 +701,12 @@ export function AddAuthenticatorsForm({
   async function addOAuthJwtAuthenticator(oauth_token: string) {
     setIsLoading(true);
     if (!abstractAccount) {
+      setIsLoading(false);
       return;
     }
 
     if (!oauth_token) {
+      setIsLoading(false);
       return;
     }
     sessionStorage.removeItem("captured_oauth_add");
@@ -707,20 +741,26 @@ export function AddAuthenticatorsForm({
       );
       const authResponseData = await authResponse.json();
 
-      if (!authResponse.ok) {
-        setOtpError("Error Verifying OAuth Code");
-        return;
-      }
-
       const { aud, sub } = decodeJwt(
         authResponseData.data.session_jwt,
       ) as JWTPayload;
+
+      if (!aud) {
+        setOtpError("Invalid JWT: missing audience");
+        return;
+      }
+
+      if (!sub) {
+        setOtpError("Invalid JWT: missing subject");
+        return;
+      }
 
       // Create authenticator identifier and validate
       const authenticatorIdentifier = createJwtAuthenticatorIdentifier(
         aud,
         sub,
       );
+
       const validation = validateNewAuthenticator(
         abstractAccount.authenticators,
         authenticatorIdentifier,

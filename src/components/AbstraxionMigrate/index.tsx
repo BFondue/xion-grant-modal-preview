@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { MsgMigrateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { Uint53 } from "@cosmjs/math";
 import { toUtf8 } from "@cosmjs/encoding";
@@ -8,10 +8,14 @@ import {
   AbstraxionContextProps,
 } from "../AbstraxionContext";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import { getEnvNumberOrThrow, getEnvStringOrThrow } from "../../utils";
 import { validateFeeGrant } from "../../utils/validate-fee-grant";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MigrationDialog } from "./MigrationDialog";
+import {
+  DEFAULT_ACCOUNT_CONTRACT_CODE_ID,
+  FEE_GRANTER_ADDRESS,
+  XION_API_URL,
+} from "../../config";
 
 type AbstraxionMigrateProps = {
   currentCodeId: number;
@@ -21,15 +25,13 @@ type AbstraxionMigrateProps = {
 /*
  * This component will need to become more intelligent as we develop and deploy more account contracts.
  * */
-const targetCodeId = getEnvNumberOrThrow(
-  "VITE_DEFAULT_ACCOUNT_CONTRACT_CODE_ID",
-  import.meta.env.VITE_DEFAULT_ACCOUNT_CONTRACT_CODE_ID,
-);
+const targetCodeId = parseInt(DEFAULT_ACCOUNT_CONTRACT_CODE_ID, 10);
+
 export const AbstraxionMigrate = ({
   currentCodeId,
   updateContractCodeID,
 }: AbstraxionMigrateProps) => {
-  const { setAbstraxionError, chainInfo } = useContext(
+  const { setAbstraxionError } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
 
@@ -40,7 +42,7 @@ export const AbstraxionMigrate = ({
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const migrateAccount = async () => {
-    if (!client) return;
+    if (!client || !account) return;
     try {
       setInProgress(true);
 
@@ -59,13 +61,9 @@ export const AbstraxionMigrate = ({
       };
 
       // Check if fee grant exists
-      const feeGranterAddress = getEnvStringOrThrow(
-        "VITE_FEE_GRANTER_ADDRESS",
-        import.meta.env.VITE_FEE_GRANTER_ADDRESS,
-      );
       const isValidFeeGrant = await validateFeeGrant(
-        chainInfo.rest,
-        feeGranterAddress,
+        XION_API_URL,
+        FEE_GRANTER_ADDRESS,
         account.id,
         [
           "/cosmos.authz.v1beta1.MsgGrant",
@@ -76,20 +74,22 @@ export const AbstraxionMigrate = ({
         account.id,
       );
 
-      const validFeeGranter = isValidFeeGrant ? feeGranterAddress : null;
-
       const simmedGas = await client.simulate(
         account.id,
         [migrateMsg],
         "",
-        validFeeGranter,
+        FEE_GRANTER_ADDRESS,
       );
       const fee = getGasCalculation(simmedGas);
 
+      let stdFee = fee || ("auto" as const);
+      if (fee && isValidFeeGrant) {
+        stdFee = { ...fee, granter: FEE_GRANTER_ADDRESS };
+      }
       const deliverTxRes = await client.signAndBroadcast(
         account.id,
         [migrateMsg],
-        validFeeGranter ? { ...fee, granter: validFeeGranter } : fee,
+        stdFee,
       );
 
       assertIsDeliverTxSuccess(deliverTxRes);

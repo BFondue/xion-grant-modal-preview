@@ -1,4 +1,50 @@
-import { isMainnet } from "../utils/chain-utils";
+import { mainnetConfig } from "./mainnet";
+import { testnetConfig } from "./testnet";
+// will add devnetConfig later, use testnetConfig for now
+import { testnetConfig as devnetConfig } from "./testnet";
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+/**
+ * Get an environment variable or throw an error if not set.
+ * Use this for required secrets that have no default value.
+ */
+function getEnvOrThrow(key: string, description?: string): string {
+  const value = import.meta.env[key];
+  if (!value) {
+    const desc = description ? ` (${description})` : "";
+    throw new Error(`Missing required environment variable: ${key}${desc}`);
+  }
+  return value;
+}
+
+// =============================================================================
+// Network Configuration
+// =============================================================================
+
+export const NETWORK = import.meta.env.VITE_NETWORK || "testnet";
+
+// this is a bad idea, but keeping for backwards compatibility
+export const isMainnet = (): boolean => {
+  return NETWORK === "mainnet";
+};
+
+// Select network config based on environment
+export const networkConfig =
+  NETWORK === "mainnet"
+    ? mainnetConfig
+    : NETWORK === "devnet"
+      ? devnetConfig
+      : testnetConfig;
+
+// Re-export network config type
+export type NetworkConfig = typeof networkConfig;
+
+// =============================================================================
+// Chain Configuration
+// =============================================================================
 
 interface FeeToken {
   denom: string;
@@ -16,42 +62,32 @@ export interface ChainConfig {
   };
 }
 
-const CHAIN_ASSET_PATHS = {
-  "xion-mainnet-1": "xion",
-  "xion-testnet-1": "testnets/xiontestnet",
-  "xion-testnet-2": "testnets/xiontestnet2",
-} as const;
+// Chain ID (env override for local development)
+export const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || networkConfig.chainId;
 
-export const getAssetEndpoint = (chainId: string) => {
-  const baseUrl = "https://assets.xion.burnt.com/chain-registry";
-  const path = CHAIN_ASSET_PATHS[chainId as keyof typeof CHAIN_ASSET_PATHS];
-  if (!path) {
-    throw new Error(`Unsupported chain ID: ${chainId}`);
-  }
-  return `${baseUrl}/${path}/assetlist.json`;
+const CHAIN_REGISTRY_BASE_URL =
+  import.meta.env.VITE_CHAIN_REGISTRY_BASE_URL ||
+  networkConfig.chainRegistryBaseUrl;
+
+export const getAssetEndpoint = () => {
+  return `${CHAIN_REGISTRY_BASE_URL}/assetlist.json`;
 };
 
-export const getChainRegistryUrl = (chainId: string) => {
-  const baseUrl = "https://assets.xion.burnt.com/chain-registry";
-  const path = CHAIN_ASSET_PATHS[chainId as keyof typeof CHAIN_ASSET_PATHS];
-  if (!path) {
-    throw new Error(`Unsupported chain ID: ${chainId}`);
-  }
-  return `${baseUrl}/${path}/chain.json`;
+export const getChainRegistryUrl = () => {
+  return `${CHAIN_REGISTRY_BASE_URL}/chain.json`;
 };
 
 export const getGasPrice = (chainConfig: ChainConfig) => {
-  // TODO: Can we make this dynamic?
   return chainConfig.fees.fee_tokens[0];
 };
 
-// Get the default gas price for VITE_GAS_PRICE
 export const getDefaultGasPrice = (chainConfig: ChainConfig) => {
   const feeToken = chainConfig.fees.fee_tokens[0];
   return feeToken.fixed_min_gas_price || feeToken.average_gas_price;
 };
 
 export const COINGECKO_API_URL =
+  import.meta.env.VITE_COINGECKO_API_URL ||
   "https://api.coingecko.com/api/v3/simple/price";
 
 export const getRestApiUrl = (chainInfo: { rest: string }) => {
@@ -62,12 +98,150 @@ export const REST_ENDPOINTS = {
   balances: "/cosmos/bank/v1beta1/balances",
 } as const;
 
-// used to filter assets in the overview
+// =============================================================================
+// External URLs
+// =============================================================================
+
+export const getExplorerUrl = () => networkConfig.explorerUrl;
+export const getStakingUrl = () => networkConfig.stakingUrl;
+export const getExplorerTxUrl = (txHash: string) =>
+  `${networkConfig.explorerUrl}/txs/${txHash}`;
+export const getExplorerAddressUrl = (address: string) =>
+  `${networkConfig.explorerUrl}/account/${address}`;
+
+// =============================================================================
+// Asset Configuration
+// =============================================================================
+
 export const FEATURED_ASSETS = ["USDC", "XION"] as const;
+export const USDC_DENOM = networkConfig.usdcDenom;
 
-const MAINNET_USDC_DENOM =
-  "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349";
-const TESTNET_USDC_DENOM =
-  "ibc/6490A7EAB61059BFC1CDDEB05917DD70BDF3A611654162A1A47DB930D40D8AF4";
+// =============================================================================
+// API URLs
+// =============================================================================
 
-export const USDC_DENOM = isMainnet() ? MAINNET_USDC_DENOM : TESTNET_USDC_DENOM;
+export const XION_API_URL =
+  import.meta.env.VITE_XION_API_URL || networkConfig.xionApiUrl;
+
+export const XION_RPC_URL =
+  import.meta.env.VITE_XION_RPC_URL || networkConfig.xionRpcUrl;
+
+export const STYTCH_PROXY_URL =
+  import.meta.env.VITE_XION_STYTCH_API || networkConfig.stytchProxyUrl;
+console.log("STYTCH_PROXY_URL:", STYTCH_PROXY_URL);
+
+export const ABSTRAXION_API_URL =
+  import.meta.env.VITE_ABSTRAXION_API_URL || networkConfig.abstraxionApiUrl;
+
+// =============================================================================
+// Indexer Configuration
+// =============================================================================
+
+export const INDEXER_STRATEGY =
+  import.meta.env.VITE_INDEXER_STRATEGY || networkConfig.indexerStrategy;
+
+export const DEFAULT_INDEXER_URL =
+  import.meta.env.VITE_DEFAULT_INDEXER_URL || networkConfig.defaultIndexerUrl;
+
+export const NUMIA_URL =
+  import.meta.env.VITE_NUMIA_URL || networkConfig.numiaUrl;
+
+// Numia token is required and has no default
+export const NUMIA_TOKEN = import.meta.env.VITE_NUMIA_TOKEN || "";
+
+export const DAODAO_TREASURY_INDEXER_URL =
+  import.meta.env.VITE_DAODAO_TREASURY_INDEXER_URL ||
+  networkConfig.daodaoTreasuryIndexerUrl;
+
+// =============================================================================
+// Fee Granter Configuration
+// =============================================================================
+
+export const FEE_GRANTER_ADDRESS =
+  import.meta.env.VITE_FEE_GRANTER_ADDRESS || networkConfig.feeGranterAddress;
+
+// =============================================================================
+// Contract Configuration
+// =============================================================================
+
+export const DEFAULT_ACCOUNT_CONTRACT_CODE_ID =
+  import.meta.env.VITE_DEFAULT_ACCOUNT_CONTRACT_CODE_ID ||
+  networkConfig.defaultAccountContractCodeId;
+
+// =============================================================================
+// Gas Configuration
+// =============================================================================
+
+export const GAS_ADJUSTMENT = import.meta.env.VITE_GAS_ADJUSTMENT
+  ? parseFloat(import.meta.env.VITE_GAS_ADJUSTMENT)
+  : networkConfig.gasAdjustment;
+
+export const GAS_MARGIN = import.meta.env.VITE_GAS_MARGIN
+  ? parseInt(import.meta.env.VITE_GAS_MARGIN, 10)
+  : networkConfig.gasMargin;
+
+// =============================================================================
+// Feature Flags
+// =============================================================================
+
+// Helper to parse feature flag env vars (explicit true/false, falls back to network default)
+const parseFeatureFlag = (
+  envValue: string | undefined,
+  defaultValue: boolean,
+): boolean => {
+  if (envValue === "true") return true;
+  if (envValue === "false") return false;
+  return defaultValue;
+};
+
+export const FEATURE_FLAGS = {
+  okx: parseFeatureFlag(
+    import.meta.env.VITE_OKX_FLAG,
+    networkConfig.featureFlags.okx,
+  ),
+  metamask: parseFeatureFlag(
+    import.meta.env.VITE_METAMASK_FLAG,
+    networkConfig.featureFlags.metamask,
+  ),
+  passkey: parseFeatureFlag(
+    import.meta.env.VITE_PASSKEY_FLAG,
+    networkConfig.featureFlags.passkey,
+  ),
+  keplr: parseFeatureFlag(
+    import.meta.env.VITE_KEPLR_FLAG,
+    networkConfig.featureFlags.keplr,
+  ),
+  tiktok: parseFeatureFlag(
+    import.meta.env.VITE_TIKTOK_FLAG,
+    networkConfig.featureFlags.tiktok,
+  ),
+  apple: parseFeatureFlag(
+    import.meta.env.VITE_APPLE_FLAG,
+    networkConfig.featureFlags.apple,
+  ),
+};
+
+// =============================================================================
+// Stytch Configuration (secrets - env var only, no defaults)
+// =============================================================================
+
+// Required for Stytch SDK initialization
+export const STYTCH_PUBLIC_TOKEN = getEnvOrThrow(
+  "VITE_STYTCH_PUBLIC_TOKEN",
+  "Stytch public token for SDK initialization",
+);
+
+// =============================================================================
+// External OAuth Configuration
+// =============================================================================
+
+export const OAUTH_CALLBACK_URL =
+  import.meta.env.VITE_OAUTH_CALLBACK_URL ||
+  `${networkConfig.dashboardUrl}/oauth/callback`;
+
+// =============================================================================
+// Treasury Strategy Configuration
+// =============================================================================
+
+export const TREASURY_STRATEGY =
+  import.meta.env.VITE_TREASURY_STRATEGY || networkConfig.treasuryStrategy;

@@ -10,6 +10,7 @@ import { truncateAddress } from "../utils";
 import xionLogo from "../assets/logo.png";
 import { cn } from "../utils/classname-util";
 import { DashboardAccountDialog } from "./DashboardAccountDialog";
+import { getExplorerUrl, getStakingUrl } from "../config";
 
 interface SidebarProps {
   onClose?: VoidFunction;
@@ -18,7 +19,7 @@ interface SidebarProps {
 export function Sidebar({ onClose }: SidebarProps) {
   const location = useLocation();
   const pathname = location.pathname;
-  const { isMainnet, setIsOpen, chainInfo } = useContext(
+  const { isMainnet, setIsOpen } = useContext(
     AbstraxionContext,
   ) as AbstraxionContextProps;
   const { data: account } = useAbstraxionAccount();
@@ -29,22 +30,16 @@ export function Sidebar({ onClose }: SidebarProps) {
       { text: "Home", path: "/" },
       {
         text: "History",
-        path: isMainnet
-          ? "https://www.mintscan.io/xion"
-          : chainInfo?.chainId === "xion-testnet-2"
-            ? "https://www.mintscan.io/xion-testnet"
-            : "https://explorer.burnt.com/xion-testnet-1/",
+        path: getExplorerUrl(),
         external: true,
       },
       {
         text: "Staking",
-        path: isMainnet
-          ? "https://staking.burnt.com"
-          : "https://staking.testnet.burnt.com",
+        path: getStakingUrl(),
         external: true,
       },
     ],
-    [isMainnet, chainInfo?.chainId],
+    [],
   );
 
   const renderNavOptions = () => {

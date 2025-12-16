@@ -6,6 +6,7 @@ import type {
 } from "../types/treasury-types";
 import { treasuryCacheManager } from "../utils/cache";
 import { isUrlSafe } from "../utils/url";
+import { DAODAO_TREASURY_INDEXER_URL } from "../config";
 
 // DaoDao indexer response formats
 interface TreasuryIndexerGrantConfig {
@@ -46,10 +47,7 @@ export class DaoDaoTreasuryStrategy implements TreasuryStrategy {
   private readonly indexerBaseUrl: string;
 
   constructor(indexerUrl?: string) {
-    this.indexerBaseUrl =
-      indexerUrl ||
-      import.meta.env.VITE_DAODAO_TREASURY_INDEXER_URL ||
-      "https://daodaoindexer.burnt.com";
+    this.indexerBaseUrl = indexerUrl || DAODAO_TREASURY_INDEXER_URL;
   }
 
   async fetchTreasuryConfig(
@@ -106,13 +104,13 @@ export class DaoDaoTreasuryStrategy implements TreasuryStrategy {
       // Extract and validate params from the response - no separate query needed!
       const params: TreasuryParams = {
         display_url: isUrlSafe(allData.params.display_url)
-          ? allData.params.display_url || ""
+          ? (allData.params.display_url as string)
           : "",
         redirect_url: isUrlSafe(allData.params.redirect_url)
-          ? allData.params.redirect_url || ""
+          ? (allData.params.redirect_url as string)
           : "",
         icon_url: isUrlSafe(allData.params.icon_url)
-          ? allData.params.icon_url || ""
+          ? (allData.params.icon_url as string)
           : "",
       };
 

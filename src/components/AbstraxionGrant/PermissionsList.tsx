@@ -3,7 +3,6 @@ import { PermissionDescription } from "../../types/treasury-types";
 import { Accordion } from "../ui";
 import { Skeleton } from "../ui/skeleton";
 import { useAssetList } from "../../hooks/useAssetList";
-import { chainId as envChainId } from "../../utils";
 import { formatIBCAddresses } from "../../utils/format-ibc-addresses";
 
 interface PermissionsListProps {
@@ -30,8 +29,7 @@ export const PermissionsList: React.FC<PermissionsListProps> = ({
   permissions,
   isLoading = false,
 }) => {
-  const { data: assetData, isLoading: isLoadingAssets } =
-    useAssetList(envChainId);
+  const { data: assetData, isLoading: isLoadingAssets } = useAssetList();
 
   const { getAssetByDenom } = assetData || { getAssetByDenom: () => undefined };
 

@@ -3,6 +3,7 @@ import { SignDoc } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { sha256 } from "@cosmjs/crypto";
 import { AAccountData, AASigner } from "../interfaces/AASigner";
 import { AAAlgo } from "../interfaces/smartAccount";
+import { STYTCH_PROXY_URL } from "../../config";
 
 export class AbstractAccountJWTSigner extends AASigner {
   // requires a session token already created
@@ -18,7 +19,8 @@ export class AbstractAccountJWTSigner extends AASigner {
     super(abstractAccount);
     this.sessionToken = sessionToken;
     this.accountAuthenticatorIndex = accountAuthenticatorIndex;
-    this.apiUrl = apiUrl || "https://aa.xion-testnet-1.burnt.com";
+    // Remove /v1 from the URL since we add it in the fetch call below
+    this.apiUrl = apiUrl || STYTCH_PROXY_URL;
   }
 
   async getAccounts(): Promise<readonly AAccountData[]> {
@@ -54,7 +56,7 @@ export class AbstractAccountJWTSigner extends AASigner {
     const message = Buffer.from(hashSignBytes).toString("base64");
 
     const authResponse = await fetch(
-      `${this.apiUrl}/api/v1/sessions/authenticate`,
+      `${this.apiUrl}/v1/sessions/authenticate`,
       {
         method: "POST",
         headers: {
@@ -76,6 +78,14 @@ export class AbstractAccountJWTSigner extends AASigner {
 
     const authResponseData = await authResponse.json();
 
+    // Stytch proxy returns { session_jwt, session, ... } directly (no data wrapper)
+    const sessionJwt = authResponseData.session_jwt;
+
+    if (!sessionJwt) {
+      console.error("[JWT Signer] Response:", authResponseData);
+      throw new Error("No session_jwt in response");
+    }
+
     return {
       signed: signDoc,
       signature: {
@@ -83,10 +93,7 @@ export class AbstractAccountJWTSigner extends AASigner {
           type: "",
           value: new Uint8Array(),
         },
-        signature: Buffer.from(
-          authResponseData.data.session_jwt,
-          "utf-8",
-        ).toString("base64"),
+        signature: Buffer.from(sessionJwt, "utf-8").toString("base64"),
       },
     };
   }
@@ -111,7 +118,7 @@ export class AbstractAccountJWTSigner extends AASigner {
     const hashedMessage = Buffer.from(hashSignBytes).toString("base64");
 
     const authResponse = await fetch(
-      `${this.apiUrl}/api/v1/sessions/authenticate`,
+      `${this.apiUrl}/v1/sessions/authenticate`,
       {
         method: "POST",
         headers: {
@@ -133,10 +140,16 @@ export class AbstractAccountJWTSigner extends AASigner {
 
     const authResponseData = await authResponse.json();
 
+    // Stytch proxy returns { session_jwt, session, ... } directly (no data wrapper)
+    const sessionJwt = authResponseData.session_jwt;
+
+    if (!sessionJwt) {
+      console.error("[JWT Signer] Response:", authResponseData);
+      throw new Error("No session_jwt in response");
+    }
+
     return {
-      signature: Buffer.from(authResponseData.data.session_jwt).toString(
-        "base64",
-      ),
+      signature: Buffer.from(sessionJwt).toString("base64"),
     };
   }
 }

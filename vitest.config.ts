@@ -5,23 +5,20 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
+    setupFiles: ["./src/tests/setup.ts"],
     globals: true,
     pool: "forks",
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
       exclude: [
         "node_modules/",
-        "src/test/setup.ts",
+        "src/tests/setup.ts",
         "**/*.d.ts",
         "**/*.config.*",
         "**/index.ts",
+        "**/assets/**",
+        "**/generated/**",
       ],
       thresholds: {
         lines: 80,

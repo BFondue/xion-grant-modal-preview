@@ -1,35 +1,101 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, Plugin } from "vite";
+import react from "@vitejs/plugin-react";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// https://vitejs.dev/config/
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Custom plugin to redirect vite-plugin-node-polyfills shim imports from nested dependencies
+function resolveNodePolyfillShims(): Plugin {
+  const shimsDir = path.resolve(
+    __dirname,
+    "node_modules/vite-plugin-node-polyfills/shims",
+  );
+  return {
+    name: "resolve-node-polyfill-shims",
+    enforce: "pre",
+    resolveId(source) {
+      // Handle all vite-plugin-node-polyfills shim imports
+      if (source.startsWith("vite-plugin-node-polyfills/shims/")) {
+        const shimName = source.replace(
+          "vite-plugin-node-polyfills/shims/",
+          "",
+        );
+        return path.resolve(shimsDir, shimName, "dist/index.js");
+      }
+      return null;
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
+  // Map Vite mode to Cloudflare environment
+  // For mainnet-beta and testnet-beta, use the mode as the environment
+  // For mainnet and testnet, also use the mode
+  const cloudflareEnv = [
+    "mainnet",
+    "testnet",
+    "mainnet-beta",
+    "testnet-beta",
+  ].includes(mode)
+    ? mode
+    : undefined;
+
   return {
     plugins: [
+      resolveNodePolyfillShims(),
+      react(),
+      // @ts-expect-error - Cloudflare plugin types mismatch
+      cloudflare({
+        // Pass the environment to Cloudflare plugin
+        ...(cloudflareEnv && { environment: cloudflareEnv }),
+      }),
       nodePolyfills({
-        // To add only specific polyfills, add them here. If no option is passed, adds all polyfills
-        include: ["buffer", "stream", "crypto", "vm", "util"],
-        // To exclude specific polyfills, add them to this list. Note: if include is provided, this has no effect
-        exclude: [
-          "http", // Excludes the polyfill for `http` and `node:http`.
-        ],
-        // Whether to polyfill specific globals.
+        // Enable polyfills for browser globals needed by Cosmos libraries
         globals: {
-          Buffer: true, // can also be 'build', 'dev', or false
+          Buffer: true,
           global: true,
-          // process: true,
+          process: true,
         },
-        // Override the default polyfills for specific modules.
-        overrides: {
-          // Since `fs` is not supported in browsers, we can use the `memfs` package to polyfill it.
-          // fs: 'memfs',
-        },
-        // Whether to polyfill `node:` protocol imports.
+        // Enable polyfills for Node.js built-in modules
         protocolImports: true,
+        // Include specific modules that are failing
+        include: ["buffer", "stream", "util", "crypto"],
+        // Override default polyfills
+        overrides: {
+          fs: "memfs",
+        },
       }),
     ],
+    resolve: {
+      alias: {
+        stream: "stream-browserify",
+        buffer: "buffer",
+      },
+    },
+    server: {
+      port: 3000, // Match the port in dashboard .env files
+      cors: true, // Enable CORS for iframe communication
+    },
+    build: {
+      outDir: "dist",
+      sourcemap: false, // Disable for production (source maps are too large for Cloudflare)
+      // Single entry point - all routes handled by SPA routing
+    },
     define: {
-      __APP_ENV__: JSON.stringify(env.APP_ENV),
+      // Fix process.env references
+      "process.env": {},
+      global: "globalThis",
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        define: {
+          global: "globalThis",
+        },
+      },
+      include: ["buffer", "process"],
     },
   };
 });

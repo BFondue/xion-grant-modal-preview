@@ -1,17 +1,14 @@
 import { SubqueryIndexerStrategy } from "../indexer-strategies/subquery-indexer-strategy";
-import { getEnvStringOrThrow } from "../utils";
 import { useBaseSmartAccounts } from "./baseSmartAccount";
 import { useContext, useEffect } from "react";
 import {
   AbstraxionContext,
   AbstraxionContextProps,
 } from "../components/AbstraxionContext";
+import { DEFAULT_INDEXER_URL } from "../config";
 
 const subqueryIndexerStrategy = new SubqueryIndexerStrategy(
-  getEnvStringOrThrow(
-    "VITE_DEFAULT_INDEXER_URL",
-    import.meta.env.VITE_DEFAULT_INDEXER_URL,
-  ),
+  DEFAULT_INDEXER_URL,
 );
 
 export const useSubquerySmartAccounts = (

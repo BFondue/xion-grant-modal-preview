@@ -1,5 +1,6 @@
 import { xionGasValues, type ChainInfo } from "@burnt-labs/constants";
 import { calculateFee, GasPrice, StdFee } from "@cosmjs/stargate";
+import { GAS_ADJUSTMENT, GAS_MARGIN } from "../config";
 
 export function formatGasPrice(chainInfo: ChainInfo): GasPrice {
   const feeCurrency = chainInfo.feeCurrencies[0];
@@ -12,12 +13,8 @@ export function getGasCalculation(
   chainInfo: ChainInfo,
 ): StdFee {
   const gasPrice = formatGasPrice(chainInfo);
-  const gasAdjustment = import.meta.env.VITE_GAS_ADJUSTMENT
-    ? parseFloat(import.meta.env.VITE_GAS_ADJUSTMENT)
-    : xionGasValues.gasAdjustment;
-  const gasAdjustmentMargin = import.meta.env.VITE_GAS_MARGIN
-    ? parseInt(import.meta.env.VITE_GAS_MARGIN, 10)
-    : xionGasValues.gasAdjustmentMargin;
+  const gasAdjustment = GAS_ADJUSTMENT || xionGasValues.gasAdjustment;
+  const gasAdjustmentMargin = GAS_MARGIN || xionGasValues.gasAdjustmentMargin;
 
   const adjustedGas = Math.ceil(
     simmedGas * gasAdjustment + gasAdjustmentMargin,

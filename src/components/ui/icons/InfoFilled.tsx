@@ -3,6 +3,7 @@ import React from "react";
 export const InfoFilledIcon = ({ className }: { className?: string }) => {
   return (
     <svg
+      data-testid="info-filled-icon"
       width="24px"
       height="24px"
       viewBox="0 0 24 24"

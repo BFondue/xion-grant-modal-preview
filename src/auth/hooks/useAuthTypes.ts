@@ -4,9 +4,13 @@ import { getAuthenticatorTypes } from "../lib/auth-types";
 import { Authenticator } from "../../indexer-strategies/types";
 
 export const useAuthTypes = (userIds: string[]) => {
-  const query = useQuery({
+  type AuthTypesRecord = Record<string, string[]>;
+  const emptyAuthTypes: AuthTypesRecord = {};
+
+  const query = useQuery<AuthTypesRecord>({
     queryKey: ["auth-types", userIds],
-    queryFn: () => getAuthenticatorTypes(userIds),
+    queryFn: () =>
+      getAuthenticatorTypes(userIds).then((data) => data ?? emptyAuthTypes),
     enabled:
       userIds.length > 0 && userIds.every((id) => id.startsWith("user-")), // Only enable for Stytch user IDs
   });

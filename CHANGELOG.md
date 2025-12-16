@@ -35,7 +35,6 @@
 ### Minor Changes
 
 - [#260](https://github.com/burnt-labs/xion-dashboard-app/pull/260) [`22abce1`](https://github.com/burnt-labs/xion-dashboard-app/commit/22abce1638dc435c63ab59310619875b1007a3a5) Thanks [@justinbarry](https://github.com/justinbarry)! - Fix duplicate account selection and prevent duplicate authenticators
-
   - Prevent adding duplicate email/OAuth authenticators to accounts
   - Deduplicate accounts in wallet selection view to show each account only once
   - Add duplicate validation for all authenticator types (Keplr, MetaMask, OKX, Passkey)
@@ -54,7 +53,6 @@
 - [#259](https://github.com/burnt-labs/xion-dashboard-app/pull/259) [`f1aa949`](https://github.com/burnt-labs/xion-dashboard-app/commit/f1aa94956849f37bdfc5417684d00c211c25695d) Thanks [@burnt-sun](https://github.com/burnt-sun)! - Fix env variable toggling apple login
 
 - [#261](https://github.com/burnt-labs/xion-dashboard-app/pull/261) [`4d91b0c`](https://github.com/burnt-labs/xion-dashboard-app/commit/4d91b0c39b78bee98787f96781e901d40595d611) Thanks [@justinbarry](https://github.com/justinbarry)! - Fix dialog accessibility warnings and console errors
-
   - Remove nested Dialog wrapper from AbstraxionSignin component to fix dialog-within-dialog issue
   - Fix duplicate key warning in AbstraxionWallets by using unique keys
   - Add React Router v7 future flags to prevent deprecation warnings
@@ -67,7 +65,6 @@
 
 - [#263](https://github.com/burnt-labs/xion-dashboard-app/pull/263) [`472e5ee`](https://github.com/burnt-labs/xion-dashboard-app/commit/472e5ee4fe10c95875790a099023b0f53451c8b1) Thanks [@BurntSpooky](https://github.com/BurntSpooky)! - - Treasury Strategy Pattern: Implemented configurable strategy pattern for loading
   treasury configurations with three strategies:
-
   - DaoDao Strategy: Fetches from DaoDao indexer API with 10-minute TTL caching
   - Direct Query Strategy: Legacy approach querying blockchain directly
   - Composite Strategy (default): DaoDao with automatic fallback to Direct Query
@@ -101,12 +98,10 @@
 ### Minor Changes
 
 - [#249](https://github.com/burnt-labs/xion-dashboard-app/pull/249) [`a40a87e`](https://github.com/burnt-labs/xion-dashboard-app/commit/a40a87e49d6d330baa3f4261634992310fc4092d) Thanks [@justinbarry](https://github.com/justinbarry)! - Add Xion address display to grant permissions page
-
   - Display user's Xion address on the permissions grant page so users know which address is granting permissions
   - Address is responsive: shows full address on desktop, truncated on mobile
 
 - [#247](https://github.com/burnt-labs/xion-dashboard-app/pull/247) [`f6014d1`](https://github.com/burnt-labs/xion-dashboard-app/commit/f6014d1f7e10488a816f0f79ade632fbed01eb9b) Thanks [@justinbarry](https://github.com/justinbarry)! - Optimize login flow to skip account selection for users with 0 or 1 account
-
   - Auto-navigate users with 0 or 1 account directly to permissions screen
   - Auto-create account for users with no accounts (email/social auth only)
   - Auto-select single account without showing selection screen
@@ -268,7 +263,6 @@
 - [#205](https://github.com/burnt-labs/xion-dashboard-app/pull/205) [`cf5aaa2`](https://github.com/burnt-labs/xion-dashboard-app/commit/cf5aaa2266ae57c9f0eea94adf2133e16e7494b2) Thanks [@BurntVal](https://github.com/BurntVal)! - Add instantiate2 description message
 
 - [#195](https://github.com/burnt-labs/xion-dashboard-app/pull/195) [`4d9a877`](https://github.com/burnt-labs/xion-dashboard-app/commit/4d9a8773fed8fc94d558978e4fffdb94c420009f) Thanks [@justinbarry](https://github.com/justinbarry)! - - Add popover tooltips for URL mismatch warnings
-
   - Display the provided and expected uri's inline
 
 - [#170](https://github.com/burnt-labs/xion-dashboard-app/pull/170) [`f681f64`](https://github.com/burnt-labs/xion-dashboard-app/commit/f681f64c270b0df18b06ebc41332168517edc75d) Thanks [@OjiCode](https://github.com/OjiCode)! - Updated main used colors

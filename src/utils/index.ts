@@ -1,3 +1,9 @@
+export { cn } from "./classname-util";
+export * from "./jwt-decoder";
+export * from "./webauthn-utils";
+export * from "./authenticator-utils";
+export { basicFormatCurrency, basicFormatTokenAmount } from "./formatters";
+
 export function truncateAddress(
   address: string | undefined,
   frontLength: number = 8,
@@ -18,7 +24,7 @@ export function getHumanReadablePubkey(pubkey: Uint8Array | undefined) {
     return "";
   }
   const pubUint8Array = new Uint8Array(Object.values(pubkey));
-  const pubBase64 = btoa(String.fromCharCode.apply(null, pubUint8Array));
+  const pubBase64 = btoa(String.fromCharCode(...pubUint8Array));
   return pubBase64;
 }
 
@@ -92,9 +98,6 @@ export function isValidWalletAddress(address: string) {
   return true;
 }
 
-export { chainId, isMainnet } from "./chain-utils";
-
-export { basicFormatCurrency, basicFormatTokenAmount } from "./formatters";
 export {
   formatIBCAddresses,
   IBC_ADDRESS_PATTERN,
