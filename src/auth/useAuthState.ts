@@ -36,6 +36,7 @@ export function useAuthState() {
     // Get snapshot function
     () => AuthStateManager.getState(),
     // Get server snapshot (same for client-only app)
+    /* v8 ignore next */
     () => AuthStateManager.getState(),
   );
 

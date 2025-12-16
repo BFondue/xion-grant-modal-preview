@@ -26,7 +26,8 @@
     "deploy:testnet-beta": "npm run build:testnet-beta && wrangler deploy",
     "publish:packages": "changeset publish",
     "version:packages": "changeset version",
-    "wrangler-dev": "wrangler dev"
+    "wrangler-dev": "wrangler dev",
+    "prepare": "husky"
   },
   "dependencies": {
     "@braintree/sanitize-url": "^7.1.1",
@@ -82,6 +83,7 @@
     "eslint": "^9.39.1",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^15.11.0",
+    "husky": "^9.1.7",
     "jsdom": "^27.2.0",
     "postcss": "^8.4.20",
     "prettier": "^3.6.2",

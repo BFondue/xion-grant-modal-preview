@@ -30,13 +30,13 @@ export function findLowestMissingOrNextIndex(
     authenticators.map((authenticator) => authenticator.authenticatorIndex),
   );
 
-  for (let i = 0; i <= indexSet.size; i++) {
+  let i = 0;
+  while (true) {
     if (!indexSet.has(i)) {
       return i;
     }
+    i++;
   }
-
-  return indexSet.size;
 }
 
 export const capitalizeFirstLetter = (string: string | undefined) => {

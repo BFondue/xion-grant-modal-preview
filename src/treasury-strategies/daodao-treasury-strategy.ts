@@ -104,13 +104,13 @@ export class DaoDaoTreasuryStrategy implements TreasuryStrategy {
       // Extract and validate params from the response - no separate query needed!
       const params: TreasuryParams = {
         display_url: isUrlSafe(allData.params.display_url)
-          ? allData.params.display_url || ""
+          ? (allData.params.display_url as string)
           : "",
         redirect_url: isUrlSafe(allData.params.redirect_url)
-          ? allData.params.redirect_url || ""
+          ? (allData.params.redirect_url as string)
           : "",
         icon_url: isUrlSafe(allData.params.icon_url)
-          ? allData.params.icon_url || ""
+          ? (allData.params.icon_url as string)
           : "",
       };
 
