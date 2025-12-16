@@ -14,7 +14,7 @@ describe("authenticator-helpers", () => {
   describe("findLowestMissingOrNextIndex", () => {
     it("should throw error if authenticators is undefined", () => {
       expect(() => findLowestMissingOrNextIndex(undefined)).toThrow(
-        "Missing authenticators"
+        "Missing authenticators",
       );
     });
 
@@ -183,45 +183,45 @@ describe("authenticator-helpers", () => {
 
   describe("extractUserIdFromAuthenticator", () => {
     it("should extract userId from JWT authenticator", () => {
-      expect(
-        extractUserIdFromAuthenticator("identifier.user123", "JWT")
-      ).toBe("user123");
+      expect(extractUserIdFromAuthenticator("identifier.user123", "JWT")).toBe(
+        "user123",
+      );
     });
 
     it("should extract userId from Jwt authenticator (case variation)", () => {
-      expect(
-        extractUserIdFromAuthenticator("identifier.user456", "Jwt")
-      ).toBe("user456");
+      expect(extractUserIdFromAuthenticator("identifier.user456", "Jwt")).toBe(
+        "user456",
+      );
     });
 
     it("should return null for non-JWT type", () => {
       expect(
-        extractUserIdFromAuthenticator("some.authenticator", "SECP256K1")
+        extractUserIdFromAuthenticator("some.authenticator", "SECP256K1"),
       ).toBeNull();
     });
 
     it("should return null if authenticator has no dot separator", () => {
       expect(
-        extractUserIdFromAuthenticator("nodotauthenticator", "JWT")
+        extractUserIdFromAuthenticator("nodotauthenticator", "JWT"),
       ).toBeNull();
     });
 
     it("should return null for ETHWALLET type", () => {
       expect(
-        extractUserIdFromAuthenticator("identifier.userid", "ETHWALLET")
+        extractUserIdFromAuthenticator("identifier.userid", "ETHWALLET"),
       ).toBeNull();
     });
 
     it("should return null for PASSKEY type", () => {
       expect(
-        extractUserIdFromAuthenticator("identifier.userid", "PASSKEY")
+        extractUserIdFromAuthenticator("identifier.userid", "PASSKEY"),
       ).toBeNull();
     });
 
     it("should handle authenticator with multiple dots", () => {
-      expect(
-        extractUserIdFromAuthenticator("part1.part2.part3", "JWT")
-      ).toBe("part2");
+      expect(extractUserIdFromAuthenticator("part1.part2.part3", "JWT")).toBe(
+        "part2",
+      );
     });
   });
 

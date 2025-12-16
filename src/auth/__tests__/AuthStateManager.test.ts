@@ -32,14 +32,11 @@ describe("AuthStateManager", () => {
     key: vi.fn(),
   };
 
-  // Real localStorage reference for StorageEvent
-  const realLocalStorage = window.localStorage;
-
   beforeEach(async () => {
     vi.clearAllMocks();
 
     // Reset localStorage and sessionStorage mocks
-    Object.defineProperty(window, "localStorage", { 
+    Object.defineProperty(window, "localStorage", {
       value: localStorageMock,
       configurable: true,
     });
@@ -61,23 +58,25 @@ describe("AuthStateManager", () => {
     });
 
     // Mock StorageEvent constructor to avoid jsdom issues
-    const OriginalStorageEvent = StorageEvent;
-    vi.stubGlobal("StorageEvent", class MockStorageEvent extends Event {
-      key: string | null;
-      newValue: string | null;
-      oldValue: string | null;
-      storageArea: Storage | null;
-      url: string;
-      
-      constructor(type: string, eventInitDict?: StorageEventInit) {
-        super(type, eventInitDict);
-        this.key = eventInitDict?.key ?? null;
-        this.newValue = eventInitDict?.newValue ?? null;
-        this.oldValue = eventInitDict?.oldValue ?? null;
-        this.storageArea = eventInitDict?.storageArea ?? null;
-        this.url = eventInitDict?.url ?? "";
-      }
-    });
+    vi.stubGlobal(
+      "StorageEvent",
+      class MockStorageEvent extends Event {
+        key: string | null;
+        newValue: string | null;
+        oldValue: string | null;
+        storageArea: Storage | null;
+        url: string;
+
+        constructor(type: string, eventInitDict?: StorageEventInit) {
+          super(type, eventInitDict);
+          this.key = eventInitDict?.key ?? null;
+          this.newValue = eventInitDict?.newValue ?? null;
+          this.oldValue = eventInitDict?.oldValue ?? null;
+          this.storageArea = eventInitDict?.storageArea ?? null;
+          this.url = eventInitDict?.url ?? "";
+        }
+      },
+    );
 
     // Re-import the module to get a fresh singleton instance
     vi.resetModules();

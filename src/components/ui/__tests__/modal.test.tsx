@@ -9,7 +9,7 @@ describe("Modal Components", () => {
       await render(
         <ModalAnchor>
           <div data-testid="modal-content">Modal Content</div>
-        </ModalAnchor>
+        </ModalAnchor>,
       );
 
       expect(screen.getByTestId("modal-content")).toBeInTheDocument();
@@ -19,7 +19,7 @@ describe("Modal Components", () => {
       await render(
         <ModalAnchor className="custom-anchor-class" data-testid="anchor">
           <div>Content</div>
-        </ModalAnchor>
+        </ModalAnchor>,
       );
 
       const anchor = screen.getByTestId("anchor");
@@ -32,7 +32,7 @@ describe("Modal Components", () => {
       await render(
         <ModalAnchor ref={ref}>
           <div>Content</div>
-        </ModalAnchor>
+        </ModalAnchor>,
       );
 
       expect(ref.current).toBeInstanceOf(HTMLDivElement);
@@ -42,7 +42,7 @@ describe("Modal Components", () => {
       await render(
         <ModalAnchor data-testid="anchor" aria-label="Modal container">
           <div>Content</div>
-        </ModalAnchor>
+        </ModalAnchor>,
       );
 
       const anchor = screen.getByTestId("anchor");
@@ -55,7 +55,7 @@ describe("Modal Components", () => {
       await render(
         <Modal>
           <div data-testid="modal-inner">Inner Content</div>
-        </Modal>
+        </Modal>,
       );
 
       expect(screen.getByTestId("modal-inner")).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("Modal Components", () => {
       await render(
         <Modal className="custom-modal-class" data-testid="modal">
           <div>Content</div>
-        </Modal>
+        </Modal>,
       );
 
       const modal = screen.getByTestId("modal");
@@ -76,7 +76,7 @@ describe("Modal Components", () => {
       await render(
         <Modal data-testid="modal">
           <div>Content</div>
-        </Modal>
+        </Modal>,
       );
 
       const modal = screen.getByTestId("modal");
@@ -87,7 +87,7 @@ describe("Modal Components", () => {
       await render(
         <Modal data-testid="modal" role="dialog">
           <div>Content</div>
-        </Modal>
+        </Modal>,
       );
 
       const modal = screen.getByTestId("modal");
@@ -100,7 +100,7 @@ describe("Modal Components", () => {
       await render(
         <ModalClose>
           <span data-testid="close-icon">×</span>
-        </ModalClose>
+        </ModalClose>,
       );
 
       expect(screen.getByTestId("close-icon")).toBeInTheDocument();
@@ -110,7 +110,7 @@ describe("Modal Components", () => {
       await render(
         <ModalClose className="custom-close-class">
           <span>×</span>
-        </ModalClose>
+        </ModalClose>,
       );
 
       const button = screen.getByRole("button");
@@ -123,7 +123,7 @@ describe("Modal Components", () => {
       const { user } = await render(
         <ModalClose onClick={handleClick}>
           <span>×</span>
-        </ModalClose>
+        </ModalClose>,
       );
 
       await user.click(screen.getByRole("button"));
@@ -134,7 +134,7 @@ describe("Modal Components", () => {
       await render(
         <ModalClose>
           <span>×</span>
-        </ModalClose>
+        </ModalClose>,
       );
 
       const button = screen.getByRole("button");
@@ -147,7 +147,7 @@ describe("Modal Components", () => {
       await render(
         <ModalClose>
           <span>×</span>
-        </ModalClose>
+        </ModalClose>,
       );
 
       const button = screen.getByRole("button");
@@ -160,7 +160,7 @@ describe("Modal Components", () => {
       await render(
         <ModalSection>
           <div data-testid="section-content">Section Content</div>
-        </ModalSection>
+        </ModalSection>,
       );
 
       expect(screen.getByTestId("section-content")).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe("Modal Components", () => {
       await render(
         <ModalSection className="custom-section-class" data-testid="section">
           <div>Content</div>
-        </ModalSection>
+        </ModalSection>,
       );
 
       const section = screen.getByTestId("section");
@@ -181,7 +181,7 @@ describe("Modal Components", () => {
       await render(
         <ModalSection data-testid="section">
           <div>Content</div>
-        </ModalSection>
+        </ModalSection>,
       );
 
       const section = screen.getByTestId("section");
@@ -193,7 +193,7 @@ describe("Modal Components", () => {
       await render(
         <ModalSection data-testid="section" role="region">
           <div>Content</div>
-        </ModalSection>
+        </ModalSection>,
       );
 
       const section = screen.getByTestId("section");
@@ -216,7 +216,7 @@ describe("Modal Components", () => {
               <p>Modal Content</p>
             </ModalSection>
           </Modal>
-        </ModalAnchor>
+        </ModalAnchor>,
       );
 
       expect(screen.getByTestId("anchor")).toBeInTheDocument();

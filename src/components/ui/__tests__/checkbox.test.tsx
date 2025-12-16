@@ -46,7 +46,7 @@ describe("Checkbox", () => {
       return e.target.checked;
     });
     const { user } = await render(
-      <Checkbox onChange={handleChange} id="test-checkbox" />
+      <Checkbox onChange={handleChange} id="test-checkbox" />,
     );
 
     await user.click(screen.getByRole("checkbox"));
@@ -145,7 +145,7 @@ describe("Checkbox", () => {
     it("clicking label toggles checkbox", async () => {
       const handleChange = vi.fn();
       const { user } = await render(
-        <Checkbox onChange={handleChange} label="Clickable label" />
+        <Checkbox onChange={handleChange} label="Clickable label" />,
       );
 
       await user.click(screen.getByText("Clickable label"));
@@ -161,7 +161,7 @@ describe("Checkbox", () => {
     it("does nothing on keyboard when disabled", async () => {
       const handleChange = vi.fn();
       const { user } = await render(
-        <Checkbox disabled onChange={handleChange} label="Disabled" />
+        <Checkbox disabled onChange={handleChange} label="Disabled" />,
       );
 
       const checkbox = screen.getByRole("checkbox");

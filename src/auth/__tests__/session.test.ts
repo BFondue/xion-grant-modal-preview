@@ -54,7 +54,9 @@ describe("JWT Utilities", () => {
     });
 
     it("should throw error for invalid base64", () => {
-      expect(() => decodeJWT("a.!!!invalid!!!.c")).toThrow("Failed to decode JWT");
+      expect(() => decodeJWT("a.!!!invalid!!!.c")).toThrow(
+        "Failed to decode JWT",
+      );
     });
 
     it("should handle URL-safe base64 characters", () => {
@@ -396,7 +398,7 @@ describe("SessionManager", () => {
       length: 0,
       key: vi.fn(),
     };
-    
+
     Object.defineProperty(window, "sessionStorage", {
       value: mockSessionStorage,
       writable: true,
@@ -634,9 +636,7 @@ describe("SessionManager", () => {
       });
 
       // Should not throw
-      expect(() =>
-        SessionManager.setSession(testOrigin, "jwt"),
-      ).not.toThrow();
+      expect(() => SessionManager.setSession(testOrigin, "jwt")).not.toThrow();
     });
   });
 

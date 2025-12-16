@@ -49,7 +49,7 @@ describe("Button", () => {
 
     it("applies destructive-outline structure styles", async () => {
       await render(
-        <Button structure="destructive-outline">Destructive Outline</Button>
+        <Button structure="destructive-outline">Destructive Outline</Button>,
       );
       const button = screen.getByRole("button");
       expect(button).toHaveClass("ui-border");
@@ -71,7 +71,7 @@ describe("Button", () => {
       await render(
         <Button disabled structure="outlined">
           Disabled Outlined
-        </Button>
+        </Button>,
       );
       const button = screen.getByRole("button");
       expect(button).toHaveClass("ui-bg-transparent");
@@ -84,7 +84,7 @@ describe("Button", () => {
       await render(
         <Button disabled structure="naked">
           Disabled Naked
-        </Button>
+        </Button>,
       );
       const button = screen.getByRole("button");
       expect(button).toHaveClass("ui-border-none");
@@ -97,7 +97,7 @@ describe("Button", () => {
       await render(
         <Button disabled structure="destructive">
           Disabled Destructive
-        </Button>
+        </Button>,
       );
       const button = screen.getByRole("button");
       expect(button).toHaveClass("ui-bg-red-500/60");
@@ -123,7 +123,7 @@ describe("Button", () => {
     it("calls onClick when clicked", async () => {
       const handleClick = vi.fn();
       const { user } = await render(
-        <Button onClick={handleClick}>Clickable</Button>
+        <Button onClick={handleClick}>Clickable</Button>,
       );
 
       await user.click(screen.getByRole("button"));
@@ -133,7 +133,7 @@ describe("Button", () => {
     it("passes event to onClick handler", async () => {
       const handleClick = vi.fn();
       const { user } = await render(
-        <Button onClick={handleClick}>Clickable</Button>
+        <Button onClick={handleClick}>Clickable</Button>,
       );
 
       await user.click(screen.getByRole("button"));
@@ -162,7 +162,7 @@ describe("Button", () => {
       await render(
         <Button data-testid="test-button" aria-label="Test button">
           Props Test
-        </Button>
+        </Button>,
       );
       const button = screen.getByTestId("test-button");
       expect(button).toHaveAttribute("aria-label", "Test button");

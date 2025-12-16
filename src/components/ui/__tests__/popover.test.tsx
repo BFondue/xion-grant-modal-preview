@@ -29,7 +29,7 @@ describe("Popover Components", () => {
           <PopoverContent>
             <div data-testid="popover-content">Popover Content</div>
           </PopoverContent>
-        </Popover>
+        </Popover>,
       );
 
       // Trigger should be visible
@@ -54,7 +54,7 @@ describe("Popover Components", () => {
           <PopoverContent>
             <div data-testid="popover-content">Content</div>
           </PopoverContent>
-        </Popover>
+        </Popover>,
       );
 
       // Open
@@ -74,10 +74,13 @@ describe("Popover Components", () => {
           <PopoverTrigger asChild>
             <button>Open</button>
           </PopoverTrigger>
-          <PopoverContent className="custom-popover-class" data-testid="content">
+          <PopoverContent
+            className="custom-popover-class"
+            data-testid="content"
+          >
             Content
           </PopoverContent>
-        </Popover>
+        </Popover>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -92,10 +95,8 @@ describe("Popover Components", () => {
           <PopoverTrigger asChild>
             <button>Open</button>
           </PopoverTrigger>
-          <PopoverContent data-testid="content">
-            Content
-          </PopoverContent>
-        </Popover>
+          <PopoverContent data-testid="content">Content</PopoverContent>
+        </Popover>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -116,7 +117,7 @@ describe("Popover Components", () => {
             <span data-testid="child-1">Child 1</span>
             <span data-testid="child-2">Child 2</span>
           </PopoverContent>
-        </Popover>
+        </Popover>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -136,7 +137,7 @@ describe("Popover Components", () => {
           <PopoverContent ref={ref} data-testid="content">
             Content
           </PopoverContent>
-        </Popover>
+        </Popover>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -153,7 +154,7 @@ describe("Popover Components", () => {
           <PopoverContent data-testid="content" aria-label="Popover menu">
             Content
           </PopoverContent>
-        </Popover>
+        </Popover>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -171,7 +172,7 @@ describe("Popover Components", () => {
             <button data-testid="custom-trigger">Custom Button</button>
           </PopoverTrigger>
           <PopoverContent>Content</PopoverContent>
-        </Popover>
+        </Popover>,
       );
 
       const trigger = screen.getByTestId("custom-trigger");

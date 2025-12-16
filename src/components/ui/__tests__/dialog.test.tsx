@@ -1,5 +1,13 @@
 import React from "react";
-import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeAll,
+  afterAll,
+  afterEach,
+} from "vitest";
 import { render, screen, waitFor } from "../../../test";
 import {
   Dialog,
@@ -10,8 +18,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogClose,
-  DialogOverlay,
-  DialogPortal,
 } from "../dialog";
 
 // Mock ResizeObserver
@@ -53,7 +59,7 @@ describe("Dialog Components", () => {
             <DialogTitle>Dialog Title</DialogTitle>
             <DialogDescription>Dialog description</DialogDescription>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       expect(screen.getByText("Open Dialog")).toBeInTheDocument();
@@ -77,7 +83,7 @@ describe("Dialog Components", () => {
           <DialogContent>
             <div data-testid="content">Test Content</div>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -96,7 +102,7 @@ describe("Dialog Components", () => {
           <DialogContent closeButton>
             <DialogTitle>Title</DialogTitle>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -115,7 +121,7 @@ describe("Dialog Components", () => {
           <DialogContent className="custom-dialog-class">
             <DialogTitle>Title</DialogTitle>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -135,7 +141,7 @@ describe("Dialog Components", () => {
           <DialogContent closeButton>
             <DialogTitle>Title</DialogTitle>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -160,7 +166,7 @@ describe("Dialog Components", () => {
           <DialogContent overApp>
             <DialogTitle>Title</DialogTitle>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -183,7 +189,7 @@ describe("Dialog Components", () => {
               <DialogTitle>Header Title</DialogTitle>
             </DialogHeader>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -205,7 +211,7 @@ describe("Dialog Components", () => {
               <DialogTitle>Title</DialogTitle>
             </DialogHeader>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -230,7 +236,7 @@ describe("Dialog Components", () => {
               <button>Confirm</button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -254,7 +260,7 @@ describe("Dialog Components", () => {
               <button>OK</button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -275,7 +281,7 @@ describe("Dialog Components", () => {
           <DialogContent>
             <DialogTitle>My Dialog Title</DialogTitle>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -296,7 +302,7 @@ describe("Dialog Components", () => {
               Title
             </DialogTitle>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -318,7 +324,7 @@ describe("Dialog Components", () => {
             <DialogTitle>Title</DialogTitle>
             <DialogDescription>This is a description</DialogDescription>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -340,7 +346,7 @@ describe("Dialog Components", () => {
               Description
             </DialogDescription>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -361,7 +367,7 @@ describe("Dialog Components", () => {
           <DialogContent>
             <DialogTitle>Title</DialogTitle>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -380,7 +386,7 @@ describe("Dialog Components", () => {
           <DialogContent overApp>
             <DialogTitle>Title</DialogTitle>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -404,7 +410,7 @@ describe("Dialog Components", () => {
               <button data-testid="close-btn">Close</button>
             </DialogClose>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open"));
@@ -445,7 +451,7 @@ describe("Dialog Components", () => {
               <button>Submit</button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog>,
       );
 
       await user.click(screen.getByText("Open Full Dialog"));
@@ -453,7 +459,7 @@ describe("Dialog Components", () => {
       await waitFor(() => {
         expect(screen.getByText("Complete Dialog")).toBeInTheDocument();
         expect(
-          screen.getByText("This is a complete dialog with all components")
+          screen.getByText("This is a complete dialog with all components"),
         ).toBeInTheDocument();
         expect(screen.getByText("Main content area")).toBeInTheDocument();
         expect(screen.getByText("Cancel")).toBeInTheDocument();

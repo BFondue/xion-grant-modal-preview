@@ -74,8 +74,9 @@ export const AbstraxionGrant = ({
   const { data: account } = useAbstraxionAccount();
   const { redirect_uri, state } = useQueryParams(["redirect_uri", "state"]);
   const { xionDisconnect } = useXionDisconnect();
-  const { chainInfo, abstraxionError, setAbstraxionError } =
-    useContext(AbstraxionContext) as AbstraxionContextProps;
+  const { chainInfo, abstraxionError, setAbstraxionError } = useContext(
+    AbstraxionContext,
+  ) as AbstraxionContextProps;
 
   // abstractAccount from context can be used as fallback when account from indexer is not yet available
   // This happens when the account is freshly created and indexer hasn't caught up

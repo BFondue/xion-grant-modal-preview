@@ -44,50 +44,61 @@ describe("Banner", () => {
     return render(
       <AbstraxionContext.Provider value={contextValue}>
         <Banner />
-      </AbstraxionContext.Provider>
+      </AbstraxionContext.Provider>,
     );
   };
 
   it("should render banner on xion-testnet-1", async () => {
     await renderWithContext("xion-testnet-1");
-    
-    expect(screen.getByText(/We are migrating to testnet-2 soon!/)).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/We are migrating to testnet-2 soon!/),
+    ).toBeInTheDocument();
   });
 
   it("should not render banner on mainnet", async () => {
     await renderWithContext("xion-mainnet-1");
-    
-    expect(screen.queryByText(/We are migrating to testnet-2 soon!/)).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByText(/We are migrating to testnet-2 soon!/),
+    ).not.toBeInTheDocument();
   });
 
   it("should not render banner if already dismissed", async () => {
     localStorageMock.getItem.mockReturnValue("true");
-    
+
     await renderWithContext("xion-testnet-1");
-    
-    expect(screen.queryByText(/We are migrating to testnet-2 soon!/)).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByText(/We are migrating to testnet-2 soon!/),
+    ).not.toBeInTheDocument();
   });
 
   it("should dismiss banner when close button is clicked", async () => {
     const { user } = await renderWithContext("xion-testnet-1");
-    
+
     const dismissButton = screen.getByRole("button", { name: /dismiss/i });
     await user.click(dismissButton);
-    
-    expect(localStorageMock.setItem).toHaveBeenCalledWith("banner_dismissed", "true");
-    expect(screen.queryByText(/We are migrating to testnet-2 soon!/)).not.toBeInTheDocument();
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      "banner_dismissed",
+      "true",
+    );
+    expect(
+      screen.queryByText(/We are migrating to testnet-2 soon!/),
+    ).not.toBeInTheDocument();
   });
 
   it("should open GitHub link when Learn more is clicked", async () => {
     const { user } = await renderWithContext("xion-testnet-1");
-    
+
     const learnMoreButton = screen.getByRole("button", { name: /learn more/i });
     await user.click(learnMoreButton);
-    
+
     expect(windowOpenMock).toHaveBeenCalledWith(
       "https://github.com/orgs/burnt-labs/discussions/1",
       "_blank",
-      "noopener,noreferrer"
+      "noopener,noreferrer",
     );
   });
 
@@ -104,10 +115,12 @@ describe("Banner", () => {
     await render(
       <AbstraxionContext.Provider value={contextValue}>
         <Banner className="custom-class" />
-      </AbstraxionContext.Provider>
+      </AbstraxionContext.Provider>,
     );
-    
-    const banner = screen.getByText(/We are migrating to testnet-2 soon!/).closest("div[class*='ui-w-full']");
+
+    const banner = screen
+      .getByText(/We are migrating to testnet-2 soon!/)
+      .closest("div[class*='ui-w-full']");
     expect(banner).toHaveClass("custom-class");
   });
 
@@ -124,9 +137,11 @@ describe("Banner", () => {
     await render(
       <AbstraxionContext.Provider value={contextValue}>
         <Banner />
-      </AbstraxionContext.Provider>
+      </AbstraxionContext.Provider>,
     );
-    
-    expect(screen.queryByText(/We are migrating to testnet-2 soon!/)).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByText(/We are migrating to testnet-2 soon!/),
+    ).not.toBeInTheDocument();
   });
 });

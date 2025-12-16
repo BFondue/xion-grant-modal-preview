@@ -13,7 +13,7 @@ vi.mock("../AuthStateManager", () => {
     error: null,
   };
 
-  let listeners: Set<() => void> = new Set();
+  const listeners: Set<() => void> = new Set();
 
   return {
     AuthStateManager: {
@@ -78,7 +78,11 @@ describe("useAuthState", () => {
       (AuthStateManager as any)._setMockState({
         status: "connected",
         connectionType: "stytch",
-        account: { id: "xion1test", currentAuthenticatorIndex: 0, authenticators: [] },
+        account: {
+          id: "xion1test",
+          currentAuthenticatorIndex: 0,
+          authenticators: [],
+        },
         authenticator: "test-auth",
         error: null,
       });
@@ -127,7 +131,11 @@ describe("useAuthState", () => {
       (AuthStateManager as any)._setMockState({
         status: "connected",
         connectionType: "stytch",
-        account: { id: "xion1myaddress", currentAuthenticatorIndex: 0, authenticators: [] },
+        account: {
+          id: "xion1myaddress",
+          currentAuthenticatorIndex: 0,
+          authenticators: [],
+        },
         authenticator: "test-auth",
         error: null,
       });
@@ -154,7 +162,7 @@ describe("useAuthState", () => {
 
       expect(AuthStateManager.startLogin).toHaveBeenCalledWith(
         "stytch",
-        "test-authenticator"
+        "test-authenticator",
       );
     });
 
@@ -183,7 +191,7 @@ describe("useAuthState", () => {
 
       expect(AuthStateManager.logout).toHaveBeenCalledWith(
         "https://example.com",
-        mockStytchClient
+        mockStytchClient,
       );
     });
 
@@ -196,15 +204,17 @@ describe("useAuthState", () => {
 
       expect(AuthStateManager.setOkxData).toHaveBeenCalledWith(
         "xion1okx",
-        "OKX Wallet"
+        "OKX Wallet",
       );
     });
 
     it("should call AuthStateManager.getOkxData", () => {
-      (AuthStateManager.getOkxData as ReturnType<typeof vi.fn>).mockReturnValue({
-        address: "xion1okxaddr",
-        name: "My OKX",
-      });
+      (AuthStateManager.getOkxData as ReturnType<typeof vi.fn>).mockReturnValue(
+        {
+          address: "xion1okxaddr",
+          name: "My OKX",
+        },
+      );
 
       const { result } = renderHook(() => useAuthState());
 
@@ -222,7 +232,7 @@ describe("useAuthState", () => {
       });
 
       expect(AuthStateManager.setError).toHaveBeenCalledWith(
-        "Something went wrong"
+        "Something went wrong",
       );
     });
 
@@ -272,7 +282,7 @@ describe("useAuthState", () => {
     it("should unsubscribe on unmount", () => {
       const unsubscribe = vi.fn();
       (AuthStateManager.subscribe as ReturnType<typeof vi.fn>).mockReturnValue(
-        unsubscribe
+        unsubscribe,
       );
 
       const { unmount } = renderHook(() => useAuthState());

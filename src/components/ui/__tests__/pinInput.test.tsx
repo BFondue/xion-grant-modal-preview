@@ -58,7 +58,7 @@ describe("PinInput", () => {
   it("calls onComplete when all digits are entered", async () => {
     const onComplete = vi.fn();
     const { user } = await render(
-      <PinInput {...defaultProps} onComplete={onComplete} length={4} />
+      <PinInput {...defaultProps} onComplete={onComplete} length={4} />,
     );
 
     const inputs = screen.getAllByRole("textbox");
@@ -74,7 +74,7 @@ describe("PinInput", () => {
   it("clears error on input", async () => {
     const setError = vi.fn();
     const { user } = await render(
-      <PinInput {...defaultProps} setError={setError} error="Invalid code" />
+      <PinInput {...defaultProps} setError={setError} error="Invalid code" />,
     );
 
     const inputs = screen.getAllByRole("textbox");
@@ -103,7 +103,7 @@ describe("PinInput", () => {
   it("handles paste event with valid digits", async () => {
     const onComplete = vi.fn();
     const { user } = await render(
-      <PinInput {...defaultProps} onComplete={onComplete} length={6} />
+      <PinInput {...defaultProps} onComplete={onComplete} length={6} />,
     );
 
     const inputs = screen.getAllByRole("textbox");
@@ -125,7 +125,7 @@ describe("PinInput", () => {
   it("handles paste with mixed characters (filters non-digits)", async () => {
     const onComplete = vi.fn();
     const { user } = await render(
-      <PinInput {...defaultProps} onComplete={onComplete} length={4} />
+      <PinInput {...defaultProps} onComplete={onComplete} length={4} />,
     );
 
     const inputs = screen.getAllByRole("textbox");
@@ -144,7 +144,7 @@ describe("PinInput", () => {
   it("handles paste with fewer digits than fields", async () => {
     const onComplete = vi.fn();
     const { user } = await render(
-      <PinInput {...defaultProps} onComplete={onComplete} length={6} />
+      <PinInput {...defaultProps} onComplete={onComplete} length={6} />,
     );
 
     const inputs = screen.getAllByRole("textbox");
@@ -158,12 +158,10 @@ describe("PinInput", () => {
   });
 
   it("applies error styling when error is present", async () => {
-    await render(
-      <PinInput {...defaultProps} error="Invalid code" />
-    );
+    await render(<PinInput {...defaultProps} error="Invalid code" />);
 
     const inputs = screen.getAllByRole("textbox");
-    
+
     inputs.forEach((input) => {
       expect(input).toHaveClass("ui-border-red-500");
     });
@@ -173,7 +171,7 @@ describe("PinInput", () => {
     await render(<PinInput {...defaultProps} />);
 
     const inputs = screen.getAllByRole("textbox");
-    
+
     inputs.forEach((input) => {
       expect(input).toHaveClass("ui-border-zinc-600");
     });
@@ -183,7 +181,7 @@ describe("PinInput", () => {
     await render(<PinInput {...defaultProps} />);
 
     const inputs = screen.getAllByRole("textbox");
-    
+
     inputs.forEach((input) => {
       expect(input).toHaveAttribute("maxLength", "1");
     });

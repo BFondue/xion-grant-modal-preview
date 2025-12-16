@@ -39,7 +39,9 @@ describe("Icon Components", () => {
   describe("AccountWalletLogo", () => {
     it("renders correctly", async () => {
       await render(<AccountWalletLogo />);
-      expect(screen.getByTestId("account-wallet-logo-icon")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("account-wallet-logo-icon"),
+      ).toBeInTheDocument();
     });
   });
 
@@ -143,7 +145,9 @@ describe("Icon Components", () => {
 
     it("applies custom className", async () => {
       await render(<EthereumLogo className="custom-eth" />);
-      expect(screen.getByTestId("ethereum-logo-icon")).toHaveClass("custom-eth");
+      expect(screen.getByTestId("ethereum-logo-icon")).toHaveClass(
+        "custom-eth",
+      );
     });
   });
 
@@ -247,7 +251,9 @@ describe("Icon Components", () => {
 
     it("applies custom className", async () => {
       await render(<CosmosLogo className="custom-cosmos" />);
-      expect(screen.getByTestId("cosmos-logo-icon")).toHaveClass("custom-cosmos");
+      expect(screen.getByTestId("cosmos-logo-icon")).toHaveClass(
+        "custom-cosmos",
+      );
     });
   });
 
