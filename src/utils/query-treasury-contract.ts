@@ -134,6 +134,8 @@ const CosmosAuthzPermission: { [key: string]: string } = {
     "update the admin of smart contracts on your behalf",
   "/cosmwasm.wasm.v1.MsgClearAdmin":
     "clear the admin of smart contracts on your behalf",
+  "/osmosis.tokenfactory.v1beta1.MsgMint": "mint tokens on your behalf",
+  "/osmosis.tokenfactory.v1beta1.MsgBurn": "burn tokens on your behalf",
 };
 
 export interface TreasuryContractResponse {
