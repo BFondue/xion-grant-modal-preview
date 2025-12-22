@@ -101,7 +101,9 @@ export const AbstraxionGrant = ({
   const [securityRiskCollapsed, setSecurityRiskCollapsed] = useState(false);
 
   // Check if redirect_uri is the official OAuth2 address
-  const isOfficialOAuth2Redirect = (uri: string | null | undefined): boolean => {
+  const isOfficialOAuth2Redirect = (
+    uri: string | null | undefined,
+  ): boolean => {
     if (!uri) return false;
     try {
       const url = new URL(uri);
@@ -126,7 +128,10 @@ export const AbstraxionGrant = ({
     }
 
     // If is_oauth2_app is true and redirect_uri is official OAuth2 address, it's valid
-    if (treasuryParams.is_oauth2_app && isOfficialOAuth2Redirect(redirect_uri)) {
+    if (
+      treasuryParams.is_oauth2_app &&
+      isOfficialOAuth2Redirect(redirect_uri)
+    ) {
       return true;
     }
 
