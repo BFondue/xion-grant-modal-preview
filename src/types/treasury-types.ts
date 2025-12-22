@@ -6,6 +6,7 @@ export interface TreasuryParams {
   display_url: string;
   redirect_url: string;
   icon_url: string;
+  is_oauth2_app?: boolean;
 }
 
 export interface GrantConfigByTypeUrl {

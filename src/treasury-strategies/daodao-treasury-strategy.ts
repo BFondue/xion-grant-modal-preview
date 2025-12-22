@@ -32,6 +32,7 @@ interface TreasuryIndexerAllResponse {
     redirect_url?: string;
     metadata?: string;
     display_url?: string; // might not be in response
+    is_oauth2_app?: boolean;
   };
   feeConfig?: unknown;
   admin?: string;
@@ -112,6 +113,7 @@ export class DaoDaoTreasuryStrategy implements TreasuryStrategy {
         icon_url: isUrlSafe(allData.params.icon_url)
           ? (allData.params.icon_url as string)
           : "",
+        is_oauth2_app: allData.params.is_oauth2_app ?? false,
       };
 
       return {

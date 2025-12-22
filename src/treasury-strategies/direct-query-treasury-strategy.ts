@@ -85,6 +85,7 @@ export class DirectQueryTreasuryStrategy implements TreasuryStrategy {
         display_url: isUrlSafe(params.display_url) ? params.display_url : "",
         redirect_url: isUrlSafe(params.redirect_url) ? params.redirect_url : "",
         icon_url: isUrlSafe(params.icon_url) ? params.icon_url : "",
+        is_oauth2_app: params.is_oauth2_app ?? false,
       };
     } catch (error) {
       console.warn("Error querying treasury params:", error);
@@ -93,6 +94,7 @@ export class DirectQueryTreasuryStrategy implements TreasuryStrategy {
         display_url: "",
         redirect_url: "",
         icon_url: "",
+        is_oauth2_app: false,
       };
     }
   }
