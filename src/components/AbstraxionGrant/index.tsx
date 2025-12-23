@@ -497,7 +497,14 @@ export const AbstraxionGrant = ({
             ) : (
               <>
                 {treasuryParams.icon_url || treasuryParams.redirect_url ? (
-                  <div className="ui-mt-8 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
+                  <div className="ui-relative ui-mt-8 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
+                    {isOfficialOAuth2Redirect(redirect_uri) && (
+                      <div className="ui-absolute ui-top-2 ui-right-2 ui-px-4 ui-py-2 ui-bg-blue-500/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-shadow-lg ui-z-10">
+                        <span className="ui-text-blue-300 ui-font-bold ui-text-sm ui-uppercase ui-tracking-wide">
+                          OAuth2 App
+                        </span>
+                      </div>
+                    )}
                     {treasuryParams.icon_url && (
                       <div className="ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
                         <FallbackImage
@@ -514,16 +521,16 @@ export const AbstraxionGrant = ({
                         {treasuryParams.redirect_url}
                       </div>
                     )}
+                  </div>
+                ) : (
+                  <div className="ui-relative ui-mb-8 ui-mt-6 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
                     {isOfficialOAuth2Redirect(redirect_uri) && (
-                      <div className="ui-px-4 ui-py-2 ui-bg-blue-500/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-shadow-lg">
+                      <div className="ui-absolute ui-top-2 ui-right-2 ui-px-4 ui-py-2 ui-bg-blue-500/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-shadow-lg ui-z-10">
                         <span className="ui-text-blue-300 ui-font-bold ui-text-sm ui-uppercase ui-tracking-wide">
                           OAuth2 App
                         </span>
                       </div>
                     )}
-                  </div>
-                ) : (
-                  <div className="ui-mb-8 ui-mt-6 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
                     <div className="ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
                       <FallbackImage
                         src={burntAvatar}
@@ -533,13 +540,6 @@ export const AbstraxionGrant = ({
                         className="ui-object-cover"
                       />
                     </div>
-                    {isOfficialOAuth2Redirect(redirect_uri) && (
-                      <div className="ui-px-4 ui-py-2 ui-bg-blue-500/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-shadow-lg">
-                        <span className="ui-text-blue-300 ui-font-bold ui-text-sm ui-uppercase ui-tracking-wide">
-                          OAuth2 App
-                        </span>
-                      </div>
-                    )}
                   </div>
                 )}
               </>
