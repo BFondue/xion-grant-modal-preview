@@ -4,7 +4,9 @@ import type {
   GrantConfigByTypeUrl,
   GrantConfigTypeUrlsResponse,
   TreasuryParams,
+  TreasuryParamsChain,
 } from "../types/treasury-types";
+import { parseTreasuryParams } from "../types/treasury-types";
 import { isUrlSafe } from "../utils/url";
 
 /**
@@ -75,26 +77,28 @@ export class DirectQueryTreasuryStrategy implements TreasuryStrategy {
   ): Promise<TreasuryParams> {
     try {
       const queryParams = { params: {} };
-      const params = (await client.queryContractSmart(
+      const chainParams = (await client.queryContractSmart(
         treasuryAddress,
         queryParams,
-      )) as TreasuryParams;
+      )) as TreasuryParamsChain;
 
       // Validate URLs for security
-      return {
-        display_url: isUrlSafe(params.display_url) ? params.display_url : "",
-        redirect_url: isUrlSafe(params.redirect_url) ? params.redirect_url : "",
-        icon_url: isUrlSafe(params.icon_url) ? params.icon_url : "",
-        is_oauth2_app: params.is_oauth2_app ?? false,
+      const validatedChainParams: TreasuryParamsChain = {
+        redirect_url: isUrlSafe(chainParams.redirect_url)
+          ? chainParams.redirect_url
+          : "",
+        icon_url: isUrlSafe(chainParams.icon_url) ? chainParams.icon_url : "",
+        metadata: chainParams.metadata || "{}",
       };
+      return parseTreasuryParams(validatedChainParams);
     } catch (error) {
       console.warn("Error querying treasury params:", error);
       // Return safe defaults
       return {
-        display_url: "",
+        display_url: undefined,
         redirect_url: "",
         icon_url: "",
-        is_oauth2_app: false,
+        metadata: {},
       };
     }
   }

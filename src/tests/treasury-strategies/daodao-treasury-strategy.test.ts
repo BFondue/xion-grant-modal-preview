@@ -42,9 +42,9 @@ describe("DaoDaoTreasuryStrategy", () => {
         },
       },
       params: {
-        display_url: "https://example.com/",
         redirect_url: "https://example.com/redirect",
         icon_url: "https://example.com/icon.png",
+        metadata: JSON.stringify({ is_oauth2_app: false }),
       },
     };
 
@@ -70,9 +70,10 @@ describe("DaoDaoTreasuryStrategy", () => {
     expect(result).not.toBeNull();
     expect(result?.grantConfigs).toHaveLength(1);
     expect(result?.grantConfigs[0].description).toBe("Test grant");
-    expect(result?.params.display_url).toBe("https://example.com/");
+    expect(result?.params.display_url).toBeUndefined();
     expect(result?.params.redirect_url).toBe("https://example.com/redirect");
     expect(result?.params.icon_url).toBe("https://example.com/icon.png");
+    expect(result?.params.metadata).toEqual({ is_oauth2_app: false });
   });
 
   it("should return cached data on subsequent calls", async () => {
@@ -87,9 +88,9 @@ describe("DaoDaoTreasuryStrategy", () => {
         },
       },
       params: {
-        display_url: "https://cached.com",
         redirect_url: "https://cached.com/redirect",
         icon_url: "https://cached.com/icon.png",
+        metadata: JSON.stringify({ is_oauth2_app: true }),
       },
     };
 
@@ -200,7 +201,9 @@ describe("DaoDaoTreasuryStrategy", () => {
     const invalidResponse = {
       // Missing grantConfigs
       params: {
-        display_url: "https://example.com",
+        redirect_url: "https://example.com",
+        icon_url: "",
+        metadata: "{}",
       },
     };
 
@@ -230,9 +233,9 @@ describe("DaoDaoTreasuryStrategy", () => {
     const mockResponse = {
       grantConfigs: {},
       params: {
-        display_url: "javascript:alert('xss')",
         redirect_url: "https://safe.com/",
         icon_url: "data:text/html,<script>alert('xss')</script>",
+        metadata: JSON.stringify({ is_oauth2_app: false }),
       },
     };
 
@@ -256,9 +259,10 @@ describe("DaoDaoTreasuryStrategy", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result?.params.display_url).toBe(""); // Unsafe URL should be empty
+    expect(result?.params.display_url).toBeUndefined();
     expect(result?.params.redirect_url).toBe("https://safe.com/"); // Safe URL preserved
     expect(result?.params.icon_url).toBe(""); // Unsafe URL should be empty
+    expect(result?.params.metadata).toEqual({ is_oauth2_app: false });
   });
 
   it("should reject response that is not an object", async () => {
@@ -428,9 +432,9 @@ describe("DaoDaoTreasuryStrategy", () => {
     const mockResponse = {
       grantConfigs: {},
       params: {
-        display_url: "https://example.com",
         redirect_url: "https://example.com/redirect",
         icon_url: "https://example.com/icon.png",
+        metadata: JSON.stringify({ is_oauth2_app: false }),
       },
     };
 
@@ -505,9 +509,9 @@ describe("DaoDaoTreasuryStrategy", () => {
     const mockResponse = {
       grantConfigs: {},
       params: {
-        display_url: "javascript:alert('xss')",
         redirect_url: "data:text/html,<script>alert('xss')</script>",
         icon_url: "https://example.com/icon.png", // Safe URL
+        metadata: JSON.stringify({ is_oauth2_app: false }),
       },
     };
 
@@ -531,18 +535,19 @@ describe("DaoDaoTreasuryStrategy", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result?.params.display_url).toBe(""); // Should be sanitized
+    expect(result?.params.display_url).toBeUndefined();
     expect(result?.params.redirect_url).toBe(""); // Should be sanitized
     expect(result?.params.icon_url).toBe("https://example.com/icon.png"); // Should be preserved
+    expect(result?.params.metadata).toEqual({ is_oauth2_app: false });
   });
 
   it("should handle missing or empty URLs", async () => {
     const mockResponse = {
       grantConfigs: {},
       params: {
-        // Missing display_url
         redirect_url: "", // Empty string
         icon_url: null, // Null
+        metadata: "{}", // Empty metadata
       },
     };
 
@@ -566,8 +571,9 @@ describe("DaoDaoTreasuryStrategy", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result?.params.display_url).toBe("");
+    expect(result?.params.display_url).toBeUndefined();
     expect(result?.params.redirect_url).toBe("");
     expect(result?.params.icon_url).toBe("");
+    expect(result?.params.metadata).toEqual({});
   });
 });

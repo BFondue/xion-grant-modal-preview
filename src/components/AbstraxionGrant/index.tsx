@@ -93,7 +93,7 @@ export const AbstraxionGrant = ({
     display_url: "",
     redirect_url: "",
     icon_url: "",
-    is_oauth2_app: false,
+    metadata: {},
   });
   const [urlMismatchConfirmed, setUrlMismatchConfirmed] = useState(false);
   const [grantError, setGrantError] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export const AbstraxionGrant = ({
 
     // If is_oauth2_app is true and redirect_uri is official OAuth2 address, it's valid
     if (
-      treasuryParams.is_oauth2_app &&
+      treasuryParams.metadata?.is_oauth2_app &&
       isOfficialOAuth2Redirect(redirect_uri)
     ) {
       return true;
