@@ -45,6 +45,7 @@ import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
 import FallbackImage from "../FallbackImage";
 import { getDomainAndProtocol, isUrlSafe, urlsMatch } from "../../utils/url";
 import { ChevronDownIcon, WarningIcon } from "../ui/icons";
+import { isMainnet } from "../../config";
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -92,16 +93,56 @@ export const AbstraxionGrant = ({
     display_url: "",
     redirect_url: "",
     icon_url: "",
+    metadata: {},
   });
   const [urlMismatchConfirmed, setUrlMismatchConfirmed] = useState(false);
   const [grantError, setGrantError] = useState<string | null>(null);
   const [retryCooldown, setRetryCooldown] = useState(0);
   const [securityRiskCollapsed, setSecurityRiskCollapsed] = useState(false);
+
+  // Check if redirect_uri is the official OAuth2 address
+  const isOfficialOAuth2Redirect = (
+    uri: string | null | undefined,
+  ): boolean => {
+    if (!uri) return false;
+    try {
+      const url = new URL(uri);
+      const officialOAuth2Domain = isMainnet()
+        ? "oauth2.burnt.com"
+        : "oauth2.testnet.burnt.com";
+      return url.hostname === officialOAuth2Domain;
+    } catch {
+      return false;
+    }
+  };
+
+  // Check if redirect_uri matches treasury params or is official OAuth2 when isOAuth2App is true
+  const isRedirectUriValid = (): boolean => {
+    if (!treasury || !redirect_uri || !treasuryParams.redirect_url) {
+      return true; // If no redirect_uri provided, consider it valid
+    }
+
+    // If it matches the configured redirect_url, it's valid
+    if (urlsMatch(treasuryParams.redirect_url, redirect_uri)) {
+      return true;
+    }
+
+    // If is_oauth2_app is true and redirect_uri is official OAuth2 address, it's valid
+    if (
+      treasuryParams.metadata?.is_oauth2_app &&
+      isOfficialOAuth2Redirect(redirect_uri)
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
   const hasUrlMismatch =
     treasury &&
     !!treasuryParams.redirect_url &&
     redirect_uri &&
-    !urlsMatch(treasuryParams.redirect_url, redirect_uri);
+    !isRedirectUriValid();
 
   useEffect(
     function handleSuccessCallback() {
@@ -456,7 +497,14 @@ export const AbstraxionGrant = ({
             ) : (
               <>
                 {treasuryParams.icon_url || treasuryParams.redirect_url ? (
-                  <div className="ui-mt-8 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
+                  <div className="ui-relative ui-mt-8 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
+                    {isOfficialOAuth2Redirect(redirect_uri) && (
+                      <div className="ui-absolute ui-top-2 ui-right-2 ui-px-4 ui-py-2 ui-bg-blue-500/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-shadow-lg ui-z-10">
+                        <span className="ui-text-blue-300 ui-font-bold ui-text-sm ui-uppercase ui-tracking-wide">
+                          OAuth2 App
+                        </span>
+                      </div>
+                    )}
                     {treasuryParams.icon_url && (
                       <div className="ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
                         <FallbackImage
@@ -475,14 +523,23 @@ export const AbstraxionGrant = ({
                     )}
                   </div>
                 ) : (
-                  <div className="ui-mb-8 ui-mt-6 ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
-                    <FallbackImage
-                      src={burntAvatar}
-                      fallbackSrc={burntAvatar}
-                      alt="App Icon"
-                      width={70}
-                      className="ui-object-cover"
-                    />
+                  <div className="ui-relative ui-mb-8 ui-mt-6 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
+                    {isOfficialOAuth2Redirect(redirect_uri) && (
+                      <div className="ui-absolute ui-top-2 ui-right-2 ui-px-4 ui-py-2 ui-bg-blue-500/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-shadow-lg ui-z-10">
+                        <span className="ui-text-blue-300 ui-font-bold ui-text-sm ui-uppercase ui-tracking-wide">
+                          OAuth2 App
+                        </span>
+                      </div>
+                    )}
+                    <div className="ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
+                      <FallbackImage
+                        src={burntAvatar}
+                        fallbackSrc={burntAvatar}
+                        alt="App Icon"
+                        width={70}
+                        className="ui-object-cover"
+                      />
+                    </div>
                   </div>
                 )}
               </>

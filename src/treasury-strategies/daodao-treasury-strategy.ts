@@ -2,8 +2,9 @@ import type { AAClient } from "../signers";
 import type { TreasuryConfig, TreasuryStrategy } from "./types";
 import type {
   GrantConfigByTypeUrl,
-  TreasuryParams,
+  TreasuryParamsChain,
 } from "../types/treasury-types";
+import { parseTreasuryParams } from "../types/treasury-types";
 import { treasuryCacheManager } from "../utils/cache";
 import { isUrlSafe } from "../utils/url";
 import { DAODAO_TREASURY_INDEXER_URL } from "../config";
@@ -102,17 +103,17 @@ export class DaoDaoTreasuryStrategy implements TreasuryStrategy {
       );
 
       // Extract and validate params from the response - no separate query needed!
-      const params: TreasuryParams = {
-        display_url: isUrlSafe(allData.params.display_url)
-          ? (allData.params.display_url as string)
-          : "",
+      // Parse metadata from JSON string
+      const chainParams: TreasuryParamsChain = {
         redirect_url: isUrlSafe(allData.params.redirect_url)
           ? (allData.params.redirect_url as string)
           : "",
         icon_url: isUrlSafe(allData.params.icon_url)
           ? (allData.params.icon_url as string)
           : "",
+        metadata: allData.params.metadata || "{}",
       };
+      const params = parseTreasuryParams(chainParams);
 
       return {
         grantConfigs,

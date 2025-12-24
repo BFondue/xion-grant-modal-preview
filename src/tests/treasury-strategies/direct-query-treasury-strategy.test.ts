@@ -41,9 +41,9 @@ describe("DirectQueryTreasuryStrategy", () => {
     ];
 
     const mockParams = {
-      display_url: "https://example.com/",
       redirect_url: "https://example.com/redirect",
       icon_url: "https://example.com/icon.png",
+      metadata: JSON.stringify({ is_oauth2_app: false }),
     };
 
     // Mock contract queries
@@ -62,9 +62,10 @@ describe("DirectQueryTreasuryStrategy", () => {
     expect(result?.grantConfigs).toHaveLength(2);
     expect(result?.grantConfigs[0].description).toBe("Grant 1");
     expect(result?.grantConfigs[1].description).toBe("Grant 2");
-    expect(result?.params.display_url).toBe("https://example.com/");
+    expect(result?.params.display_url).toBeUndefined();
     expect(result?.params.redirect_url).toBe("https://example.com/redirect");
     expect(result?.params.icon_url).toBe("https://example.com/icon.png");
+    expect(result?.params.metadata).toEqual({ is_oauth2_app: false });
 
     // Verify correct queries were made
     expect(mockClient.queryContractSmart).toHaveBeenCalledTimes(4);
@@ -76,16 +77,8 @@ describe("DirectQueryTreasuryStrategy", () => {
   });
 
   it("should handle empty grant configs", async () => {
-    const mockParams = {
-      display_url: "",
-      redirect_url: "",
-      icon_url: "",
-    };
-
     // Mock empty type URLs response
-    vi.mocked(mockClient.queryContractSmart)
-      .mockResolvedValueOnce([]) // No grant configs
-      .mockResolvedValueOnce(mockParams); // params query
+    vi.mocked(mockClient.queryContractSmart).mockResolvedValueOnce([]); // No grant configs
 
     const result = await strategy.fetchTreasuryConfig(
       "xion1abc123",
@@ -157,9 +150,10 @@ describe("DirectQueryTreasuryStrategy", () => {
     expect(result).not.toBeNull();
     expect(result?.grantConfigs).toHaveLength(1);
     // Should return safe defaults for params
-    expect(result?.params.display_url).toBe("");
+    expect(result?.params.display_url).toBeUndefined();
     expect(result?.params.redirect_url).toBe("");
     expect(result?.params.icon_url).toBe("");
+    expect(result?.params.metadata).toEqual({});
   });
 
   it("should validate URLs in params", async () => {
@@ -174,9 +168,9 @@ describe("DirectQueryTreasuryStrategy", () => {
     };
 
     const mockParams = {
-      display_url: "javascript:alert('xss')",
       redirect_url: "javascript:alert('xss')",
       icon_url: "data:text/html,<script>alert('xss')</script>",
+      metadata: JSON.stringify({ is_oauth2_app: false }),
     };
 
     vi.mocked(mockClient.queryContractSmart)
@@ -190,9 +184,10 @@ describe("DirectQueryTreasuryStrategy", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result?.params.display_url).toBe(""); // Unsafe URL should be empty
+    expect(result?.params.display_url).toBeUndefined();
     expect(result?.params.redirect_url).toBe(""); // Unsafe URL should be empty
     expect(result?.params.icon_url).toBe(""); // Unsafe URL should be empty
+    expect(result?.params.metadata).toEqual({ is_oauth2_app: false });
   });
 
   it("should handle null or undefined responses", async () => {
