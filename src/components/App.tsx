@@ -1,13 +1,13 @@
 import React, { useContext } from "react";
 import { AccountInfo } from "./AccountInfo";
-import { AbstraxionContext } from "./AbstraxionContext";
+import { AuthContext } from "./AuthContext";
 import { Overview } from "./Overview";
 import { TopNav } from "./TopNav";
-import { Abstraxion } from "./Abstraxion";
-import { useAbstraxionAccount } from "../hooks";
+import { LoginModal } from "./LoginModal";
+import { useSmartAccount } from "../hooks";
 import { useQueryParams } from "../hooks/useQueryParams";
 import { Banner } from "./ui";
-import { AbstraxionMigrate } from "./AbstraxionMigrate";
+import { AccountMigration } from "./AccountMigration";
 
 export function App() {
   const { contracts, stake, bank, grantee, treasury } = useQueryParams([
@@ -17,15 +17,15 @@ export function App() {
     "grantee",
     "treasury",
   ]);
-  const { data: account, updateAbstractAccountCodeId } = useAbstraxionAccount();
-  const { isOpen, setIsOpen } = useContext(AbstraxionContext);
+  const { data: account, updateAbstractAccountCodeId } = useSmartAccount();
+  const { isOpen, setIsOpen } = useContext(AuthContext);
 
   return (
     <>
       {!account?.id || (grantee && (contracts || stake || bank || treasury)) ? (
         <div className="ui-flex ui-w-full ui-h-svh ui-z-[50] ui-fixed ui-flex-1 ui-items-center ui-justify-center ui-overflow-y-auto ui-p-6">
           <Banner className="ui-fixed ui-top-0 ui-left-0 ui-z-[10001]" />
-          <Abstraxion onClose={() => null} isOpen={true} />
+          <LoginModal onClose={() => null} isOpen={true} />
         </div>
       ) : (
         <div className="ui-flex ui-flex-col ui-min-h-screen ui-bg-background">
@@ -35,14 +35,14 @@ export function App() {
           <main className="ui-flex-1 ui-overflow-y-auto ui-p-6">
             <div className="ui-max-w-7xl ui-mx-auto">
               <div className="ui-relative">
-                <Abstraxion onClose={() => setIsOpen(false)} isOpen={isOpen} />
+                <LoginModal onClose={() => setIsOpen(false)} isOpen={isOpen} />
                 {/* Tiles */}
                 <div className="ui-mx-auto ui-flex ui-max-w-7xl">
                   {/* Left Tiles */}
                   <div className="ui-flex-grow-2 ui-gap-8 ui-flex ui-flex-col ui-max-w-[700px] ui-mx-auto">
                     <Overview account={account} />
                     {account && (
-                      <AbstraxionMigrate
+                      <AccountMigration
                         currentCodeId={account.codeId}
                         updateContractCodeID={updateAbstractAccountCodeId}
                       />

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { formatGasPrice, getGasCalculation } from "../../utils/gas-utils";
+import { formatGasPrice, getGasCalculation } from "../../utils/fees";
 import { GasPrice } from "@cosmjs/stargate";
 
 // We need to be able to change the mock implementation of config

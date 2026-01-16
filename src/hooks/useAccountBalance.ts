@@ -1,13 +1,13 @@
 import { useMemo } from "react";
-import { useAbstraxionAccount, useAbstraxionSigningClient } from "../hooks";
+import { useSmartAccount, useSigningClient } from "../hooks";
 import { MsgSend } from "cosmjs-types/cosmos/bank/v1beta1/tx";
 import { useBalances } from "./useBalances";
 import { useAssetList } from "./useAssetList";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate/build/stargateclient";
 
 export function useAccountBalance() {
-  const { data: account } = useAbstraxionAccount();
-  const { client, getGasCalculation } = useAbstraxionSigningClient();
+  const { data: account } = useSmartAccount();
+  const { client, getGasCalculation } = useSigningClient();
   const { data: balances, refetch: refetchBalances } = useBalances(account?.id);
   const { data: assetList } = useAssetList();
 

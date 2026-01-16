@@ -1,4 +1,5 @@
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import type { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import type { AAClient } from "@burnt-labs/signers";
 import { AccountFeatureSet, FeatureKey } from "../types/migration";
 
 export const accountFeatures: Record<string, AccountFeatureSet> = {
@@ -54,7 +55,7 @@ export function getPromotedFeatures(targetChecksum: string) {
  * Fetches contract checksum for a given code ID
  */
 export async function fetchContractChecksum(
-  client: CosmWasmClient,
+  client: CosmWasmClient | AAClient,
   codeId: number,
 ): Promise<string | null> {
   try {

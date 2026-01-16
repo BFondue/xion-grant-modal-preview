@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "../..";
 import Banner from "../../../components/ui/Banner";
-import { AbstraxionContext } from "../../../components/AbstraxionContext";
+import { AuthContext } from "../../../components/AuthContext";
 
 // Mock localStorage
 const localStorageMock = {
@@ -42,9 +42,9 @@ describe("Banner", () => {
     };
 
     return render(
-      <AbstraxionContext.Provider value={contextValue}>
+      <AuthContext.Provider value={contextValue}>
         <Banner />
-      </AbstraxionContext.Provider>,
+      </AuthContext.Provider>,
     );
   };
 
@@ -113,9 +113,9 @@ describe("Banner", () => {
     };
 
     await render(
-      <AbstraxionContext.Provider value={contextValue}>
+      <AuthContext.Provider value={contextValue}>
         <Banner className="custom-class" />
-      </AbstraxionContext.Provider>,
+      </AuthContext.Provider>,
     );
 
     const banner = screen
@@ -135,9 +135,9 @@ describe("Banner", () => {
     };
 
     await render(
-      <AbstraxionContext.Provider value={contextValue}>
+      <AuthContext.Provider value={contextValue}>
         <Banner />
-      </AbstraxionContext.Provider>,
+      </AuthContext.Provider>,
     );
 
     expect(

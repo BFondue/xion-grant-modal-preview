@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { ErrorDisplay } from "../ErrorDisplay";
-import { useAbstraxionAccount, useAbstraxionSigningClient } from "../../hooks";
-import { isValidWalletAddress } from "../../utils";
+import { LoginErrorDisplay } from "../LoginErrorDisplay";
+import { useSmartAccount, useSigningClient } from "../../hooks";
+import { validateBech32Address } from "../../utils";
 import { WalletSendInput } from "./WalletSendInput";
 import { WalletSendReview } from "./WalletSendReview";
 import { WalletSendSuccess } from "./WalletSendSuccess";
@@ -13,7 +13,7 @@ export function WalletSendForm({
 }: {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const { data: account } = useAbstraxionAccount();
+  const { data: account } = useSmartAccount();
   const { balances, sendTokens, getBalanceByDenom } = useAccountBalance();
 
   const [selectedCurrencyDenom, setSelectedCurrencyDenom] = useState("uxion");
@@ -32,7 +32,7 @@ export function WalletSendForm({
   const [sendTokensError, setSendTokensError] = useState(false);
   const [transactionHash, setTransactionHash] = useState("");
 
-  const client = useAbstraxionSigningClient();
+  const client = useSigningClient();
 
   const validateAmount = useCallback(() => {
     if (!sendAmount || sendAmount === "0") {
@@ -130,7 +130,9 @@ export function WalletSendForm({
   }
 
   function checkRecipientAddressInput() {
-    if (!isValidWalletAddress(recipientAddress)) {
+    try {
+      validateBech32Address(recipientAddress, "wallet address", "xion");
+    } catch {
       setRecipientAddressError("Invalid wallet address");
       return false;
     }
@@ -198,12 +200,12 @@ export function WalletSendForm({
   return (
     <>
       {sendTokensError ? (
-        <ErrorDisplay
+        <LoginErrorDisplay
           title="ERROR!"
           description="Transaction failed. Please try again later."
           onClose={() => setIsOpen(false)}
         />
-      ) : isSuccess ? (
+      ) : isSuccess && account && selectedCurrency ? (
         <WalletSendSuccess
           account={account}
           onFinish={() => setIsOpen(false)}
@@ -213,7 +215,13 @@ export function WalletSendForm({
           userMemo={userMemo}
           transactionHash={transactionHash}
         />
-      ) : isOnReviewStep ? (
+      ) : isSuccess ? (
+        <LoginErrorDisplay
+          title="Transaction Incomplete"
+          description="Unable to load account or currency data"
+          onClose={() => setIsOpen(false)}
+        />
+      ) : isOnReviewStep && account && selectedCurrency ? (
         <WalletSendReview
           isLoading={isLoading}
           account={account}
@@ -225,6 +233,12 @@ export function WalletSendForm({
           onBack={() => {
             setIsOnReviewStep(false);
           }}
+        />
+      ) : isOnReviewStep ? (
+        <LoginErrorDisplay
+          title="Unable to Review"
+          description="Missing account or currency information"
+          onClose={() => setIsOpen(false)}
         />
       ) : isOnWarningStep ? (
         <WalletSendWarning

@@ -9,10 +9,9 @@ interface ImportMetaEnv {
   readonly VITE_NETWORK: string;
 
   // XION API Configuration
-  readonly VITE_DEFAULT_API_URL: string;
+  readonly VITE_ABSTRAXION_API_URL: string;
   readonly VITE_XION_RPC_URL: string;
   readonly VITE_XION_STYTCH_API: string;
-  readonly VITE_NEW_CONTRACT_API_URL: string;
 
   // Gas Configuration
   readonly VITE_GAS_ADJUSTMENT: string;

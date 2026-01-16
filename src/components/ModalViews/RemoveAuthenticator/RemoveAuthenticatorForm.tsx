@@ -8,18 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../ui";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../../AbstraxionContext";
-import { useAbstraxionSigningClient } from "../../../hooks";
-import type { authenticatorTypes } from "../../../types";
-import { Authenticator } from "../../../indexer-strategies/types";
-import { AAAlgo } from "../../../signers";
-import { removeRegistration } from "../../../utils/webauthn-utils";
+import { AuthContext, AuthContextProps } from "../../AuthContext";
+import { useSigningClient } from "../../../hooks";
+import type { authenticatorTypes, AuthenticatorNodes } from "../../../types";
+import { AAAlgo, AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
+import { removeRegistration } from "../../../auth/passkey";
 import { Loading } from "../../Loading";
 import { FEE_GRANTER_ADDRESS } from "../../../config";
-import { validateFeeGrant } from "../../../utils/validate-fee-grant";
+import { validateFeeGrant } from "@burnt-labs/account-management";
 import { useAuthTypes } from "../../../auth/hooks/useAuthTypes";
 import {
   extractUserIdFromAuthenticator,
@@ -33,7 +29,7 @@ export function RemoveAuthenticatorForm({
   authType,
   setIsOpen,
 }: {
-  authenticator?: Authenticator;
+  authenticator?: AuthenticatorNodes;
   authType?: string;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }) {
@@ -42,18 +38,18 @@ export function RemoveAuthenticatorForm({
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailWarning, setShowEmailWarning] = useState(
-    authenticator?.type.toUpperCase() === "JWT" && authType === "email"
+    authenticator?.type === AUTHENTICATOR_TYPE.JWT && authType === "email"
       ? true
       : false,
   );
 
   // Context state
   const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
+    AuthContext,
+  ) as AuthContextProps;
 
   // Hooks
-  const { client, getGasCalculation } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useSigningClient();
 
   // Extract userId for JWT authenticators to get auth type
   const userId = useMemo(() => {
@@ -69,7 +65,7 @@ export function RemoveAuthenticatorForm({
 
   const handleAuthenticatorLabels = (type: authenticatorTypes) => {
     // For JWT authenticators, use the auth type from the API if available
-    if (type === "JWT" && userId) {
+    if (type === AUTHENTICATOR_TYPE.JWT && userId) {
       const authType = authTypesMap.get(userId);
       if (authType) {
         return capitalizeFirstLetter(authType);
@@ -82,7 +78,7 @@ export function RemoveAuthenticatorForm({
 
   const handleAuthenticatorLogos = (type: authenticatorTypes) => {
     // For JWT authenticators, use the auth type from the API if available
-    if (type === "JWT" && userId) {
+    if (type === AUTHENTICATOR_TYPE.JWT && userId) {
       const authType = authTypesMap.get(userId);
       if (authType) {
         return getAuthenticatorLogo(type, authType);
@@ -149,10 +145,10 @@ export function RemoveAuthenticatorForm({
       }
 
       if (
-        abstractAccount.authenticators.some((a) => a.type === AAAlgo.PASSKEY) &&
+        abstractAccount.authenticators.some((a) => a.type === AAAlgo.Passkey) &&
         abstractAccount.authenticators.length === 2
       ) {
-        if (authenticator.type !== AAAlgo.PASSKEY) {
+        if (authenticator.type !== AAAlgo.Passkey) {
           throw new Error(
             "Passkey cannot be the only authenticator on the account.",
           );
@@ -175,7 +171,7 @@ export function RemoveAuthenticatorForm({
         }),
       };
       // Check if fee grant exists
-      const isValidFeeGrant = await validateFeeGrant(
+      const feeGrantResult = await validateFeeGrant(
         chainInfo?.rest || "",
         FEE_GRANTER_ADDRESS,
         abstractAccount.id,
@@ -188,13 +184,12 @@ export function RemoveAuthenticatorForm({
         abstractAccount.id,
       );
 
-      const validFeeGranter = isValidFeeGrant ? FEE_GRANTER_ADDRESS : null;
+      const validFeeGranter = feeGrantResult.valid ? FEE_GRANTER_ADDRESS : null;
 
       const simmedGas = await client.simulate(
         abstractAccount.id,
         [removeMsg],
         "add-authenticator",
-        validFeeGranter || undefined,
       );
       const fee = getGasCalculation(simmedGas);
 
@@ -216,7 +211,7 @@ export function RemoveAuthenticatorForm({
         ),
       });
 
-      if (authenticator.type === AAAlgo.PASSKEY) {
+      if (authenticator.type === AAAlgo.Passkey) {
         removeRegistration(abstractAccount.id, authenticator.authenticator);
       }
 

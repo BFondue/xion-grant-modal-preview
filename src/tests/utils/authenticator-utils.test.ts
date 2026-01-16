@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
   isDuplicateAuthenticator,
   deduplicateAccountsById,
@@ -6,8 +7,10 @@ import {
   createJwtAuthenticatorIdentifier,
   validateNewAuthenticator,
 } from "../../utils/authenticator-utils";
-import { Authenticator } from "../../indexer-strategies/types";
-import { SmartAccountWithCodeId } from "../../indexer-strategies/types";
+import type {
+  Authenticator,
+  SmartAccountWithCodeId,
+} from "@burnt-labs/account-management";
 
 describe("authenticator-utils", () => {
   describe("isDuplicateAuthenticator", () => {
@@ -16,13 +19,13 @@ describe("authenticator-utils", () => {
         id: "account-0",
         authenticator: "project.user123",
         authenticatorIndex: 0,
-        type: "Jwt",
+        type: AUTHENTICATOR_TYPE.JWT,
       },
       {
         id: "account-1",
         authenticator: "0x1234567890",
         authenticatorIndex: 1,
-        type: "EthWallet",
+        type: AUTHENTICATOR_TYPE.EthWallet,
       },
     ];
 
@@ -30,7 +33,7 @@ describe("authenticator-utils", () => {
       const result = isDuplicateAuthenticator(
         mockAuthenticators,
         "project.user123",
-        "Jwt",
+        AUTHENTICATOR_TYPE.JWT,
       );
       expect(result).toBe(true);
     });
@@ -39,7 +42,7 @@ describe("authenticator-utils", () => {
       const result = isDuplicateAuthenticator(
         mockAuthenticators,
         "project.user456",
-        "Jwt",
+        AUTHENTICATOR_TYPE.JWT,
       );
       expect(result).toBe(false);
     });
@@ -54,7 +57,11 @@ describe("authenticator-utils", () => {
     });
 
     it("should handle empty authenticators array", () => {
-      const result = isDuplicateAuthenticator([], "any.identifier", "Jwt");
+      const result = isDuplicateAuthenticator(
+        [],
+        "any.identifier",
+        AUTHENTICATOR_TYPE.JWT,
+      );
       expect(result).toBe(false);
     });
   });
@@ -123,19 +130,19 @@ describe("authenticator-utils", () => {
           id: "account-2",
           authenticator: "project.user123",
           authenticatorIndex: 2,
-          type: "Jwt",
+          type: AUTHENTICATOR_TYPE.JWT,
         },
         {
           id: "account-0",
           authenticator: "project.user123",
           authenticatorIndex: 0,
-          type: "Jwt",
+          type: AUTHENTICATOR_TYPE.JWT,
         },
         {
           id: "account-1",
           authenticator: "project.user123",
           authenticatorIndex: 1,
-          type: "Jwt",
+          type: AUTHENTICATOR_TYPE.JWT,
         },
       ];
 
@@ -152,13 +159,13 @@ describe("authenticator-utils", () => {
           id: "account-0",
           authenticator: "project.user123",
           authenticatorIndex: 0,
-          type: "Jwt",
+          type: AUTHENTICATOR_TYPE.JWT,
         },
         {
           id: "account-1",
           authenticator: "project.user456",
           authenticatorIndex: 1,
-          type: "Jwt",
+          type: AUTHENTICATOR_TYPE.JWT,
         },
       ];
 
@@ -175,7 +182,7 @@ describe("authenticator-utils", () => {
           id: "account-0",
           authenticator: "project.user123",
           authenticatorIndex: 0,
-          type: "Jwt",
+          type: AUTHENTICATOR_TYPE.JWT,
         },
       ];
 
@@ -223,7 +230,7 @@ describe("authenticator-utils", () => {
         id: "account-0",
         authenticator: "project.user123",
         authenticatorIndex: 0,
-        type: "Jwt",
+        type: AUTHENTICATOR_TYPE.JWT,
       },
     ];
 
@@ -231,7 +238,7 @@ describe("authenticator-utils", () => {
       const result = validateNewAuthenticator(
         mockAuthenticators,
         "project.user456",
-        "Jwt",
+        AUTHENTICATOR_TYPE.JWT,
       );
       expect(result.isValid).toBe(true);
       expect(result.errorMessage).toBeUndefined();
@@ -241,7 +248,7 @@ describe("authenticator-utils", () => {
       const result = validateNewAuthenticator(
         mockAuthenticators,
         "project.user123",
-        "Jwt",
+        AUTHENTICATOR_TYPE.JWT,
       );
       expect(result.isValid).toBe(false);
       expect(result.errorMessage).toBe(
@@ -255,7 +262,7 @@ describe("authenticator-utils", () => {
           id: "account-0",
           authenticator: "0x1234567890",
           authenticatorIndex: 0,
-          type: "EthWallet",
+          type: AUTHENTICATOR_TYPE.EthWallet,
         },
       ];
 
@@ -271,7 +278,11 @@ describe("authenticator-utils", () => {
     });
 
     it("should handle empty authenticators array", () => {
-      const result = validateNewAuthenticator([], "any.identifier", "Jwt");
+      const result = validateNewAuthenticator(
+        [],
+        "any.identifier",
+        AUTHENTICATOR_TYPE.JWT,
+      );
       expect(result.isValid).toBe(true);
       expect(result.errorMessage).toBeUndefined();
     });

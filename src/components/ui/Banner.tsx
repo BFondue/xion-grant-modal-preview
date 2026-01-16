@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { BaseButton } from "./buttons/baseButton";
 import { CloseIcon } from "./icons";
-import { AbstraxionContext } from "../AbstraxionContext";
+import { AuthContext } from "../AuthContext";
 
 interface BannerProps {
   className?: string;
@@ -9,7 +9,7 @@ interface BannerProps {
 
 export const Banner: React.FC<BannerProps> = ({ className }) => {
   const [isVisible, setIsVisible] = useState(true);
-  const { chainInfo } = useContext(AbstraxionContext);
+  const { chainInfo } = useContext(AuthContext);
 
   useEffect(() => {
     const bannerDismissed = localStorage.getItem("banner_dismissed");

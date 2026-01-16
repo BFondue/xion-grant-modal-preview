@@ -9,13 +9,11 @@ import type {
   PriceData,
 } from "../types/assets";
 import {
-  isMainnet,
   COINGECKO_API_URL,
   getAssetEndpoint,
   networkConfig,
+  FALLBACK_ASSETS,
 } from "../config";
-import mainnetAssets from "../data/mainnet/assetlist.json";
-import testnetAssets from "../data/testnet/assetlist.json";
 
 /**
  * Fetches the asset list from the chain registry
@@ -31,9 +29,7 @@ export const fetchAssetList = async (): Promise<AssetList> => {
   } catch (error) {
     console.error("Error fetching asset list:", error);
     // Fallback to local assets
-    return isMainnet()
-      ? (mainnetAssets as AssetList)
-      : (testnetAssets as AssetList);
+    return FALLBACK_ASSETS as AssetList;
   }
 };
 

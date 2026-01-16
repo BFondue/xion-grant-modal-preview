@@ -11,18 +11,18 @@
 
 import { useEffect, useState, useCallback, useContext, useRef } from "react";
 import { useStytchSession, useStytch } from "@stytch/react";
-import { AbstraxionSignin } from "../AbstraxionSignin";
-import { AbstraxionWallets } from "../AbstraxionWallets";
-import { AbstraxionContext } from "../AbstraxionContext";
+import { LoginScreen } from "../LoginScreen";
+import { LoginWalletSelector } from "../LoginWalletSelector";
+import { AuthContext } from "../AuthContext";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { SessionManager, getAddressFromJWT } from "../../auth/session";
 import AddAuthenticatorsModal from "../ModalViews/AddAuthenticators/AddAuthenticatorsModal";
 import RemoveAuthenticatorModal from "../ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
 import { SigningModal } from "./SigningModal";
-import { AbstraxionGrant } from "../AbstraxionGrant";
+import { LoginGrantApproval } from "../LoginGrantApproval";
 import { App } from "../App";
-import { useAbstraxionSigningClient } from "../../hooks/useAbstraxionSigningClient";
-import { useGetSmartAccountsStrategy } from "../../hooks/useGetSmartAccountsStrategy";
+import { useSigningClient } from "../../hooks/useSigningClient";
+import { useAccountDiscovery } from "../../hooks/useAccountDiscovery";
 import {
   useIframeSession,
   useIframeMessageHandler,
@@ -67,15 +67,14 @@ export function IframeApp({
   } = useAuthState();
 
   // Get context setters for backward compatibility
-  const { setAbstractAccount, setConnectionType } =
-    useContext(AbstraxionContext);
+  const { setAbstractAccount, setConnectionType } = useContext(AuthContext);
 
-  const { client: signingClient } = useAbstraxionSigningClient();
+  const { client: signingClient } = useSigningClient();
   const {
     data: smartAccounts,
     loading: smartAccountsLoading,
     error: smartAccountsError,
-  } = useGetSmartAccountsStrategy();
+  } = useAccountDiscovery();
 
   // Debug logging for smart accounts
   useEffect(() => {
@@ -639,7 +638,7 @@ export function IframeApp({
           className="md:ui-max-w-md"
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <AbstraxionSignin />
+          <LoginScreen />
         </DialogContent>
       </Dialog>
 
@@ -660,7 +659,7 @@ export function IframeApp({
           className="md:ui-max-w-md"
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <AbstraxionWallets />
+          <LoginWalletSelector />
         </DialogContent>
       </Dialog>
 
@@ -763,7 +762,7 @@ export function IframeApp({
           onInteractOutside={(e) => e.preventDefault()}
         >
           {abstractAccount ? (
-            <AbstraxionGrant
+            <LoginGrantApproval
               contracts={[]}
               grantee={modals.modalState.payload?.grantee || ""}
               stake={false}

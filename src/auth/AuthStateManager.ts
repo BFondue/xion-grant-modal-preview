@@ -3,10 +3,10 @@
  *
  * This singleton class is the SINGLE SOURCE OF TRUTH for all auth state.
  * It consolidates state that was previously scattered across:
- * - React Context (AbstraxionContext)
+ * - React Context (AuthContext)
  * - localStorage (loginType, loginAuthenticator, okxXionAddress, okxWalletName)
  * - sessionStorage (xion_session_{origin})
- * - Hook local state (useAbstraxionAccount, useIframeSession)
+ * - Hook local state (useSmartAccount, useIframeSession)
  *
  * Benefits:
  * - Clear state machine: disconnected → connecting → connected → disconnecting
@@ -15,8 +15,10 @@
  * - Easy to debug/log all state transitions
  */
 
-import { SelectedSmartAccount } from "../indexer-strategies/types";
+import { SelectedSmartAccount } from "../types/wallet-account-types";
 import { SessionManager } from "./session";
+import type { AuthenticatorType } from "@burnt-labs/signers";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 
 // Connection types supported
 export type ConnectionType =
@@ -26,6 +28,19 @@ export type ConnectionType =
   | "okx"
   | "passkey"
   | "none";
+
+/**
+ * Connection type constants
+ * Use these instead of string literals to avoid typos and ensure type safety
+ */
+export const CONNECTION_TYPE = Object.freeze({
+  Stytch: "stytch" as const, // Stytch social login
+  Shuttle: "shuttle" as const, // Keplr/Cosmos wallets via Shuttle
+  Metamask: "metamask" as const, // MetaMask wallet
+  OKX: "okx" as const, // OKX wallet
+  Passkey: "passkey" as const, // WebAuthn/Passkey
+  None: "none" as const, // No connection
+});
 
 // Auth state machine states
 export type AuthStatus =
@@ -40,6 +55,7 @@ export interface AuthState {
   connectionType: ConnectionType;
   account: SelectedSmartAccount | undefined;
   authenticator: string | null;
+  authenticatorType: AuthenticatorType | null;
   error: string | null;
 }
 
@@ -66,12 +82,36 @@ const VALID_CONNECTION_TYPES: ConnectionType[] = [
   "passkey",
 ];
 
+/**
+ * Maps ConnectionType to AuthenticatorType
+ * This allows us to store the authenticator type without needing to detect it later
+ */
+function connectionTypeToAuthenticatorType(
+  connectionType: ConnectionType,
+): AuthenticatorType | null {
+  switch (connectionType) {
+    case CONNECTION_TYPE.Stytch:
+      return AUTHENTICATOR_TYPE.JWT;
+    case CONNECTION_TYPE.Passkey:
+      return AUTHENTICATOR_TYPE.Passkey;
+    case CONNECTION_TYPE.Shuttle:
+    case CONNECTION_TYPE.OKX:
+      // Both Shuttle and OKX use Keplr API and provide base64-encoded secp256k1 pubkeys
+      return AUTHENTICATOR_TYPE.Secp256K1;
+    case CONNECTION_TYPE.Metamask:
+      return AUTHENTICATOR_TYPE.EthWallet;
+    case CONNECTION_TYPE.None:
+      return null;
+  }
+}
+
 class AuthStateManagerClass {
   private state: AuthState = {
     status: "disconnected",
     connectionType: "none",
     account: undefined,
     authenticator: null,
+    authenticatorType: null,
     error: null,
   };
 
@@ -99,16 +139,19 @@ class AuthStateManagerClass {
       VALID_CONNECTION_TYPES.includes(storedType as ConnectionType);
 
     if (isValidType && storedAuth) {
+      const connectionType = storedType as ConnectionType;
       this.state = {
         ...this.state,
         status: "connecting", // Will become 'connected' once account is loaded
-        connectionType: storedType as ConnectionType,
+        connectionType,
         authenticator: storedAuth,
+        authenticatorType: connectionTypeToAuthenticatorType(connectionType),
       };
       // Update snapshot to reflect initialized state
       this.stateSnapshot = { ...this.state };
       console.log("[AuthStateManager] Initialized with stored credentials:", {
         type: storedType,
+        authenticatorType: this.state.authenticatorType,
         authenticator: storedAuth.substring(0, 20) + "...",
       });
     } else {
@@ -171,6 +214,13 @@ class AuthStateManagerClass {
   }
 
   /**
+   * Get current authenticator type
+   */
+  getAuthenticatorType(): AuthenticatorType | null {
+    return this.state.authenticatorType;
+  }
+
+  /**
    * Get connection type
    */
   getConnectionType(): ConnectionType {
@@ -190,14 +240,23 @@ class AuthStateManagerClass {
    * Start login process
    * Transitions: disconnected → connecting
    */
-  startLogin(type: ConnectionType, authenticator: string): void {
+  startLogin(
+    type: ConnectionType,
+    authenticator: string,
+    authenticatorType?: AuthenticatorType,
+  ): void {
     const prevState = { ...this.state };
+
+    // Use provided authenticatorType, or fall back to deriving from connectionType
+    const authType =
+      authenticatorType ?? connectionTypeToAuthenticatorType(type);
 
     this.state = {
       ...this.state,
       status: "connecting",
       connectionType: type,
       authenticator,
+      authenticatorType: authType,
       error: null,
     };
 
@@ -207,6 +266,7 @@ class AuthStateManagerClass {
 
     console.log("[AuthStateManager] Login started:", {
       type,
+      authenticatorType: this.state.authenticatorType,
       authenticator: authenticator.substring(0, 20) + "...",
     });
 
@@ -309,6 +369,7 @@ class AuthStateManagerClass {
       connectionType: "none",
       account: undefined,
       authenticator: null,
+      authenticatorType: null,
       error: null,
     };
 
@@ -374,6 +435,7 @@ class AuthStateManagerClass {
       connectionType: "none",
       account: undefined,
       authenticator: null,
+      authenticatorType: null,
       error: null,
     };
     console.log("[AuthStateManager] State reset");

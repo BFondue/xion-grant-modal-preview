@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getAuthenticatorTypes } from "../lib/auth-types";
-import { Authenticator } from "../../indexer-strategies/types";
+import type { Authenticator } from "@burnt-labs/account-management";
 
 export const useAuthTypes = (userIds: string[]) => {
   type AuthTypesRecord = Record<string, string[]>;

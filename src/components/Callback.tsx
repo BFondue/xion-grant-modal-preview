@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getHumanReadablePubkey } from "../utils";
 import { loadShuttleNetworks } from "../config/shuttle";
 import type { Network } from "@delphi-labs/shuttle";
-import { isUrlSafe } from "../utils/url";
+import { isUrlSafe } from "@burnt-labs/account-management";
 import {
   OAUTH_CALLBACK_URL,
   STYTCH_PROXY_URL,

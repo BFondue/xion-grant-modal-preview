@@ -19,6 +19,8 @@ import {
   getAuthenticatorIndexFromJWT,
 } from "../../../auth/session";
 import { useAuthState } from "../../../auth/useAuthState";
+import { CONNECTION_TYPE } from "../../../auth/AuthStateManager";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { AuthStateManager } from "../../../auth/AuthStateManager";
 
 interface UseIframeSessionOptions {
@@ -85,7 +87,11 @@ export function useIframeSession({
     const loginAuthenticator = getLoginAuthenticatorFromJWT(sessionJwt);
     if (loginAuthenticator) {
       // Use AuthStateManager to handle all storage and event dispatch
-      startLogin("stytch", loginAuthenticator);
+      startLogin(
+        CONNECTION_TYPE.Stytch,
+        loginAuthenticator,
+        AUTHENTICATOR_TYPE.JWT,
+      );
       console.log(
         "[useIframeSession] Started login via AuthStateManager:",
         loginAuthenticator.substring(0, 20) + "...",

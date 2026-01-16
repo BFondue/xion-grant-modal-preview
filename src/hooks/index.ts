@@ -1,8 +1,5 @@
-export { useAbstraxionAccount } from "./useAbstraxionAccount";
-export { useAbstraxionSigningClient } from "./useAbstraxionSigningClient";
-export { callPrepare } from "./useWalletAccountPrepare";
-export {
-  createAccountWithMetaMask,
-  createAccountWithCosmosWallet,
-  createWalletAccount,
-} from "./useWalletAccountCreation";
+export { useSmartAccount } from "./useSmartAccount";
+export { useSigningClient } from "./useSigningClient";
+export { createJwtAccount } from "./useCreateJwtAccount";
+export { createEthWalletSmartAccount } from "./useCreateEthWalletAccount";
+export { createSecp256k1SmartAccount } from "./useCreateSecp256k1Account";

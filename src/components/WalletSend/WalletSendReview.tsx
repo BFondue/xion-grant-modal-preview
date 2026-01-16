@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui";
-import { SelectedSmartAccount } from "../../indexer-strategies/types";
+import { SelectedSmartAccount } from "../../types/wallet-account-types";
 import { FormattedAssetAmount } from "../../types/assets";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";

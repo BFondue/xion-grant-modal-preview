@@ -3,7 +3,7 @@ import { Coin } from "cosmjs-types/cosmos/base/v1beta1/coin";
 import axios from "axios";
 import { getRestApiUrl, REST_ENDPOINTS, USDC_DENOM } from "../config";
 import { useContext } from "react";
-import { AbstraxionContext } from "../components/AbstraxionContext";
+import { AuthContext } from "../components/AuthContext";
 
 const fetchBalances = async (
   address: string,
@@ -50,7 +50,7 @@ const fetchBalances = async (
  * @returns The balances and query info
  */
 export const useBalances = (address: string) => {
-  const { chainInfo, isChainInfoLoading } = useContext(AbstraxionContext);
+  const { chainInfo, isChainInfoLoading } = useContext(AuthContext);
 
   return useQuery({
     queryKey: ["balances", address, chainInfo?.chainId],

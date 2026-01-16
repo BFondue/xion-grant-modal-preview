@@ -7,7 +7,7 @@ import {
   Input,
 } from "../../ui";
 import { useStytch } from "@stytch/react";
-import OtpForm from "../../OtpForm";
+import LoginOtpForm from "../../LoginOtpForm";
 import { Loading } from "../../Loading";
 
 export function AddEmail({
@@ -18,7 +18,7 @@ export function AddEmail({
 }: {
   onSubmit: (otp: string, methodId: string) => void;
   error: string | null;
-  onError: (error: string) => void;
+  onError: (error: string | null) => void;
   onClose?: () => void;
 }) {
   const [email, setEmail] = useState("");
@@ -116,7 +116,7 @@ export function AddEmail({
         </div>
       ) : (
         // Show OTP form for normal flow
-        <OtpForm
+        <LoginOtpForm
           handleOtp={handleSubmit}
           handleResendCode={handleEmail}
           error={error}

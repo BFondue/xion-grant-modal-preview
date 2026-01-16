@@ -1,8 +1,9 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { AuthenticatorItem } from "../../components/AuthenticatorItem";
-import { Authenticator } from "../../indexer-strategies/types";
+import type { Authenticator } from "@burnt-labs/account-management";
 
 // Mock the UI components and utils
 vi.mock("../../components/ui", () => ({
@@ -75,7 +76,7 @@ describe("AuthenticatorItem", () => {
   });
 
   const defaultProps = {
-    authenticator: createMockAuthenticator("1", "Jwt", 0),
+    authenticator: createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
     currentAuthenticatorIndex: 1,
     isMainnet: false,
     onRemove: mockOnRemove,
@@ -92,13 +93,13 @@ describe("AuthenticatorItem", () => {
     it("should prevent removing last non-passkey authenticator when authenticated with passkey", () => {
       const authenticators = [
         createMockAuthenticator("1", "Passkey", 0), // Current auth
-        createMockAuthenticator("2", "Jwt", 1), // Last non-passkey
+        createMockAuthenticator("2", "AUTHENTICATOR_TYPE.JWT", 1), // Last non-passkey
       ];
 
       render(
         <AuthenticatorItem
           {...defaultProps}
-          authenticator={authenticators[1]} // Trying to remove the JWT auth
+          authenticator={authenticators[1]} // Trying to remove the AUTHENTICATOR_TYPE.JWT auth
           currentAuthenticatorIndex={0} // Authenticated with passkey
           authenticators={authenticators}
         />,
@@ -121,14 +122,14 @@ describe("AuthenticatorItem", () => {
     it("should allow removing non-passkey authenticator when authenticated with passkey if multiple non-passkeys exist", () => {
       const authenticators = [
         createMockAuthenticator("1", "Passkey", 0), // Current auth
-        createMockAuthenticator("2", "Jwt", 1),
-        createMockAuthenticator("3", "Jwt", 2), // Another non-passkey
+        createMockAuthenticator("2", "AUTHENTICATOR_TYPE.JWT", 1),
+        createMockAuthenticator("3", "AUTHENTICATOR_TYPE.JWT", 2), // Another non-passkey
       ];
 
       render(
         <AuthenticatorItem
           {...defaultProps}
-          authenticator={authenticators[1]} // Trying to remove one JWT auth
+          authenticator={authenticators[1]} // Trying to remove one AUTHENTICATOR_TYPE.JWT auth
           currentAuthenticatorIndex={0} // Authenticated with passkey
           authenticators={authenticators}
         />,
@@ -153,7 +154,7 @@ describe("AuthenticatorItem", () => {
 
     it("should allow removing passkey when authenticated with non-passkey", () => {
       const authenticators = [
-        createMockAuthenticator("1", "Jwt", 0), // Current auth
+        createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0), // Current auth
         createMockAuthenticator("2", "Passkey", 1), // Passkey to remove
       ];
 
@@ -161,7 +162,7 @@ describe("AuthenticatorItem", () => {
         <AuthenticatorItem
           {...defaultProps}
           authenticator={authenticators[1]} // Trying to remove passkey
-          currentAuthenticatorIndex={0} // Authenticated with JWT
+          currentAuthenticatorIndex={0} // Authenticated with AUTHENTICATOR_TYPE.JWT
           authenticators={authenticators}
         />,
       );
@@ -177,7 +178,7 @@ describe("AuthenticatorItem", () => {
 
     it("should prevent removing current authenticator regardless of type", () => {
       const authenticators = [
-        createMockAuthenticator("1", "Jwt", 0),
+        createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
         createMockAuthenticator("2", "Passkey", 1),
       ];
 
@@ -200,7 +201,7 @@ describe("AuthenticatorItem", () => {
       const authenticators = [
         createMockAuthenticator("1", "Passkey", 0), // Current auth
         createMockAuthenticator("2", "Passkey", 1), // Another passkey
-        createMockAuthenticator("3", "Jwt", 2), // Non-passkey
+        createMockAuthenticator("3", "AUTHENTICATOR_TYPE.JWT", 2), // Non-passkey
       ];
 
       render(
@@ -227,9 +228,15 @@ describe("AuthenticatorItem", () => {
       render(
         <AuthenticatorItem
           {...defaultProps}
-          authenticator={createMockAuthenticator("1", "Jwt", 0)}
+          authenticator={createMockAuthenticator(
+            "1",
+            "AUTHENTICATOR_TYPE.JWT",
+            0,
+          )}
           currentAuthenticatorIndex={0}
-          authenticators={[createMockAuthenticator("1", "Jwt", 0)]}
+          authenticators={[
+            createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
+          ]}
         />,
       );
 
@@ -240,9 +247,15 @@ describe("AuthenticatorItem", () => {
       render(
         <AuthenticatorItem
           {...defaultProps}
-          authenticator={createMockAuthenticator("1", "Jwt", 0)}
+          authenticator={createMockAuthenticator(
+            "1",
+            "AUTHENTICATOR_TYPE.JWT",
+            0,
+          )}
           currentAuthenticatorIndex={0}
-          authenticators={[createMockAuthenticator("1", "Jwt", 0)]}
+          authenticators={[
+            createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
+          ]}
         />,
       );
 
@@ -261,15 +274,21 @@ describe("AuthenticatorItem", () => {
       render(
         <AuthenticatorItem
           {...defaultProps}
-          authenticator={createMockAuthenticator("1", "Jwt", 0)}
+          authenticator={createMockAuthenticator(
+            "1",
+            "AUTHENTICATOR_TYPE.JWT",
+            0,
+          )}
           currentAuthenticatorIndex={0}
-          authenticators={[createMockAuthenticator("1", "Jwt", 0)]}
+          authenticators={[
+            createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
+          ]}
         />,
       );
 
-      // "Jwt" is the type, getAuthenticatorLabel returns "Email" for JWT in the real implementation
+      // "AUTHENTICATOR_TYPE.JWT" is the type, getAuthenticatorLabel returns "Email" for AUTHENTICATOR_TYPE.JWT in the real implementation
       // Even if mocked, if the mock isn't picked up for some reason, "Email" is the fallback.
-      // If the mock WAS picked up, it would be "JWT".
+      // If the mock WAS picked up, it would be "AUTHENTICATOR_TYPE.JWT".
       // Since we see "Email" in failure, let's expect "Email".
       // The important part is that it fell back to the label because authType was empty.
       expect(screen.getByText("Email")).toBeInTheDocument();
@@ -283,9 +302,15 @@ describe("AuthenticatorItem", () => {
       render(
         <AuthenticatorItem
           {...defaultProps}
-          authenticator={createMockAuthenticator("1", "Jwt", 0)}
+          authenticator={createMockAuthenticator(
+            "1",
+            "AUTHENTICATOR_TYPE.JWT",
+            0,
+          )}
           currentAuthenticatorIndex={0}
-          authenticators={[createMockAuthenticator("1", "Jwt", 0)]}
+          authenticators={[
+            createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
+          ]}
         />,
       );
 
@@ -301,9 +326,15 @@ describe("AuthenticatorItem", () => {
         <AuthenticatorItem
           {...defaultProps}
           isMainnet={false}
-          authenticator={createMockAuthenticator("1", "Jwt", 0)}
+          authenticator={createMockAuthenticator(
+            "1",
+            "AUTHENTICATOR_TYPE.JWT",
+            0,
+          )}
           currentAuthenticatorIndex={0}
-          authenticators={[createMockAuthenticator("1", "Jwt", 0)]}
+          authenticators={[
+            createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
+          ]}
         />,
       );
 

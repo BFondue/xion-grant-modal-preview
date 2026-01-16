@@ -2,6 +2,8 @@ import { mainnetConfig } from "./mainnet";
 import { testnetConfig } from "./testnet";
 // will add devnetConfig later, use testnetConfig for now
 import { testnetConfig as devnetConfig } from "./testnet";
+import mainnetAssets from "../data/mainnet/assetlist.json";
+import testnetAssets from "../data/testnet/assetlist.json";
 
 // =============================================================================
 // Helper Functions
@@ -41,6 +43,10 @@ export const networkConfig =
 
 // Re-export network config type
 export type NetworkConfig = typeof networkConfig;
+
+// Select fallback assets based on environment
+export const FALLBACK_ASSETS =
+  NETWORK === "mainnet" ? mainnetAssets : testnetAssets;
 
 // =============================================================================
 // Chain Configuration
@@ -130,6 +136,7 @@ export const STYTCH_PROXY_URL =
   import.meta.env.VITE_XION_STYTCH_API || networkConfig.stytchProxyUrl;
 console.log("STYTCH_PROXY_URL:", STYTCH_PROXY_URL);
 
+// AA-API URL - used for account abstraction operations
 export const ABSTRAXION_API_URL =
   import.meta.env.VITE_ABSTRAXION_API_URL || networkConfig.abstraxionApiUrl;
 
@@ -242,6 +249,3 @@ export const OAUTH_CALLBACK_URL =
 // =============================================================================
 // Treasury Strategy Configuration
 // =============================================================================
-
-export const TREASURY_STRATEGY =
-  import.meta.env.VITE_TREASURY_STRATEGY || networkConfig.treasuryStrategy;

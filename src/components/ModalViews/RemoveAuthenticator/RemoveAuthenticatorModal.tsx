@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "../../ui";
 import { RemoveAuthenticatorForm } from "./RemoveAuthenticatorForm";
-import { Authenticator } from "../../../indexer-strategies/types";
+import type { AuthenticatorNodes } from "../../../types";
 
 export default function RemoveAuthenticatorModal({
   isOpen,
@@ -10,7 +10,7 @@ export default function RemoveAuthenticatorModal({
 }: {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
-  authenticator?: { authenticator: Authenticator; authType?: string };
+  authenticator?: { authenticator: AuthenticatorNodes; authType?: string };
 }) {
   return (
     <Dialog modal onOpenChange={setIsOpen} open={isOpen}>

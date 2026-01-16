@@ -1,8 +1,8 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { AbstraxionContext, AbstraxionContextProps } from "./AbstraxionContext";
+import { AuthContext, AuthContextProps } from "./AuthContext";
 import xionLogo from "../assets/logo.png";
-import { useAbstraxionAccount } from "../hooks";
+import { useSmartAccount } from "../hooks";
 import { WalletIcon } from "./ui/icons/Wallet";
 import { ExternalLinkIcon } from "./ui/icons/ExternalLink";
 import { BaseButton } from "./ui/buttons/baseButton";
@@ -17,9 +17,9 @@ export function TopNav() {
   const location = useLocation();
   const pathname = location.pathname;
   const { isMainnet, setIsOpen, chainInfo } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
-  const { data: account } = useAbstraxionAccount();
+    AuthContext,
+  ) as AuthContextProps;
+  const { data: account } = useSmartAccount();
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showDashboardDialog, setShowDashboardDialog] = useState(false);
   const isAboveMobile = useBreakpoint("md");

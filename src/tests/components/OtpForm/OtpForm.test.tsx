@@ -30,7 +30,7 @@ describe("OtpForm Component", () => {
 
   const renderOtpForm = (error: string | null = null) => {
     return render(
-      <OtpForm
+      <LoginOtpForm
         handleOtp={mockHandleOtp}
         handleResendCode={mockHandleResendCode}
         error={error}

@@ -38,7 +38,7 @@ export interface AbstraxionAccount {
   currentAuthenticatorIndex: number;
 }
 
-export interface useAbstraxionAccountProps {
+export interface useSmartAccountProps {
   data?: AbstraxionAccount;
   isConnected: boolean;
   isConnecting?: boolean;

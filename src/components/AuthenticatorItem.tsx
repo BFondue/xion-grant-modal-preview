@@ -1,5 +1,6 @@
 import React, { useState, useMemo, memo } from "react";
 import { User } from "@stytch/vanilla-js";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { EyeIcon, EyeOffIcon, TrashIcon } from "./ui";
 import {
   Tooltip,
@@ -7,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { Authenticator } from "../indexer-strategies/types";
+import type { Authenticator } from "@burnt-labs/account-management";
 import type { authenticatorTypes } from "../types";
 import {
   capitalizeFirstLetter,
@@ -90,14 +91,14 @@ const AuthenticatorItemComponent: React.FC<AuthenticatorItemProps> = ({
     const currentAuth = authenticators.find(
       (a) => a.authenticatorIndex === currentAuthenticatorIndex,
     );
-    const isUsingPasskey = currentAuth?.type === "Passkey";
+    const isUsingPasskey = currentAuth?.type === AUTHENTICATOR_TYPE.Passkey;
     const nonPasskeyCount = authenticators.filter(
-      (a) => a.type !== "Passkey",
+      (a) => a.type !== AUTHENTICATOR_TYPE.Passkey,
     ).length;
 
     if (
       isUsingPasskey &&
-      authenticator.type !== "Passkey" &&
+      authenticator.type !== AUTHENTICATOR_TYPE.Passkey &&
       nonPasskeyCount <= 1
     ) {
       return false;

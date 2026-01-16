@@ -1,11 +1,11 @@
 import React, { useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { AbstraxionContext, AbstraxionContextProps } from "./AbstraxionContext";
+import { AuthContext, AuthContextProps } from "./AuthContext";
 import { CloseIcon, WalletIcon } from "./ui";
 import { ExternalLinkIcon } from "./ui/icons/ExternalLink";
 import { EllipsisButton } from "./ui/buttons/ellipsis-button";
 import { NetworkBadge } from "./ui/NetworkBadge";
-import { useAbstraxionAccount } from "../hooks";
+import { useSmartAccount } from "../hooks";
 import { truncateAddress } from "../utils";
 import xionLogo from "../assets/logo.png";
 import { cn } from "../utils/classname-util";
@@ -19,10 +19,8 @@ interface SidebarProps {
 export function Sidebar({ onClose }: SidebarProps) {
   const location = useLocation();
   const pathname = location.pathname;
-  const { isMainnet, setIsOpen } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
-  const { data: account } = useAbstraxionAccount();
+  const { isMainnet, setIsOpen } = useContext(AuthContext) as AuthContextProps;
+  const { data: account } = useSmartAccount();
   const [showDashboardDialog, setShowDashboardDialog] = useState(false);
 
   const NAV_OPTIONS = React.useMemo(

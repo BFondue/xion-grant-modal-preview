@@ -1,4 +1,4 @@
-import { isUrlSafe } from "./url";
+import { isUrlSafe } from "@burnt-labs/account-management";
 
 /**
  * Constructs and returns a redirect URL with the specified parameters

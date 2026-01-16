@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { User } from "@stytch/vanilla-js";
-import { Authenticator } from "../indexer-strategies/types";
+import type { Authenticator } from "@burnt-labs/account-management";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
   useAuthTypes,
   useSortedAuthenticators,
@@ -72,7 +73,7 @@ export const AuthenticatorsList: React.FC<AuthenticatorsListProps> = ({
   // Show skeleton while loading auth types for JWT authenticators
   // Only show skeleton if we have JWT authenticators that need type resolution
   const hasJwtAuthenticators = authenticators.some(
-    (auth) => auth.type === "Jwt",
+    (auth) => auth.type === AUTHENTICATOR_TYPE.JWT,
   );
   if (isLoading && hasJwtAuthenticators) {
     return <AuthenticatorsLoadingSkeleton />;

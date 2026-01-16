@@ -1,5 +1,6 @@
 import { OAuthProviders } from "@stytch/core/public";
-import { Authenticator } from "../../indexer-strategies/types";
+import type { Authenticator } from "@burnt-labs/account-management";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import type { authenticatorTypes } from "../../types";
 import {
   AccountWalletLogo,
@@ -99,8 +100,7 @@ export const extractUserIdFromAuthenticator = (
   type: string,
 ): string | null => {
   // Only JWT authenticators have the format "identifier.userid"
-  // Check both "Jwt" and "JWT" for case-insensitivity
-  if (type === "Jwt" || type === "JWT") {
+  if (type === AUTHENTICATOR_TYPE.JWT) {
     const parts = authenticator.split(".");
     return parts[1] || null;
   }
@@ -111,7 +111,9 @@ export const isEmailAuthenticator = (
   type: string,
   jwtSubType?: string,
 ): boolean => {
-  return type === "Jwt" && jwtSubType?.toLowerCase() === "email";
+  return (
+    type === AUTHENTICATOR_TYPE.JWT && jwtSubType?.toLowerCase() === "email"
+  );
 };
 
 export const getUserEmail = (

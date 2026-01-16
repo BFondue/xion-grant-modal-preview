@@ -1,7 +1,7 @@
 import React, { createContext, ReactNode, useState, useEffect } from "react";
 import { FeatureKey } from "../../types/migration";
 import { fetchContractChecksum, accountFeatures } from "../../utils/migration";
-import { useAbstraxionSigningClient } from "../../hooks/useAbstraxionSigningClient";
+import { useSigningClient } from "../../hooks/useSigningClient";
 
 export interface ContractContextProps {
   isLoadingFeatures: boolean;
@@ -25,7 +25,7 @@ export const ContractContextProvider = ({
 }) => {
   const [isLoadingFeatures, setIsLoadingFeatures] = useState(false);
   const [enabledFeatures, setEnabledFeatures] = useState<FeatureKey[]>([]);
-  const { client } = useAbstraxionSigningClient();
+  const { client } = useSigningClient();
 
   useEffect(() => {
     const fetchFeatures = async () => {

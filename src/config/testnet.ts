@@ -37,9 +37,6 @@ export const testnetConfig = {
   gasAdjustment: 1.8,
   gasMargin: 5000,
 
-  // Treasury
-  treasuryStrategy: "composite" as const,
-
   // External URLs
   explorerUrl: "https://www.mintscan.io/xion-testnet",
   stakingUrl: "https://staking.testnet.burnt.com",

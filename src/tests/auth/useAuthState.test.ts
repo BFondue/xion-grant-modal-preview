@@ -163,6 +163,7 @@ describe("useAuthState", () => {
       expect(AuthStateManager.startLogin).toHaveBeenCalledWith(
         "stytch",
         "test-authenticator",
+        undefined,
       );
     });
 

@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "../ui";
 import type { FormattedAssetAmount } from "../../types/assets";
-import { SelectedSmartAccount } from "../../indexer-strategies/types";
+import { SelectedSmartAccount } from "../../types/wallet-account-types";
 import { truncateAddress } from "../../utils";
 import { InteractiveTooltip } from "../ui/tooltip";
 import { ExternalLinkIcon } from "../ui/icons/ExternalLink";

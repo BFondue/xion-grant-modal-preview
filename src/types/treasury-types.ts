@@ -1,60 +1,16 @@
+// Re-export treasury types from xion.js for consistency
+// xion.js defines these types to match the contract specification
+export type {
+  TreasuryParams,
+  GrantConfigByTypeUrl,
+  PermissionDescription,
+  Any,
+} from "@burnt-labs/account-management";
+
+// Dashboard-specific types (not in xion.js)
 import type { MsgGrant } from "cosmjs-types/cosmos/authz/v1beta1/tx";
 
 export type GrantConfigTypeUrlsResponse = string[];
-
-export interface TreasuryParamsMetadata extends Record<string, unknown> {
-  is_oauth2_app?: boolean;
-}
-
-// TypeScript representation (metadata is parsed object)
-export interface TreasuryParams {
-  display_url?: string; // for backwards compatibility
-  redirect_url: string;
-  icon_url: string;
-  metadata: TreasuryParamsMetadata;
-}
-
-// Chain representation (metadata is JSON string)
-export interface TreasuryParamsChain {
-  redirect_url: string;
-  icon_url: string;
-  metadata: string;
-}
-
-// Helper function to parse chain TreasuryParams to TypeScript TreasuryParams
-export function parseTreasuryParams(
-  chainParams: TreasuryParamsChain,
-): TreasuryParams {
-  let metadata: TreasuryParamsMetadata = {};
-  try {
-    if (chainParams.metadata) {
-      metadata = JSON.parse(chainParams.metadata) as TreasuryParamsMetadata;
-    }
-  } catch (error) {
-    console.warn("Failed to parse treasury params metadata:", error);
-    metadata = {};
-  }
-
-  return {
-    display_url: undefined,
-    redirect_url: chainParams.redirect_url,
-    icon_url: chainParams.icon_url,
-    metadata,
-  };
-}
-
-export interface GrantConfigByTypeUrl {
-  allowance: Any;
-  authorization: Any;
-  description: string;
-  maxDuration?: number;
-}
-
-export interface PermissionDescription {
-  authorizationDescription: string;
-  dappDescription?: string;
-  contracts?: string[];
-}
 
 export interface FormattedDescriptions {
   parsedDescription: string;
@@ -66,7 +22,22 @@ export interface GeneratedAuthzGrantMessage {
   value: MsgGrant;
 }
 
-export interface Any {
-  type_url: string;
-  value: string;
+// Helper type for parsed metadata (dashboard-specific usage)
+export interface TreasuryParamsMetadata extends Record<string, unknown> {
+  is_oauth2_app?: boolean;
+}
+
+// Helper function to parse metadata JSON string to object
+// Use this if you need to work with metadata as an object in the UI
+export function parseTreasuryMetadata(
+  metadataJsonString: string,
+): TreasuryParamsMetadata {
+  try {
+    if (metadataJsonString) {
+      return JSON.parse(metadataJsonString) as TreasuryParamsMetadata;
+    }
+  } catch (error) {
+    console.warn("Failed to parse treasury metadata:", error);
+  }
+  return {};
 }

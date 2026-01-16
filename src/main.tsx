@@ -15,8 +15,8 @@ import { QueryClient } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import { App } from "./components/App";
 import { Callback } from "./components/Callback";
-import { ExternalOAuthFlow } from "./components/ExternalAuth";
-import { AppProviders } from "./components/AppProviders";
+import { LoginExternalAuth } from "./components/LoginExternalAuth";
+import { RootProviders } from "./components/RootProviders";
 import { loadShuttleNetworks } from "./config/shuttle";
 
 import "./index.css";
@@ -88,15 +88,15 @@ const queryClient = new QueryClient();
   ];
 
   ReactDOM.createRoot(document.getElementById("root")!).render(
-    <AppProviders queryClient={queryClient} extensionProviders={providers}>
+    <RootProviders queryClient={queryClient} extensionProviders={providers}>
       <Routes>
         <Route path="/callback" element={<Callback />} />
         <Route path="/oauth/callback" element={<Callback />} />
-        <Route path="/oauth/external" element={<ExternalOAuthFlow />} />
+        <Route path="/oauth/external" element={<LoginExternalAuth />} />
         <Route path="/dashboard" element={<StandAloneWrapper />} />
         <Route path="/iframe" element={<IframeApp />} />
         <Route path="/*" element={<App />} />
       </Routes>
-    </AppProviders>,
+    </RootProviders>,
   );
 })();

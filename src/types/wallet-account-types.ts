@@ -1,47 +1,29 @@
 /**
  * Types for wallet-based smart account creation
+ * Uses xion.js AccountType (lowercase) for consistency with API
  */
 
-export type WalletType = "EthWallet" | "Secp256K1";
+import type { AccountType, CreateAccountResponseV2 } from "@burnt-labs/signers";
+import type { SmartAccountWithCodeId } from "@burnt-labs/account-management";
 
-export interface PrepareSignatureRequest {
-  wallet_type: WalletType;
-  address?: string; // Required for EthWallet
-  pubkey?: string; // Required for Secp256K1
-}
+// Align with xion.js AccountType (lowercase: "ethwallet", "secp256k1")
+export type WalletType = Extract<AccountType, "ethwallet" | "secp256k1">;
 
-export interface PrepareSignatureResponse {
-  message_to_sign: string;
-  predicted_address: string;
-  salt: string;
-  wallet_type: string;
-  metadata: {
-    action: string;
-    wallet_type: string;
-    address?: string;
-    pubkey?: string;
-    timestamp: number;
-  };
-}
+// Map CreateAccountResponseV2 from xion.js
+export type CreateWalletAccountResponse = CreateAccountResponseV2;
 
-export interface CreateWalletAccountRequest {
-  salt: string;
-  wallet_type: WalletType;
-  address?: string; // Required for EthWallet
-  pubkey?: string; // Required for Secp256K1
-  signature: string;
-  message: string; // JSON stringified metadata
-}
-
-export interface CreateWalletAccountResponse {
-  account_address: string;
-  code_id: number;
-  transaction_hash: string;
-}
-
+// Dashboard-specific types (UI state)
 export interface WalletConnectionInfo {
   type: WalletType;
   address?: string; // Wallet address (for display)
   pubkey?: string; // Public key hex
   identifier: string; // What gets stored as authenticator
+}
+
+/**
+ * Smart account with selected authenticator index
+ * Extends SmartAccountWithCodeId from xion.js with dashboard-specific state
+ */
+export interface SelectedSmartAccount extends SmartAccountWithCodeId {
+  currentAuthenticatorIndex: number;
 }

@@ -6,7 +6,7 @@ import {
   convertToStandardBase64,
   toUrlSafeBase64,
   removeRegistration,
-} from "../../utils/webauthn-utils";
+} from "../../auth/passkey";
 
 describe("webauthn-utils", () => {
   const STORAGE_KEY = "xionStoredPasskeys";

@@ -21,24 +21,18 @@ import {
   PasskeyIcon,
   AppleLogoIcon,
 } from "../../ui";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../../AbstraxionContext";
-import { useAbstraxionSigningClient } from "../../../hooks";
+import { AuthContext, AuthContextProps } from "../../AuthContext";
+import { useSigningClient } from "../../../hooks";
 import { useContractFeatures } from "../../../hooks/useContractFeatures";
 import { findLowestMissingOrNextIndex } from "../../../auth/utils/authenticator-helpers";
-import { AAAlgo } from "../../../signers";
-import {
-  registeredCredentials,
-  saveRegistration,
-} from "../../../utils/webauthn-utils";
+import { AAAlgo, AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
+import { registeredCredentials, saveRegistration } from "../../../auth/passkey";
 import { Loading } from "../../Loading";
-import {
+import type {
   AddAuthenticator,
   AddJwtAuthenticator,
-} from "../../../signers/interfaces";
-import { validateFeeGrant } from "../../../utils/validate-fee-grant";
+} from "@burnt-labs/signers";
+import { validateFeeGrant } from "@burnt-labs/account-management";
 import { AddEmail } from "./AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
@@ -72,6 +66,8 @@ interface AuthenticatorStateData {
   type: string;
   authenticator: string;
   authenticatorIndex: number;
+  version: string;
+  __typename: string;
 }
 
 export function AddAuthenticatorsForm({
@@ -94,7 +90,7 @@ export function AddAuthenticatorsForm({
 
   // Context state
   const { abstractAccount, setAbstractAccount, chainInfo, apiUrl, isMainnet } =
-    useContext(AbstraxionContext) as AbstraxionContextProps;
+    useContext(AuthContext) as AuthContextProps;
 
   // Variable to be true if not mainnet, otherwise check flags for mainnet
   const shouldEnableOkx = !isMainnet || (isMainnet && okxFlag);
@@ -102,7 +98,7 @@ export function AddAuthenticatorsForm({
   const shouldEnableKeplr = !isMainnet || (isMainnet && keplrFlag);
 
   // Hooks
-  const { client, getGasCalculation } = useAbstraxionSigningClient();
+  const { client, getGasCalculation } = useSigningClient();
   const { connect, recentWallet } = useShuttle();
 
   const stytchClient = useStytch();
@@ -213,7 +209,7 @@ export function AddAuthenticatorsForm({
 
     // Check if fee grant exists
     const feeGranterAddress = FEE_GRANTER_ADDRESS;
-    const isValidFeeGrant = await validateFeeGrant(
+    const feeGrantResult = await validateFeeGrant(
       chainInfo?.rest || XION_API_URL,
       feeGranterAddress,
       abstractAccount.id,
@@ -230,12 +226,11 @@ export function AddAuthenticatorsForm({
       abstractAccount.id,
       [addMsg],
       "add-authenticator",
-      FEE_GRANTER_ADDRESS,
     );
     const fee = getGasCalculation(simmedGas);
 
     let stdFee = fee || ("auto" as const);
-    if (fee && isValidFeeGrant) {
+    if (fee && feeGrantResult.valid) {
       stdFee = { ...fee, granter: feeGranterAddress };
     }
     const deliverTxResponse = await client.signAndBroadcast(
@@ -319,7 +314,7 @@ export function AddAuthenticatorsForm({
       const validation = validateNewAuthenticator(
         abstractAccount.authenticators,
         authenticatorIdentifier,
-        "Jwt",
+        AUTHENTICATOR_TYPE.JWT,
       );
 
       if (!validation.isValid) {
@@ -349,9 +344,11 @@ export function AddAuthenticatorsForm({
 
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
-        type: "Jwt",
+        type: AUTHENTICATOR_TYPE.JWT,
         authenticator: authenticatorIdentifier,
         authenticatorIndex: accountIndex,
+        version: "1",
+        __typename: "Authenticator",
       };
       await handleAddAuthenticator(msg, authenticatorStateData);
     } catch (error) {
@@ -425,6 +422,8 @@ export function AddAuthenticatorsForm({
         type: AAAlgo.secp256k1,
         authenticator: signArbRes.pub_key.value,
         authenticatorIndex: accountIndex,
+        version: "1",
+        __typename: "Authenticator",
       };
 
       await handleAddAuthenticator(msg, authenticatorStateData);
@@ -499,6 +498,8 @@ export function AddAuthenticatorsForm({
         type: AAAlgo.secp256k1,
         authenticator: okxAccount.bech32Address,
         authenticatorIndex: accountIndex,
+        version: "1",
+        __typename: "Authenticator",
       };
 
       await handleAddAuthenticator(msg, authenticatorStateData);
@@ -574,6 +575,8 @@ export function AddAuthenticatorsForm({
         type: AAAlgo.ETHWALLET,
         authenticator: primaryAccount,
         authenticatorIndex: accountIndex,
+        version: "1",
+        __typename: "Authenticator",
       };
 
       await handleAddAuthenticator(msg, authenticatorStateData);
@@ -639,7 +642,7 @@ export function AddAuthenticatorsForm({
       const validation = validateNewAuthenticator(
         abstractAccount.authenticators,
         base64EncodedCredential,
-        AAAlgo.PASSKEY,
+        AAAlgo.Passkey,
       );
 
       if (!validation.isValid) {
@@ -667,7 +670,7 @@ export function AddAuthenticatorsForm({
 
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
-        type: AAAlgo.PASSKEY,
+        type: AAAlgo.Passkey,
         authenticator: base64EncodedCredential,
         authenticatorIndex: accountIndex,
       };
@@ -764,7 +767,7 @@ export function AddAuthenticatorsForm({
       const validation = validateNewAuthenticator(
         abstractAccount.authenticators,
         authenticatorIdentifier,
-        "Jwt",
+        AUTHENTICATOR_TYPE.JWT,
       );
 
       if (!validation.isValid) {
@@ -794,9 +797,11 @@ export function AddAuthenticatorsForm({
 
       const authenticatorStateData = {
         id: `${abstractAccount.id}-${accountIndex}`,
-        type: "Jwt",
+        type: AUTHENTICATOR_TYPE.JWT,
         authenticator: authenticatorIdentifier,
         authenticatorIndex: accountIndex,
+        version: "1",
+        __typename: "Authenticator",
       };
       await handleAddAuthenticator(msg, authenticatorStateData);
     } catch (error) {

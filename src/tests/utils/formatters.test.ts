@@ -3,11 +3,8 @@ import {
   basicFormatCurrency,
   basicFormatTokenAmount,
   detectUserLocale,
-  formatCoins,
-  DENOM_DECIMALS,
-} from "../../utils/formatters";
+} from "../../utils";
 import type { FormattedAssetAmount, Asset } from "../../types/assets";
-import { USDC_DENOM } from "../../config";
 
 const minimalAsset: Asset = {
   denom_units: [{ denom: "tst", exponent: 0 }],
@@ -122,58 +119,5 @@ describe("detectUserLocale", () => {
     // @ts-expoect-error
     global.process = undefined;
     expect(detectUserLocale()).toBe("en-US");
-  });
-});
-
-describe("formatCoins", () => {
-  it("returns empty string for empty input", () => {
-    expect(formatCoins("")).toBe("");
-  });
-
-  it("formats USDC correctly", () => {
-    expect(formatCoins(`1000000${USDC_DENOM}`)).toBe("1 USDC");
-  });
-
-  it("formats known denoms (xion) correctly", () => {
-    expect(formatCoins("1000000uxion")).toBe("1 XION");
-  });
-
-  it("formats unknown denoms correctly", () => {
-    expect(formatCoins("100uunknown")).toBe("100 UUNKNOWN");
-    expect(formatCoins("100unknown")).toBe("100 UNKNOWN");
-  });
-
-  it("formats multiple coins", () => {
-    expect(formatCoins("1000000uxion,100uunknown")).toBe(
-      "1 XION, 100 UUNKNOWN",
-    );
-  });
-
-  it("handles invalid coin strings gracefully", () => {
-    expect(formatCoins("invalid")).toBe("");
-  });
-
-  it("formats known denom without 'u' prefix (falls back to default formatting)", () => {
-    // 'xion' is in DENOM_DECIMALS but doesn't start with 'u', so it skips the special handling
-    // and goes to default formatting which uppercases the denom.
-    expect(formatCoins("1000000xion")).toBe("1000000 XION");
-  });
-
-  it("falls back to uppercase denom if display map entry is missing", () => {
-    // Temporarily add a denom to DENOM_DECIMALS that isn't in DENOM_DISPLAY_MAP
-    // to test the fallback logic
-
-    // We need to bypass the readonly nature for testing
-    Object.defineProperty(DENOM_DECIMALS, "missing", {
-      value: 6,
-      writable: true,
-      configurable: true,
-      enumerable: true,
-    });
-
-    expect(formatCoins("1000000umissing")).toBe("1 MISSING");
-
-    // Cleanup (though it might not matter for other tests if they don't use 'missing')
-    delete (DENOM_DECIMALS as any).missing;
   });
 });

@@ -40,10 +40,9 @@ VITE_NETWORK=testnet-2
 VITE_XION_API_URL=https://api.xion-testnet-2.burnt.com
 VITE_XION_RPC_URL=https://rpc.xion-testnet-2.burnt.com
 VITE_XION_STYTCH_API=https://stytch.testnet.burnt.com/v1
-VITE_NEW_CONTRACT_API_URL=https://api.xion-testnet-2.burnt.com
 
-# Default API Configuration
-VITE_DEFAULT_API_URL=https://api.xion-testnet-2.burnt.com
+# Account Abstraction API Configuration
+VITE_ABSTRAXION_API_URL=https://aa-api.testnet.burnt.com
 
 # Fee Granter Configuration
 VITE_FEE_GRANTER_ADDRESS=xion1xrqz2wpt4rw8rtdvrc4n4yn5h54jm0nn4evn2x

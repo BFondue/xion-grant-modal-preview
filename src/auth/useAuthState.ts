@@ -20,7 +20,8 @@
 
 import { useSyncExternalStore, useCallback } from "react";
 import { AuthStateManager, ConnectionType } from "./AuthStateManager";
-import { SelectedSmartAccount } from "../indexer-strategies/types";
+import { SelectedSmartAccount } from "../types/wallet-account-types";
+import type { AuthenticatorType } from "@burnt-labs/signers";
 
 /**
  * React hook for accessing and managing auth state
@@ -45,10 +46,17 @@ export function useAuthState() {
   /**
    * Start login process
    * Call this when user initiates login with a specific method
+   * @param type - Connection type (for backward compatibility and logging)
+   * @param authenticator - The authenticator string (JWT, pubkey, address, etc.)
+   * @param authenticatorType - Optional: Pass the authenticator type directly instead of deriving from connectionType
    */
   const startLogin = useCallback(
-    (type: ConnectionType, authenticator: string) => {
-      AuthStateManager.startLogin(type, authenticator);
+    (
+      type: ConnectionType,
+      authenticator: string,
+      authenticatorType?: AuthenticatorType,
+    ) => {
+      AuthStateManager.startLogin(type, authenticator, authenticatorType);
     },
     [],
   );
@@ -122,6 +130,8 @@ export function useAuthState() {
     account: state.account,
     /** Current authenticator identifier */
     authenticator: state.authenticator,
+    /** Current authenticator type: 'JWT' | 'EthWallet' | 'Secp256K1' | null */
+    authenticatorType: state.authenticatorType,
     /** Current error message if any */
     error: state.error,
 

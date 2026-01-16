@@ -93,7 +93,9 @@ export const PinInput: React.FC<PinInputProps> = ({
             error ? "ui-border-red-500" : "ui-border-zinc-600"
           }`}
           autoFocus={index === 0}
-          ref={(ref) => (inputRefs.current[index] = ref)}
+          ref={(ref) => {
+            inputRefs.current[index] = ref;
+          }}
         />
       ))}
     </div>

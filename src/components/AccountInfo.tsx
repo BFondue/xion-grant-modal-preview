@@ -3,8 +3,9 @@ import { BaseButton, CloseIcon } from "./ui";
 import { useStytchUser } from "@stytch/react";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
-import { Authenticator } from "../indexer-strategies/types";
-import { AbstraxionContext } from "./AbstraxionContext";
+import type { Authenticator } from "@burnt-labs/account-management";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
+import { AuthContext } from "./AuthContext";
 import { cn } from "../utils/classname-util";
 import { AuthenticatorsList } from "./AuthenticatorsList";
 import { extractUserIdFromAuthenticator } from "../auth/utils/authenticator-helpers";
@@ -16,7 +17,7 @@ export const AccountInfo = () => {
     { authenticator: Authenticator; authType?: string } | undefined
   >();
   const { isMainnet, abstractAccount, setAbstractAccount } =
-    useContext(AbstraxionContext);
+    useContext(AuthContext);
   const { user } = useStytchUser();
 
   // This effect is meant to handle the situation where the stytch session
@@ -25,7 +26,7 @@ export const AccountInfo = () => {
     if (user && abstractAccount) {
       const activeJwtAuthenticator = abstractAccount.authenticators.find(
         (authenticator) =>
-          authenticator.type === "Jwt" &&
+          authenticator.type === AUTHENTICATOR_TYPE.JWT &&
           user.user_id ===
             extractUserIdFromAuthenticator(
               authenticator.authenticator,

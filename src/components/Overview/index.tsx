@@ -8,7 +8,7 @@ import {
   OverviewBalanceTableSkeleton,
 } from "./OverviewBalanceRow";
 import { FEATURED_ASSETS } from "../../config";
-import { SelectedSmartAccount } from "../../indexer-strategies/types";
+import { SelectedSmartAccount } from "../../types/wallet-account-types";
 import { Divider } from "./Divider";
 import { CopyAddress } from "../CopyAddress";
 import { cn } from "../../utils/classname-util";

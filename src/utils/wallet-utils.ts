@@ -1,3 +1,11 @@
+import {
+  normalizeEthereumAddress,
+  validateEthereumAddress,
+  formatEthSignature,
+  formatSecp256k1Signature,
+  validateBech32Address,
+} from "@burnt-labs/signers/crypto";
+
 export class WalletAccountError extends Error {
   constructor(
     message: string,
@@ -79,7 +87,11 @@ export async function getEthWalletAddress(): Promise<string> {
       );
     }
 
-    return accounts[0];
+    const address = accounts[0];
+
+    // Validate and normalize address using signers utilities
+    validateEthereumAddress(address); // Throws if invalid
+    return normalizeEthereumAddress(address); // Lowercase with 0x prefix
   } catch (error) {
     if (error instanceof WalletAccountError) {
       throw error;
@@ -158,6 +170,9 @@ export async function getSecp256k1Pubkey(
       "base64",
     );
 
+    // Validate the bech32 address format
+    validateBech32Address(key.bech32Address, "wallet address");
+
     return {
       pubkeyHex,
       pubkeyBase64,
@@ -202,7 +217,9 @@ export async function signWithEthWallet(
       );
     }
 
-    return signature;
+    // Validate and format signature using signers utilities
+    // This ensures it's properly formatted (0x-prefixed, 65 bytes)
+    return formatEthSignature(signature);
   } catch (error) {
     if (error instanceof WalletAccountError) {
       throw error;
@@ -283,11 +300,9 @@ export async function signWithSecp256k1Wallet(
       );
     }
 
-    // Convert base64 signature to hex
-    const signatureBytes = Buffer.from(signArbResult.signature, "base64");
-    const signatureHex = signatureBytes.toString("hex");
-
-    return signatureHex;
+    // Convert base64 signature to hex and validate format using signers utilities
+    // This ensures it's properly formatted (64 bytes for secp256k1)
+    return formatSecp256k1Signature(signArbResult.signature);
   } catch (error) {
     if (error instanceof WalletAccountError) {
       throw error;

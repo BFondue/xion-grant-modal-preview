@@ -10,14 +10,11 @@ import {
   CloseIcon,
   DialogClose,
 } from "../ui";
-import { useAbstraxionAccount } from "../../hooks";
+import { useSmartAccount } from "../../hooks";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
-import { useGetSmartAccountsStrategy } from "../../hooks/useGetSmartAccountsStrategy";
+import { useAccountDiscovery } from "../../hooks/useAccountDiscovery";
 import { truncateAddress } from "../../utils";
-import {
-  AbstraxionContext,
-  AbstraxionContextProps,
-} from "../AbstraxionContext";
+import { AuthContext, AuthContextProps } from "../AuthContext";
 import { deduplicateAccountsById } from "../../utils/authenticator-utils";
 
 interface DashboardAccountDialogProps {
@@ -29,14 +26,12 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { data: currentAccount, loginAuthenticator } = useAbstraxionAccount();
+  const { data: currentAccount, loginAuthenticator } = useSmartAccount();
   const { xionDisconnect } = useXionDisconnect();
-  const { setAbstractAccount } = useContext(
-    AbstraxionContext,
-  ) as AbstraxionContextProps;
+  const { setAbstractAccount } = useContext(AuthContext) as AuthContextProps;
 
   // Fetch all accounts for the current authenticator
-  const { data: allAccounts, loading } = useGetSmartAccountsStrategy();
+  const { data: allAccounts, loading } = useAccountDiscovery();
 
   // Deduplicate accounts and ensure current account is included
   const uniqueAccounts = useMemo(() => {

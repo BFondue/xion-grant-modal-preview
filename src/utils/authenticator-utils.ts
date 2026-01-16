@@ -1,11 +1,14 @@
-import { Authenticator } from "../indexer-strategies/types";
-import { SmartAccountWithCodeId } from "../indexer-strategies/types";
+import type {
+  Authenticator,
+  SmartAccountWithCodeId,
+} from "@burnt-labs/account-management";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 
 /**
  * Checks if an authenticator already exists in the list
  * @param authenticators - List of existing authenticators
  * @param identifier - The authenticator identifier to check (e.g., "aud.sub" for JWT)
- * @param type - The type of authenticator (e.g., "Jwt")
+ * @param type - The type of authenticator (e.g., "JWT")
  * @returns true if a duplicate exists, false otherwise
  */
 export function isDuplicateAuthenticator(
@@ -91,7 +94,7 @@ export function validateNewAuthenticator(
 ): { isValid: boolean; errorMessage?: string } {
   if (isDuplicateAuthenticator(authenticators, identifier, type)) {
     const errorMessage =
-      type === "Jwt"
+      type === AUTHENTICATOR_TYPE.JWT
         ? "This email is already added as an authenticator"
         : "This authenticator is already added to your account";
     return { isValid: false, errorMessage };
