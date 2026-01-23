@@ -18,28 +18,33 @@
 import { SelectedSmartAccount } from "../types/wallet-account-types";
 import { SessionManager } from "./session";
 import type { AuthenticatorType } from "@burnt-labs/signers";
-import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 
-// Connection types supported
-export type ConnectionType =
-  | "stytch"
-  | "shuttle"
-  | "metamask"
-  | "okx"
-  | "passkey"
+/**
+ * ConnectionMethod - Tracks which connection method/UI was used for authentication
+ * This is separate from AuthenticatorType which defines the cryptographic signature type
+ * Can be wallets (Keplr, MetaMask), social login (Stytch), or embedded methods (Passkey, ZKEmail)
+ */
+export type ConnectionMethod =
+  | "stytch" // Stytch social login (JWT)
+  | "keplr" // Keplr wallet (Secp256k1)
+  | "okx" // OKX wallet (Secp256k1)
+  | "metamask" // MetaMask wallet (EthWallet)
+  | "passkey" // WebAuthn/Passkey (Passkey)
+  | "zkemail" // ZK-Email authentication (ZKEmail)
   | "none";
 
 /**
- * Connection type constants
+ * ConnectionMethod constants
  * Use these instead of string literals to avoid typos and ensure type safety
  */
-export const CONNECTION_TYPE = Object.freeze({
-  Stytch: "stytch" as const, // Stytch social login
-  Shuttle: "shuttle" as const, // Keplr/Cosmos wallets via Shuttle
-  Metamask: "metamask" as const, // MetaMask wallet
-  OKX: "okx" as const, // OKX wallet
-  Passkey: "passkey" as const, // WebAuthn/Passkey
-  None: "none" as const, // No connection
+export const CONNECTION_METHOD = Object.freeze({
+  Stytch: "stytch" as const,
+  Keplr: "keplr" as const,
+  OKX: "okx" as const,
+  Metamask: "metamask" as const,
+  Passkey: "passkey" as const,
+  ZKEmail: "zkemail" as const,
+  None: "none" as const,
 });
 
 // Auth state machine states
@@ -52,7 +57,7 @@ export type AuthStatus =
 // Full auth state
 export interface AuthState {
   status: AuthStatus;
-  connectionType: ConnectionType;
+  connectionMethod: ConnectionMethod;
   account: SelectedSmartAccount | undefined;
   authenticator: string | null;
   authenticatorType: AuthenticatorType | null;
@@ -67,48 +72,15 @@ export type AuthStateListener = (
 
 // Storage keys - centralized in one place
 export const AUTH_STORAGE_KEYS = {
-  LOGIN_TYPE: "loginType",
+  CONNECTION_METHOD: "connectionMethod",
+  AUTHENTICATOR_TYPE: "authenticatorType",
   LOGIN_AUTHENTICATOR: "loginAuthenticator",
-  OKX_XION_ADDRESS: "okxXionAddress",
-  OKX_WALLET_NAME: "okxWalletName",
 } as const;
-
-// Valid connection types for validation
-const VALID_CONNECTION_TYPES: ConnectionType[] = [
-  "stytch",
-  "shuttle",
-  "metamask",
-  "okx",
-  "passkey",
-];
-
-/**
- * Maps ConnectionType to AuthenticatorType
- * This allows us to store the authenticator type without needing to detect it later
- */
-function connectionTypeToAuthenticatorType(
-  connectionType: ConnectionType,
-): AuthenticatorType | null {
-  switch (connectionType) {
-    case CONNECTION_TYPE.Stytch:
-      return AUTHENTICATOR_TYPE.JWT;
-    case CONNECTION_TYPE.Passkey:
-      return AUTHENTICATOR_TYPE.Passkey;
-    case CONNECTION_TYPE.Shuttle:
-    case CONNECTION_TYPE.OKX:
-      // Both Shuttle and OKX use Keplr API and provide base64-encoded secp256k1 pubkeys
-      return AUTHENTICATOR_TYPE.Secp256K1;
-    case CONNECTION_TYPE.Metamask:
-      return AUTHENTICATOR_TYPE.EthWallet;
-    case CONNECTION_TYPE.None:
-      return null;
-  }
-}
 
 class AuthStateManagerClass {
   private state: AuthState = {
     status: "disconnected",
-    connectionType: "none",
+    connectionMethod: "none",
     account: undefined,
     authenticator: null,
     authenticatorType: null,
@@ -128,30 +100,31 @@ class AuthStateManagerClass {
   initialize(): void {
     if (this.initialized) return;
 
-    const storedType = localStorage.getItem(AUTH_STORAGE_KEYS.LOGIN_TYPE);
+    const storedConnectionMethod = localStorage.getItem(
+      AUTH_STORAGE_KEYS.CONNECTION_METHOD,
+    ) as ConnectionMethod | null;
+
+    const storedAuthenticatorType = localStorage.getItem(
+      AUTH_STORAGE_KEYS.AUTHENTICATOR_TYPE,
+    ) as AuthenticatorType | null;
+
     const storedAuth = localStorage.getItem(
       AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR,
     );
 
-    // Validate stored type is a valid connection type
-    const isValidType =
-      storedType &&
-      VALID_CONNECTION_TYPES.includes(storedType as ConnectionType);
-
-    if (isValidType && storedAuth) {
-      const connectionType = storedType as ConnectionType;
+    if (storedConnectionMethod && storedAuth && storedAuthenticatorType) {
       this.state = {
         ...this.state,
         status: "connecting", // Will become 'connected' once account is loaded
-        connectionType,
+        connectionMethod: storedConnectionMethod,
         authenticator: storedAuth,
-        authenticatorType: connectionTypeToAuthenticatorType(connectionType),
+        authenticatorType: storedAuthenticatorType,
       };
       // Update snapshot to reflect initialized state
       this.stateSnapshot = { ...this.state };
       console.log("[AuthStateManager] Initialized with stored credentials:", {
-        type: storedType,
-        authenticatorType: this.state.authenticatorType,
+        connectionMethod: storedConnectionMethod,
+        authenticatorType: storedAuthenticatorType,
         authenticator: storedAuth.substring(0, 20) + "...",
       });
     } else {
@@ -221,10 +194,24 @@ class AuthStateManagerClass {
   }
 
   /**
-   * Get connection type
+   * Get connection method
    */
-  getConnectionType(): ConnectionType {
-    return this.state.connectionType;
+  getConnectionMethod(): ConnectionMethod {
+    return this.state.connectionMethod;
+  }
+
+  /**
+   * Set connection method and persist to localStorage
+   */
+  setConnectionMethod(method: ConnectionMethod): void {
+    const prevState = { ...this.state };
+    this.state = {
+      ...this.state,
+      connectionMethod: method,
+    };
+    localStorage.setItem(AUTH_STORAGE_KEYS.CONNECTION_METHOD, method);
+    console.log("[AuthStateManager] Connection method updated:", method);
+    this.notifyListeners(prevState);
   }
 
   /**
@@ -241,32 +228,32 @@ class AuthStateManagerClass {
    * Transitions: disconnected → connecting
    */
   startLogin(
-    type: ConnectionType,
+    authenticatorType: AuthenticatorType,
+    connectionMethod: ConnectionMethod,
     authenticator: string,
-    authenticatorType?: AuthenticatorType,
   ): void {
     const prevState = { ...this.state };
-
-    // Use provided authenticatorType, or fall back to deriving from connectionType
-    const authType =
-      authenticatorType ?? connectionTypeToAuthenticatorType(type);
 
     this.state = {
       ...this.state,
       status: "connecting",
-      connectionType: type,
+      connectionMethod,
       authenticator,
-      authenticatorType: authType,
+      authenticatorType,
       error: null,
     };
 
     // Persist to localStorage
-    localStorage.setItem(AUTH_STORAGE_KEYS.LOGIN_TYPE, type);
+    localStorage.setItem(AUTH_STORAGE_KEYS.CONNECTION_METHOD, connectionMethod);
+    localStorage.setItem(
+      AUTH_STORAGE_KEYS.AUTHENTICATOR_TYPE,
+      authenticatorType,
+    );
     localStorage.setItem(AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR, authenticator);
 
     console.log("[AuthStateManager] Login started:", {
-      type,
-      authenticatorType: this.state.authenticatorType,
+      connectionMethod,
+      authenticatorType,
       authenticator: authenticator.substring(0, 20) + "...",
     });
 
@@ -300,25 +287,6 @@ class AuthStateManagerClass {
   }
 
   /**
-   * Set OKX-specific wallet data
-   */
-  setOkxData(address: string, name: string): void {
-    localStorage.setItem(AUTH_STORAGE_KEYS.OKX_XION_ADDRESS, address);
-    localStorage.setItem(AUTH_STORAGE_KEYS.OKX_WALLET_NAME, name);
-    console.log("[AuthStateManager] OKX data set:", { address, name });
-  }
-
-  /**
-   * Get OKX-specific wallet data
-   */
-  getOkxData(): { address: string | null; name: string | null } {
-    return {
-      address: localStorage.getItem(AUTH_STORAGE_KEYS.OKX_XION_ADDRESS),
-      name: localStorage.getItem(AUTH_STORAGE_KEYS.OKX_WALLET_NAME),
-    };
-  }
-
-  /**
    * Logout - clears all auth state and storage
    * Transitions: any → disconnecting → disconnected
    */
@@ -335,7 +303,10 @@ class AuthStateManagerClass {
     console.log("[AuthStateManager] Logout started");
 
     // Revoke Stytch session if applicable
-    if (prevState.connectionType === "stytch" && stytchClient) {
+    if (
+      prevState.connectionMethod === CONNECTION_METHOD.Stytch &&
+      stytchClient
+    ) {
       try {
         const tokens = stytchClient.session?.getTokens?.();
         if (tokens) {
@@ -357,16 +328,15 @@ class AuthStateManagerClass {
     }
 
     // Clear all localStorage auth data
-    localStorage.removeItem(AUTH_STORAGE_KEYS.LOGIN_TYPE);
+    localStorage.removeItem(AUTH_STORAGE_KEYS.CONNECTION_METHOD);
+    localStorage.removeItem(AUTH_STORAGE_KEYS.AUTHENTICATOR_TYPE);
     localStorage.removeItem(AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.OKX_XION_ADDRESS);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.OKX_WALLET_NAME);
 
     // Final state - fully disconnected
     const disconnectingState = { ...this.state };
     this.state = {
       status: "disconnected",
-      connectionType: "none",
+      connectionMethod: CONNECTION_METHOD.None,
       account: undefined,
       authenticator: null,
       authenticatorType: null,
@@ -432,7 +402,7 @@ class AuthStateManagerClass {
     const prevState = { ...this.state };
     this.state = {
       status: "disconnected",
-      connectionType: "none",
+      connectionMethod: CONNECTION_METHOD.None,
       account: undefined,
       authenticator: null,
       authenticatorType: null,

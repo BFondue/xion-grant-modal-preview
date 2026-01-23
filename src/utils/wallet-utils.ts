@@ -105,11 +105,11 @@ export async function getEthWalletAddress(): Promise<string> {
 }
 
 /**
- * Gets Secp256k1 public key from Cosmos wallets (Keplr/Leap/OKX)
+ * Gets Secp256k1 public key from Cosmos wallets (Keplr/OKX)
  */
 export async function getSecp256k1Pubkey(
   chainId: string,
-  walletName: "keplr" | "leap" | "okx" = "keplr",
+  walletName: "keplr" | "okx" = "keplr",
 ): Promise<{ pubkeyHex: string; pubkeyBase64: string; address: string }> {
   try {
     let wallet: NonNullable<Window["keplr"]>;
@@ -123,15 +123,6 @@ export async function getSecp256k1Pubkey(
           );
         }
         wallet = window.keplr;
-        break;
-      case "leap":
-        if (!window.leap) {
-          throw new WalletAccountError(
-            "Leap not installed",
-            "Leap wallet not found. Please install Leap and try again.",
-          );
-        }
-        wallet = window.leap;
         break;
       case "okx":
         if (!window.okxwallet) {
@@ -233,24 +224,24 @@ export async function signWithEthWallet(
 }
 
 /**
- * Signs a message with Cosmos wallet (Keplr/Leap/OKX)
+ * Signs a message with Cosmos wallet (Keplr/OKX)
  *
  * Uses Keplr's signArbitrary which creates an ADR-036 wrapped signature.
  * The backend verification (in @burnt-labs/signers) now supports both:
  * - Plain SHA256 signatures (for programmatic signers)
- * - ADR-036 wrapped signatures (for Keplr/Leap/OKX)
+ * - ADR-036 wrapped signatures (for Keplr/OKX)
  *
  * @param message - Plain text message to sign (typically a bech32 address like "xion1...")
  * @param chainId - Chain ID for the wallet
  * @param userAddress - User's wallet address
- * @param walletName - Which wallet to use (keplr, leap, or okx)
+ * @param walletName - Which wallet to use (keplr or okx)
  * @returns Signature in hex format
  */
 export async function signWithSecp256k1Wallet(
   message: string,
   chainId: string,
   userAddress: string,
-  walletName: "keplr" | "leap" | "okx" = "keplr",
+  walletName: "keplr" | "okx" = "keplr",
 ): Promise<string> {
   try {
     let wallet: NonNullable<Window["keplr"]>;
@@ -264,15 +255,6 @@ export async function signWithSecp256k1Wallet(
           );
         }
         wallet = window.keplr;
-        break;
-      case "leap":
-        if (!window.leap) {
-          throw new WalletAccountError(
-            "Leap not installed",
-            "Leap wallet not found.",
-          );
-        }
-        wallet = window.leap;
         break;
       case "okx":
         if (!window.okxwallet?.keplr) {

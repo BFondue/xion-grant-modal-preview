@@ -101,6 +101,7 @@ export class AbstractAccountJWTSigner extends AASigner {
    * @throws Error if session token is undefined or authentication fails
    */
   async signDirect(
+    // @ts-expect-error - signerAddress required by interface but not used in JWT implementation
     signerAddress: string,
     signDoc: SignDoc,
   ): Promise<DirectSignResponse> {

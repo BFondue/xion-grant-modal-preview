@@ -9,6 +9,7 @@ import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
   getEthWalletAddress,
+  signWithEthWallet,
   WalletAccountError,
   getErrorMessageForUI,
 } from "../utils";
@@ -19,6 +20,8 @@ import {
   XION_RPC_URL,
   CHAIN_ID,
 } from "../config";
+import { getConnectionAdapter } from "../connectionAdapters";
+import { CONNECTION_METHOD } from "../auth/AuthStateManager";
 
 export interface WalletConnectionInfo {
   type: "EthWallet" | "Secp256K1";
@@ -76,7 +79,16 @@ function getAddressPrefix(chainId: string): string {
  */
 export async function createEthWalletSmartAccount(): Promise<CreateWalletAccountResult> {
   try {
-    // 1. Get Ethereum address
+    // Get the connection adapter
+    const adapter = getConnectionAdapter(
+      AUTHENTICATOR_TYPE.EthWallet,
+      CONNECTION_METHOD.Metamask,
+    );
+
+    // Enable the connection (may trigger wallet popup)
+    await adapter.enable(CHAIN_ID);
+
+    // 1. Get Ethereum address using utility function
     const ethAddress = await getEthWalletAddress();
 
     // 2. Fetch contract checksum
@@ -90,26 +102,9 @@ export async function createEthWalletSmartAccount(): Promise<CreateWalletAccount
 
     // 4. Create sign function that signs hex messages
     const signMessageFn = async (hexMessage: string): Promise<string> => {
-      if (!window.ethereum) {
-        throw new WalletAccountError(
-          "MetaMask not installed",
-          "MetaMask wallet not found.",
-        );
-      }
-
-      const signature = (await window.ethereum.request({
-        method: "personal_sign",
-        params: [hexMessage, ethAddress],
-      })) as string;
-
-      if (!signature) {
-        throw new WalletAccountError(
-          "No signature returned",
-          "Failed to get signature from wallet.",
-        );
-      }
-
-      return signature;
+      // Use utility function to sign with MetaMask
+      // signWithEthWallet expects plain message, but we receive hex
+      return await signWithEthWallet(hexMessage, ethAddress);
     };
 
     // 5. Create account via xion.js

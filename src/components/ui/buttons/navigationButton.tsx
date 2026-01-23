@@ -2,8 +2,7 @@ import React from "react";
 import { cn } from "../../../utils/classname-util";
 import { ChevronRightIcon } from "../icons/ChevronRight";
 
-interface NavigationButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface NavigationButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: React.ReactNode;
   subLabel?: React.ReactNode;
   rightArrow?: boolean;

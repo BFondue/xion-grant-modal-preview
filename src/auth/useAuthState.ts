@@ -19,9 +19,16 @@
  */
 
 import { useSyncExternalStore, useCallback } from "react";
-import { AuthStateManager, ConnectionType } from "./AuthStateManager";
+import {
+  AuthStateManager,
+  ConnectionMethod,
+  CONNECTION_METHOD,
+} from "./AuthStateManager";
 import { SelectedSmartAccount } from "../types/wallet-account-types";
 import type { AuthenticatorType } from "@burnt-labs/signers";
+
+// Re-export for convenience
+export { type ConnectionMethod, CONNECTION_METHOD };
 
 /**
  * React hook for accessing and managing auth state
@@ -46,17 +53,21 @@ export function useAuthState() {
   /**
    * Start login process
    * Call this when user initiates login with a specific method
-   * @param type - Connection type (for backward compatibility and logging)
+   * @param authenticatorType - The authenticator type from @burnt-labs/signers
+   * @param connectionMethod - The connection method being used
    * @param authenticator - The authenticator string (JWT, pubkey, address, etc.)
-   * @param authenticatorType - Optional: Pass the authenticator type directly instead of deriving from connectionType
    */
   const startLogin = useCallback(
     (
-      type: ConnectionType,
+      authenticatorType: AuthenticatorType,
+      connectionMethod: ConnectionMethod,
       authenticator: string,
-      authenticatorType?: AuthenticatorType,
     ) => {
-      AuthStateManager.startLogin(type, authenticator, authenticatorType);
+      AuthStateManager.startLogin(
+        authenticatorType,
+        connectionMethod,
+        authenticator,
+      );
     },
     [],
   );
@@ -79,17 +90,17 @@ export function useAuthState() {
   }, []);
 
   /**
-   * Set OKX wallet-specific data
+   * Set connection method and persist to localStorage
    */
-  const setOkxData = useCallback((address: string, name: string) => {
-    AuthStateManager.setOkxData(address, name);
+  const setConnectionMethod = useCallback((method: ConnectionMethod) => {
+    AuthStateManager.setConnectionMethod(method);
   }, []);
 
   /**
-   * Get OKX wallet-specific data
+   * Get current connection method
    */
-  const getOkxData = useCallback(() => {
-    return AuthStateManager.getOkxData();
+  const getConnectionMethod = useCallback(() => {
+    return AuthStateManager.getConnectionMethod();
   }, []);
 
   /**
@@ -124,13 +135,13 @@ export function useAuthState() {
     // --- State Properties ---
     /** Current auth status: 'disconnected' | 'connecting' | 'connected' | 'disconnecting' */
     status: state.status,
-    /** Current connection type: 'stytch' | 'shuttle' | 'metamask' | 'okx' | 'passkey' | 'none' */
-    connectionType: state.connectionType,
+    /** Current connection method */
+    connectionMethod: state.connectionMethod,
     /** Current smart account if connected */
     account: state.account,
     /** Current authenticator identifier */
     authenticator: state.authenticator,
-    /** Current authenticator type: 'JWT' | 'EthWallet' | 'Secp256K1' | null */
+    /** Current authenticator type: 'JWT' | 'EthWallet' | 'Secp256K1' | 'Passkey' | 'ZKEmail' | null */
     authenticatorType: state.authenticatorType,
     /** Current error message if any */
     error: state.error,
@@ -151,8 +162,8 @@ export function useAuthState() {
     startLogin,
     completeLogin,
     logout,
-    setOkxData,
-    getOkxData,
+    setConnectionMethod,
+    getConnectionMethod,
     setError,
     clearError,
     updateAccount,

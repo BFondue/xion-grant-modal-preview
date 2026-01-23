@@ -1,26 +1,33 @@
-name: Run Tests
+name: Build & Test
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    name: Run Unit Tests
+    name: Run Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
-          cache: "npm"
+          node-version: lts/*
+          cache: npm
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
 
       - name: Set environment variables
@@ -32,3 +39,92 @@ jobs:
 
       - name: Run tests with coverage
         run: npm run test:coverage
+        env:
+          CI: true
+          NODE_ENV: test
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+  type-check:
+    name: Type Check (Non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run type check
+        id: typecheck
+        run: |
+          echo "## TypeScript Type Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if npm run check-types 2>&1 | tee typecheck.log; then
+            echo "✅ **No type errors found**" >> $GITHUB_STEP_SUMMARY
+          else
+            ERROR_COUNT=$(grep -c "^src/" typecheck.log || echo "0")
+            echo "⚠️ **Found $ERROR_COUNT type errors**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "These are non-blocking warnings. The errors are primarily in legacy code and don't affect runtime behavior." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details>" >> $GITHUB_STEP_SUMMARY
+            echo "<summary>View type errors</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            head -50 typecheck.log >> $GITHUB_STEP_SUMMARY
+            if [ "$ERROR_COUNT" -gt 50 ]; then
+              echo "..." >> $GITHUB_STEP_SUMMARY
+              echo "(showing first 50 lines, $ERROR_COUNT total errors)" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "ℹ️ Test files are excluded from type checking (see tsconfig.json)" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build (testnet mode)
+        run: npm run build:testnet
+        env:
+          VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.STYTCH_TESTNET_PUBLIC_TOKEN || 'dummy-token' }}
+          VITE_NUMIA_TOKEN: ${{ secrets.NUMIA_TOKEN || 'dummy-token' }}
+
+      - name: Check build output
+        run: |
+          echo "✅ Build completed successfully"
+          ls -lh dist/

@@ -43,6 +43,7 @@ export const deepEqual = (obj1: object, obj2: object): boolean => {
   // Check if all keys and their values are equal
   for (const key of keys1) {
     if (!keys2.includes(key)) return false;
+    // @ts-expect-error - obj1 and obj2 are objects with index signature
     if (!deepEqual(obj1[key], obj2[key])) return false;
   }
 

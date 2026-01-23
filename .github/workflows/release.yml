@@ -8,7 +8,9 @@ on:
       - main
   workflow_dispatch:
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -21,7 +23,7 @@ jobs:
     steps:
       - name: ⬇️ Checkout
         id: checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v4
         with:
           token: ${{ env.GITHUB_TOKEN }}
           fetch-depth: 0
@@ -36,13 +38,25 @@ jobs:
 
       - name: 🧩 Install Dependencies
         id: install-dependencies
-        run: npm install
+        run: npm ci
+
+      - name: 🔍 Validate Dependencies
+        id: validate-deps
+        run: |
+          echo "Checking for file: protocol dependencies..."
+          if grep -q '"file:' package.json; then
+            echo "❌ Error: Cannot release with file: protocol dependencies"
+            exit 1
+          fi
+          echo "✅ No file: protocol dependencies"
 
       - name: 🏗️ Build
         id: build-the-repo
         run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=8192
+          VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.STYTCH_TESTNET_PUBLIC_TOKEN || 'dummy-token' }}
+          VITE_NUMIA_TOKEN: ${{ secrets.NUMIA_TOKEN || 'dummy-token' }}
 
       - name: Load SSH signing key
         run: |

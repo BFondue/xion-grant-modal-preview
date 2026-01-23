@@ -2,11 +2,8 @@
 import { Buffer } from "buffer";
 import process from "process";
 
-// @ts-expect-error - Adding Buffer to window for polyfill
 window.Buffer = Buffer;
-// @ts-expect-error - Adding process to window for polyfill
 window.process = process;
-// @ts-expect-error - Adding global to window for polyfill
 window.global = window;
 
 import ReactDOM from "react-dom/client";

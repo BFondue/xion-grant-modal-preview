@@ -1,16 +1,21 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useStytch } from "@stytch/react";
-import { AAClient, AADirectSigner, AAEthSigner } from "@burnt-labs/signers";
+import { AAClient } from "@burnt-labs/signers";
 import { AuthContext, AuthContextProps } from "../components/AuthContext";
 import { testnetChainInfo } from "@burnt-labs/constants";
-import { AAPasskeySigner } from "../auth/passkey";
-import { AbstractAccountJWTSigner } from "../auth/jwt/jwt-signer";
 import { formatGasPrice, getGasCalculation } from "../utils/fees";
 import { STYTCH_PROXY_URL } from "../config";
+import { CONNECTION_METHOD } from "../auth/useAuthState";
+import { getConnectionAdapter } from "../connectionAdapters";
 
 export const useSigningClient = () => {
-  const { connectionType, abstractAccount, chainInfo, isChainInfoLoading } =
-    useContext(AuthContext) as AuthContextProps;
+  const {
+    connectionMethod,
+    authenticatorType,
+    abstractAccount,
+    chainInfo,
+    isChainInfoLoading,
+  } = useContext(AuthContext) as AuthContextProps;
 
   const stytch = useStytch();
 
@@ -35,122 +40,90 @@ export const useSigningClient = () => {
     };
   }, []);
 
-  async function okxSignArb(
-    chainId: string,
-    account: string,
-    signBytes: string | Uint8Array,
-  ) {
-    if (!window.okxwallet?.keplr) {
-      throw new Error("Please install the OKX wallet extension");
-    }
-    await window.okxwallet.keplr.enable(chainInfo?.chainId || "");
-    const signDataNew =
-      typeof signBytes === "string"
-        ? signBytes
-        : Uint8Array.from(Object.values(signBytes));
-    return window.okxwallet.keplr.signArbitrary(chainId, account, signDataNew);
-  }
-
-  async function ethSigningFn(msg: any) {
-    const accounts = (await window.ethereum?.request({
-      method: "eth_requestAccounts",
-    })) as any;
-    return window.ethereum?.request({
-      method: "personal_sign",
-      params: [msg, accounts[0]],
-    }) as Promise<string>;
-  }
-
   const getSigner = useCallback(async () => {
-    if (isChainInfoLoading || !chainInfo || !abstractAccount) {
+    if (
+      isChainInfoLoading ||
+      !chainInfo ||
+      !abstractAccount ||
+      !authenticatorType
+    ) {
       return;
     }
 
-    let signer:
-      | AbstractAccountJWTSigner
-      | AADirectSigner
-      | AAEthSigner
-      | AAPasskeySigner
-      | undefined = undefined;
+    // Handle "none" connection method
+    if (connectionMethod === CONNECTION_METHOD.None) {
+      console.warn("No connection method set");
+      return;
+    }
 
-    switch (connectionType) {
-      case "stytch":
-        {
-          const stytchApiUrl = STYTCH_PROXY_URL;
+    try {
+      // Get the appropriate adapter for this connection
+      const adapter = getConnectionAdapter(authenticatorType, connectionMethod);
 
-          signer = new AbstractAccountJWTSigner(
-            abstractAccount.id,
-            abstractAccount.currentAuthenticatorIndex,
-            sessionToken,
-            stytchApiUrl,
-          );
-        }
-        break;
-      case "shuttle":
-        if (window.keplr) {
-          const offlineSigner = window.keplr.getOfflineSigner(
-            chainInfo.chainId,
-          );
-          signer = new AADirectSigner(
-            offlineSigner,
-            abstractAccount.id,
-            abstractAccount.currentAuthenticatorIndex,
-            window.keplr.signArbitrary,
-          );
-        }
-        break;
-      case "okx":
-        if (window.okxwallet?.keplr) {
-          const okxOfflineSigner = window.okxwallet.keplr.getOfflineSigner(
-            chainInfo.chainId,
-          );
-          signer = new AADirectSigner(
-            okxOfflineSigner,
-            abstractAccount.id,
-            abstractAccount.currentAuthenticatorIndex,
-            okxSignArb,
-          );
-        }
-        break;
-      case "metamask":
-        if (window.ethereum) {
-          signer = new AAEthSigner(
-            abstractAccount.id,
-            abstractAccount.currentAuthenticatorIndex,
-            ethSigningFn,
-          );
-        }
-        break;
-      case "passkey":
-        signer = new AAPasskeySigner(
+      // Enable the connection (this may trigger wallet popups)
+      await adapter.enable(chainInfo.chainId);
+
+      // Get the signer from the adapter
+      let signer;
+
+      // Each adapter's getSigner has different parameters based on its needs
+      if (connectionMethod === CONNECTION_METHOD.Stytch) {
+        // JWT adapter needs session token and API URL
+        signer = (adapter as any).getSigner(
+          abstractAccount.id,
+          abstractAccount.currentAuthenticatorIndex,
+          sessionToken,
+          STYTCH_PROXY_URL,
+        );
+      } else if (
+        connectionMethod === CONNECTION_METHOD.Keplr ||
+        connectionMethod === CONNECTION_METHOD.OKX
+      ) {
+        // Secp256k1 adapters need chainId
+        signer = await (adapter as any).getSigner(
+          chainInfo.chainId,
           abstractAccount.id,
           abstractAccount.currentAuthenticatorIndex,
         );
-        break;
-      case "none":
-        signer = undefined;
-        break;
+      } else if (connectionMethod === CONNECTION_METHOD.Metamask) {
+        // Eth adapters don't need chainId
+        signer = (adapter as any).getSigner(
+          abstractAccount.id,
+          abstractAccount.currentAuthenticatorIndex,
+        );
+      } else if (connectionMethod === CONNECTION_METHOD.Passkey) {
+        // Passkey adapter
+        signer = (adapter as any).getSigner(
+          abstractAccount.id,
+          abstractAccount.currentAuthenticatorIndex,
+        );
+      } else {
+        console.warn(`Unsupported connection method: ${connectionMethod}`);
+        return;
+      }
+
+      if (!signer) {
+        console.warn("No signer returned from adapter");
+        return;
+      }
+
+      const abstractClient = await AAClient.connectWithSigner(
+        chainInfo.rpc || testnetChainInfo.rpc,
+        signer,
+        {
+          gasPrice: formatGasPrice(chainInfo),
+        },
+      );
+
+      setAbstractClient(abstractClient);
+    } catch (error) {
+      console.error("Failed to create signer:", error);
     }
-
-    if (!signer) {
-      console.warn("No signer found");
-      return;
-    }
-
-    const abstractClient = await AAClient.connectWithSigner(
-      // Should be set in the context but defaulting here just in case.
-      chainInfo.rpc || testnetChainInfo.rpc,
-      signer,
-      {
-        gasPrice: formatGasPrice(chainInfo),
-      },
-    );
-
-    setAbstractClient(abstractClient);
   }, [
     sessionToken,
     abstractAccount,
-    connectionType,
+    authenticatorType,
+    connectionMethod,
     chainInfo,
     isChainInfoLoading,
     keplrState,

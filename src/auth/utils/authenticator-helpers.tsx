@@ -74,7 +74,6 @@ const getJwtLogo = (subType: string) => {
   }
 };
 
-// @ts-expect-error - Authenticator type handling
 export const getAuthenticatorLogo = (
   type: authenticatorTypes,
   jwtSubType?: string,

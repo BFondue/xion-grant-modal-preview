@@ -11,16 +11,16 @@
 
 import { useStytch } from "@stytch/react";
 import { useShuttle } from "@delphi-labs/shuttle-react";
-import { useAuthState } from "../auth/useAuthState";
+import { useAuthState, CONNECTION_METHOD } from "../auth/useAuthState";
 
 export function useXionDisconnect() {
   const { disconnect } = useShuttle();
   const stytch = useStytch();
-  const { logout, connectionType } = useAuthState();
+  const { logout, connectionMethod } = useAuthState();
 
   const xionDisconnect = async () => {
     // Disconnect Shuttle wallet if that's the connection type
-    if (connectionType === "shuttle") {
+    if (connectionMethod === CONNECTION_METHOD.Keplr) {
       try {
         disconnect();
       } catch (error) {

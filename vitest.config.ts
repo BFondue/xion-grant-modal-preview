@@ -3,11 +3,23 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json"],
+  },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/tests/setup.ts"],
     globals: true,
     pool: "forks",
+    server: {
+      deps: {
+        inline: [
+          "@burnt-labs/signers",
+          "@burnt-labs/account-management",
+          "cosmjs-types",
+        ],
+      },
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],

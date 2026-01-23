@@ -9,7 +9,7 @@ import { LoginGrantApproval } from "../LoginGrantApproval";
 import { useStytchSession, useStytch } from "@stytch/react";
 import { decodeJwt } from "jose";
 import { useAuthState } from "../../auth/useAuthState";
-import { CONNECTION_TYPE } from "../../auth/AuthStateManager";
+import { CONNECTION_METHOD } from "../../auth/useAuthState";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 
 import { useQueryParams } from "../../hooks/useQueryParams";
@@ -38,20 +38,20 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
     abstraxionError,
     setAbstraxionError,
     isInGrantFlow,
-    setConnectionType,
+    setConnectionMethod,
   } = useContext(AuthContext) as AuthContextProps;
 
   const { session } = useStytchSession();
   const stytchClient = useStytch();
-  const { connectionType, startLogin } = useAuthState();
+  const { connectionMethod, startLogin } = useAuthState();
   const { isConnected, data: account } = useSmartAccount();
 
-  // Sync Stytch session to auth state - ensures connectionType is 'stytch' when session exists
+  // Sync Stytch session to auth state - ensures connectionMethod is 'stytch' when session exists
   useEffect(() => {
-    if (session && connectionType === "none") {
+    if (session && connectionMethod === CONNECTION_METHOD.None) {
       console.log("[Abstraxion] Detected Stytch session, syncing auth state");
       localStorage.setItem("loginType", "stytch");
-      setConnectionType("stytch");
+      setConnectionMethod(CONNECTION_METHOD.Stytch);
 
       // Extract authenticator from session JWT
       try {
@@ -62,9 +62,9 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
             const audStr = Array.isArray(aud) ? aud[0] : aud;
             const authenticator = `${audStr}.${sub}`;
             startLogin(
-              CONNECTION_TYPE.Stytch,
-              authenticator,
               AUTHENTICATOR_TYPE.JWT,
+              CONNECTION_METHOD.Stytch,
+              authenticator,
             );
           }
         }
@@ -75,7 +75,13 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
         );
       }
     }
-  }, [session, connectionType, setConnectionType, startLogin, stytchClient]);
+  }, [
+    session,
+    connectionMethod,
+    setConnectionMethod,
+    startLogin,
+    stytchClient,
+  ]);
 
   let bankArray;
   try {

@@ -8,6 +8,22 @@ import {
   signWithSecp256k1Wallet,
 } from "../../utils/wallet-utils";
 
+// Mock validation functions from @burnt-labs/signers/crypto
+vi.mock("@burnt-labs/signers/crypto", () => ({
+  validateBech32Address: vi.fn(),
+  validateEthereumAddress: vi.fn(),
+  normalizeEthereumAddress: vi.fn((addr: string) => addr.toLowerCase()),
+  formatEthSignature: vi.fn((sig: string) => sig),
+  // formatSecp256k1Signature should convert base64 to hex
+  formatSecp256k1Signature: vi.fn((sig: string) => {
+    // If it's base64, convert to hex
+    if (!sig.startsWith("0x") && /^[A-Za-z0-9+/=]+$/.test(sig)) {
+      return Buffer.from(sig, "base64").toString("hex");
+    }
+    return sig;
+  }),
+}));
+
 describe("WalletAccountError", () => {
   it("constructs correctly", () => {
     const error = new WalletAccountError("tech message", "user message");
@@ -75,6 +91,7 @@ describe("getEthWalletAddress", () => {
 
   it("returns address if accounts found", async () => {
     window.ethereum = {
+      isMetaMask: true,
       request: vi.fn().mockResolvedValue(["0x123"]),
     } as any;
     const address = await getEthWalletAddress();
@@ -83,6 +100,7 @@ describe("getEthWalletAddress", () => {
 
   it("throws if no accounts found", async () => {
     window.ethereum = {
+      isMetaMask: true,
       request: vi.fn().mockResolvedValue([]),
     } as any;
     await expect(getEthWalletAddress()).rejects.toThrow("No accounts found");
@@ -90,6 +108,7 @@ describe("getEthWalletAddress", () => {
 
   it("wraps unknown errors", async () => {
     window.ethereum = {
+      isMetaMask: true,
       request: vi.fn().mockRejectedValue(new Error("Unknown")),
     } as any;
     await expect(getEthWalletAddress()).rejects.toThrow(
@@ -109,12 +128,6 @@ describe("getSecp256k1Pubkey", () => {
     );
   });
 
-  it("throws if wallet not installed (leap)", async () => {
-    await expect(getSecp256k1Pubkey("chain-id", "leap")).rejects.toThrow(
-      "Leap not installed",
-    );
-  });
-
   it("throws if wallet not installed (okx)", async () => {
     await expect(getSecp256k1Pubkey("chain-id", "okx")).rejects.toThrow(
       "OKX not installed",
@@ -124,14 +137,15 @@ describe("getSecp256k1Pubkey", () => {
   it("returns pubkey info for keplr", async () => {
     const mockKey = {
       pubKey: new Uint8Array([1, 2, 3]),
-      bech32Address: "xion1addr",
+      // Use a valid bech32 address format (xion1 + 39 chars)
+      bech32Address: "xion1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6ltfe6",
     };
     window.keplr = {
       getKey: vi.fn().mockResolvedValue(mockKey),
     } as any;
 
     const result = await getSecp256k1Pubkey("chain-id", "keplr");
-    expect(result.address).toBe("xion1addr");
+    expect(result.address).toBe("xion1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6ltfe6");
     expect(result.pubkeyHex).toBe("010203");
     expect(result.pubkeyBase64).toBe("AQID");
   });
@@ -139,7 +153,8 @@ describe("getSecp256k1Pubkey", () => {
   it("handles OKX wallet specific logic", async () => {
     const mockKey = {
       pubKey: new Uint8Array([1, 2, 3]),
-      bech32Address: "xion1addr",
+      // Use a valid bech32 address format
+      bech32Address: "xion1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6ltfe6",
     };
     window.okxwallet = {
       keplr: {
@@ -149,23 +164,8 @@ describe("getSecp256k1Pubkey", () => {
     } as any;
 
     const result = await getSecp256k1Pubkey("chain-id", "okx");
-    expect(result.address).toBe("xion1addr");
+    expect(result.address).toBe("xion1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6ltfe6");
     expect(window.okxwallet.keplr.enable).toHaveBeenCalledWith("chain-id");
-  });
-
-  it("returns pubkey info for leap", async () => {
-    const mockKey = {
-      pubKey: new Uint8Array([1, 2, 3]),
-      bech32Address: "xion1addr",
-    };
-    window.leap = {
-      getKey: vi.fn().mockResolvedValue(mockKey),
-    } as any;
-
-    const result = await getSecp256k1Pubkey("chain-id", "leap");
-    expect(result.address).toBe("xion1addr");
-    expect(result.pubkeyHex).toBe("010203");
-    expect(result.pubkeyBase64).toBe("AQID");
   });
 
   it("throws if okxwallet.keplr is not available", async () => {
@@ -226,15 +226,20 @@ describe("signWithEthWallet", () => {
   });
 
   it("returns signature", async () => {
+    // Mock a valid Ethereum signature (65 bytes = 130 hex chars + 0x prefix)
+    const mockSignature =
+      "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1b";
     window.ethereum = {
-      request: vi.fn().mockResolvedValue("0xsig"),
+      isMetaMask: true,
+      request: vi.fn().mockResolvedValue(mockSignature),
     } as any;
     const sig = await signWithEthWallet("msg", "addr");
-    expect(sig).toBe("0xsig");
+    expect(sig).toBe(mockSignature);
   });
 
   it("throws if no signature returned", async () => {
     window.ethereum = {
+      isMetaMask: true,
       request: vi.fn().mockResolvedValue(null),
     } as any;
     await expect(signWithEthWallet("msg", "addr")).rejects.toThrow(
@@ -244,6 +249,7 @@ describe("signWithEthWallet", () => {
 
   it("wraps unknown errors", async () => {
     window.ethereum = {
+      isMetaMask: true,
       request: vi.fn().mockRejectedValue(new Error("Unknown error")),
     } as any;
     await expect(signWithEthWallet("msg", "addr")).rejects.toThrow(
@@ -253,6 +259,7 @@ describe("signWithEthWallet", () => {
 
   it("re-throws WalletAccountError", async () => {
     window.ethereum = {
+      isMetaMask: true,
       request: vi
         .fn()
         .mockRejectedValue(new WalletAccountError("tech", "user denied")),
@@ -272,12 +279,6 @@ describe("signWithSecp256k1Wallet", () => {
     ).rejects.toThrow("Keplr not installed");
   });
 
-  it("throws if leap wallet not installed", async () => {
-    await expect(
-      signWithSecp256k1Wallet("msg", "chain", "addr", "leap"),
-    ).rejects.toThrow("Leap not installed");
-  });
-
   it("throws if okx wallet not installed", async () => {
     await expect(
       signWithSecp256k1Wallet("msg", "chain", "addr", "okx"),
@@ -292,17 +293,6 @@ describe("signWithSecp256k1Wallet", () => {
     } as any;
 
     const sig = await signWithSecp256k1Wallet("msg", "chain", "addr", "keplr");
-    expect(sig).toBe("010203");
-  });
-
-  it("returns hex signature for leap wallet", async () => {
-    window.leap = {
-      signArbitrary: vi.fn().mockResolvedValue({
-        signature: "AQID",
-      }),
-    } as any;
-
-    const sig = await signWithSecp256k1Wallet("msg", "chain", "addr", "leap");
     expect(sig).toBe("010203");
   });
 

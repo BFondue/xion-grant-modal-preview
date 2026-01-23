@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useStytch } from "@stytch/react";
 import { decodeJwt } from "jose";
 import { AuthContext, AuthContextProps } from "../AuthContext";
+import { CONNECTION_METHOD } from "../../auth/useAuthState";
 import { truncateAddress } from "../../utils";
 import { useSmartAccount } from "../../hooks";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
@@ -33,10 +34,16 @@ import { createSecp256k1SmartAccount } from "../../hooks/useCreateSecp256k1Accou
 import { getErrorMessageForUI, WalletAccountError } from "../../utils";
 import { AAAlgo, AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 
+// Supported wallet connection methods (subset of ConnectionMethod)
+type WalletConnectionMethod =
+  | typeof CONNECTION_METHOD.Metamask
+  | typeof CONNECTION_METHOD.Keplr
+  | typeof CONNECTION_METHOD.OKX;
+
 export const LoginWalletSelector = () => {
   const {
-    connectionType,
-    setConnectionType,
+    connectionMethod,
+    setConnectionMethod,
     abstractAccount,
     setAbstractAccount,
     abstraxionError,
@@ -144,7 +151,7 @@ export const LoginWalletSelector = () => {
   ]);
 
   const handleExternalWalletAALoginOrCreate = useCallback(
-    async (walletType: "metamask" | "keplr" | "okx" | "leap") => {
+    async (connectionMethod: WalletConnectionMethod) => {
       try {
         setIsGeneratingNewWallet(true);
         setAbstraxionError("");
@@ -156,22 +163,16 @@ export const LoginWalletSelector = () => {
         let result;
         let walletInfo;
 
-        // Create account based on wallet type
-        if (walletType === "metamask") {
+        // Create account based on connection method
+        if (connectionMethod === CONNECTION_METHOD.Metamask) {
           const accountData = await createEthWalletSmartAccount();
           result = accountData;
           walletInfo = accountData.walletInfo;
         } else {
-          // For Cosmos wallets (keplr, okx, leap)
-          const walletName =
-            walletType === "okx"
-              ? "okx"
-              : walletType === "leap"
-                ? "leap"
-                : "keplr";
+          // For Cosmos wallets (Keplr, OKX)
           const accountData = await createSecp256k1SmartAccount(
             chainInfo.chainId,
-            walletName,
+            connectionMethod,
           );
           result = accountData;
           walletInfo = accountData.walletInfo;
@@ -186,15 +187,11 @@ export const LoginWalletSelector = () => {
         // Store the authenticator identifier in localStorage for indexer queries
         localStorage.setItem("loginAuthenticator", walletInfo.identifier);
 
-        // Map wallet type to connection type (keplr and leap both use "shuttle")
-        const connType =
-          walletType === "keplr" || walletType === "leap"
-            ? "shuttle"
-            : walletType;
-        localStorage.setItem("loginType", connType);
+        // Store connection method in localStorage (legacy key for compatibility)
+        localStorage.setItem("loginType", connectionMethod);
 
-        // Update connection type to trigger state updates
-        setConnectionType(connType);
+        // Update connection method to trigger state updates
+        setConnectionMethod(connectionMethod);
 
         setAbstractAccount({
           id: result.accountAddress,
@@ -273,23 +270,17 @@ export const LoginWalletSelector = () => {
         }
       } else if (uniqueAccounts.length === 0) {
         // Auto-create account for users with no accounts
-        if (connectionType === "stytch") {
+        if (connectionMethod === CONNECTION_METHOD.Stytch) {
           setShouldAutoNavigate(true);
           handleJwtAALoginOrCreate();
         } else if (
-          connectionType === "metamask" ||
-          connectionType === "shuttle" ||
-          connectionType === "okx"
+          connectionMethod === CONNECTION_METHOD.Metamask ||
+          connectionMethod === CONNECTION_METHOD.Keplr ||
+          connectionMethod === CONNECTION_METHOD.OKX
         ) {
           // Auto-create account for wallet-based connections
           setShouldAutoNavigate(true);
-          const walletType =
-            connectionType === "metamask"
-              ? "metamask"
-              : connectionType === "shuttle"
-                ? "keplr"
-                : "okx";
-          handleExternalWalletAALoginOrCreate(walletType);
+          handleExternalWalletAALoginOrCreate(connectionMethod);
         }
       }
     }
@@ -300,7 +291,7 @@ export const LoginWalletSelector = () => {
     isInLoginFlow,
     loginAuthenticator,
     setAbstractAccount,
-    connectionType,
+    connectionMethod,
     handleJwtAALoginOrCreate,
     handleExternalWalletAALoginOrCreate,
     isInGrantFlow,
@@ -432,7 +423,7 @@ export const LoginWalletSelector = () => {
             ))
           ) : (
             <>
-              {connectionType === "stytch" ? (
+              {connectionMethod === CONNECTION_METHOD.Stytch ? (
                 <>
                   <div className="ui-flex ui-items-center ui-justify-center ui-w-full ui-h-full">
                     <InboxIcon aria-hidden="true" />
@@ -474,22 +465,22 @@ export const LoginWalletSelector = () => {
                 <BaseButton
                   className="ui-w-full"
                   onClick={() => {
-                    if (connectionType === "stytch") {
+                    if (connectionMethod === CONNECTION_METHOD.Stytch) {
                       handleJwtAALoginOrCreate();
-                    } else if (connectionType === "metamask") {
-                      handleExternalWalletAALoginOrCreate("metamask");
-                    } else if (connectionType === "shuttle") {
-                      handleExternalWalletAALoginOrCreate("keplr");
-                    } else if (connectionType === "okx") {
-                      handleExternalWalletAALoginOrCreate("okx");
+                    } else if (
+                      connectionMethod === CONNECTION_METHOD.Metamask ||
+                      connectionMethod === CONNECTION_METHOD.Keplr ||
+                      connectionMethod === CONNECTION_METHOD.OKX
+                    ) {
+                      handleExternalWalletAALoginOrCreate(connectionMethod);
                     }
                   }}
                   disabled={
                     loading ||
                     isGeneratingNewWallet ||
                     uniqueAccounts.length > 0 ||
-                    connectionType === "passkey" ||
-                    connectionType === "none"
+                    connectionMethod === CONNECTION_METHOD.Passkey ||
+                    connectionMethod === CONNECTION_METHOD.None
                   }
                 >
                   CREATE NEW ACCOUNT
@@ -512,7 +503,7 @@ export const LoginWalletSelector = () => {
                 )}
                 <BaseButton
                   variant={
-                    connectionType !== "stytch" &&
+                    connectionMethod !== CONNECTION_METHOD.Stytch &&
                     uniqueAccounts.length === 0 &&
                     !redirect_uri
                       ? "default"
@@ -524,7 +515,7 @@ export const LoginWalletSelector = () => {
                 >
                   {redirect_uri ? (
                     "CANCEL"
-                  ) : connectionType !== "stytch" &&
+                  ) : connectionMethod !== CONNECTION_METHOD.Stytch &&
                     uniqueAccounts.length === 0 ? (
                     <div className="ui-flex ui-items-center ui-justify-center ui-gap-2">
                       <ChevronRightIcon className="ui-fill-current ui-rotate-180" />

@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { ChevronDownIcon } from "./icons/ChevronDown";
 import { cn } from "../../utils/classname-util";
 
-interface AccordionItemProps
-  extends Omit<React.HTMLAttributes<HTMLLIElement>, "title"> {
+interface AccordionItemProps extends Omit<
+  React.HTMLAttributes<HTMLLIElement>,
+  "title"
+> {
   title: React.ReactNode;
   children?: React.ReactNode;
   icon?: React.ReactNode;

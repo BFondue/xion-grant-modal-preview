@@ -15,28 +15,8 @@
 import { useEffect, useMemo } from "react";
 import { useShuttle } from "@delphi-labs/shuttle-react";
 import { useStytchSession } from "@stytch/react";
-import { useAuthState } from "../auth/useAuthState";
-import { CONNECTION_TYPE } from "../auth/AuthStateManager";
+import { useAuthState, CONNECTION_METHOD } from "../auth/useAuthState";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
-
-interface OkxAccount {
-  account: {
-    juno: string;
-    iris: string;
-    axl: string;
-    stars: string;
-    kava: string;
-    kuji: string;
-    sei: string;
-    inj: string;
-    cosmoshub: string;
-    osmosis: string;
-    dydx: string;
-    tia: string;
-    XION_TEST: string;
-  };
-  name: string;
-}
 
 export const useSmartAccount = () => {
   const { session } = useStytchSession();
@@ -44,14 +24,13 @@ export const useSmartAccount = () => {
 
   // Use unified auth state - this is now the source of truth
   const {
-    connectionType,
+    connectionMethod,
     account,
     authenticator,
     authenticatorType,
     isConnected: authStateIsConnected,
     updateAccount,
     logout,
-    getOkxData,
     startLogin,
   } = useAuthState();
 
@@ -71,7 +50,10 @@ export const useSmartAccount = () => {
   // Metamask account change detection
   useEffect(() => {
     const handleAccountsChanged = (accounts: string[]) => {
-      if (connectionType === "metamask" && accounts.length > 0) {
+      if (
+        connectionMethod === CONNECTION_METHOD.Metamask &&
+        accounts.length > 0
+      ) {
         // Account changed - need to reset and re-authenticate
         console.log("[useSmartAccount] MetaMask account changed:", accounts[0]);
         // Clear the current account so user needs to re-login
@@ -84,22 +66,16 @@ export const useSmartAccount = () => {
     return () => {
       window.ethereum?.off("accountsChanged", handleAccountsChanged);
     };
-  }, [connectionType, logout]);
+  }, [connectionMethod, logout]);
 
   // OKX account change detection
+  // When OKX wallet fires a "connect" event, it means the user switched accounts
+  // We should log them out so they can re-authenticate with the new account
   useEffect(() => {
-    const handleAccountsChanged = async (accounts: OkxAccount) => {
-      if (connectionType === "okx") {
-        const okxData = getOkxData();
-
-        // If user switches account via extension, log user out
-        if (
-          okxData.address !== accounts.account.XION_TEST ||
-          okxData.name !== accounts.name
-        ) {
-          console.log("[useSmartAccount] OKX account changed, logging out");
-          await logout(window.location.origin);
-        }
+    const handleAccountsChanged = async () => {
+      if (connectionMethod === CONNECTION_METHOD.OKX) {
+        console.log("[useSmartAccount] OKX wallet event detected, logging out");
+        await logout(window.location.origin);
       }
     };
 
@@ -110,12 +86,12 @@ export const useSmartAccount = () => {
     return () => {
       window.okxwallet?.keplr.off("connect", handleAccountsChanged);
     };
-  }, [connectionType, logout, getOkxData]);
+  }, [connectionMethod, logout]);
 
   // Keplr account change detection
   useEffect(() => {
     const handleAccountsChanged = () => {
-      if (connectionType === "shuttle") {
+      if (connectionMethod === CONNECTION_METHOD.Keplr) {
         console.log(
           "[useSmartAccount] Keplr account changed, clearing account",
         );
@@ -130,11 +106,15 @@ export const useSmartAccount = () => {
     return () => {
       window.removeEventListener("keplr_keystorechange", handleAccountsChanged);
     };
-  }, [connectionType, account, updateAccount]);
+  }, [connectionMethod, account, updateAccount]);
 
   // Shuttle/Keplr wallet connection - update authenticator when wallet connects
   useEffect(() => {
-    if (connectionType === "shuttle" && recentWallet && !authenticator) {
+    if (
+      connectionMethod === CONNECTION_METHOD.Keplr &&
+      recentWallet &&
+      !authenticator
+    ) {
       // Wallet connected via Shuttle, use the pubkey string directly
       // Note: .pubkey is already a base64 string, not .pubKey which is Uint8Array
       const walletAuthenticator = recentWallet.account?.pubkey;
@@ -144,13 +124,13 @@ export const useSmartAccount = () => {
           walletAuthenticator,
         );
         startLogin(
-          CONNECTION_TYPE.Shuttle,
-          walletAuthenticator,
           AUTHENTICATOR_TYPE.Secp256K1,
+          CONNECTION_METHOD.Keplr,
+          walletAuthenticator,
         );
       }
     }
-  }, [connectionType, recentWallet, authenticator, startLogin]);
+  }, [connectionMethod, recentWallet, authenticator, startLogin]);
 
   // --- Compute isConnected ---
   // Simplified from nested ternary to a clear lookup
@@ -161,10 +141,10 @@ export const useSmartAccount = () => {
     }
 
     // Fallback checks during the connecting phase (before account is loaded)
-    switch (connectionType) {
+    switch (connectionMethod) {
       case "stytch":
         return !!session;
-      case "shuttle":
+      case "keplr":
         return !!recentWallet;
       case "metamask":
         return window.ethereum?.isConnected?.() ?? false;
@@ -177,7 +157,7 @@ export const useSmartAccount = () => {
     }
   }, [
     authStateIsConnected,
-    connectionType,
+    connectionMethod,
     session,
     recentWallet,
     authenticator,
@@ -186,7 +166,7 @@ export const useSmartAccount = () => {
   return {
     updateAbstractAccountCodeId,
     data: account,
-    connectionType,
+    connectionMethod,
     loginAuthenticator: authenticator,
     loginAuthenticatorType: authenticatorType,
     isConnected,

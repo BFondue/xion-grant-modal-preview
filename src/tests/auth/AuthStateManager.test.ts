@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
+import { CONNECTION_METHOD } from "../../auth/useAuthState";
 
 // Mock SessionManager before importing AuthStateManager
 vi.mock("../session", () => ({
@@ -10,6 +12,23 @@ vi.mock("../session", () => ({
 // We need to reset the module to get a fresh instance for each test
 let AuthStateManager: typeof import("../../auth/AuthStateManager").AuthStateManager;
 let AUTH_STORAGE_KEYS: typeof import("../../auth/AuthStateManager").AUTH_STORAGE_KEYS;
+
+// Helper function to map connection method to authenticator type
+function getAuthType(connectionMethod: string) {
+  switch (connectionMethod) {
+    case "stytch":
+      return AUTHENTICATOR_TYPE.JWT;
+    case "keplr":
+    case "okx":
+      return AUTHENTICATOR_TYPE.Secp256K1;
+    case "metamask":
+      return AUTHENTICATOR_TYPE.EthWallet;
+    case "passkey":
+      return AUTHENTICATOR_TYPE.Passkey;
+    default:
+      return AUTHENTICATOR_TYPE.JWT;
+  }
+}
 
 describe("AuthStateManager", () => {
   // Mock localStorage
@@ -89,7 +108,7 @@ describe("AuthStateManager", () => {
     it("should start in disconnected state", () => {
       const state = AuthStateManager.getState();
       expect(state.status).toBe("disconnected");
-      expect(state.connectionType).toBe("none");
+      expect(state.connectionMethod).toBe("none");
       expect(state.account).toBeUndefined();
       expect(state.authenticator).toBeNull();
       expect(state.error).toBeNull();
@@ -97,7 +116,8 @@ describe("AuthStateManager", () => {
 
     it("should initialize from localStorage with valid stored credentials", () => {
       localStorageMock.getItem.mockImplementation((key: string) => {
-        if (key === AUTH_STORAGE_KEYS.LOGIN_TYPE) return "stytch";
+        if (key === AUTH_STORAGE_KEYS.CONNECTION_METHOD) return "stytch";
+        if (key === AUTH_STORAGE_KEYS.AUTHENTICATOR_TYPE) return "JWT";
         if (key === AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR)
           return "test-authenticator";
         return null;
@@ -107,13 +127,14 @@ describe("AuthStateManager", () => {
 
       const state = AuthStateManager.getState();
       expect(state.status).toBe("connecting");
-      expect(state.connectionType).toBe("stytch");
+      expect(state.connectionMethod).toBe("stytch");
+      expect(state.authenticatorType).toBe("JWT");
       expect(state.authenticator).toBe("test-authenticator");
     });
 
     it("should stay disconnected if localStorage has invalid connection type", () => {
       localStorageMock.getItem.mockImplementation((key: string) => {
-        if (key === AUTH_STORAGE_KEYS.LOGIN_TYPE) return "invalid-type";
+        if (key === AUTH_STORAGE_KEYS.CONNECTION_METHOD) return "invalid-type";
         if (key === AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR)
           return "test-authenticator";
         return null;
@@ -123,7 +144,7 @@ describe("AuthStateManager", () => {
 
       const state = AuthStateManager.getState();
       expect(state.status).toBe("disconnected");
-      expect(state.connectionType).toBe("none");
+      expect(state.connectionMethod).toBe("none");
     });
 
     it("should stay disconnected if localStorage is empty", () => {
@@ -137,7 +158,8 @@ describe("AuthStateManager", () => {
 
     it("should only initialize once", () => {
       localStorageMock.getItem.mockImplementation((key: string) => {
-        if (key === AUTH_STORAGE_KEYS.LOGIN_TYPE) return "stytch";
+        if (key === AUTH_STORAGE_KEYS.CONNECTION_METHOD) return "stytch";
+        if (key === AUTH_STORAGE_KEYS.AUTHENTICATOR_TYPE) return "JWT";
         if (key === AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR)
           return "test-authenticator";
         return null;
@@ -146,8 +168,8 @@ describe("AuthStateManager", () => {
       AuthStateManager.initialize();
       AuthStateManager.initialize(); // Second call should be ignored
 
-      // localStorage.getItem should only be called during first initialization
-      expect(localStorageMock.getItem).toHaveBeenCalledTimes(2);
+      // localStorage.getItem should only be called during first initialization (3 keys: connectionMethod, authenticatorType, loginAuthenticator)
+      expect(localStorageMock.getItem).toHaveBeenCalledTimes(3);
     });
   });
 
@@ -156,7 +178,11 @@ describe("AuthStateManager", () => {
       const listener = vi.fn();
       const unsubscribe = AuthStateManager.subscribe(listener);
 
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
 
       expect(listener).toHaveBeenCalled();
       const [newState, prevState] = listener.mock.calls[0];
@@ -170,12 +196,20 @@ describe("AuthStateManager", () => {
       const listener = vi.fn();
       const unsubscribe = AuthStateManager.subscribe(listener);
 
-      AuthStateManager.startLogin("stytch", "test-auth-1");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth-1",
+      );
       expect(listener).toHaveBeenCalledTimes(1);
 
       unsubscribe();
 
-      AuthStateManager.startLogin("shuttle", "test-auth-2");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.Secp256K1,
+        CONNECTION_METHOD.Keplr,
+        "test-auth-2",
+      );
       expect(listener).toHaveBeenCalledTimes(1); // Should not be called again
     });
 
@@ -190,7 +224,11 @@ describe("AuthStateManager", () => {
 
       // Should not throw and should still call other listeners
       expect(() =>
-        AuthStateManager.startLogin("stytch", "test-auth"),
+        AuthStateManager.startLogin(
+          AUTHENTICATOR_TYPE.JWT,
+          CONNECTION_METHOD.Stytch,
+          "test-auth",
+        ),
       ).not.toThrow();
       expect(normalListener).toHaveBeenCalled();
     });
@@ -211,7 +249,11 @@ describe("AuthStateManager", () => {
 
     it("should return different reference after state change", () => {
       const state1 = AuthStateManager.getState();
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       const state2 = AuthStateManager.getState();
       expect(state1).not.toBe(state2);
     });
@@ -223,12 +265,20 @@ describe("AuthStateManager", () => {
     });
 
     it("should return false when connecting (no account)", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       expect(AuthStateManager.isConnected()).toBe(false);
     });
 
     it("should return true when connected with account", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       AuthStateManager.completeLogin({
         id: "test-address",
         currentAuthenticatorIndex: 0,
@@ -244,12 +294,20 @@ describe("AuthStateManager", () => {
     });
 
     it("should return true when in connecting state", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       expect(AuthStateManager.isConnecting()).toBe(true);
     });
 
     it("should return false when connected", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       AuthStateManager.completeLogin({
         id: "test-address",
         currentAuthenticatorIndex: 0,
@@ -265,7 +323,11 @@ describe("AuthStateManager", () => {
     });
 
     it("should return true during logout", async () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
 
       // Start logout but don't await
       const logoutPromise = AuthStateManager.logout();
@@ -284,7 +346,11 @@ describe("AuthStateManager", () => {
     });
 
     it("should return address when connected", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       AuthStateManager.completeLogin({
         id: "xion1testaddress",
         currentAuthenticatorIndex: 0,
@@ -300,19 +366,27 @@ describe("AuthStateManager", () => {
     });
 
     it("should return authenticator after startLogin", () => {
-      AuthStateManager.startLogin("stytch", "my-authenticator");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "my-authenticator",
+      );
       expect(AuthStateManager.getAuthenticator()).toBe("my-authenticator");
     });
   });
 
-  describe("getConnectionType", () => {
+  describe("getConnectionMethod", () => {
     it("should return 'none' when disconnected", () => {
-      expect(AuthStateManager.getConnectionType()).toBe("none");
+      expect(AuthStateManager.getConnectionMethod()).toBe("none");
     });
 
     it("should return connection type after startLogin", () => {
-      AuthStateManager.startLogin("okx", "test-auth");
-      expect(AuthStateManager.getConnectionType()).toBe("okx");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.Secp256K1,
+        CONNECTION_METHOD.OKX,
+        "test-auth",
+      );
+      expect(AuthStateManager.getConnectionMethod()).toBe("okx");
     });
   });
 
@@ -327,7 +401,11 @@ describe("AuthStateManager", () => {
         currentAuthenticatorIndex: 1,
         authenticators: [],
       };
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       AuthStateManager.completeLogin(account);
       expect(AuthStateManager.getAccount()).toEqual(account);
     });
@@ -335,21 +413,29 @@ describe("AuthStateManager", () => {
 
   describe("startLogin", () => {
     it("should transition to connecting state", () => {
-      AuthStateManager.startLogin("stytch", "test-authenticator");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-authenticator",
+      );
 
       const state = AuthStateManager.getState();
       expect(state.status).toBe("connecting");
-      expect(state.connectionType).toBe("stytch");
+      expect(state.connectionMethod).toBe("stytch");
       expect(state.authenticator).toBe("test-authenticator");
       expect(state.error).toBeNull();
     });
 
     it("should persist to localStorage", () => {
-      AuthStateManager.startLogin("shuttle", "shuttle-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.Secp256K1,
+        CONNECTION_METHOD.Keplr,
+        "shuttle-auth",
+      );
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        AUTH_STORAGE_KEYS.LOGIN_TYPE,
-        "shuttle",
+        AUTH_STORAGE_KEYS.CONNECTION_METHOD,
+        "keplr",
       );
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR,
@@ -358,7 +444,11 @@ describe("AuthStateManager", () => {
     });
 
     it("should dispatch storage event", () => {
-      AuthStateManager.startLogin("metamask", "metamask-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.EthWallet,
+        CONNECTION_METHOD.Metamask,
+        "metamask-auth",
+      );
 
       expect(window.dispatchEvent).toHaveBeenCalled();
       const event = (window.dispatchEvent as ReturnType<typeof vi.fn>).mock
@@ -369,23 +459,25 @@ describe("AuthStateManager", () => {
     });
 
     it("should work with all connection types", () => {
-      const types = [
-        "stytch",
-        "shuttle",
-        "metamask",
-        "okx",
-        "passkey",
-      ] as const;
+      const types = ["stytch", "keplr", "metamask", "okx", "passkey"] as const;
       for (const type of types) {
-        AuthStateManager.startLogin(type, `${type}-auth`);
-        expect(AuthStateManager.getConnectionType()).toBe(type);
+        AuthStateManager.startLogin(
+          getAuthType(type),
+          type as ConnectionMethod,
+          `${type}-auth`,
+        );
+        expect(AuthStateManager.getConnectionMethod()).toBe(type);
       }
     });
   });
 
   describe("completeLogin", () => {
     it("should transition to connected state", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       AuthStateManager.completeLogin({
         id: "xion1complete",
         currentAuthenticatorIndex: 2,
@@ -403,7 +495,11 @@ describe("AuthStateManager", () => {
       const listener = vi.fn();
       AuthStateManager.subscribe(listener);
 
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       listener.mockClear();
 
       AuthStateManager.completeLogin({
@@ -418,36 +514,13 @@ describe("AuthStateManager", () => {
     });
   });
 
-  describe("setOkxData and getOkxData", () => {
-    it("should store OKX data in localStorage", () => {
-      AuthStateManager.setOkxData("xion1okxaddress", "OKX Wallet");
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        AUTH_STORAGE_KEYS.OKX_XION_ADDRESS,
-        "xion1okxaddress",
-      );
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        AUTH_STORAGE_KEYS.OKX_WALLET_NAME,
-        "OKX Wallet",
-      );
-    });
-
-    it("should retrieve OKX data from localStorage", () => {
-      localStorageMock.getItem.mockImplementation((key: string) => {
-        if (key === AUTH_STORAGE_KEYS.OKX_XION_ADDRESS) return "xion1okx";
-        if (key === AUTH_STORAGE_KEYS.OKX_WALLET_NAME) return "My OKX";
-        return null;
-      });
-
-      const data = AuthStateManager.getOkxData();
-      expect(data.address).toBe("xion1okx");
-      expect(data.name).toBe("My OKX");
-    });
-  });
-
   describe("logout", () => {
     it("should clear all auth state", async () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
@@ -458,7 +531,7 @@ describe("AuthStateManager", () => {
 
       const state = AuthStateManager.getState();
       expect(state.status).toBe("disconnected");
-      expect(state.connectionType).toBe("none");
+      expect(state.connectionMethod).toBe("none");
       expect(state.account).toBeUndefined();
       expect(state.authenticator).toBeNull();
     });
@@ -467,16 +540,10 @@ describe("AuthStateManager", () => {
       await AuthStateManager.logout();
 
       expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        AUTH_STORAGE_KEYS.LOGIN_TYPE,
+        AUTH_STORAGE_KEYS.CONNECTION_METHOD,
       );
       expect(localStorageMock.removeItem).toHaveBeenCalledWith(
         AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR,
-      );
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        AUTH_STORAGE_KEYS.OKX_XION_ADDRESS,
-      );
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        AUTH_STORAGE_KEYS.OKX_WALLET_NAME,
       );
     });
 
@@ -497,7 +564,11 @@ describe("AuthStateManager", () => {
         },
       };
 
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       await AuthStateManager.logout(undefined, mockStytchClient);
 
       expect(mockStytchClient.session.revoke).toHaveBeenCalled();
@@ -511,7 +582,11 @@ describe("AuthStateManager", () => {
         },
       };
 
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       await AuthStateManager.logout(undefined, mockStytchClient);
 
       expect(mockStytchClient.session.revoke).not.toHaveBeenCalled();
@@ -525,7 +600,11 @@ describe("AuthStateManager", () => {
         },
       };
 
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
 
       // Should not throw
       await expect(
@@ -600,7 +679,11 @@ describe("AuthStateManager", () => {
 
   describe("updateAccount", () => {
     it("should update account and ensure connected state", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
 
       const newAccount = {
         id: "xion1updated",
@@ -615,7 +698,11 @@ describe("AuthStateManager", () => {
     });
 
     it("should notify listeners", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       AuthStateManager.completeLogin({
         id: "xion1original",
         currentAuthenticatorIndex: 0,
@@ -637,7 +724,11 @@ describe("AuthStateManager", () => {
 
   describe("resetState", () => {
     it("should reset to disconnected state", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
@@ -648,13 +739,17 @@ describe("AuthStateManager", () => {
 
       const state = AuthStateManager.getState();
       expect(state.status).toBe("disconnected");
-      expect(state.connectionType).toBe("none");
+      expect(state.connectionMethod).toBe("none");
       expect(state.account).toBeUndefined();
       expect(state.authenticator).toBeNull();
     });
 
     it("should notify listeners", () => {
-      AuthStateManager.startLogin("stytch", "test-auth");
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
 
       const listener = vi.fn();
       AuthStateManager.subscribe(listener);

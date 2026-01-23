@@ -262,7 +262,7 @@ export function WalletSendForm({
           onUpdateUserMemo={setUserMemo}
           recipientAddress={recipientAddress}
           recipientAddressError={recipientAddressError}
-          selectedCurrency={selectedCurrency}
+          selectedCurrency={selectedCurrency!}
           sendAmount={sendAmount}
           userMemo={userMemo}
           onStart={handleStart}

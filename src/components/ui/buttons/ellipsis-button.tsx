@@ -2,8 +2,7 @@ import React from "react";
 import { cn } from "../../../utils/classname-util";
 import { BaseButton } from "./baseButton";
 
-interface EllipsisButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface EllipsisButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
 }
 

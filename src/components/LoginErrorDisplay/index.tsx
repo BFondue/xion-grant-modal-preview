@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "../ui";
 import { AuthContext, AuthContextProps } from "../AuthContext";
+import { CONNECTION_METHOD } from "../../auth/useAuthState";
 import { ErrorIcon } from "../ui/icons/Error";
 
 export const LoginErrorDisplay = ({
@@ -23,7 +24,7 @@ export const LoginErrorDisplay = ({
   buttonText?: string;
   onButtonClick?: VoidFunction;
 }) => {
-  const { setAbstraxionError, setConnectionType } = useContext(
+  const { setAbstraxionError, setConnectionMethod } = useContext(
     AuthContext,
   ) as AuthContextProps;
 
@@ -33,7 +34,7 @@ export const LoginErrorDisplay = ({
     localStorage.removeItem("loginAuthenticator");
     localStorage.removeItem("okxXionAddress");
     localStorage.removeItem("okxWalletName");
-    setConnectionType("none");
+    setConnectionMethod(CONNECTION_METHOD.None);
     setAbstraxionError("");
 
     if (onButtonClick) {

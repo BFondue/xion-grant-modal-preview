@@ -25,6 +25,7 @@ export class AAPasskeySigner extends AASigner {
   }
 
   async signDirect(
+    // @ts-expect-error - signerAddress required by interface but not used in Passkey implementation
     signerAddress: string,
     signDoc: SignDoc,
   ): Promise<DirectSignResponse> {

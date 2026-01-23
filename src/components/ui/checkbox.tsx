@@ -47,8 +47,10 @@ const labelVariants = cva("ui-text-sm", {
   },
 });
 
-interface CheckboxProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+interface CheckboxProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "onChange"
+> {
   checked?: boolean;
   onChange?:
     | ((e: React.ChangeEvent<HTMLInputElement>) => void)

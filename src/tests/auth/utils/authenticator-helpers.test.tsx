@@ -29,7 +29,7 @@ describe("authenticator-helpers", () => {
           id: "test-1",
           authenticator: "auth1",
           authenticatorIndex: 1,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -37,7 +37,7 @@ describe("authenticator-helpers", () => {
           id: "test-2",
           authenticator: "auth2",
           authenticatorIndex: 2,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -51,7 +51,7 @@ describe("authenticator-helpers", () => {
           id: "test-0",
           authenticator: "auth0",
           authenticatorIndex: 0,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -59,7 +59,7 @@ describe("authenticator-helpers", () => {
           id: "test-1",
           authenticator: "auth1",
           authenticatorIndex: 1,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -67,7 +67,7 @@ describe("authenticator-helpers", () => {
           id: "test-2",
           authenticator: "auth2",
           authenticatorIndex: 2,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -81,7 +81,7 @@ describe("authenticator-helpers", () => {
           id: "test-0",
           authenticator: "auth0",
           authenticatorIndex: 0,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -89,7 +89,7 @@ describe("authenticator-helpers", () => {
           id: "test-2",
           authenticator: "auth2",
           authenticatorIndex: 2,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -97,7 +97,7 @@ describe("authenticator-helpers", () => {
           id: "test-3",
           authenticator: "auth3",
           authenticatorIndex: 3,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -111,7 +111,7 @@ describe("authenticator-helpers", () => {
           id: "test-0",
           authenticator: "auth0",
           authenticatorIndex: 0,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -125,7 +125,7 @@ describe("authenticator-helpers", () => {
           id: "test-5",
           authenticator: "auth5",
           authenticatorIndex: 5,
-          type: AUTHENTICATOR_TYPE.AUTHENTICATOR_TYPE.JWT,
+          type: AUTHENTICATOR_TYPE.JWT,
           version: "1",
           __typename: "Authenticator",
         },
@@ -178,7 +178,7 @@ describe("authenticator-helpers", () => {
     });
 
     it("should return 'Email' for AUTHENTICATOR_TYPE.JWT", () => {
-      expect(getAuthenticatorLabel("AUTHENTICATOR_TYPE.JWT")).toBe("Email");
+      expect(getAuthenticatorLabel("JWT")).toBe("Email");
     });
 
     it("should return 'Passkey' for PASSKEY", () => {
@@ -211,46 +211,43 @@ describe("authenticator-helpers", () => {
     });
 
     it("should return EmailIcon for AUTHENTICATOR_TYPE.JWT without subtype", () => {
-      const logo = getAuthenticatorLogo("AUTHENTICATOR_TYPE.JWT");
+      const logo = getAuthenticatorLogo("JWT");
       expect(logo).toBeDefined();
       expect(logo.type.name).toBe("EmailIcon");
     });
 
     it("should return EmailIcon for AUTHENTICATOR_TYPE.JWT with email subtype", () => {
-      const logo = getAuthenticatorLogo("AUTHENTICATOR_TYPE.JWT", "email");
+      const logo = getAuthenticatorLogo("JWT", "email");
       expect(logo).toBeDefined();
       expect(logo.type.name).toBe("EmailIcon");
     });
 
     it("should return GoogleLogoIcon for AUTHENTICATOR_TYPE.JWT with google subtype", () => {
-      const logo = getAuthenticatorLogo("AUTHENTICATOR_TYPE.JWT", "google");
+      const logo = getAuthenticatorLogo("JWT", "google");
       expect(logo).toBeDefined();
       expect(logo.type.name).toBe("GoogleLogoIcon");
     });
 
     it("should return AppleLogoIcon for AUTHENTICATOR_TYPE.JWT with apple subtype", () => {
-      const logo = getAuthenticatorLogo("AUTHENTICATOR_TYPE.JWT", "apple");
+      const logo = getAuthenticatorLogo("JWT", "apple");
       expect(logo).toBeDefined();
       expect(logo.type.name).toBe("AppleLogoIcon");
     });
 
     it("should return GithubLogoIcon for AUTHENTICATOR_TYPE.JWT with github subtype", () => {
-      const logo = getAuthenticatorLogo("AUTHENTICATOR_TYPE.JWT", "github");
+      const logo = getAuthenticatorLogo("JWT", "github");
       expect(logo).toBeDefined();
       expect(logo.type.name).toBe("GithubLogoIcon");
     });
 
     it("should return XLogoIcon for AUTHENTICATOR_TYPE.JWT with twitter subtype", () => {
-      const logo = getAuthenticatorLogo("AUTHENTICATOR_TYPE.JWT", "twitter");
+      const logo = getAuthenticatorLogo("JWT", "twitter");
       expect(logo).toBeDefined();
       expect(logo.type.name).toBe("XLogoIcon");
     });
 
     it("should return EmailIcon for AUTHENTICATOR_TYPE.JWT with unknown subtype", () => {
-      const logo = getAuthenticatorLogo(
-        "AUTHENTICATOR_TYPE.JWT",
-        "unknown_provider",
-      );
+      const logo = getAuthenticatorLogo("JWT", "unknown_provider");
       expect(logo).toBeDefined();
       expect(logo.type.name).toBe("EmailIcon");
     });
@@ -265,21 +262,15 @@ describe("authenticator-helpers", () => {
 
   describe("extractUserIdFromAuthenticator", () => {
     it("should extract userId from AUTHENTICATOR_TYPE.JWT authenticator", () => {
-      expect(
-        extractUserIdFromAuthenticator(
-          "identifier.user123",
-          "AUTHENTICATOR_TYPE.JWT",
-        ),
-      ).toBe("user123");
+      expect(extractUserIdFromAuthenticator("identifier.user123", "JWT")).toBe(
+        "user123",
+      );
     });
 
     it("should extract userId from AUTHENTICATOR_TYPE.JWT authenticator (case variation)", () => {
-      expect(
-        extractUserIdFromAuthenticator(
-          "identifier.user456",
-          "AUTHENTICATOR_TYPE.JWT",
-        ),
-      ).toBe("user456");
+      expect(extractUserIdFromAuthenticator("identifier.user456", "JWT")).toBe(
+        "user456",
+      );
     });
 
     it("should return null for non-AUTHENTICATOR_TYPE.JWT type", () => {
@@ -290,10 +281,7 @@ describe("authenticator-helpers", () => {
 
     it("should return null if authenticator has no dot separator", () => {
       expect(
-        extractUserIdFromAuthenticator(
-          "nodotauthenticator",
-          "AUTHENTICATOR_TYPE.JWT",
-        ),
+        extractUserIdFromAuthenticator("nodotauthenticator", "JWT"),
       ).toBeNull();
     });
 
@@ -310,38 +298,27 @@ describe("authenticator-helpers", () => {
     });
 
     it("should handle authenticator with multiple dots", () => {
-      expect(
-        extractUserIdFromAuthenticator(
-          "part1.part2.part3",
-          "AUTHENTICATOR_TYPE.JWT",
-        ),
-      ).toBe("part2");
+      expect(extractUserIdFromAuthenticator("part1.part2.part3", "JWT")).toBe(
+        "part2",
+      );
     });
   });
 
   describe("isEmailAuthenticator", () => {
     it("should return true for AUTHENTICATOR_TYPE.JWT type with email subtype", () => {
-      expect(isEmailAuthenticator("AUTHENTICATOR_TYPE.JWT", "email")).toBe(
-        true,
-      );
+      expect(isEmailAuthenticator("JWT", "email")).toBe(true);
     });
 
     it("should return true for AUTHENTICATOR_TYPE.JWT type with Email subtype (case insensitive)", () => {
-      expect(isEmailAuthenticator("AUTHENTICATOR_TYPE.JWT", "Email")).toBe(
-        true,
-      );
+      expect(isEmailAuthenticator("JWT", "Email")).toBe(true);
     });
 
     it("should return true for AUTHENTICATOR_TYPE.JWT type with EMAIL subtype (uppercase)", () => {
-      expect(isEmailAuthenticator("AUTHENTICATOR_TYPE.JWT", "EMAIL")).toBe(
-        true,
-      );
+      expect(isEmailAuthenticator("JWT", "EMAIL")).toBe(true);
     });
 
     it("should return false for AUTHENTICATOR_TYPE.JWT type with google subtype", () => {
-      expect(isEmailAuthenticator("AUTHENTICATOR_TYPE.JWT", "google")).toBe(
-        false,
-      );
+      expect(isEmailAuthenticator("JWT", "google")).toBe(false);
     });
 
     it("should return false for non-AUTHENTICATOR_TYPE.JWT type", () => {
@@ -349,13 +326,11 @@ describe("authenticator-helpers", () => {
     });
 
     it("should return false for AUTHENTICATOR_TYPE.JWT type without subtype", () => {
-      expect(isEmailAuthenticator("AUTHENTICATOR_TYPE.JWT")).toBe(false);
+      expect(isEmailAuthenticator("JWT")).toBe(false);
     });
 
     it("should return false for AUTHENTICATOR_TYPE.JWT type with undefined subtype", () => {
-      expect(isEmailAuthenticator("AUTHENTICATOR_TYPE.JWT", undefined)).toBe(
-        false,
-      );
+      expect(isEmailAuthenticator("JWT", undefined)).toBe(false);
     });
   });
 

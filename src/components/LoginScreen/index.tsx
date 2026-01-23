@@ -46,9 +46,8 @@ import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import xionLogo from "../../assets/logo.png";
 import { createJwtAccount } from "../../hooks/useCreateJwtAccount";
-import { useAuthState } from "../../auth/useAuthState";
+import { useAuthState, CONNECTION_METHOD } from "../../auth/useAuthState";
 import { getLoginAuthenticatorFromJWT } from "../../auth/session";
-import { CONNECTION_TYPE } from "../../auth/AuthStateManager";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
   NETWORK,
@@ -74,10 +73,10 @@ export const LoginScreen = () => {
   const { connect } = useShuttle();
 
   // Use AuthStateManager via hook
-  const { startLogin, setOkxData, setError: setAuthError } = useAuthState();
+  const { startLogin, setError: setAuthError } = useAuthState();
 
   // Keep context for backward compatibility
-  const { setConnectionType, setAbstraxionError, apiUrl, chainInfo } =
+  const { setConnectionMethod, setAbstraxionError, apiUrl, chainInfo } =
     useContext(AuthContext) as AuthContextProps;
 
   // Detect if running in iframe mode - browser extensions don't work directly in iframes
@@ -113,9 +112,9 @@ export const LoginScreen = () => {
         const loginAuthenticator = getLoginAuthenticatorFromJWT(sessionJwt);
         if (loginAuthenticator) {
           startLogin(
-            CONNECTION_TYPE.Stytch,
-            loginAuthenticator,
             AUTHENTICATOR_TYPE.JWT,
+            CONNECTION_METHOD.Stytch,
+            loginAuthenticator,
           );
         }
 
@@ -440,7 +439,7 @@ export const LoginScreen = () => {
 
     try {
       setIsSendingEmail(true);
-      setConnectionType("stytch");
+      setConnectionMethod(CONNECTION_METHOD.Stytch);
       const emailRes = await stytchClient.otps.email.loginOrCreate(email, {
         login_template_id: "xion_otp",
         signup_template_id: "xion_otp_signup",
@@ -451,7 +450,7 @@ export const LoginScreen = () => {
     } catch (error) {
       console.error("[AbstraxionSignin] Error sending email:", error);
       setEmailError("Error sending email");
-      setConnectionType("none");
+      setConnectionMethod(CONNECTION_METHOD.None);
     } finally {
       setIsSendingEmail(false);
     }
@@ -525,13 +524,13 @@ export const LoginScreen = () => {
 
           // Use AuthStateManager
           startLogin(
-            CONNECTION_TYPE.Shuttle,
-            authenticator,
             AUTHENTICATOR_TYPE.Secp256K1,
+            CONNECTION_METHOD.Keplr,
+            authenticator,
           );
 
           // Also update context for backward compatibility
-          setConnectionType("shuttle");
+          setConnectionMethod(CONNECTION_METHOD.Keplr);
         } else if (
           event.data.type === "WALLET_ERROR" &&
           event.data.walletType === "keplr"
@@ -559,8 +558,8 @@ export const LoginScreen = () => {
       });
 
       // Use AuthStateManager - authenticator will be set when wallet connects
-      startLogin(CONNECTION_TYPE.Shuttle, "", AUTHENTICATOR_TYPE.Secp256K1); // Will be updated when wallet connects
-      setConnectionType("shuttle");
+      startLogin(AUTHENTICATOR_TYPE.Secp256K1, CONNECTION_METHOD.Keplr, ""); // Will be updated when wallet connects
+      setConnectionMethod(CONNECTION_METHOD.Keplr);
       console.log("[AbstraxionSignin] Keplr connection initiated");
     } catch (error) {
       console.error("Error connecting to Keplr:", error);
@@ -600,14 +599,13 @@ export const LoginScreen = () => {
 
           // Use AuthStateManager
           startLogin(
-            CONNECTION_TYPE.OKX,
-            authenticator,
             AUTHENTICATOR_TYPE.Secp256K1,
+            CONNECTION_METHOD.OKX,
+            authenticator,
           );
-          setOkxData(address, name || "");
 
           // Also update context for backward compatibility
-          setConnectionType("okx");
+          setConnectionMethod(CONNECTION_METHOD.OKX);
         } else if (
           event.data.type === "WALLET_ERROR" &&
           event.data.walletType === "okx"
@@ -660,14 +658,13 @@ export const LoginScreen = () => {
 
       // Use AuthStateManager
       startLogin(
-        CONNECTION_TYPE.OKX,
-        authenticator,
         AUTHENTICATOR_TYPE.Secp256K1,
+        CONNECTION_METHOD.OKX,
+        authenticator,
       );
-      setOkxData(okxAccount.bech32Address, okxAccount.name);
 
       // Also update context for backward compatibility
-      setConnectionType("okx");
+      setConnectionMethod(CONNECTION_METHOD.OKX);
       console.log("[AbstraxionSignin] OKX wallet connected");
     } catch (error) {
       console.error("[AbstraxionSignin] OKX error:", error);
@@ -710,13 +707,13 @@ export const LoginScreen = () => {
 
           // Use AuthStateManager
           startLogin(
-            CONNECTION_TYPE.Metamask,
-            authenticator,
             AUTHENTICATOR_TYPE.EthWallet,
+            CONNECTION_METHOD.Metamask,
+            authenticator,
           );
 
           // Also update context for backward compatibility
-          setConnectionType("metamask");
+          setConnectionMethod(CONNECTION_METHOD.Metamask);
         } else if (
           event.data.type === "WALLET_ERROR" &&
           event.data.walletType === "metamask"
@@ -749,13 +746,13 @@ export const LoginScreen = () => {
 
       // Use AuthStateManager
       startLogin(
-        CONNECTION_TYPE.Metamask,
-        primaryAccount,
         AUTHENTICATOR_TYPE.EthWallet,
+        CONNECTION_METHOD.Metamask,
+        primaryAccount,
       );
 
       // Also update context for backward compatibility
-      setConnectionType("metamask");
+      setConnectionMethod(CONNECTION_METHOD.Metamask);
       console.log("[AbstraxionSignin] Metamask connected:", primaryAccount);
     } catch (error) {
       console.error("[AbstraxionSignin] Metamask error:", error);
@@ -780,13 +777,13 @@ export const LoginScreen = () => {
 
       // Use AuthStateManager
       startLogin(
-        CONNECTION_TYPE.Passkey,
-        credentialId,
         AUTHENTICATOR_TYPE.Passkey,
+        CONNECTION_METHOD.Passkey,
+        credentialId,
       );
 
       // Also update context for backward compatibility
-      setConnectionType("passkey");
+      setConnectionMethod(CONNECTION_METHOD.Passkey);
     } catch (error) {
       console.log(error);
     }

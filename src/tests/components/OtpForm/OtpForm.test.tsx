@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
-import OtpForm from "../../../components/OtpForm/index";
+import LoginOtpForm from "../../../components/LoginOtpForm";
 
 // Mock the clipboard API
 vi.mock("navigator.clipboard", () => ({

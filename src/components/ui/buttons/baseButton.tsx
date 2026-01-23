@@ -31,7 +31,8 @@ const buttonVariants = cva(
 );
 
 interface BaseButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   backArrow?: boolean;
 }

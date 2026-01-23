@@ -1,7 +1,7 @@
 /**
  * Secp256k1 Wallet Account Creation Hook
  *
- * Creates Cosmos wallet-based smart accounts (Keplr/Leap/OKX) via the AA API v2 using xion.js.
+ * Creates Cosmos wallet-based smart accounts (Keplr/OKX) via the AA API v2 using xion.js.
  */
 
 import { createSecp256k1Account } from "@burnt-labs/abstraxion-core";
@@ -9,6 +9,7 @@ import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
   getSecp256k1Pubkey,
+  signWithSecp256k1Wallet,
   WalletAccountError,
   getErrorMessageForUI,
 } from "../utils";
@@ -18,6 +19,11 @@ import {
   DEFAULT_ACCOUNT_CONTRACT_CODE_ID,
   XION_RPC_URL,
 } from "../config";
+import { getConnectionAdapter } from "../connectionAdapters";
+import {
+  type ConnectionMethod,
+  CONNECTION_METHOD,
+} from "../auth/AuthStateManager";
 
 export interface WalletConnectionInfo {
   type: "EthWallet" | "Secp256K1";
@@ -70,15 +76,28 @@ function getAddressPrefix(chainId: string): string {
 }
 
 /**
- * Creates a Cosmos wallet-based smart account (Keplr/Leap/OKX) using xion.js
+ * Creates a Cosmos wallet-based smart account (Keplr/OKX) using xion.js
  * Uses dashboard config for API URL, fee granter, etc.
  */
 export async function createSecp256k1SmartAccount(
   chainId: string,
-  walletName: "keplr" | "leap" | "okx",
+  connectionMethod: ConnectionMethod,
 ): Promise<CreateWalletAccountResult> {
   try {
-    // 1. Get public key
+    // Get the connection adapter
+    const adapter = getConnectionAdapter(
+      AUTHENTICATOR_TYPE.Secp256K1,
+      connectionMethod,
+    );
+
+    // Enable the connection (may trigger wallet popup)
+    await adapter.enable(chainId);
+
+    // Map ConnectionMethod to wallet name for utility functions
+    const walletName: "keplr" | "okx" =
+      connectionMethod === CONNECTION_METHOD.OKX ? "okx" : "keplr";
+
+    // 1. Get public key using utility function
     const {
       pubkeyBase64,
       pubkeyHex,
@@ -97,38 +116,6 @@ export async function createSecp256k1SmartAccount(
     // 4. Create sign function - MUST use signArbitrary for account creation
     // The backend verifySecp256k1Signature supports ADR-036 wrapped signatures from Keplr
     const signMessageFn = async (hexMessage: string): Promise<string> => {
-      let wallet: NonNullable<Window["keplr"]>;
-
-      switch (walletName) {
-        case "keplr":
-          if (!window.keplr) {
-            throw new WalletAccountError(
-              "Keplr not installed",
-              "Keplr wallet not found.",
-            );
-          }
-          wallet = window.keplr;
-          break;
-        case "leap":
-          if (!window.leap) {
-            throw new WalletAccountError(
-              "Leap not installed",
-              "Leap wallet not found.",
-            );
-          }
-          wallet = window.leap;
-          break;
-        case "okx":
-          if (!window.okxwallet?.keplr) {
-            throw new WalletAccountError(
-              "OKX not installed",
-              "OKX wallet not found.",
-            );
-          }
-          wallet = window.okxwallet.keplr;
-          break;
-      }
-
       // createSecp256k1Account passes hex-encoded messages (with 0x prefix)
       // Convert hex to UTF-8 string for signArbitrary
       const hexWithoutPrefix = hexMessage.startsWith("0x")
@@ -137,26 +124,20 @@ export async function createSecp256k1SmartAccount(
 
       const message = Buffer.from(hexWithoutPrefix, "hex").toString("utf8");
 
-      // CRITICAL: Use signArbitrary which creates an ADR-036 wrapped signature
-      // The backend's verifySecp256k1Signature handles BOTH:
-      // 1. Direct SHA256 signatures (for programmatic signers)
-      // 2. ADR-036 wrapped signatures (for Keplr/Leap/OKX)
-      const signArbResult = await (wallet as any).signArbitrary(
+      // Use utility function to sign with the wallet
+      // This handles ADR-036 wrapping and returns base64 signature
+      // createSecp256k1Account will format it to hex internally
+      const hexSignature = await signWithSecp256k1Wallet(
+        message,
         chainId,
         walletAddress,
-        message,
+        walletName,
       );
 
-      if (!signArbResult || !signArbResult.signature) {
-        throw new WalletAccountError(
-          "No signature returned",
-          "Failed to get signature from wallet.",
-        );
-      }
-
-      // Return base64 signature - createSecp256k1Account will format it to hex
-      // (createSecp256k1Account calls formatSecp256k1Signature internally)
-      return signArbResult.signature;
+      // signWithSecp256k1Wallet returns hex, but createSecp256k1Account expects base64
+      // Convert hex back to base64
+      const signatureBytes = Buffer.from(hexSignature, "hex");
+      return signatureBytes.toString("base64");
     };
 
     // 5. Create account via xion.js

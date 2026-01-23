@@ -30,7 +30,7 @@ import {
   useModalStyling,
 } from "./hooks";
 import { findBestMatchingAuthenticator } from "../../utils/authenticator-utils";
-import { useAuthState } from "../../auth/useAuthState";
+import { useAuthState, CONNECTION_METHOD } from "../../auth/useAuthState";
 import type {
   ConnectPayload,
   ConnectResponse,
@@ -59,7 +59,7 @@ export function IframeApp({
   // Use AuthStateManager via hook - this is now the source of truth
   const {
     account: abstractAccount,
-    connectionType,
+    connectionMethod,
     authenticator: loginAuthenticator,
     isDisconnecting,
     completeLogin,
@@ -67,7 +67,7 @@ export function IframeApp({
   } = useAuthState();
 
   // Get context setters for backward compatibility
-  const { setAbstractAccount, setConnectionType } = useContext(AuthContext);
+  const { setAbstractAccount, setConnectionMethod } = useContext(AuthContext);
 
   const { client: signingClient } = useSigningClient();
   const {
@@ -82,7 +82,7 @@ export function IframeApp({
       loginAuthenticator: loginAuthenticator
         ? loginAuthenticator.substring(0, 20) + "..."
         : null,
-      connectionType,
+      connectionMethod,
       smartAccountsCount: smartAccounts?.length || 0,
       smartAccountsLoading,
       smartAccountsError: smartAccountsError?.toString(),
@@ -90,7 +90,7 @@ export function IframeApp({
     });
   }, [
     loginAuthenticator,
-    connectionType,
+    connectionMethod,
     smartAccounts,
     smartAccountsLoading,
     smartAccountsError,
@@ -155,8 +155,9 @@ export function IframeApp({
     const isInStandaloneIframe =
       !isStandalone && window.parent !== window && isSameOrigin;
 
-    // Wait for state to fully settle - loginAuthenticator should be null AND connectionType should be 'none'
-    const isFullyLoggedOut = !loginAuthenticator && connectionType === "none";
+    // Wait for state to fully settle - loginAuthenticator should be null AND connectionMethod should be 'none'
+    const isFullyLoggedOut =
+      !loginAuthenticator && connectionMethod === CONNECTION_METHOD.None;
 
     if (
       (isStandalone || isInStandaloneIframe) &&
@@ -179,7 +180,7 @@ export function IframeApp({
     session,
     abstractAccount,
     loginAuthenticator,
-    connectionType,
+    connectionMethod,
     openAuthModal,
     modals.showAuthModal,
   ]);
@@ -191,12 +192,12 @@ export function IframeApp({
       if (!loginType || loginType === "none") {
         console.log("[IframeApp] Setting loginType to stytch in localStorage");
         localStorage.setItem("loginType", "stytch");
-        if (connectionType === "none") {
-          setConnectionType("stytch");
+        if (connectionMethod === CONNECTION_METHOD.None) {
+          setConnectionMethod(CONNECTION_METHOD.Stytch);
         }
       }
     }
-  }, [session, connectionType, setConnectionType]);
+  }, [session, connectionMethod, setConnectionMethod]);
 
   // In standalone mode, populate addressByOrigin from abstractAccount
   useEffect(() => {
@@ -269,7 +270,7 @@ export function IframeApp({
     loginAuthenticator,
     completeLogin,
     setAbstractAccount,
-    connectionType,
+    connectionMethod,
   ]);
 
   // Close account selector when account is selected
@@ -581,7 +582,7 @@ export function IframeApp({
 
     // Show loading state when we have an authenticator but no account yet
     // This happens after login while smart accounts are being fetched
-    if (loginAuthenticator && connectionType !== "none") {
+    if (loginAuthenticator && connectionMethod !== CONNECTION_METHOD.None) {
       return (
         <div className="ui-flex ui-flex-col ui-w-full ui-h-full ui-items-center ui-justify-center ui-bg-background">
           <div className="ui-text-center ui-p-8">

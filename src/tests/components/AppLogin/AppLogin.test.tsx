@@ -1,4 +1,3 @@
-import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createLocalStorageMock,
@@ -8,8 +7,9 @@ import {
   screen,
   waitFor,
 } from "../..";
-import { AbstraxionSignin } from "../../../components/AbstraxionSignin/index";
+import { LoginScreen } from "../../../components/LoginScreen";
 import { AuthContext } from "../../../components/AuthContext";
+import { CONNECTION_METHOD } from "../../../auth/useAuthState";
 import type { ChainInfo } from "@burnt-labs/constants";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "../../../components/ui";
@@ -151,8 +151,8 @@ const renderSignin = async () => {
     <QueryClientProvider client={queryClient}>
       <AuthContext.Provider
         value={{
-          connectionType: "none",
-          setConnectionType: mockSetConnectionType,
+          connectionMethod: CONNECTION_METHOD.None,
+          setConnectionMethod: mockSetConnectionType,
           setAbstraxionError: vi.fn(),
           chainInfo: testChainInfo as ChainInfo,
           isMainnet: false,

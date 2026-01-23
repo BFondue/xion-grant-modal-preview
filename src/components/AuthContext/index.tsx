@@ -20,14 +20,14 @@ import { useQueryParams } from "../../hooks/useQueryParams";
 import { ContractContextProvider } from "../ContractContext";
 import {
   AuthStateManager,
-  ConnectionType as AuthConnectionType,
+  ConnectionMethod,
 } from "../../auth/AuthStateManager";
-
-export type ConnectionType = AuthConnectionType;
+import type { AuthenticatorType } from "@burnt-labs/signers";
 
 export interface AuthContextProps {
-  connectionType: ConnectionType;
-  setConnectionType: React.Dispatch<React.SetStateAction<ConnectionType>>;
+  connectionMethod: ConnectionMethod;
+  setConnectionMethod: React.Dispatch<React.SetStateAction<ConnectionMethod>>;
+  authenticatorType: AuthenticatorType | null;
   abstractAccount: SelectedSmartAccount | undefined;
   setAbstractAccount: React.Dispatch<SelectedSmartAccount>;
   abstraxionError: string;
@@ -43,8 +43,9 @@ export interface AuthContextProps {
 
 // Create a default context value to avoid undefined errors
 const defaultContextValue: AuthContextProps = {
-  connectionType: "none",
-  setConnectionType: () => {},
+  connectionMethod: "none",
+  setConnectionMethod: () => {},
+  authenticatorType: null,
   abstractAccount: undefined,
   setAbstractAccount: () => {},
   abstraxionError: "",
@@ -69,9 +70,11 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const initialState = AuthStateManager.getState();
 
   // Local state - will be synced with AuthStateManager
-  const [connectionType, setConnectionType] = useState<ConnectionType>(
-    initialState.connectionType,
+  const [connectionMethod, setConnectionMethod] = useState<ConnectionMethod>(
+    initialState.connectionMethod,
   );
+  const [authenticatorType, setAuthenticatorType] =
+    useState<AuthenticatorType | null>(initialState.authenticatorType);
   const [abstractAccount, setAbstractAccount] = useState<
     SelectedSmartAccount | undefined
   >(initialState.account);
@@ -85,9 +88,14 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   // Subscribe to AuthStateManager changes and sync to context
   useEffect(() => {
     const unsubscribe = AuthStateManager.subscribe((state, prevState) => {
-      // Sync connectionType
-      if (state.connectionType !== prevState.connectionType) {
-        setConnectionType(state.connectionType);
+      // Sync connectionMethod
+      if (state.connectionMethod !== prevState.connectionMethod) {
+        setConnectionMethod(state.connectionMethod);
+      }
+
+      // Sync authenticatorType
+      if (state.authenticatorType !== prevState.authenticatorType) {
+        setAuthenticatorType(state.authenticatorType);
       }
 
       // Sync account
@@ -106,10 +114,10 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
   // When context setters are called, also update AuthStateManager
   // This maintains backward compatibility with components that set state directly
-  const wrappedSetConnectionType: React.Dispatch<
-    React.SetStateAction<ConnectionType>
+  const wrappedSetConnectionMethod: React.Dispatch<
+    React.SetStateAction<ConnectionMethod>
   > = (action) => {
-    setConnectionType((prev) => {
+    setConnectionMethod((prev) => {
       const newValue = typeof action === "function" ? action(prev) : action;
       // Note: We don't update AuthStateManager here because it should be
       // updated through startLogin/completeLogin/logout methods.
@@ -236,8 +244,9 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const contextValue = {
-    connectionType,
-    setConnectionType: wrappedSetConnectionType,
+    connectionMethod,
+    setConnectionMethod: wrappedSetConnectionMethod,
+    authenticatorType,
     abstractAccount,
     setAbstractAccount: wrappedSetAbstractAccount,
     abstraxionError,
