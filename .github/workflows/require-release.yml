@@ -1,0 +1,79 @@
+name: Require Release
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-release:
+    name: Check for Release
+    runs-on: ubuntu-latest
+    # Only run for PRs from testnet branch
+    if: github.head_ref == 'testnet'
+
+    steps:
+      - name: Check for release tag on testnet
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const headRef = context.payload.pull_request.head.ref;
+            const headSha = context.payload.pull_request.head.sha;
+
+            console.log(`Checking for release on branch: ${headRef}`);
+            console.log(`Head SHA: ${headSha}`);
+
+            // Get all tags
+            const { data: tags } = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            console.log(`Found ${tags.length} tags`);
+
+            // Get commits on the testnet branch
+            const { data: commits } = await github.rest.repos.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: headRef,
+              per_page: 50
+            });
+
+            const commitShas = commits.map(c => c.sha);
+
+            // Check if any tag points to a commit on the testnet branch
+            const releaseTags = tags.filter(tag => {
+              // Look for version tags (e.g., v1.0.0, 1.0.0)
+              const isVersionTag = /^v?\d+\.\d+\.\d+/.test(tag.name);
+              const isOnBranch = commitShas.includes(tag.commit.sha);
+              return isVersionTag && isOnBranch;
+            });
+
+            if (releaseTags.length === 0) {
+              core.setFailed(
+                `❌ No release tag found on the '${headRef}' branch.\n\n` +
+                `Before merging to main, you must create a release on the testnet branch.\n\n` +
+                `To create a release:\n` +
+                `1. Ensure all changesets are committed\n` +
+                `2. Run the release workflow on testnet\n` +
+                `3. Or manually create a version tag (e.g., v0.15.0)`
+              );
+              return;
+            }
+
+            const latestTag = releaseTags[0];
+            console.log(`✅ Found release tag: ${latestTag.name}`);
+
+            // Check if the tag is on the HEAD of the branch
+            if (latestTag.commit.sha !== headSha) {
+              core.warning(
+                `⚠️ The latest release tag '${latestTag.name}' is not on the HEAD of ${headRef}.\n` +
+                `Tag SHA: ${latestTag.commit.sha}\n` +
+                `HEAD SHA: ${headSha}\n\n` +
+                `Consider creating a new release for the latest changes.`
+              );
+            }
+
+            console.log(`\n✅ Release requirement satisfied with tag: ${latestTag.name}`);
