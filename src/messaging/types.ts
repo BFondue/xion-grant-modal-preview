@@ -62,7 +62,7 @@ export interface ConnectResponse {
 export interface TransactionData {
   messages: Array<{
     typeUrl: string;
-    value: any;
+    value: unknown;
   }>;
   fee: {
     amount: Array<{
@@ -87,14 +87,13 @@ export interface SignTransactionPayload {
  * Signed transaction response
  */
 export interface SignTransactionResponse {
-  signedTx: any; // Will be serialized SignDoc
+  signedTx: unknown; // Will be serialized SignDoc
 }
 
 /**
  * Get address payload (no data)
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface GetAddressPayload {}
+export type GetAddressPayload = Record<string, never>;
 
 /**
  * Get address response
@@ -106,14 +105,12 @@ export interface GetAddressResponse {
 /**
  * Disconnect payload (no data)
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface DisconnectPayload {}
+export type DisconnectPayload = Record<string, never>;
 
 /**
  * Disconnect response (no data)
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface DisconnectResponse {}
+export type DisconnectResponse = Record<string, never>;
 
 /**
  * Authenticator types supported by the system

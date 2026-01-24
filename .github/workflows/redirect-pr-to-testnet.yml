@@ -1,0 +1,51 @@
+name: Redirect PR to Testnet
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened]
+
+jobs:
+  redirect-to-testnet:
+    runs-on: ubuntu-latest
+    # Only redirect if PR is NOT from testnet and NOT a changeset release PR from the bot
+    # Security: Check both branch name AND author to prevent spoofing changeset-release branches
+    if: |
+      github.head_ref != 'testnet' &&
+      !(startsWith(github.head_ref, 'changeset-release/') && github.actor == 'github-actions[bot]')
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Redirect PR to testnet
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const sourceBranch = context.payload.pull_request.head.ref;
+            
+            // Update the PR base branch to testnet
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              base: 'testnet'
+            });
+            
+            // Add a comment explaining the redirect
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `👋 This PR was automatically redirected to target \`testnet\` instead of \`main\`.
+
+            **Why?** All changes must go through testnet first for validation before being promoted to main (production).
+
+            **Workflow:**
+            1. ✅ Your PR now targets \`testnet\`
+            2. After merge, changes will be deployed to testnet for validation
+            3. Once validated, a PR from \`testnet\` → \`main\` will promote to production
+
+            See [DEPLOYMENT.md](../blob/testnet/DEPLOYMENT.md) for more details.`
+            });
+            
+            console.log(`✅ Redirected PR #${prNumber} from main to testnet`)

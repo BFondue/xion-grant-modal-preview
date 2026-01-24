@@ -26,6 +26,28 @@ describe("AbstractAccountJWTSigner", () => {
     expect(signer).toBeDefined();
   });
 
+  it("should throw error if apiUrl is undefined", () => {
+    expect(
+      () =>
+        new AbstractAccountJWTSigner(
+          mockAccount,
+          mockIndex,
+          mockToken,
+          undefined as any,
+        ),
+    ).toThrow(
+      "JWT signer requires an apiUrl parameter (e.g., your JWT authentication service endpoint)",
+    );
+  });
+
+  it("should throw error if apiUrl is empty string", () => {
+    expect(
+      () => new AbstractAccountJWTSigner(mockAccount, mockIndex, mockToken, ""),
+    ).toThrow(
+      "JWT signer requires an apiUrl parameter (e.g., your JWT authentication service endpoint)",
+    );
+  });
+
   it("should return accounts", async () => {
     const signer = new AbstractAccountJWTSigner(
       mockAccount,

@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "abstraxion-dashboard": "0.15.0"
+  },
+  "changesets": []
+}

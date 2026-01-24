@@ -18,8 +18,7 @@ declare module "vitest" {
   interface Assertion<T> {
     toHaveClass: (className: string) => T;
     toBeInTheDocument: () => T;
-    // Using any[] to match Vitest's internal type definition
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toHaveBeenCalledExactlyOnceWith: <E extends any[]>(...args: E) => void;
+    // Using unknown[] to match Vitest's internal type definition
+    toHaveBeenCalledExactlyOnceWith: <E extends unknown[]>(...args: E) => void;
   }
 }

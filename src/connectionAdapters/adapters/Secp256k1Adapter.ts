@@ -107,7 +107,15 @@ export class Secp256k1Adapter implements ConnectionAdapter {
       throw new Error(`Failed to get key from ${this.name}`);
     }
 
-    return key;
+    return {
+      name: key.name,
+      algo: key.algo,
+      pubKey: key.pubKey,
+      address: key.address,
+      bech32Address: key.bech32Address,
+      isNanoLedger: key.isNanoLedger,
+      isKeystone: key.isKeystone,
+    };
   }
 
   async signArbitrary(

@@ -58,7 +58,6 @@ export class EthWalletAdapter implements ConnectionAdapter {
     return window.ethereum;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async enable(_chainId: string): Promise<void> {
     const provider = this.getProvider();
 
@@ -68,7 +67,6 @@ export class EthWalletAdapter implements ConnectionAdapter {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getKey(_chainId: string): Promise<Key> {
     const provider = this.getProvider();
 
@@ -97,7 +95,6 @@ export class EthWalletAdapter implements ConnectionAdapter {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async signArbitrary(
     _chainId: string,
     signer: string,
@@ -130,7 +127,6 @@ export class EthWalletAdapter implements ConnectionAdapter {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getOfflineSigner(_chainId: string): OfflineSigner {
     // Ethereum wallets don't provide CosmJS OfflineSigner
     // This method should not be called for Ethereum wallets

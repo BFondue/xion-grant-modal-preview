@@ -1,5 +1,10 @@
 import React, { forwardRef } from "react";
-import type { ReactNode, HTMLAttributes, ButtonHTMLAttributes } from "react";
+import type {
+  ReactNode,
+  HTMLAttributes,
+  ButtonHTMLAttributes,
+  JSX,
+} from "react";
 import { cn } from "../../utils/classname-util";
 
 interface WithChildrenProps extends HTMLAttributes<HTMLDivElement> {

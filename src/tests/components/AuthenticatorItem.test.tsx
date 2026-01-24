@@ -1,7 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { AuthenticatorItem } from "../../components/AuthenticatorItem";
 import type { Authenticator } from "@burnt-labs/account-management";
 
@@ -343,6 +342,81 @@ describe("AuthenticatorItem", () => {
       // The class logic is: isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
       const badgeText = screen.getByText("Active Session");
       expect(badgeText).toHaveClass("ui-text-testnet");
+    });
+
+    it("should show mainnet badge when on mainnet", () => {
+      render(
+        <AuthenticatorItem
+          {...defaultProps}
+          isMainnet={true}
+          authenticator={createMockAuthenticator(
+            "1",
+            "AUTHENTICATOR_TYPE.JWT",
+            0,
+          )}
+          currentAuthenticatorIndex={0}
+          authenticators={[
+            createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
+          ]}
+        />,
+      );
+
+      // When isMainnet is true, the badge should have mainnet classes
+      const badgeText = screen.getByText("Active Session");
+      expect(badgeText).toHaveClass("ui-text-mainnet");
+    });
+
+    it("should use getAuthenticatorLabel when authType is undefined", () => {
+      render(
+        <AuthenticatorItem
+          {...defaultProps}
+          authType={undefined}
+          authenticator={createMockAuthenticator(
+            "1",
+            "AUTHENTICATOR_TYPE.JWT",
+            0,
+          )}
+          currentAuthenticatorIndex={1}
+          authenticators={[
+            createMockAuthenticator("1", "AUTHENTICATOR_TYPE.JWT", 0),
+          ]}
+        />,
+      );
+
+      // When authType is undefined, capitalizeFirstLetter returns empty string
+      // and it falls back to getAuthenticatorLabel which returns the type
+      expect(screen.getByText("AUTHENTICATOR_TYPE.JWT")).toBeInTheDocument();
+    });
+
+    it("should return empty string for email when not an email authenticator", async () => {
+      // Import the mock to modify it
+      const authenticatorHelpers =
+        await import("../../auth/utils/authenticator-helpers");
+
+      // Temporarily override isEmailAuthenticator to return false
+      vi.spyOn(authenticatorHelpers, "isEmailAuthenticator").mockReturnValue(
+        false,
+      );
+
+      render(
+        <AuthenticatorItem
+          {...defaultProps}
+          authenticator={createMockAuthenticator("1", "Passkey", 0)}
+          currentAuthenticatorIndex={1}
+          authenticators={[createMockAuthenticator("1", "Passkey", 0)]}
+        />,
+      );
+
+      // For non-email authenticators, the email toggle button should not appear
+      // because the email getter returns empty string when isEmailAuth is false
+      expect(
+        screen.queryByRole("button", { name: "Show email" }),
+      ).not.toBeInTheDocument();
+
+      // Restore the mock
+      vi.mocked(authenticatorHelpers.isEmailAuthenticator).mockReturnValue(
+        true,
+      );
     });
   });
 });

@@ -64,6 +64,7 @@ export const useSmartAccount = () => {
     window.ethereum?.on("accountsChanged", handleAccountsChanged);
 
     return () => {
+      // @ts-expect-error - off exists on MetaMaskInpageProvider but types may not recognize it
       window.ethereum?.off("accountsChanged", handleAccountsChanged);
     };
   }, [connectionMethod, logout]);
@@ -79,12 +80,16 @@ export const useSmartAccount = () => {
       }
     };
 
-    if (window.okxwallet) {
-      window.okxwallet?.keplr.on("connect", handleAccountsChanged);
+    if (window.okxwallet?.keplr) {
+      // @ts-expect-error - on/off exist on OKX wallet but types may not recognize it
+      window.okxwallet.keplr.on("connect", handleAccountsChanged);
     }
 
     return () => {
-      window.okxwallet?.keplr.off("connect", handleAccountsChanged);
+      if (window.okxwallet?.keplr) {
+        // @ts-expect-error - on/off exist on OKX wallet but types may not recognize it
+        window.okxwallet.keplr.off("connect", handleAccountsChanged);
+      }
     };
   }, [connectionMethod, logout]);
 
@@ -147,6 +152,7 @@ export const useSmartAccount = () => {
       case "keplr":
         return !!recentWallet;
       case "metamask":
+        // @ts-expect-error - isConnected exists on MetaMaskInpageProvider
         return window.ethereum?.isConnected?.() ?? false;
       case "okx":
       case "passkey":

@@ -32,6 +32,7 @@ import type {
   AddAuthenticator,
   AddJwtAuthenticator,
 } from "@burnt-labs/signers";
+import type { Authenticator } from "@burnt-labs/account-management";
 import { validateFeeGrant } from "@burnt-labs/account-management";
 import { AddEmail } from "./AddEmail";
 import { decodeJwt, JWTPayload } from "jose";
@@ -66,8 +67,8 @@ interface AuthenticatorStateData {
   type: string;
   authenticator: string;
   authenticatorIndex: number;
-  version: string;
-  __typename: string;
+  version?: string;
+  __typename?: string;
 }
 
 export function AddAuthenticatorsForm({
@@ -186,7 +187,7 @@ export function AddAuthenticatorsForm({
   }
 
   async function handleAddAuthenticator(
-    msg: AddAuthenticator,
+    msg: AddAuthenticator | AddJwtAuthenticator | Record<string, unknown>,
     authenticatorStateData: AuthenticatorStateData,
   ): Promise<void> {
     if (!client) {
@@ -245,7 +246,7 @@ export function AddAuthenticatorsForm({
       ...abstractAccount,
       authenticators: [
         ...abstractAccount.authenticators,
-        authenticatorStateData,
+        authenticatorStateData as Authenticator,
       ],
       currentAuthenticatorIndex: abstractAccount.currentAuthenticatorIndex,
     });

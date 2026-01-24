@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "../../ui";
 import { RemoveAuthenticatorForm } from "./RemoveAuthenticatorForm";
-import type { AuthenticatorNodes } from "../../../types";
+import type { Authenticator } from "@burnt-labs/account-management";
 
 export default function RemoveAuthenticatorModal({
   isOpen,
@@ -10,7 +10,7 @@ export default function RemoveAuthenticatorModal({
 }: {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
-  authenticator?: { authenticator: AuthenticatorNodes; authType?: string };
+  authenticator?: { authenticator: Authenticator; authType?: string };
 }) {
   return (
     <Dialog modal onOpenChange={setIsOpen} open={isOpen}>

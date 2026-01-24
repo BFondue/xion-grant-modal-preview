@@ -10,7 +10,8 @@ import {
 } from "../../ui";
 import { AuthContext, AuthContextProps } from "../../AuthContext";
 import { useSigningClient } from "../../../hooks";
-import type { authenticatorTypes, AuthenticatorNodes } from "../../../types";
+import type { Authenticator } from "@burnt-labs/account-management";
+import type { authenticatorTypes } from "../../../types";
 import { AAAlgo, AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { removeRegistration } from "../../../auth/passkey";
 import { Loading } from "../../Loading";
@@ -29,7 +30,7 @@ export function RemoveAuthenticatorForm({
   authType,
   setIsOpen,
 }: {
-  authenticator?: AuthenticatorNodes;
+  authenticator?: Authenticator;
   authType?: string;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }) {
@@ -145,10 +146,12 @@ export function RemoveAuthenticatorForm({
       }
 
       if (
-        abstractAccount.authenticators.some((a) => a.type === AAAlgo.Passkey) &&
+        abstractAccount.authenticators.some(
+          (a) => a.type === String(AAAlgo.Passkey),
+        ) &&
         abstractAccount.authenticators.length === 2
       ) {
-        if (authenticator.type !== AAAlgo.Passkey) {
+        if (authenticator.type !== String(AAAlgo.Passkey)) {
           throw new Error(
             "Passkey cannot be the only authenticator on the account.",
           );
@@ -211,7 +214,7 @@ export function RemoveAuthenticatorForm({
         ),
       });
 
-      if (authenticator.type === AAAlgo.Passkey) {
+      if (authenticator.type === String(AAAlgo.Passkey)) {
         removeRegistration(abstractAccount.id, authenticator.authenticator);
       }
 

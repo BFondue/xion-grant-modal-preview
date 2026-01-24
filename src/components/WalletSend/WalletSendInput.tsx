@@ -48,9 +48,12 @@ export function WalletSendInput({
 }: WalletSendInputProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const { getEstimatedSendFee } = useAccountBalance();
-  const [estimatedFee, setEstimatedFee] = useState(null);
+  const [estimatedFee, setEstimatedFee] = useState<{
+    denom: string;
+    amount: string;
+  } | null>(null);
   const [isCalculatingFee, setIsCalculatingFee] = useState(false);
-  const [estimatingError, setEstimatingError] = useState(null);
+  const [estimatingError, setEstimatingError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -75,18 +78,18 @@ export function WalletSendInput({
     if (!recipientAddress) {
       return;
     }
-    let estimatedFee;
+    let feeResult;
 
     try {
       if (sendAmount) {
         setIsCalculatingFee(true);
-        estimatedFee = await getEstimatedSendFee(
+        feeResult = await getEstimatedSendFee(
           recipientAddress,
           sendAmount,
           selectedCurrencyDenom,
         );
 
-        if (estimatedFee === null) {
+        if (feeResult === null) {
           setIsCalculatingFee(false);
           return;
         }
@@ -94,10 +97,15 @@ export function WalletSendInput({
         setEstimatedFee(null);
       }
 
-      if (estimatedFee) {
+      if (feeResult) {
         const xionBalance = balances.find(
           (balance) => balance.symbol === "XION",
         );
+
+        if (!xionBalance || !feeResult.fee) {
+          setIsCalculatingFee(false);
+          return;
+        }
 
         let amountRequiredToSend: number;
         // When sending XION, we need to be sure there is enough balance to cover gas + amount remitted
@@ -105,10 +113,10 @@ export function WalletSendInput({
           const sendAmountWithoutDecimals =
             parseFloat(sendAmount) * Math.pow(10, xionBalance.decimals);
           amountRequiredToSend =
-            parseInt(estimatedFee.fee.amount[0].amount) +
+            parseInt(feeResult.fee.amount[0].amount) +
             sendAmountWithoutDecimals;
         } else {
-          amountRequiredToSend = estimatedFee.fee.amount[0].amount;
+          amountRequiredToSend = parseInt(feeResult.fee.amount[0].amount);
         }
 
         if (amountRequiredToSend > parseInt(xionBalance.baseAmount)) {
@@ -119,12 +127,13 @@ export function WalletSendInput({
           return;
         }
 
-        setEstimatedFee(estimatedFee.fee.amount[0]);
+        setEstimatedFee(feeResult.fee.amount[0]);
       }
 
       setEstimatingError(null);
-    } catch (error) {
-      if (error.message.includes("insufficient funds")) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "";
+      if (errorMessage.includes("insufficient funds")) {
         setEstimatingError(
           `Insufficient ${selectedCurrency.symbol.toUpperCase()} balance`,
         );
@@ -142,8 +151,8 @@ export function WalletSendInput({
   }: {
     imageUrl: string;
     symbol: string;
-    value: number;
-    dollarValue: number;
+    value: number | undefined;
+    dollarValue: number | undefined;
   }) => {
     return (
       <div className="ui-flex ui-items-center ui-gap-3">
@@ -160,10 +169,10 @@ export function WalletSendInput({
               width={14}
               height={12}
             />
-            {value.toFixed(2)}
+            {(value ?? 0).toFixed(2)}
             <span className="ui-h-[3px] ui-w-[3px] ui-rounded-full ui-bg-white/80" />
             <span className="ui-text-secondary-text">
-              ${dollarValue.toFixed(2)} USD
+              ${(dollarValue ?? 0).toFixed(2)} USD
             </span>
           </p>
         </div>
@@ -242,7 +251,7 @@ export function WalletSendInput({
       <>
         <div className="ui-text-secondary-text">Estimated fee</div>
         <div className="ui-text-secondary-text">
-          {(estimatedFee.amount / XION_CONVERSION).toFixed(6)} XION
+          {(parseInt(estimatedFee.amount) / XION_CONVERSION).toFixed(6)} XION
         </div>
       </>
     );
@@ -312,7 +321,7 @@ export function WalletSendInput({
 
           <BaseButton
             disabled={
-              estimatingError ||
+              !!estimatingError ||
               isCalculatingFee ||
               !recipientAddress ||
               !sendAmount

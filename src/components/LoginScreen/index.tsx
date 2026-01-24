@@ -129,11 +129,14 @@ export const LoginScreen = () => {
         // Don't set abstractAccount here - let baseSmartAccount hook fetch it with all authenticators
 
         return true;
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("[AbstraxionSignin] Account creation failed:", error);
         const errorMessage =
-          error?.message ||
-          (typeof error === "string" ? error : "Unknown error");
+          error instanceof Error
+            ? error.message
+            : typeof error === "string"
+              ? error
+              : "Unknown error";
         setAbstraxionError(`Account creation failed: ${errorMessage}`);
         setAuthError(`Account creation failed: ${errorMessage}`);
         return false;
@@ -230,7 +233,7 @@ export const LoginScreen = () => {
             );
           }
           setIsRedirectingToOAuth(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error(
             "[AbstraxionSignin] OAuth authentication error:",
             error,

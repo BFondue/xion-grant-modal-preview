@@ -10,6 +10,7 @@ import type {
   RemoveAuthenticatorResponse,
   RequestGrantPayload,
   RequestGrantResponse,
+  DisconnectResponse,
 } from "../../../messaging/types";
 
 interface MessageHandlerCallbacks {
@@ -23,7 +24,7 @@ interface MessageHandlerCallbacks {
     payload: SignTransactionPayload,
   ) => Promise<any>;
   onGetAddress: (origin: string) => { address: string | null };
-  onDisconnect: (origin: string) => Promise<object>;
+  onDisconnect: (origin: string) => Promise<DisconnectResponse>;
   onAddAuthenticator: (
     origin: string,
     payload: AddAuthenticatorPayload,

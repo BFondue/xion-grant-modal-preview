@@ -33,6 +33,15 @@ export default [
       "react/prop-types": "off",
       // Downgrade explicit any to warning - should be fixed incrementally
       "@typescript-eslint/no-explicit-any": "warn",
+      // Allow unused vars that start with underscore
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
 ];
