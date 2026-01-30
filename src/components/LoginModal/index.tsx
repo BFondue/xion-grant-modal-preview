@@ -50,7 +50,6 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
   useEffect(() => {
     if (session && connectionMethod === CONNECTION_METHOD.None) {
       console.log("[Abstraxion] Detected Stytch session, syncing auth state");
-      localStorage.setItem("loginType", "stytch");
       setConnectionMethod(CONNECTION_METHOD.Stytch);
 
       // Extract authenticator from session JWT

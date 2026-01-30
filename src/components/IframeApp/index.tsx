@@ -185,17 +185,11 @@ export function IframeApp({
     modals.showAuthModal,
   ]);
 
-  // Ensure loginType is set in localStorage when we have a session (both standalone and iframe mode)
+  // Sync connection method when we have a session
   useEffect(() => {
-    if (session) {
-      const loginType = localStorage.getItem("loginType");
-      if (!loginType || loginType === "none") {
-        console.log("[IframeApp] Setting loginType to stytch in localStorage");
-        localStorage.setItem("loginType", "stytch");
-        if (connectionMethod === CONNECTION_METHOD.None) {
-          setConnectionMethod(CONNECTION_METHOD.Stytch);
-        }
-      }
+    if (session && connectionMethod === CONNECTION_METHOD.None) {
+      console.log("[IframeApp] Syncing Stytch session to connection method");
+      setConnectionMethod(CONNECTION_METHOD.Stytch);
     }
   }, [session, connectionMethod, setConnectionMethod]);
 
@@ -450,7 +444,7 @@ export function IframeApp({
       // Delegate all cleanup to AuthStateManager
       // This handles:
       // - Setting isDisconnecting state
-      // - Clearing localStorage (loginType, loginAuthenticator, okx data)
+      // - Clearing localStorage (loginAuthenticator, okx data)
       // - Clearing sessionStorage (origin session)
       // - Revoking Stytch session
       // - Resetting state to disconnected

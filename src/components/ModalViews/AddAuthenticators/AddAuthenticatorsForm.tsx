@@ -5,7 +5,6 @@ import {
   useState,
   useEffect,
 } from "react";
-import { useShuttle } from "@delphi-labs/shuttle-react";
 import { create } from "@github/webauthn-json/browser-ponyfill";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
@@ -100,7 +99,6 @@ export function AddAuthenticatorsForm({
 
   // Hooks
   const { client, getGasCalculation } = useSigningClient();
-  const { connect, recentWallet } = useShuttle();
 
   const stytchClient = useStytch();
   const { session } = useStytchSession();
@@ -121,44 +119,13 @@ export function AddAuthenticatorsForm({
     setSelectedAuthenticator(authenticator);
   }
 
-  // add handler and useEffect for shuttle connection
-  async function handleShuttleConnection() {
-    try {
-      setIsLoading(true);
-      await connect({
-        chainId: chainInfo?.chainId || CHAIN_ID,
-        extensionProviderId: "keplr",
-      });
-    } catch (error) {
-      console.error("Error connecting to Shuttle:", error);
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    const handleWalletConnection = async () => {
-      if (recentWallet && selectedAuthenticator === "keplr" && isLoading) {
-        try {
-          await addKeplrAuthenticator();
-        } catch (error) {
-          console.error("Error adding Keplr authenticator:", error);
-          setErrorMessage("Something went wrong trying to add authenticator");
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    handleWalletConnection();
-  }, [recentWallet, selectedAuthenticator]);
-
   async function handleSelection() {
     setErrorMessage("");
     switch (selectedAuthenticator) {
       case "none":
         break;
       case "keplr":
-        await handleShuttleConnection();
+        await addKeplrAuthenticator();
         break;
       case "metamask":
         await addEthAuthenticator();
@@ -368,23 +335,34 @@ export function AddAuthenticatorsForm({
         return alert("Please install Keplr extension and try again");
       }
 
-      if (!recentWallet) {
-        return alert("Please connect Keplr and try again.");
-      }
-
       if (!abstractAccount) {
         return alert("No abstract account found.");
       }
 
-      const shuttleAccount = recentWallet.account;
-      const shuttleAddress = shuttleAccount?.address;
+      const chain_id = chainInfo?.chainId || CHAIN_ID;
+
+      // Suggest the chain to Keplr if not already added
+      if (chainInfo) {
+        try {
+          await window.keplr.experimentalSuggestChain(chainInfo);
+        } catch (suggestError) {
+          console.log(
+            "[AddAuthenticatorsForm] Chain already exists or suggest failed:",
+            suggestError,
+          );
+        }
+      }
+
+      // Enable Keplr for this chain and get account
+      await window.keplr.enable(chain_id);
+      const keplrKey = await window.keplr.getKey(chain_id);
 
       const encoder = new TextEncoder();
       const signArbMessage = Buffer.from(encoder.encode(abstractAccount?.id));
 
       const signArbRes = await window.keplr.signArbitrary(
-        chainInfo?.chainId || CHAIN_ID,
-        shuttleAddress,
+        chain_id,
+        keplrKey.bech32Address,
         new Uint8Array(signArbMessage),
       );
 

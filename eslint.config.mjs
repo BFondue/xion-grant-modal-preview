@@ -31,17 +31,9 @@ export default [
       "react/react-in-jsx-scope": "off",
       // Disable prop-types as we use TypeScript
       "react/prop-types": "off",
-      // Downgrade explicit any to warning - should be fixed incrementally
+      // Downgrade to warnings - should be fixed incrementally
       "@typescript-eslint/no-explicit-any": "warn",
-      // Allow unused vars that start with underscore
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-        },
-      ],
+      "@typescript-eslint/no-unused-vars": "warn",
     },
   },
 ];

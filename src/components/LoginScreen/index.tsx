@@ -37,7 +37,6 @@ import {
   registeredCredentials,
 } from "../../auth/passkey";
 import okxLogo from "../../assets/okx-logo.png";
-import { useShuttle } from "@delphi-labs/shuttle-react";
 import LoginOtpForm from "../LoginOtpForm";
 import { GoogleLogoIcon } from "../ui/icons/GoogleLogo";
 import { TikTokLogoIcon } from "../ui/icons/TikTokLogo";
@@ -69,8 +68,6 @@ export const LoginScreen = () => {
   const [isRedirectingToOAuth, setIsRedirectingToOAuth] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const tokenProcessed = useRef(false);
-
-  const { connect } = useShuttle();
 
   // Use AuthStateManager via hook
   const { startLogin, setError: setAuthError } = useAuthState();
@@ -491,7 +488,7 @@ export const LoginScreen = () => {
     }
   };
 
-  function handleKeplr() {
+  async function handleKeplr() {
     console.log(
       "[AbstraxionSignin] handleKeplr called, isInIframe:",
       isInIframe,
@@ -554,18 +551,43 @@ export const LoginScreen = () => {
       return;
     }
 
-    try {
-      connect({
-        chainId: `${chainInfo?.chainId}`,
-        extensionProviderId: "keplr",
-      });
+    if (!chainInfo) {
+      setAbstraxionError("No chain info available");
+      return;
+    }
 
-      // Use AuthStateManager - authenticator will be set when wallet connects
-      startLogin(AUTHENTICATOR_TYPE.Secp256K1, CONNECTION_METHOD.Keplr, ""); // Will be updated when wallet connects
+    try {
+      // Try to suggest the chain (Keplr might not have Xion configured)
+      try {
+        await window.keplr.experimentalSuggestChain(chainInfo);
+        console.log("[AbstraxionSignin] Keplr chain suggested successfully");
+      } catch (suggestError) {
+        console.log(
+          "[AbstraxionSignin] Chain already exists or suggest failed:",
+          suggestError,
+        );
+        // Continue anyway - chain might already be added
+      }
+
+      await window.keplr.enable(chainInfo.chainId);
+      const key = await window.keplr.getKey(chainInfo.chainId);
+      const authenticator = getHumanReadablePubkey(key.pubKey);
+      console.log("[AbstraxionSignin] Keplr account:", key);
+      console.log("[AbstraxionSignin] Keplr authenticator:", authenticator);
+
+      // Use AuthStateManager
+      startLogin(
+        AUTHENTICATOR_TYPE.Secp256K1,
+        CONNECTION_METHOD.Keplr,
+        authenticator,
+      );
+
+      // Also update context for backward compatibility
       setConnectionMethod(CONNECTION_METHOD.Keplr);
-      console.log("[AbstraxionSignin] Keplr connection initiated");
+      console.log("[AbstraxionSignin] Keplr wallet connected");
     } catch (error) {
-      console.error("Error connecting to Keplr:", error);
+      console.error("[AbstraxionSignin] Keplr error:", error);
+      setAbstraxionError("Keplr wallet connect error");
     }
   }
 
@@ -984,7 +1006,6 @@ export const LoginScreen = () => {
                 onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
               >
                 Advanced Options
-                <span className="ui-text-secondary-text">{"(Login Only)"}</span>
                 {/* Down Caret */}
                 <ChevronRightIcon
                   className={cn(

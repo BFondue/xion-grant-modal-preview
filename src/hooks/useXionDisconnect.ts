@@ -10,28 +10,17 @@
  */
 
 import { useStytch } from "@stytch/react";
-import { useShuttle } from "@delphi-labs/shuttle-react";
-import { useAuthState, CONNECTION_METHOD } from "../auth/useAuthState";
+import { useAuthState } from "../auth/useAuthState";
 
 export function useXionDisconnect() {
-  const { disconnect } = useShuttle();
   const stytch = useStytch();
-  const { logout, connectionMethod } = useAuthState();
+  const { logout } = useAuthState();
 
   const xionDisconnect = async () => {
-    // Disconnect Shuttle wallet if that's the connection type
-    if (connectionMethod === CONNECTION_METHOD.Keplr) {
-      try {
-        disconnect();
-      } catch (error) {
-        console.warn("[useXionDisconnect] Error disconnecting shuttle:", error);
-      }
-    }
-
     // Delegate all cleanup to AuthStateManager
     // This handles:
     // - Revoking Stytch session (if stytch connection)
-    // - Clearing localStorage (loginType, loginAuthenticator, okx data)
+    // - Clearing localStorage (loginAuthenticator, okx data)
     // - Clearing sessionStorage (origin session)
     // - Notifying parent window
     // - Resetting state

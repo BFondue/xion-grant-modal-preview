@@ -188,7 +188,7 @@ describe("useSigningClient", () => {
     });
   });
 
-  it("should return client when initialized with shuttle (keplr)", async () => {
+  it("should return client when initialized with keplr", async () => {
     const { result } = renderHook(() => useSigningClient(), {
       wrapper: (props) =>
         wrapper({
@@ -283,7 +283,7 @@ describe("useSigningClient", () => {
     expect(result.current.client).toBeUndefined();
   });
 
-  it("should initialize client with shuttle (Keplr) signer", async () => {
+  it("should initialize client with Keplr signer", async () => {
     const { result } = renderHook(() => useSigningClient(), {
       wrapper: ({ children }) =>
         wrapper({
@@ -366,7 +366,7 @@ describe("useSigningClient", () => {
   });
 
   it("should handle missing signer gracefully", async () => {
-    // Mock window.keplr to be undefined for shuttle connection
+    // Mock window.keplr to be undefined for keplr connection
     const originalKeplr = window.keplr;
     delete (window as any).keplr;
 

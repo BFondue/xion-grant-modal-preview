@@ -430,7 +430,7 @@ describe("AuthStateManager", () => {
       AuthStateManager.startLogin(
         AUTHENTICATOR_TYPE.Secp256K1,
         CONNECTION_METHOD.Keplr,
-        "shuttle-auth",
+        "test-keplr-auth",
       );
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
@@ -439,7 +439,7 @@ describe("AuthStateManager", () => {
       );
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR,
-        "shuttle-auth",
+        "test-keplr-auth",
       );
     });
 

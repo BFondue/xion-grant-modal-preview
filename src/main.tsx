@@ -7,14 +7,12 @@ window.process = process;
 window.global = window;
 
 import ReactDOM from "react-dom/client";
-import { KeplrExtensionProvider } from "@delphi-labs/shuttle";
 import { QueryClient } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import { App } from "./components/App";
 import { Callback } from "./components/Callback";
 import { LoginExternalAuth } from "./components/LoginExternalAuth";
 import { RootProviders } from "./components/RootProviders";
-import { loadShuttleNetworks } from "./config/shuttle";
 
 import "./index.css";
 import { StandAloneWrapper } from "./components/IframeApp/StandAloneWrapper";
@@ -75,25 +73,15 @@ import { IframeApp } from "./components/IframeApp";
 
 const queryClient = new QueryClient();
 
-// Load networks and render app
-(async () => {
-  const shuttleNetworks = await loadShuttleNetworks();
-  const providers = [
-    new KeplrExtensionProvider({
-      networks: [shuttleNetworks.mainnet, shuttleNetworks.testnet],
-    }),
-  ];
-
-  ReactDOM.createRoot(document.getElementById("root")!).render(
-    <RootProviders queryClient={queryClient} extensionProviders={providers}>
-      <Routes>
-        <Route path="/callback" element={<Callback />} />
-        <Route path="/oauth/callback" element={<Callback />} />
-        <Route path="/oauth/external" element={<LoginExternalAuth />} />
-        <Route path="/dashboard" element={<StandAloneWrapper />} />
-        <Route path="/iframe" element={<IframeApp />} />
-        <Route path="/*" element={<App />} />
-      </Routes>
-    </RootProviders>,
-  );
-})();
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <RootProviders queryClient={queryClient}>
+    <Routes>
+      <Route path="/callback" element={<Callback />} />
+      <Route path="/oauth/callback" element={<Callback />} />
+      <Route path="/oauth/external" element={<LoginExternalAuth />} />
+      <Route path="/dashboard" element={<StandAloneWrapper />} />
+      <Route path="/iframe" element={<IframeApp />} />
+      <Route path="/*" element={<App />} />
+    </Routes>
+  </RootProviders>,
+);
