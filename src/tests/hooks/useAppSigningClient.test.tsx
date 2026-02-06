@@ -93,19 +93,17 @@ vi.mock("../../connectionAdapters", () => ({
       );
     } else if (connectionMethod === "keplr" || connectionMethod === "okx") {
       // Secp256k1 adapter
-      mockAdapter.getSigner = vi.fn(
-        async (_chainId, _abstractAccount, _authIndex) => {
-          return new (AADirectSigner as any)();
-        },
-      );
+      mockAdapter.getSigner = vi.fn(async () => {
+        return new (AADirectSigner as any)();
+      });
     } else if (connectionMethod === "metamask") {
       // EthWallet adapter
-      mockAdapter.getSigner = vi.fn((_abstractAccount, _authIndex) => {
+      mockAdapter.getSigner = vi.fn(() => {
         return new (AAEthSigner as any)();
       });
     } else if (connectionMethod === "passkey") {
       // Passkey adapter
-      mockAdapter.getSigner = vi.fn((_abstractAccount, _authIndex) => {
+      mockAdapter.getSigner = vi.fn(() => {
         return { type: "passkey-signer" }; // Mock passkey signer
       });
     }

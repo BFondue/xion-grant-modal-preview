@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useAuthState, CONNECTION_METHOD } from "../../auth/useAuthState";
+import { useAuthState } from "../../auth/useAuthState";
 import { AuthStateManager } from "../../auth/AuthStateManager";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 

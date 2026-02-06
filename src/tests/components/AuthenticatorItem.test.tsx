@@ -1,7 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { AuthenticatorItem } from "../../components/AuthenticatorItem";
 import type { Authenticator } from "@burnt-labs/account-management";
 
