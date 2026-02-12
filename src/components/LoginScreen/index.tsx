@@ -44,7 +44,6 @@ import { cn } from "../../utils/classname-util";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import xionLogo from "../../assets/logo.png";
-import { createJwtAccount } from "../../hooks/useCreateJwtAccount";
 import { useAuthState, CONNECTION_METHOD } from "../../auth/useAuthState";
 import { getLoginAuthenticatorFromJWT } from "../../auth/session";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
@@ -66,15 +65,15 @@ export const LoginScreen = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [isRedirectingToOAuth, setIsRedirectingToOAuth] = useState(false);
-  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const tokenProcessed = useRef(false);
 
   // Use AuthStateManager via hook
   const { startLogin, setError: setAuthError } = useAuthState();
 
   // Keep context for backward compatibility
-  const { setConnectionMethod, setAbstraxionError, apiUrl, chainInfo } =
-    useContext(AuthContext) as AuthContextProps;
+  const { setConnectionMethod, setAbstraxionError, chainInfo } = useContext(
+    AuthContext,
+  ) as AuthContextProps;
 
   // Detect if running in iframe mode - browser extensions don't work directly in iframes
   // but we can use popups to connect to wallets
@@ -91,21 +90,14 @@ export const LoginScreen = () => {
    * Called after successful Stytch authentication to create or retrieve the abstract account.
    */
   const handlePostAuthentication = useCallback(
-    async (sessionJwt: string, sessionToken: string): Promise<boolean> => {
-      if (!apiUrl) {
-        console.error("[AbstraxionSignin] API URL not available");
-        setAbstraxionError("Configuration error: API URL not set");
-        setAuthError("Configuration error: API URL not set");
-        return false;
-      }
-
+    async (sessionJwt: string): Promise<boolean> => {
       try {
-        setIsCreatingAccount(true);
         console.log(
-          "[AbstraxionSignin] Creating/retrieving abstract account...",
+          "[AbstraxionSignin] Authentication successful, starting login flow...",
         );
 
-        // Start login via AuthStateManager
+        // Start login via AuthStateManager - this triggers the transition
+        // to LoginWalletSelector which handles account creation/discovery
         const loginAuthenticator = getLoginAuthenticatorFromJWT(sessionJwt);
         if (loginAuthenticator) {
           startLogin(
@@ -114,16 +106,6 @@ export const LoginScreen = () => {
             loginAuthenticator,
           );
         }
-
-        const account = await createJwtAccount({
-          sessionJwt,
-          sessionToken,
-        });
-
-        console.log("[AbstraxionSignin] Account ready:", account.id);
-
-        // Don't call completeLogin here - baseSmartAccount hook will complete it with full data
-        // Don't set abstractAccount here - let baseSmartAccount hook fetch it with all authenticators
 
         return true;
       } catch (error: unknown) {
@@ -137,11 +119,9 @@ export const LoginScreen = () => {
         setAbstraxionError(`Account creation failed: ${errorMessage}`);
         setAuthError(`Account creation failed: ${errorMessage}`);
         return false;
-      } finally {
-        setIsCreatingAccount(false);
       }
     },
-    [apiUrl, setAbstraxionError, startLogin, setAuthError],
+    [setAbstraxionError, startLogin, setAuthError],
   );
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,16 +198,11 @@ export const LoginScreen = () => {
             response,
           );
 
-          // Create/retrieve abstract account after successful authentication
-          if (response.session_jwt && response.session_token) {
-            await handlePostAuthentication(
-              response.session_jwt,
-              response.session_token,
-            );
+          // Start login flow after successful authentication
+          if (response.session_jwt) {
+            await handlePostAuthentication(response.session_jwt);
           } else {
-            console.error(
-              "[AbstraxionSignin] Missing session credentials in response",
-            );
+            console.error("[AbstraxionSignin] Missing session JWT in response");
           }
           setIsRedirectingToOAuth(false);
         } catch (error: unknown) {
@@ -305,16 +280,11 @@ export const LoginScreen = () => {
             response,
           );
 
-          // Create/retrieve abstract account after successful authentication
-          if (response.session_jwt && response.session_token) {
-            await handlePostAuthentication(
-              response.session_jwt,
-              response.session_token,
-            );
+          // Start login flow after successful authentication
+          if (response.session_jwt) {
+            await handlePostAuthentication(response.session_jwt);
           } else {
-            console.error(
-              "[AbstraxionSignin] Missing session credentials in response",
-            );
+            console.error("[AbstraxionSignin] Missing session JWT in response");
           }
           setIsRedirectingToOAuth(false);
         } catch (error) {
@@ -393,16 +363,11 @@ export const LoginScreen = () => {
             response,
           );
 
-          // Create/retrieve abstract account after successful authentication
-          if (response.session_jwt && response.session_token) {
-            await handlePostAuthentication(
-              response.session_jwt,
-              response.session_token,
-            );
+          // Start login flow after successful authentication
+          if (response.session_jwt) {
+            await handlePostAuthentication(response.session_jwt);
           } else {
-            console.error(
-              "[AbstraxionSignin] Missing session credentials in response",
-            );
+            console.error("[AbstraxionSignin] Missing session JWT in response");
           }
           setIsRedirectingToOAuth(false);
         } catch (error) {
@@ -472,16 +437,11 @@ export const LoginScreen = () => {
 
       console.log("[AbstraxionSignin] OTP authenticate response:", response);
 
-      // Create/retrieve abstract account after successful authentication
-      if (response.session_jwt && response.session_token) {
-        await handlePostAuthentication(
-          response.session_jwt,
-          response.session_token,
-        );
+      // Start login flow after successful authentication
+      if (response.session_jwt) {
+        await handlePostAuthentication(response.session_jwt);
       } else {
-        console.error(
-          "[AbstraxionSignin] Missing session credentials in response",
-        );
+        console.error("[AbstraxionSignin] Missing session JWT in response");
       }
     } catch {
       setOtpError("Error Verifying OTP Code");
@@ -843,13 +803,11 @@ export const LoginScreen = () => {
             response,
           );
 
-          // Create/retrieve abstract account after successful authentication
-          // Use session_token if available, otherwise session_jwt
-          const sessionToken = response.session_token || "";
+          // Start login flow after successful authentication
           const sessionJwt = response.session_jwt || "";
 
-          if (sessionJwt || sessionToken) {
-            await handlePostAuthentication(sessionJwt, sessionToken);
+          if (sessionJwt) {
+            await handlePostAuthentication(sessionJwt);
           } else {
             console.error(
               "[AbstraxionSignin] Missing session credentials in response",
@@ -879,17 +837,13 @@ export const LoginScreen = () => {
     authenticateUser();
   }, []);
 
-  if (isRedirectingToOAuth || isCreatingAccount) {
+  if (isRedirectingToOAuth) {
     return (
       <>
         <DialogHeader>
-          <DialogTitle>
-            {isCreatingAccount ? "Setting Up Account" : "Verifying Login"}
-          </DialogTitle>
+          <DialogTitle>Verifying Login</DialogTitle>
           <DialogDescription>
-            {isCreatingAccount
-              ? "Creating your XION account..."
-              : "Please complete the login in the popup window."}
+            Please complete the login in the popup window.
           </DialogDescription>
         </DialogHeader>
         <div className="ui-flex ui-items-center ui-justify-center ui-my-20">
