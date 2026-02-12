@@ -52,7 +52,7 @@
     "@stytch/react": "^19.0.0",
     "@stytch/vanilla-js": "^5.41.1",
     "@tanstack/react-query": "^5.74.4",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "bech32": "^2.0.0",
     "camelcase-keys": "^10.0.1",
     "class-variance-authority": "^0.7.1",
