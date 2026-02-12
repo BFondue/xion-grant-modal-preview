@@ -140,6 +140,15 @@ console.log("STYTCH_PROXY_URL:", STYTCH_PROXY_URL);
 export const ABSTRAXION_API_URL =
   import.meta.env.VITE_ABSTRAXION_API_URL || networkConfig.abstraxionApiUrl;
 
+export const ZK_EMAIL_BACKEND_URL =
+  import.meta.env.VITE_ZKEMAIL_BACKEND_URL || networkConfig.zkEmailBackendUrl;
+
+export const TURNSTILE_SITE_KEY =
+  import.meta.env.VITE_TURNSTILE_SITE_KEY || networkConfig.turnstileSiteKey;
+
+// Allowed email host for ZK-Email authentication
+export const ZK_EMAIL_HOST = import.meta.env.VITE_ZK_EMAIL_HOST || "";
+
 // =============================================================================
 // Indexer Configuration
 // =============================================================================
@@ -188,6 +197,13 @@ export const GAS_MARGIN = import.meta.env.VITE_GAS_MARGIN
   : networkConfig.gasMargin;
 
 // =============================================================================
+// Environment Mode
+// =============================================================================
+
+/** Check if running in development mode via NODE_ENV/Vite MODE */
+export const IS_DEV = import.meta.env.MODE === "development";
+
+// =============================================================================
 // Feature Flags
 // =============================================================================
 
@@ -225,6 +241,10 @@ export const FEATURE_FLAGS = {
   apple: parseFeatureFlag(
     import.meta.env.VITE_APPLE_FLAG,
     networkConfig.featureFlags.apple,
+  ),
+  zkemail: parseFeatureFlag(
+    import.meta.env.VITE_ZKEMAIL_FLAG,
+    networkConfig.featureFlags.zkemail,
   ),
 };
 

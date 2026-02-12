@@ -12,6 +12,7 @@ import {
   AUTHENTICATOR_TYPE,
 } from "@burnt-labs/signers";
 import { AbstractAccountJWTSigner } from "../../auth/jwt/jwt-signer";
+import { AuthStateManager } from "../../auth/AuthStateManager";
 
 const { mockGetTokens } = vi.hoisted(() => {
   const mockGetTokens = vi
@@ -43,6 +44,7 @@ vi.mock("@burnt-labs/signers", () => ({
     EthWallet: "EthWallet",
     JWT: "JWT",
     Passkey: "Passkey",
+    ZKEmail: "ZKEmail",
   },
 }));
 
@@ -53,6 +55,17 @@ vi.mock("../../auth/jwt/jwt-signer", () => ({
 vi.mock("../../signers/signers/passkey-signer", () => ({
   AAPasskeySigner: vi.fn(),
 }));
+
+vi.mock("../../auth/AuthStateManager", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../../auth/AuthStateManager")>();
+  return {
+    ...original,
+    AuthStateManager: {
+      ...original.AuthStateManager,
+      getZKEmailData: vi.fn().mockReturnValue(null),
+    },
+  };
+});
 
 vi.mock("../../utils/fees", () => ({
   formatGasPrice: vi.fn().mockReturnValue({ amount: "0", denom: "uxion" }),
@@ -106,6 +119,13 @@ vi.mock("../../connectionAdapters", () => ({
       mockAdapter.getSigner = vi.fn(() => {
         return { type: "passkey-signer" }; // Mock passkey signer
       });
+    } else if (connectionMethod === "zkemail") {
+      // ZKEmail adapter
+      mockAdapter.getSigner = vi.fn(
+        (_abstractAccount, _authIndex, _email) => {
+          return { type: "zkemail-signer" }; // Mock zkemail signer
+        },
+      );
     }
 
     return mockAdapter;
@@ -681,5 +701,55 @@ describe("useSigningClient", () => {
     expect(result.current.getGasCalculation).toBeDefined();
     const gasCalc = result.current.getGasCalculation(1000);
     expect(gasCalc).toBeUndefined();
+  });
+
+  it("should return client when initialized with zkemail and email is available", async () => {
+    vi.mocked(AuthStateManager.getZKEmailData).mockReturnValue(
+      "user@example.com",
+    );
+
+    const { result } = renderHook(() => useSigningClient(), {
+      wrapper: ({ children }) =>
+        wrapper({
+          children,
+          contextValue: {
+            connectionMethod: CONNECTION_METHOD.ZKEmail,
+            authenticatorType: AUTHENTICATOR_TYPE.ZKEmail,
+          },
+        }),
+    });
+
+    await waitFor(() => {
+      expect(result.current.client).toBeDefined();
+    });
+  });
+
+  it("should not create signer when zkemail has no email in session", async () => {
+    vi.mocked(AuthStateManager.getZKEmailData).mockReturnValue(null);
+
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {
+      // silently ignore
+    });
+
+    const { result } = renderHook(() => useSigningClient(), {
+      wrapper: ({ children }) =>
+        wrapper({
+          children,
+          contextValue: {
+            connectionMethod: CONNECTION_METHOD.ZKEmail,
+            authenticatorType: AUTHENTICATOR_TYPE.ZKEmail,
+          },
+        }),
+    });
+
+    await waitFor(() => {
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "[useSigningClient] ZK-Email: no email in session; signer not created. Sign in with zk-email to sign transactions.",
+      );
+    });
+
+    expect(result.current.client).toBeUndefined();
+
+    consoleWarnSpy.mockRestore();
   });
 });

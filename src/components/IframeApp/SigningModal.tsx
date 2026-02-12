@@ -9,6 +9,9 @@ import {
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import { useState } from "react";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
+import { ZKEmailAuthenticatorStatus } from "../ModalViews/AddAuthenticators/ZKEmailAuthenticatorStatus";
+import { useZKEmailSigningStatus } from "../../hooks/useZKEmailSigningStatus";
+import { CONNECTION_METHOD, type ConnectionMethod } from "../../auth/useAuthState";
 
 interface TransactionData {
   messages: Array<{
@@ -33,6 +36,8 @@ interface SigningModalProps {
   transaction: TransactionData | null;
   onApprove: () => Promise<void>;
   onReject: () => void;
+  /** When ZKEmail, zk-email signing status is shown during signing */
+  connectionMethod?: ConnectionMethod;
 }
 
 export function SigningModal({
@@ -41,8 +46,10 @@ export function SigningModal({
   transaction,
   onApprove,
   onReject,
+  connectionMethod,
 }: SigningModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const zkEmailStatus = useZKEmailSigningStatus(connectionMethod === CONNECTION_METHOD.ZKEmail);
 
   if (!transaction) return null;
 
@@ -65,6 +72,14 @@ export function SigningModal({
               Review and approve the transaction below.
             </DialogDescription>
           </DialogHeader>
+
+          {zkEmailStatus && (
+            <ZKEmailAuthenticatorStatus
+              phase={zkEmailStatus.phase}
+              message={zkEmailStatus.message}
+              detail={zkEmailStatus.detail}
+            />
+          )}
 
           <div className="ui-flex ui-flex-col ui-gap-8">
             <div className="ui-h-[1px] ui-w-full ui-bg-border" />

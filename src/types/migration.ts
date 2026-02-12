@@ -1,5 +1,7 @@
 export enum FeatureKey {
   PASSKEY = "passkey",
+  ZKEMAIL = "zkemail",
+
 }
 
 export interface PromotedFeature {

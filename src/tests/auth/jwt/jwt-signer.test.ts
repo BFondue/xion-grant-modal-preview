@@ -139,6 +139,25 @@ describe("AbstractAccountJWTSigner", () => {
     );
   });
 
+  it("should use unknown error fallback if response text fails in signDirect", async () => {
+    const signer = new AbstractAccountJWTSigner(
+      mockAccount,
+      mockIndex,
+      mockToken,
+      mockApiUrl,
+    );
+    const mockSignDoc = SignDoc.fromPartial({});
+    (global.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: vi.fn().mockRejectedValue(new Error("stream error")),
+    });
+
+    await expect(signer.signDirect("user", mockSignDoc)).rejects.toThrow(
+      "JWT authentication failed (500): Unknown error",
+    );
+  });
+
   it("should throw error if no session_jwt in response", async () => {
     const signer = new AbstractAccountJWTSigner(
       mockAccount,
@@ -237,6 +256,24 @@ describe("AbstractAccountJWTSigner", () => {
 
     await expect(signer.signDirectArb("msg")).rejects.toThrow(
       "JWT authentication failed (401): Unauthorized",
+    );
+  });
+
+  it("should use unknown error fallback if response text fails in signDirectArb", async () => {
+    const signer = new AbstractAccountJWTSigner(
+      mockAccount,
+      mockIndex,
+      mockToken,
+      mockApiUrl,
+    );
+    (global.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: vi.fn().mockRejectedValue(new Error("stream error")),
+    });
+
+    await expect(signer.signDirectArb("msg")).rejects.toThrow(
+      "JWT authentication failed (500): Unknown error",
     );
   });
 

@@ -50,6 +50,15 @@ vi.mock("../../connectionAdapters/adapters/PasskeyAdapter", () => ({
   })),
 }));
 
+vi.mock("../../connectionAdapters/adapters/ZKEmailAdapter", () => ({
+  createZKEmailAdapter: vi.fn(() => ({
+    authenticatorType: AUTHENTICATOR_TYPE.ZKEmail,
+    connectionMethod: CONNECTION_METHOD.ZKEmail,
+    name: "ZK-Email",
+    isInstalled: vi.fn(() => true),
+  })),
+}));
+
 describe("ConnectionAdapterFactory", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -141,6 +150,26 @@ describe("ConnectionAdapterFactory", () => {
       });
     });
 
+    describe("ZK-Email authentication", () => {
+      it("should return ZK-Email adapter for ZKEmail + ZKEmail", () => {
+        const adapter = getConnectionAdapter(
+          AUTHENTICATOR_TYPE.ZKEmail,
+          CONNECTION_METHOD.ZKEmail,
+        );
+        expect(adapter.name).toBe("ZK-Email");
+        expect(adapter.authenticatorType).toBe(AUTHENTICATOR_TYPE.ZKEmail);
+      });
+
+      it("should throw for unsupported ZKEmail connection method", () => {
+        expect(() =>
+          getConnectionAdapter(
+            AUTHENTICATOR_TYPE.ZKEmail,
+            CONNECTION_METHOD.Stytch,
+          ),
+        ).toThrow("Unsupported ZKEmail connection method: stytch");
+      });
+    });
+
     describe("unsupported authenticator types", () => {
       it("should throw for unknown authenticator type", () => {
         expect(() =>
@@ -182,15 +211,16 @@ describe("ConnectionAdapterFactory", () => {
     it("should return only installed adapters", () => {
       const connections = getAvailableConnections();
 
-      // Should include Keplr (installed), MetaMask (installed), Stytch (installed), Passkey (installed)
+      // Should include Keplr (installed), MetaMask (installed), Stytch (installed), Passkey (installed), ZK-Email (installed)
       // Should NOT include OKX (not installed)
-      expect(connections.length).toBe(4);
+      expect(connections.length).toBe(5);
 
       const names = connections.map((c) => c.name);
       expect(names).toContain("Keplr");
       expect(names).toContain("MetaMask");
       expect(names).toContain("Stytch (Social Login)");
       expect(names).toContain("Passkey (WebAuthn)");
+      expect(names).toContain("ZK-Email");
       expect(names).not.toContain("OKX Wallet");
     });
 
@@ -212,9 +242,9 @@ describe("ConnectionAdapterFactory", () => {
       // Should still return other adapters without throwing
       const connections = getAvailableConnections();
 
-      // Should have 3 adapters (MetaMask, Stytch, Passkey) since Keplr threw an error
+      // Should have 4 adapters (MetaMask, Stytch, Passkey, ZK-Email) since Keplr threw an error
       // and OKX is not installed
-      expect(connections.length).toBe(3);
+      expect(connections.length).toBe(4);
       const names = connections.map((c) => c.name);
       expect(names).not.toContain("Keplr");
     });

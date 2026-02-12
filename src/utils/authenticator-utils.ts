@@ -94,7 +94,7 @@ export function validateNewAuthenticator(
 ): { isValid: boolean; errorMessage?: string } {
   if (isDuplicateAuthenticator(authenticators, identifier, type)) {
     const errorMessage =
-      type === AUTHENTICATOR_TYPE.JWT
+      type === AUTHENTICATOR_TYPE.JWT || type === AUTHENTICATOR_TYPE.ZKEmail
         ? "This email is already added as an authenticator"
         : "This authenticator is already added to your account";
     return { isValid: false, errorMessage };

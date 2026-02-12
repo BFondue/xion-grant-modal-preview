@@ -31,6 +31,7 @@ export type ConnectionMethod =
   | "metamask" // MetaMask wallet (EthWallet)
   | "passkey" // WebAuthn/Passkey (Passkey)
   | "zkemail" // ZK-Email authentication (ZKEmail)
+  | "apple" // Apple social login
   | "none";
 
 /**
@@ -44,6 +45,7 @@ export const CONNECTION_METHOD = Object.freeze({
   Metamask: "metamask" as const,
   Passkey: "passkey" as const,
   ZKEmail: "zkemail" as const,
+  Apple: "apple" as const,
   None: "none" as const,
 });
 
@@ -76,6 +78,18 @@ export const AUTH_STORAGE_KEYS = {
   AUTHENTICATOR_TYPE: "authenticatorType",
   LOGIN_AUTHENTICATOR: "loginAuthenticator",
 } as const;
+
+/**
+ * localStorage key for ZK-Email address (used for signing transactions).
+ *
+ * This is stored in localStorage (not React context) because:
+ * 1. It must persist across page refreshes and tab switches
+ * 2. The AAZKEmailSigner needs the email to request proofs for signing
+ * 3. Without localStorage, users would need to re-authenticate after every refresh
+ *
+ * Cleared on logout via AuthStateManager.clearZKEmailData().
+ */
+export const ZK_EMAIL_SESSION_KEY = "zkEmailAddress" as const;
 
 class AuthStateManagerClass {
   private state: AuthState = {
@@ -198,6 +212,47 @@ class AuthStateManagerClass {
    */
   getConnectionMethod(): ConnectionMethod {
     return this.state.connectionMethod;
+  }
+
+  /**
+   * Get ZK-Email address from localStorage (for signing transactions).
+   * Set at login via setZKEmailData(); cleared on logout.
+   */
+  getZKEmailData(): string | null {
+    try {
+      return localStorage.getItem(ZK_EMAIL_SESSION_KEY);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Store ZK-Email address in localStorage for use when signing transactions.
+   * Call this from LoginScreen after successful ZK-Email login.
+   */
+  setZKEmailData(email: string): void {
+    try {
+      localStorage.setItem(ZK_EMAIL_SESSION_KEY, email);
+      console.log("[AuthStateManager] ZK-Email address stored");
+    } catch (error) {
+      console.error(
+        "[AuthStateManager] Failed to store ZK-Email address:",
+        error,
+      );
+    }
+  }
+
+  /**
+   * Clear ZK-Email address from localStorage.
+   * Called on logout; can also be used when switching away from ZK-Email.
+   */
+  clearZKEmailData(): void {
+    try {
+      localStorage.removeItem(ZK_EMAIL_SESSION_KEY);
+      console.log("[AuthStateManager] ZK-Email data cleared");
+    } catch (error) {
+      console.error("[AuthStateManager] Failed to clear ZK-Email data:", error);
+    }
   }
 
   /**
@@ -327,6 +382,8 @@ class AuthStateManagerClass {
       console.log("[AuthStateManager] Session cleared for origin:", origin);
     }
 
+    this.clearZKEmailData();
+
     // Clear all localStorage auth data
     localStorage.removeItem(AUTH_STORAGE_KEYS.CONNECTION_METHOD);
     localStorage.removeItem(AUTH_STORAGE_KEYS.AUTHENTICATOR_TYPE);
@@ -357,12 +414,17 @@ class AuthStateManagerClass {
   }
 
   /**
-   * Set error state
+   * Set error state. Empty or whitespace-only string is treated as clear (no log, error set to null).
    */
   setError(error: string): void {
+    const trimmed = typeof error === "string" ? error.trim() : "";
+    if (!trimmed) {
+      this.clearError();
+      return;
+    }
     const prevState = { ...this.state };
-    this.state = { ...this.state, error };
-    console.error("[AuthStateManager] Error:", error);
+    this.state = { ...this.state, error: trimmed };
+    console.error("[AuthStateManager] Error:", trimmed);
     this.notifyListeners(prevState);
   }
 

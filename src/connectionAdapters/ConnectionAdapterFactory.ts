@@ -20,6 +20,7 @@ import {
 import { createMetaMaskAdapter } from "./adapters/EthWalletAdapter";
 import { createJWTAdapter } from "./adapters/JWTAdapter";
 import { createPasskeyAdapter } from "./adapters/PasskeyAdapter";
+import { createZKEmailAdapter } from "./adapters/ZKEmailAdapter";
 
 /**
  * Get a connection adapter instance based on authenticator type and connection method
@@ -33,6 +34,7 @@ export function getConnectionAdapter(
   authenticatorType: AuthenticatorType,
   connectionMethod: ConnectionMethod,
 ): ConnectionAdapter | PartialConnectionAdapter {
+
   // Handle Secp256k1 wallets (Keplr, OKX)
   if (authenticatorType === AUTHENTICATOR_TYPE.Secp256K1) {
     switch (connectionMethod) {
@@ -74,6 +76,16 @@ export function getConnectionAdapter(
     }
     throw new Error(
       `Unsupported Passkey connection method: ${connectionMethod}`,
+    );
+  }
+
+  // Handle ZK-Email authentication
+  if (authenticatorType === AUTHENTICATOR_TYPE.ZKEmail) {
+    if (connectionMethod === CONNECTION_METHOD.ZKEmail) {
+      return createZKEmailAdapter();
+    }
+    throw new Error(
+      `Unsupported ZKEmail connection method: ${connectionMethod}`,
     );
   }
 
@@ -130,6 +142,10 @@ export function getAvailableConnections(): (
     {
       authenticatorType: AUTHENTICATOR_TYPE.Passkey,
       connectionMethod: CONNECTION_METHOD.Passkey,
+    },
+    {
+      authenticatorType: AUTHENTICATOR_TYPE.ZKEmail,
+      connectionMethod: CONNECTION_METHOD.ZKEmail,
     },
   ];
 

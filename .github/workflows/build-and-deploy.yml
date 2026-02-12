@@ -29,12 +29,14 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.extract-url.outputs.deployment-url }}
     permissions:
       contents: read
       deployments: write
     outputs:
-      deployment-url: ${{ steps.deploy.outputs.deployment-url }}
+      deployment-url: ${{ steps.extract-url.outputs.deployment-url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -78,6 +80,7 @@ jobs:
           VITE_OKX_FLAG: ${{ vars.VITE_OKX_FLAG }}
           VITE_PASSKEY_FLAG: ${{ vars.VITE_PASSKEY_FLAG }}
           VITE_APPLE_FLAG: ${{ vars.VITE_APPLE_FLAG }}
+          VITE_ZKEMAIL_FLAG: ${{ vars.VITE_ZKEMAIL_FLAG }}
 
       - name: Deploy to Cloudflare
         id: deploy
@@ -101,8 +104,10 @@ jobs:
           VERSION_ID=$(echo "$OUTPUT" | grep -oE 'Worker Version ID: [a-f0-9-]+' | cut -d' ' -f4 | head -1 || true)
 
           if [ -n "$VERSION_ID" ]; then
-            # Preview URL format: https://<version-id>-<worker-name>.<subdomain>.workers.dev
-            URL="https://${VERSION_ID}-xion-dashboard-${ENV}.burnt-labs.workers.dev"
+            # Extract short version ID (first 8 chars before the first hyphen)
+            SHORT_VERSION_ID=$(echo "$VERSION_ID" | cut -d'-' -f1)
+            # Preview URL format: https://<short-version-id>-<worker-name>.<subdomain>.workers.dev
+            URL="https://${SHORT_VERSION_ID}-xion-dashboard-${ENV}.burnt.workers.dev"
           elif echo "$OUTPUT" | grep -qE 'https://[^ ]+\.workers\.dev'; then
             URL=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.workers\.dev' | head -1)
           else

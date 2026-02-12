@@ -14,10 +14,14 @@ export const mainnetConfig = {
 
   // URLs
   dashboardUrl: "https://settings.burnt.com",
-  stytchProxyUrl: "https://stytch.mainnet.burnt.com/v1",
+  stytchProxyUrl: "https://stytch-proxy.burnt.com/v1",
   abstraxionApiUrl: "https://aa-api.mainnet.burnt.com",
   xionApiUrl: "https://api.xion-mainnet-1.burnt.com",
   xionRpcUrl: "https://rpc.xion-mainnet-1.burnt.com",
+  zkEmailBackendUrl: "https://zk-api.burnt.com",
+
+  // Turnstile (Cloudflare invisible CAPTCHA)
+  turnstileSiteKey: "0x4AAAAAACUOXqmE31xhK_y8",
 
   // Indexer
   indexerStrategy: "numia" as const,
@@ -48,5 +52,6 @@ export const mainnetConfig = {
     keplr: true,
     tiktok: false,
     apple: true,
+    zkemail: false,
   },
 };

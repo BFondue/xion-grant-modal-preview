@@ -1,4 +1,11 @@
-import { Dispatch, SetStateAction, useContext, useState, useMemo } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
@@ -15,6 +22,8 @@ import type { authenticatorTypes } from "../../../types";
 import { AAAlgo, AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import { removeRegistration } from "../../../auth/passkey";
 import { Loading } from "../../Loading";
+import { ZKEmailAuthenticatorStatus } from "../AddAuthenticators/ZKEmailAuthenticatorStatus";
+import { useZKEmailSigningStatus } from "../../../hooks/useZKEmailSigningStatus";
 import { FEE_GRANTER_ADDRESS } from "../../../config";
 import { validateFeeGrant } from "@burnt-labs/account-management";
 import { useAuthTypes } from "../../../auth/hooks/useAuthTypes";
@@ -24,6 +33,11 @@ import {
   capitalizeFirstLetter,
   getAuthenticatorLabel,
 } from "../../../auth/utils/authenticator-helpers";
+import {
+  setZKEmailSigningAbortController,
+  setZKEmailSigningStatus,
+} from "../../../auth/zk-email/zk-email-signing-status";
+import { CONNECTION_METHOD } from "../../../auth/useAuthState";
 
 export function RemoveAuthenticatorForm({
   authenticator,
@@ -45,12 +59,27 @@ export function RemoveAuthenticatorForm({
   );
 
   // Context state
-  const { abstractAccount, setAbstractAccount, chainInfo } = useContext(
-    AuthContext,
-  ) as AuthContextProps;
+  const { abstractAccount, setAbstractAccount, chainInfo, connectionMethod } =
+    useContext(AuthContext) as AuthContextProps;
 
   // Hooks
   const { client, getGasCalculation } = useSigningClient();
+  const zkEmailSigningStatus = useZKEmailSigningStatus(
+    connectionMethod === CONNECTION_METHOD.ZKEmail,
+  );
+
+  // When modal is open with zk-email, set abort controller so closing modal stops polling
+  useEffect(() => {
+    if (connectionMethod !== CONNECTION_METHOD.ZKEmail) return;
+    const controller = new AbortController();
+    setZKEmailSigningStatus(null);
+    setZKEmailSigningAbortController(controller);
+    return () => {
+      controller.abort();
+      setZKEmailSigningAbortController(null);
+      setZKEmailSigningStatus(null);
+    };
+  }, [connectionMethod]);
 
   // Extract userId for JWT authenticators to get auth type
   const userId = useMemo(() => {
@@ -233,6 +262,23 @@ export function RemoveAuthenticatorForm({
   }
 
   if (isLoading) {
+    if (zkEmailSigningStatus) {
+      return (
+        <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center ui-w-full">
+          <Loading
+            header="Removing Authenticator"
+            message="Signing with your email. Don't leave the page or close the window."
+          />
+          <ZKEmailAuthenticatorStatus
+            phase={zkEmailSigningStatus.phase}
+            message={zkEmailSigningStatus.message}
+            detail={zkEmailSigningStatus.detail}
+            className="ui-w-full"
+          />
+        </div>
+      );
+    }
+
     return (
       <Loading
         header="Removing Authenticator"

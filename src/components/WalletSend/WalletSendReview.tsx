@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import {
   BaseButton,
   DialogDescription,
@@ -14,6 +15,10 @@ import { InteractiveTooltip } from "../ui/tooltip";
 import { ExternalLinkIcon } from "../ui/icons/ExternalLink";
 import { WarningIcon } from "../ui/icons";
 import { getExplorerAddressUrl } from "../../config";
+import { AuthContext, AuthContextProps } from "../AuthContext";
+import { ZKEmailAuthenticatorStatus } from "../ModalViews/AddAuthenticators/ZKEmailAuthenticatorStatus";
+import { useZKEmailSigningStatus } from "../../hooks/useZKEmailSigningStatus";
+import { CONNECTION_METHOD } from "../../auth/AuthStateManager";
 
 interface WalletSendReviewProps {
   sendAmount: string;
@@ -36,6 +41,11 @@ export function WalletSendReview({
   onBack,
   triggerSend,
 }: WalletSendReviewProps) {
+  const { connectionMethod } = useContext(AuthContext) as AuthContextProps;
+  const zkEmailSigningStatus = useZKEmailSigningStatus(
+    connectionMethod === CONNECTION_METHOD.ZKEmail,
+  );
+
   const handleBackClick = () => {
     onBack();
   };
@@ -53,6 +63,14 @@ export function WalletSendReview({
             You are about to make the transaction below.
           </DialogDescription>
         </DialogHeader>
+
+        {zkEmailSigningStatus && (
+          <ZKEmailAuthenticatorStatus
+            phase={zkEmailSigningStatus.phase}
+            message={zkEmailSigningStatus.message}
+            detail={zkEmailSigningStatus.detail}
+          />
+        )}
 
         <div className="ui-flex ui-flex-col ui-gap-8">
           <div className="ui-h-[1px] ui-w-full ui-bg-border" />

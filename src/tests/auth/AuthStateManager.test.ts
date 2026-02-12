@@ -817,4 +817,48 @@ describe("AuthStateManager", () => {
       expect(listener).toHaveBeenCalled();
     });
   });
+
+  describe("getZKEmailData", () => {
+    it("should return null when nothing is stored", () => {
+      localStorageMock.getItem.mockReturnValue(null);
+
+      expect(AuthStateManager.getZKEmailData()).toBeNull();
+    });
+
+    it("should return the stored email address", () => {
+      localStorageMock.getItem.mockReturnValue("test@example.com");
+
+      expect(AuthStateManager.getZKEmailData()).toBe("test@example.com");
+    });
+
+    it("should return null when localStorage throws an error", () => {
+      localStorageMock.getItem.mockImplementation(() => {
+        throw new Error("localStorage error");
+      });
+
+      expect(AuthStateManager.getZKEmailData()).toBeNull();
+    });
+  });
+
+  describe("setZKEmailData", () => {
+    it("should store the email in localStorage", () => {
+      AuthStateManager.setZKEmailData("user@example.com");
+
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        "zkEmailAddress",
+        "user@example.com",
+      );
+    });
+
+    it("should handle localStorage errors gracefully", () => {
+      localStorageMock.setItem.mockImplementation(() => {
+        throw new Error("localStorage error");
+      });
+
+      // Should not throw
+      expect(() =>
+        AuthStateManager.setZKEmailData("user@example.com"),
+      ).not.toThrow();
+    });
+  });
 });
