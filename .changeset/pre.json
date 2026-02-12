@@ -4,5 +4,13 @@
   "initialVersions": {
     "abstraxion-dashboard": "0.15.0"
   },
-  "changesets": []
+  "changesets": [
+    "cold-clubs-return",
+    "eighty-papayas-move",
+    "lazy-humans-feel",
+    "metal-lights-greet",
+    "nice-rules-argue",
+    "spotty-rooms-yell",
+    "violet-swans-joke"
+  ]
 }
