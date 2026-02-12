@@ -116,7 +116,13 @@ export default defineConfig(({ mode }) => {
           global: "globalThis",
         },
       },
-      include: ["buffer", "process", "@tanstack/react-query", "react", "react-dom"],
+      include: [
+        "buffer",
+        "process",
+        "@tanstack/react-query",
+        "react",
+        "react-dom",
+      ],
     },
   };
 });

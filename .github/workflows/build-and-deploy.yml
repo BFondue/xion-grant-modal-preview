@@ -96,10 +96,10 @@ jobs:
           VERSION: ${{ inputs.message }}
         run: |
           ENV="${{ inputs.environment }}"
-          
+
           # Try to extract Version ID for preview URLs
           VERSION_ID=$(echo "$OUTPUT" | grep -oE 'Worker Version ID: [a-f0-9-]+' | cut -d' ' -f4 | head -1 || true)
-          
+
           if [ -n "$VERSION_ID" ]; then
             # Preview URL format: https://<version-id>-<worker-name>.<subdomain>.workers.dev
             URL="https://${VERSION_ID}-xion-dashboard-${ENV}.burnt-labs.workers.dev"
@@ -113,7 +113,7 @@ jobs:
               URL="https://settings.testnet.burnt.com"
             fi
           fi
-          
+
           echo "deployment-url=$URL" >> $GITHUB_OUTPUT
           echo "### 🚀 Deployed to ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

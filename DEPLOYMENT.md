@@ -4,10 +4,10 @@ This project uses a two-environment deployment strategy with **testnet** as a st
 
 ## Branches
 
-| Branch | Environment | Purpose |
-|--------|-------------|---------|
-| `testnet` | Testnet | Beta/staging - code bakes here before production |
-| `main` | Mainnet | Production - stable releases only |
+| Branch    | Environment | Purpose                                          |
+| --------- | ----------- | ------------------------------------------------ |
+| `testnet` | Testnet     | Beta/staging - code bakes here before production |
+| `main`    | Mainnet     | Production - stable releases only                |
 
 ## Versioning
 
@@ -68,13 +68,13 @@ Feature Branch
 
 ## GitHub Actions Workflows
 
-| Workflow | Trigger | Action |
-|----------|---------|--------|
-| `preview-testnet.yml` | PR to `testnet` | Creates preview deployment |
-| `release-testnet.yml` | Push to `testnet` | Creates RC version PR |
-| `deploy-testnet.yml` | Pre-release published | Deploys to testnet |
-| `release-mainnet.yml` | Push to `main` | Creates stable version PR |
-| `deploy-mainnet.yml` | Release published | Deploys to mainnet |
+| Workflow              | Trigger               | Action                     |
+| --------------------- | --------------------- | -------------------------- |
+| `preview-testnet.yml` | PR to `testnet`       | Creates preview deployment |
+| `release-testnet.yml` | Push to `testnet`     | Creates RC version PR      |
+| `deploy-testnet.yml`  | Pre-release published | Deploys to testnet         |
+| `release-mainnet.yml` | Push to `main`        | Creates stable version PR  |
+| `deploy-mainnet.yml`  | Release published     | Deploys to mainnet         |
 
 ## Manual Deployment
 
@@ -86,11 +86,11 @@ PRs to `main` are automatically redirected to target `testnet` instead. This ens
 
 ### Security Model
 
-| Branch Pattern | Protection |
-|----------------|------------|
-| `main` | PR required, 1 approval, tests pass, signed commits |
-| `testnet` | PR required, 1 approval, tests pass, signed commits |
-| `changeset-release/*` | Ruleset prevents user pushes, only bot can modify |
+| Branch Pattern        | Protection                                          |
+| --------------------- | --------------------------------------------------- |
+| `main`                | PR required, 1 approval, tests pass, signed commits |
+| `testnet`             | PR required, 1 approval, tests pass, signed commits |
+| `changeset-release/*` | Ruleset prevents user pushes, only bot can modify   |
 
 ### Safeguards
 

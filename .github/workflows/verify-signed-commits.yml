@@ -20,11 +20,11 @@ jobs:
               pull_number: context.payload.pull_request.number,
               per_page: 100
             });
-            
+
             const unsigned = commits.data.filter(c => 
               !c.commit.verification || c.commit.verification.verified !== true
             );
-            
+
             if (unsigned.length > 0) {
               const list = unsigned.map(c => 
                 `| \`${c.sha.substring(0, 7)}\` | ${c.commit.message.split('\n')[0].substring(0, 50)} | ${c.commit.verification?.reason || 'unsigned'} |`

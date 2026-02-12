@@ -22,7 +22,7 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const sourceBranch = context.payload.pull_request.head.ref;
-            
+
             // Update the PR base branch to testnet
             await github.rest.pulls.update({
               owner: context.repo.owner,
@@ -30,7 +30,7 @@ jobs:
               pull_number: prNumber,
               base: 'testnet'
             });
-            
+
             // Add a comment explaining the redirect
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -47,5 +47,5 @@ jobs:
 
             See [DEPLOYMENT.md](../blob/testnet/DEPLOYMENT.md) for more details.`
             });
-            
+
             console.log(`✅ Redirected PR #${prNumber} from main to testnet`)
