@@ -31,6 +31,8 @@ vi.mock("../../auth/AuthStateManager", () => {
       clearError: vi.fn(),
       updateAccount: vi.fn(),
       resetState: vi.fn(),
+      setConnectionMethod: vi.fn(),
+      getConnectionMethod: vi.fn(() => "none"),
       // Helper to update mock state for tests
       _setMockState: (newState: typeof mockState) => {
         Object.assign(mockState, newState);
@@ -245,6 +247,27 @@ describe("useAuthState", () => {
       });
 
       expect(AuthStateManager.resetState).toHaveBeenCalled();
+    });
+
+    it("should call AuthStateManager.setConnectionMethod", () => {
+      const { result } = renderHook(() => useAuthState());
+
+      act(() => {
+        result.current.setConnectionMethod("stytch");
+      });
+
+      expect(AuthStateManager.setConnectionMethod).toHaveBeenCalledWith(
+        "stytch",
+      );
+    });
+
+    it("should call AuthStateManager.getConnectionMethod", () => {
+      const { result } = renderHook(() => useAuthState());
+
+      const method = result.current.getConnectionMethod();
+
+      expect(AuthStateManager.getConnectionMethod).toHaveBeenCalled();
+      expect(method).toBe("none");
     });
   });
 

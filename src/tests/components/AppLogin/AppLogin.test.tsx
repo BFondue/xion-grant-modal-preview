@@ -76,12 +76,6 @@ vi.mock("../../../hooks/useCreateJwtAccount", () => ({
   }),
 }));
 
-vi.mock("@delphi-labs/shuttle-react", () => ({
-  useShuttle: () => ({
-    connect: vi.fn(),
-  }),
-}));
-
 mockEnvironmentVariables({
   VITE_TIKTOK_FLAG: "true",
 });
@@ -268,10 +262,8 @@ describe("AbstraxionSignin Component", () => {
       },
     );
 
-    // Note: localStorage.setItem("loginType", "stytch") is called by AuthStateManager.startLogin()
-    // which requires a valid JWT. Since the test uses mock JWTs, the actual localStorage call
-    // happens in the Abstraxion component's session sync effect, not directly in handleOtp.
-    // The OTP authentication flow is tested by verifying stytchMock.otps.authenticate was called.
+    // Note: The OTP authentication flow is tested by verifying stytchMock.otps.authenticate was called.
+    // Connection method syncing happens in the Abstraxion component's session sync effect.
   });
 
   it("shows error message when email login fails", async () => {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getHumanReadablePubkey } from "../utils";
-import { loadShuttleNetworks } from "../config/shuttle";
-import type { Network } from "@delphi-labs/shuttle";
+import { loadChainConfig } from "../config/chain";
+import type { ChainInfo } from "../types/chain";
 import { isUrlSafe } from "@burnt-labs/account-management";
 import {
   OAUTH_CALLBACK_URL,
@@ -9,6 +9,27 @@ import {
   ABSTRAXION_API_URL,
   CHAIN_ID,
 } from "../config";
+
+/**
+ * Wallet error structure
+ * - MetaMask errors have a numeric code (4001 for user rejection)
+ * - Keplr/OKX errors have descriptive messages
+ */
+interface WalletError {
+  code?: number | string;
+  message?: string;
+}
+
+/**
+ * Type guard to check if an error is a WalletError
+ */
+function isWalletError(error: unknown): error is WalletError {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    ("code" in error || "message" in error)
+  );
+}
 
 type CallbackType =
   | "oauth"
@@ -340,7 +361,7 @@ export function Callback() {
 
     try {
       // Load chain info
-      const networks = await loadShuttleNetworks();
+      const networks = await loadChainConfig();
       const network = CHAIN_ID.includes("mainnet")
         ? networks.mainnet
         : networks.testnet;
@@ -383,6 +404,27 @@ export function Callback() {
     } catch (error) {
       console.error("[Callback] Wallet connection error:", error);
 
+      // Check if this is a user cancellation/rejection
+      const userCancelled =
+        isWalletError(error) &&
+        (error.code === 4001 || // MetaMask user rejection
+          error.message?.includes("Request rejected") || // Keplr/OKX
+          error.message?.includes("User denied")); // Alternative Keplr message
+
+      if (userCancelled) {
+        console.log(
+          `[Callback] User cancelled ${walletType} connection - closing silently`,
+        );
+        // Don't send error to parent - just close popup
+        // This allows user to stay on login screen and try again
+        setMessage("Connection cancelled");
+        setTimeout(() => {
+          window.close();
+        }, 500);
+        return;
+      }
+
+      // Real error (wallet not installed, network error, etc.) - notify parent
       if (window.opener) {
         window.opener.postMessage(
           {
@@ -502,7 +544,7 @@ export function Callback() {
 
 // Wallet connection functions
 async function connectKeplr(
-  network: Network,
+  network: ChainInfo,
 ): Promise<{ type: string; data: any }> {
   if (!window.keplr) {
     throw new Error(
@@ -511,7 +553,7 @@ async function connectKeplr(
   }
 
   try {
-    await window.keplr.experimentalSuggestChain(network as any);
+    await window.keplr.experimentalSuggestChain(network);
   } catch (e) {
     console.log("[Callback] Chain already exists or suggest failed:", e);
   }
@@ -532,7 +574,7 @@ async function connectKeplr(
 }
 
 async function connectOkx(
-  network: Network,
+  network: ChainInfo,
 ): Promise<{ type: string; data: any }> {
   if (!window.okxwallet?.keplr) {
     throw new Error("OKX wallet extension not found. Please install it first.");
@@ -541,7 +583,7 @@ async function connectOkx(
   const keplr = window.okxwallet.keplr;
 
   try {
-    await keplr.experimentalSuggestChain(network as any);
+    await keplr.experimentalSuggestChain(network);
   } catch (e) {
     console.log("[Callback] Chain already exists or suggest failed:", e);
   }

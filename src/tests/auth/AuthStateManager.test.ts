@@ -430,7 +430,7 @@ describe("AuthStateManager", () => {
       AuthStateManager.startLogin(
         AUTHENTICATOR_TYPE.Secp256K1,
         CONNECTION_METHOD.Keplr,
-        "shuttle-auth",
+        "test-keplr-auth",
       );
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
@@ -439,7 +439,7 @@ describe("AuthStateManager", () => {
       );
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR,
-        "shuttle-auth",
+        "test-keplr-auth",
       );
     });
 
@@ -755,6 +755,64 @@ describe("AuthStateManager", () => {
       AuthStateManager.subscribe(listener);
 
       AuthStateManager.resetState();
+
+      expect(listener).toHaveBeenCalled();
+    });
+  });
+
+  describe("getAuthenticatorType", () => {
+    it("should return null when disconnected", () => {
+      expect(AuthStateManager.getAuthenticatorType()).toBeNull();
+    });
+
+    it("should return authenticator type after startLogin", () => {
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "test-auth",
+      );
+
+      expect(AuthStateManager.getAuthenticatorType()).toBe(
+        AUTHENTICATOR_TYPE.JWT,
+      );
+    });
+
+    it("should return Secp256K1 for Keplr connection", () => {
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.Secp256K1,
+        CONNECTION_METHOD.Keplr,
+        "test-auth",
+      );
+
+      expect(AuthStateManager.getAuthenticatorType()).toBe(
+        AUTHENTICATOR_TYPE.Secp256K1,
+      );
+    });
+  });
+
+  describe("setConnectionMethod", () => {
+    it("should update connection method", () => {
+      AuthStateManager.setConnectionMethod(CONNECTION_METHOD.Stytch);
+
+      expect(AuthStateManager.getConnectionMethod()).toBe(
+        CONNECTION_METHOD.Stytch,
+      );
+    });
+
+    it("should persist to localStorage", () => {
+      AuthStateManager.setConnectionMethod(CONNECTION_METHOD.Keplr);
+
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        AUTH_STORAGE_KEYS.CONNECTION_METHOD,
+        CONNECTION_METHOD.Keplr,
+      );
+    });
+
+    it("should notify listeners", () => {
+      const listener = vi.fn();
+      AuthStateManager.subscribe(listener);
+
+      AuthStateManager.setConnectionMethod(CONNECTION_METHOD.Metamask);
 
       expect(listener).toHaveBeenCalled();
     });

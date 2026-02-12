@@ -13,14 +13,11 @@
  */
 
 import { useEffect, useMemo } from "react";
-import { useShuttle } from "@delphi-labs/shuttle-react";
 import { useStytchSession } from "@stytch/react";
 import { useAuthState, CONNECTION_METHOD } from "../auth/useAuthState";
-import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 
 export const useSmartAccount = () => {
   const { session } = useStytchSession();
-  const { recentWallet } = useShuttle();
 
   // Use unified auth state - this is now the source of truth
   const {
@@ -31,7 +28,6 @@ export const useSmartAccount = () => {
     isConnected: authStateIsConnected,
     updateAccount,
     logout,
-    startLogin,
   } = useAuthState();
 
   // Note: Context syncing is handled by AuthContextProvider's subscription
@@ -49,9 +45,11 @@ export const useSmartAccount = () => {
 
   // Metamask account change detection
   useEffect(() => {
-    const handleAccountsChanged = (accounts: string[]) => {
+    const handleAccountsChanged = (accounts: unknown) => {
+      // Use unknown + runtime validation since MetaMask event types aren't guaranteed
       if (
         connectionMethod === CONNECTION_METHOD.Metamask &&
+        Array.isArray(accounts) &&
         accounts.length > 0
       ) {
         // Account changed - need to reset and re-authenticate
@@ -79,12 +77,14 @@ export const useSmartAccount = () => {
       }
     };
 
-    if (window.okxwallet) {
-      window.okxwallet?.keplr.on("connect", handleAccountsChanged);
+    if (window.okxwallet?.keplr) {
+      window.okxwallet.keplr.on("connect", handleAccountsChanged);
     }
 
     return () => {
-      window.okxwallet?.keplr.off("connect", handleAccountsChanged);
+      if (window.okxwallet?.keplr) {
+        window.okxwallet.keplr.off("connect", handleAccountsChanged);
+      }
     };
   }, [connectionMethod, logout]);
 
@@ -108,30 +108,6 @@ export const useSmartAccount = () => {
     };
   }, [connectionMethod, account, updateAccount]);
 
-  // Shuttle/Keplr wallet connection - update authenticator when wallet connects
-  useEffect(() => {
-    if (
-      connectionMethod === CONNECTION_METHOD.Keplr &&
-      recentWallet &&
-      !authenticator
-    ) {
-      // Wallet connected via Shuttle, use the pubkey string directly
-      // Note: .pubkey is already a base64 string, not .pubKey which is Uint8Array
-      const walletAuthenticator = recentWallet.account?.pubkey;
-      if (walletAuthenticator) {
-        console.log(
-          "[useSmartAccount] Shuttle wallet connected, setting authenticator:",
-          walletAuthenticator,
-        );
-        startLogin(
-          AUTHENTICATOR_TYPE.Secp256K1,
-          CONNECTION_METHOD.Keplr,
-          walletAuthenticator,
-        );
-      }
-    }
-  }, [connectionMethod, recentWallet, authenticator, startLogin]);
-
   // --- Compute isConnected ---
   // Simplified from nested ternary to a clear lookup
   const isConnected = useMemo(() => {
@@ -145,23 +121,17 @@ export const useSmartAccount = () => {
       case "stytch":
         return !!session;
       case "keplr":
-        return !!recentWallet;
-      case "metamask":
-        return window.ethereum?.isConnected?.() ?? false;
       case "okx":
       case "passkey":
+        // For direct wallet connections, rely on authenticator being set
         return !!authenticator;
+      case "metamask":
+        return window.ethereum?.isConnected?.() ?? false;
       case "none":
       default:
         return false;
     }
-  }, [
-    authStateIsConnected,
-    connectionMethod,
-    session,
-    recentWallet,
-    authenticator,
-  ]);
+  }, [authStateIsConnected, connectionMethod, session, authenticator]);
 
   return {
     updateAbstractAccountCodeId,

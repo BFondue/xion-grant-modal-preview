@@ -8,6 +8,7 @@ import { useSmartAccount } from "../hooks";
 import { useQueryParams } from "../hooks/useQueryParams";
 import { Banner } from "./ui";
 import { AccountMigration } from "./AccountMigration";
+import { useWalletChangeListener } from "../hooks/useWalletChangeListener";
 
 export function App() {
   const { contracts, stake, bank, grantee, treasury } = useQueryParams([
@@ -19,6 +20,9 @@ export function App() {
   ]);
   const { data: account, updateAbstractAccountCodeId } = useSmartAccount();
   const { isOpen, setIsOpen } = useContext(AuthContext);
+
+  // Listen for wallet account changes (Keplr/MetaMask)
+  useWalletChangeListener();
 
   return (
     <>

@@ -1,0 +1,69 @@
+name: Preview Testnet
+
+on:
+  pull_request:
+    branches: [testnet]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  preview:
+    needs: test
+    uses: ./.github/workflows/build-and-deploy.yml
+    with:
+      environment: testnet
+      wrangler-command: versions upload
+      message: "PR #${{ github.event.pull_request.number }}"
+    secrets: inherit
+
+  comment:
+    needs: preview
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ needs.preview.outputs.deployment-url }}
+        with:
+          script: |
+            const url = process.env.PREVIEW_URL;
+            const sha = context.sha.substring(0, 7);
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
+            const repoUrl = context.payload.repository.html_url;
+
+            const body = [
+              '## Deploying with 🔶 Cloudflare Workers',
+              '',
+              'The latest updates on your project.',
+              '',
+              '| Status | Name | Latest Commit | Updated (UTC) |',
+              '|--------|------|---------------|---------------|',
+              `| ✅ Preview ready!<br>[View preview](${url}) | xion-dashboard-testnet | [${sha}](${repoUrl}/commit/${context.sha}) | ${now} |`
+            ].join('\n');
+
+            // Delete existing comment and post new one at the bottom
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body.includes('Deploying with 🔶 Cloudflare Workers'));
+
+            if (existing) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id
+              });
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });

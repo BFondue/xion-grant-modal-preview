@@ -48,7 +48,6 @@ export class PasskeyAdapter implements PartialConnectionAdapter {
    * Verify that WebAuthn is available and ready
    * Checks for platform authenticator support
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async enable(_chainId: string): Promise<void> {
     if (!this.isInstalled()) {
       throw new Error("WebAuthn is not supported in this browser");

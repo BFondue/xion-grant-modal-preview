@@ -64,7 +64,7 @@ export const useAccountDiscovery = (
 
       // Use stored authenticator type from AuthStateManager (set during login)
       // This avoids the need for complex pattern matching to detect type from string
-      // All connection types (stytch, passkey, shuttle, metamask, okx) now have known types
+      // All connection types (stytch, passkey, keplr, metamask, okx) now have known types
       let authenticatorType = loginAuthenticatorType;
 
       // Fallback to detection only in rare edge cases where type wasn't stored

@@ -1,17 +1,19 @@
 {
   "name": "abstraxion-dashboard",
-  "version": "0.15.0",
+  "version": "0.16.0-rc.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
     "dev:mobile": "vite --port 3000 --host",
     "build": "vite build",
+    "build:quick": "vite build --mode testnet-beta",
     "check-types": "tsc --noEmit",
+    "ci": "pnpm run lint && pnpm run check-types && pnpm run test && pnpm run build:quick",
     "changeset": "changeset",
     "preview": "vite preview",
     "types": "wrangler types",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings=-1",
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
     "test": "vitest run",
@@ -40,8 +42,6 @@
     "@cosmjs/crypto": "^0.36.0",
     "@cosmjs/proto-signing": "^0.36.0",
     "@cosmjs/stargate": "^0.36.0",
-    "@delphi-labs/shuttle": "^4.3.0",
-    "@delphi-labs/shuttle-react": "^4.3.0",
     "@github/webauthn-json": "^2.1.1",
     "@metamask/providers": "^18.1.1",
     "@protobuf-ts/runtime": "^2.11.1",
@@ -67,9 +67,13 @@
     "@changesets/changelog-github": "^0.5.1",
     "@changesets/cli": "^2.29.7",
     "@cloudflare/vite-plugin": "^1.4.3",
+    "@cosmjs/amino": "^0.38.1",
+    "@cosmjs/encoding": "^0.38.1",
+    "@cosmjs/math": "^0.38.1",
     "@eslint/compat": "^2.0.0",
     "@eslint/js": "^9.39.1",
     "@keplr-wallet/types": "^0.12.143",
+    "@stytch/core": "^2.66.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -95,8 +99,8 @@
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.11.0",
     "vite": "^7.2.4",
-    "vite-plugin-checker": "^0.8.0",
-    "vite-plugin-node-polyfills": "^0.23.0",
+    "vite-plugin-checker": "^0.12.0",
+    "vite-plugin-node-polyfills": "^0.25.0",
     "vitest": "^4.0.13",
     "wrangler": "^4.50.0"
   },
@@ -106,6 +110,9 @@
   "overrides": {
     "vite-plugin-node-polyfills": {
       "vite": "$vite"
-    }
-  }
+    },
+    "react": "$react",
+    "react-dom": "$react-dom"
+  },
+  "packageManager": "pnpm@10.28.1+sha512.7d7dbbca9e99447b7c3bf7a73286afaaf6be99251eb9498baefa7d406892f67b879adb3a1d7e687fc4ccc1a388c7175fbaae567a26ab44d1067b54fcb0d6a316"
 }

@@ -18,6 +18,15 @@ type ChildrenWithRef = {
   };
 };
 
+// Type for element props with common properties
+interface ElementProps {
+  children?: React.ReactNode;
+  onClick?: (e: React.MouseEvent) => void;
+  href?: string;
+  to?: string;
+  target?: string;
+}
+
 const TooltipProvider = TooltipPrimitive.Provider;
 
 const Tooltip = TooltipPrimitive.Root;
@@ -95,7 +104,7 @@ const InteractiveTooltip = ({
         return node;
       }
 
-      const element = node as React.ReactElement;
+      const element = node as React.ReactElement<ElementProps>;
 
       // Check if component has a displayName
       const componentType = element.type as React.ComponentType &
@@ -221,36 +230,39 @@ const InteractiveTooltip = ({
   }, [isMobile, open, isUserInteracting]);
 
   const triggerElement = React.isValidElement(children)
-    ? React.cloneElement(children as React.ReactElement, {
-        ref: (node: HTMLElement | null) => {
-          triggerRef.current = node;
-          // Handle ref properly with type checking
-          const childWithRef = children as unknown as ChildrenWithRef;
-          const originalRef = childWithRef.ref;
+    ? React.cloneElement(
+        children as React.ReactElement<Record<string, unknown>>,
+        {
+          ref: (node: HTMLElement | null) => {
+            triggerRef.current = node;
+            // Handle ref properly with type checking
+            const childWithRef = children as unknown as ChildrenWithRef;
+            const originalRef = childWithRef.ref;
 
-          if (typeof originalRef === "function") {
-            originalRef(node);
-          } else if (originalRef) {
-            (
-              originalRef as React.MutableRefObject<HTMLElement | null>
-            ).current = node;
-          }
-        },
-        onClick: (e: React.MouseEvent) => {
-          const childWithProps = children as {
-            props?: { onClick?: (e: React.MouseEvent) => void };
-          };
-          if (childWithProps.props?.onClick) {
-            childWithProps.props.onClick(e);
-          }
+            if (typeof originalRef === "function") {
+              originalRef(node);
+            } else if (originalRef) {
+              (
+                originalRef as React.MutableRefObject<HTMLElement | null>
+              ).current = node;
+            }
+          },
+          onClick: (e: React.MouseEvent) => {
+            const childWithProps = children as {
+              props?: { onClick?: (e: React.MouseEvent) => void };
+            };
+            if (childWithProps.props?.onClick) {
+              childWithProps.props.onClick(e);
+            }
 
-          if (isMobile) {
-            e.preventDefault();
-            e.stopPropagation();
-            setOpen(!open);
-          }
+            if (isMobile) {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(!open);
+            }
+          },
         },
-      })
+      )
     : children;
 
   return (

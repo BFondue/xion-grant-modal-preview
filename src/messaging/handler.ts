@@ -98,7 +98,6 @@ export class IframeMessageHandler {
    * Validate origin is from allowed domain
    * NOTE: Iframe is open to ANY origin - restrictions are only on SDK usage
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private isAllowedOrigin(_origin: string): boolean {
     // Iframe accepts messages from any origin
     // The SDK itself enforces domain restrictions (*.testnet.burnt.com, *.mainnet.burnt.com)

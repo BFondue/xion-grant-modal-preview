@@ -1,5 +1,47 @@
 # abstraxion-dashboard
 
+## 0.16.0-rc.0
+
+### Minor Changes
+
+- [#285](https://github.com/burnt-labs/xion-dashboard-app/pull/285) [`1dc3ac7`](https://github.com/burnt-labs/xion-dashboard-app/commit/1dc3ac72f3f7653c4d54c6e55212cdcb1bcd96ba) Thanks [@2xburnt](https://github.com/2xburnt)! - Add iframe option
+
+- [#287](https://github.com/burnt-labs/xion-dashboard-app/pull/287) [`70b7fe5`](https://github.com/burnt-labs/xion-dashboard-app/commit/70b7fe5afe284cc8d78d013db448af469d2b4963) Thanks [@BurntVal](https://github.com/BurntVal)! - add mint and burn token grant query support
+
+- [#289](https://github.com/burnt-labs/xion-dashboard-app/pull/289) [`8249ea4`](https://github.com/burnt-labs/xion-dashboard-app/commit/8249ea4f4e9800dd8232388a96025ad19c6c1b8d) Thanks [@btspoony](https://github.com/btspoony)! - Implement OAuth2 redirect URI validation in AbstraxionGrant component and "OAuth2 App" tag
+  - Added OAuth2 redirect URI validation in AbstraxionGrant component
+  - Implemented "OAuth2 App" tag display for OAuth2 applications
+  - Updated treasury types to support OAuth2 app identification
+  - Enhanced grant component UI to show OAuth2 app status
+
+- [#278](https://github.com/burnt-labs/xion-dashboard-app/pull/278) [`38fc492`](https://github.com/burnt-labs/xion-dashboard-app/commit/38fc49233a9b33972a772c647da3160f0c65f082) Thanks [@ertemann](https://github.com/ertemann)! - Enable wallets as primary authenticators for account creation
+
+  **New Features:**
+  - MetaMask, Keplr, OKX, and Leap wallets can now create smart accounts directly (previously only available as backup authenticators)
+  - Auto-account creation flow for wallet-based connections with zero existing accounts
+  - Improved error messages for wallet connection failures
+
+  **Fixes:**
+  - Fixed session persistence for Keplr and EVM wallet connections (ENG-1334)
+  - Wallet sessions now properly restore on page reload
+
+  **Breaking Changes:**
+  - Migrated wallet account creation to V2 AA-API endpoints (`/api/v2/accounts/create/*`)
+  - Authenticator storage format changed: Cosmos wallets now store base64 pubkeys instead of addresses
+
+  **Internal Changes:**
+  - New wallet utility functions for signature handling and public key extraction
+  - Refactored wallet connection logic with better error handling
+  - Removed "Login Only" restriction from advanced authentication options
+
+### Patch Changes
+
+- [#291](https://github.com/burnt-labs/xion-dashboard-app/pull/291) [`02e39a8`](https://github.com/burnt-labs/xion-dashboard-app/commit/02e39a88eb885eb01ad4bbc053fd4b45390f6bab) Thanks [@ertemann](https://github.com/ertemann)! - feat: replace utils with @burnt-labs/signers and rename components
+
+- [#301](https://github.com/burnt-labs/xion-dashboard-app/pull/301) [`24a9228`](https://github.com/burnt-labs/xion-dashboard-app/commit/24a9228fbf816f309a9668d095086c461f687b2b) Thanks [@justinbarry](https://github.com/justinbarry)! - Fix duplicate submission error when creating new testnet account. Removed redundant account creation call from LoginScreen's handlePostAuthentication, which raced with LoginWalletSelector's account creation and caused a false "creation failed" error on signup.
+
+- [#299](https://github.com/burnt-labs/xion-dashboard-app/pull/299) [`894adfc`](https://github.com/burnt-labs/xion-dashboard-app/commit/894adfc1e6afb03ac08887b89b2881d6fa483cf9) Thanks [@ertemann](https://github.com/ertemann)! - refactor: Move Off shuttle
+
 ## 0.15.0
 
 ### Minor Changes

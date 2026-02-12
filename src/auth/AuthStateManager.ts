@@ -4,7 +4,7 @@
  * This singleton class is the SINGLE SOURCE OF TRUTH for all auth state.
  * It consolidates state that was previously scattered across:
  * - React Context (AuthContext)
- * - localStorage (loginType, loginAuthenticator, okxXionAddress, okxWalletName)
+ * - localStorage (loginAuthenticator, okxXionAddress, okxWalletName)
  * - sessionStorage (xion_session_{origin})
  * - Hook local state (useSmartAccount, useIframeSession)
  *

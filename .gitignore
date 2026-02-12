@@ -24,9 +24,8 @@ dist-ssr
 *.sw?
 
 # Environment files
-.env
-.env.local
-.env.production
+.env*
+!.env.example
 
 # Wrangler generated types (run `wrangler types` to generate locally)
 worker-configuration.d.ts
@@ -34,7 +33,7 @@ worker-configuration.d.ts
 # Wrangler state
 .wrangler
 .dev.vars*
-coverage
+coverage*
 
 # vercel
 .vercel
@@ -47,3 +46,9 @@ coverage
 
 # ignore local docs
 .docs/
+
+# Temporary files
+tmp/
+
+# Claude AI context files
+!CLAUDE.md

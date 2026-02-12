@@ -27,5 +27,10 @@
 # # Assign a role as a Code Owner:
 # /config/ @@maintainer
 
-* @burnt-labs/Burnt_Engineering/Burnt_Frontend
-.github/ @burnt-labs/Burnt_Engineering/Burnt_DevOps
+* @burnt-labs/burnt-engineering/burnt-frontend
+
+# DevOps team must approve changes to CI/CD and quality gates
+.github/ @burnt-labs/burnt-engineering/burnt-devops
+.husky/ @burnt-labs/burnt-engineering/burnt-devops
+vitest.config.ts @burnt-labs/burnt-engineering/burnt-devops
+eslint.config.mjs @burnt-labs/burnt-engineering/burnt-devops

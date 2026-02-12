@@ -43,7 +43,6 @@ export class JWTAdapter implements PartialConnectionAdapter {
    * Enable is a no-op for JWT auth
    * Authentication is handled by Stytch SDK in the UI
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async enable(_chainId: string): Promise<void> {
     // No-op - Stytch session is managed externally
   }

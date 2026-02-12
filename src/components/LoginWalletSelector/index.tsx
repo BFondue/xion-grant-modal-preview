@@ -187,9 +187,6 @@ export const LoginWalletSelector = () => {
         // Store the authenticator identifier in localStorage for indexer queries
         localStorage.setItem("loginAuthenticator", walletInfo.identifier);
 
-        // Store connection method in localStorage (legacy key for compatibility)
-        localStorage.setItem("loginType", connectionMethod);
-
         // Update connection method to trigger state updates
         setConnectionMethod(connectionMethod);
 
@@ -423,7 +420,19 @@ export const LoginWalletSelector = () => {
             ))
           ) : (
             <>
-              {connectionMethod === CONNECTION_METHOD.Stytch ? (
+              {connectionMethod === CONNECTION_METHOD.Passkey ? (
+                <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-5 ui-px-8">
+                  <SadIcon aria-hidden="true" />
+                  <p
+                    className="ui-text-center ui-font-bold ui-text-base ui-leading-[19.2px]"
+                    role="status"
+                  >
+                    This authenticator can only be used as a backup right now.
+                    Please log in with email, social account, or crypto wallet
+                    to create an account.
+                  </p>
+                </div>
+              ) : (
                 <>
                   <div className="ui-flex ui-items-center ui-justify-center ui-w-full ui-h-full">
                     <InboxIcon aria-hidden="true" />
@@ -440,18 +449,6 @@ export const LoginWalletSelector = () => {
                     </p>
                   </div>
                 </>
-              ) : (
-                <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-5 ui-px-8">
-                  <SadIcon aria-hidden="true" />
-                  <p
-                    className="ui-text-center ui-font-bold ui-text-base ui-leading-[19.2px]"
-                    role="status"
-                  >
-                    This authenticator can only be used as a backup right now.
-                    Please log in with email or social account to create an
-                    account.
-                  </p>
-                </div>
               )}
             </>
           )}

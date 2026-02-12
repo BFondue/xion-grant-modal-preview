@@ -73,7 +73,20 @@ export default defineConfig(({ mode }) => {
       alias: {
         stream: "stream-browserify",
         buffer: "buffer",
+        // Force all react imports to resolve to the same version
+        react: path.resolve(__dirname, "node_modules/react"),
+        "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+        "react/jsx-runtime": path.resolve(
+          __dirname,
+          "node_modules/react/jsx-runtime",
+        ),
+        "react/jsx-dev-runtime": path.resolve(
+          __dirname,
+          "node_modules/react/jsx-dev-runtime",
+        ),
       },
+      // Force deduplication of React packages
+      dedupe: ["react", "react-dom"],
     },
     server: {
       port: 3000, // Match the port in dashboard .env files
@@ -83,6 +96,14 @@ export default defineConfig(({ mode }) => {
       outDir: "dist",
       sourcemap: false, // Disable for production (source maps are too large for Cloudflare)
       // Single entry point - all routes handled by SPA routing
+      commonjsOptions: {
+        include: [/node_modules/],
+        transformMixedEsModules: true,
+      },
+      rollupOptions: {
+        // Force rollup to use our aliased React for all imports
+        external: [],
+      },
     },
     define: {
       // Fix process.env references
@@ -95,7 +116,13 @@ export default defineConfig(({ mode }) => {
           global: "globalThis",
         },
       },
-      include: ["buffer", "process"],
+      include: [
+        "buffer",
+        "process",
+        "@tanstack/react-query",
+        "react",
+        "react-dom",
+      ],
     },
   };
 });

@@ -8,7 +8,9 @@ import { assertIsDeliverTxSuccess } from "@cosmjs/stargate/build/stargateclient"
 export function useAccountBalance() {
   const { data: account } = useSmartAccount();
   const { client, getGasCalculation } = useSigningClient();
-  const { data: balances, refetch: refetchBalances } = useBalances(account?.id);
+  const { data: balances, refetch: refetchBalances } = useBalances(
+    account?.id || "",
+  );
   const { data: assetList } = useAssetList();
 
   const { processedBalances, totalDollarValue } = useMemo(() => {
@@ -23,8 +25,12 @@ export function useAccountBalance() {
     return { processedBalances: processed, totalDollarValue: total };
   }, [assetList, balances]);
 
-  async function getEstimatedSendFee(recipientAddress, sendAmount, denom) {
-    if (!client) {
+  async function getEstimatedSendFee(
+    recipientAddress: string,
+    sendAmount: string | number,
+    denom: string,
+  ) {
+    if (!client || !account || !assetList) {
       return null;
     }
 
@@ -72,11 +78,17 @@ export function useAccountBalance() {
         throw new Error(`Asset not found for denom: ${denom}`);
       }
 
-      const { fee, msg } = await getEstimatedSendFee(
+      const result = await getEstimatedSendFee(
         recipientAddress,
         sendAmount,
         denom,
       );
+
+      if (!result || !result.fee) {
+        throw new Error("Failed to estimate fee");
+      }
+
+      const { fee, msg } = result;
 
       const res = await client.signAndBroadcast(account.id, [msg], fee, memo);
       assertIsDeliverTxSuccess(res);

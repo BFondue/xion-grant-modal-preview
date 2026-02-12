@@ -1,17 +1,11 @@
-import { Network } from "@delphi-labs/shuttle";
-
-export type NetworkInfo = {
-  mainnet: Network;
-  testnet: Network;
-};
+import type { ChainInfo, NetworkInfo } from "../types/chain";
 
 const XION_ASSETS_BASE = "https://assets.xion.burnt.com/";
 
 /**
  * Fetch Keplr chain configuration from xion-assets repo
- * The Keplr format is compatible with Shuttle Network
  */
-async function fetchChainConfig(chainName: string): Promise<Network> {
+async function fetchChainConfig(chainName: string): Promise<ChainInfo> {
   const url = `${XION_ASSETS_BASE}/${chainName}.json`;
   const response = await fetch(url);
   if (!response.ok) {
@@ -25,7 +19,7 @@ async function fetchChainConfig(chainName: string): Promise<Network> {
 /**
  * Load all network configurations from xion-assets
  */
-export async function loadShuttleNetworks(): Promise<NetworkInfo> {
+export async function loadChainConfig(): Promise<NetworkInfo> {
   const [mainnet, testnet] = await Promise.all([
     fetchChainConfig("keplr/cosmos/xion-mainnet"),
     fetchChainConfig("keplr/cosmos/xion-testnet"),
