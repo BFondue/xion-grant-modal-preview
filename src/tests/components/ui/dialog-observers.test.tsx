@@ -47,6 +47,7 @@ describe("Dialog Observers", () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.useRealTimers();
   });
 
@@ -170,6 +171,30 @@ describe("Dialog Observers", () => {
     // Wait for resize timeout
     await act(async () => {
       vi.runAllTimers();
+    });
+  });
+
+  it("should schedule a 150ms check when MutationObserver callback fires", async () => {
+    render(
+      <Dialog open={true}>
+        <DialogContent>Content</DialogContent>
+      </Dialog>,
+    );
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    const mutationCallbacks = mockMutationObserver.mock.calls
+      .map((call) => call?.[0])
+      .filter(
+        (cb): cb is (records: MutationRecord[]) => void =>
+          typeof cb === "function",
+      );
+    expect(mutationCallbacks.length).toBeGreaterThan(0);
+
+    act(() => {
+      mutationCallbacks.forEach((cb) => cb([]));
     });
   });
 
@@ -387,6 +412,30 @@ describe("Dialog Observers", () => {
     });
   });
 
+  it("should early-return on window resize when dialog element is not in body", async () => {
+    render(
+      <Dialog open={true}>
+        <DialogContent>Content</DialogContent>
+      </Dialog>,
+    );
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    const containsSpy = vi.spyOn(document.body, "contains").mockReturnValue(false);
+
+    act(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    expect(containsSpy).toHaveBeenCalled();
+  });
+
   it("should handle null ref forwarding", async () => {
     const { unmount } = render(
       <Dialog open={true}>
@@ -473,5 +522,79 @@ describe("Dialog Observers", () => {
       configurable: true,
       value: originalInnerWidth,
     });
+  });
+
+  it("should apply tall layout classes when content exceeds viewport threshold", async () => {
+    const originalInnerHeight = window.innerHeight;
+    Object.defineProperty(window, "innerHeight", {
+      writable: true,
+      configurable: true,
+      value: 300,
+    });
+
+    render(
+      <Dialog open={true}>
+        <DialogContent>
+          <div>Content</div>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const dialog = screen.getByRole("dialog");
+    Object.defineProperty(dialog, "scrollHeight", {
+      configurable: true,
+      get: () => 900,
+    });
+    Object.defineProperty(dialog, "offsetWidth", {
+      configurable: true,
+      get: () => 560,
+    });
+
+    act(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    expect(dialog.className).toContain("ui-max-w-full");
+    expect(dialog.className).toContain("!ui-rounded-none");
+
+    Object.defineProperty(window, "innerHeight", {
+      writable: true,
+      configurable: true,
+      value: originalInnerHeight,
+    });
+  });
+
+  it("should observe element via ResizeObserver after 300ms delay", async () => {
+    render(
+      <Dialog open={true}>
+        <DialogContent>Content</DialogContent>
+      </Dialog>,
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(350);
+    });
+
+    expect(mockObserve).toHaveBeenCalled();
+  });
+
+  it("should skip observing when content is unmounted before 300ms observer start", async () => {
+    const { unmount } = render(
+      <Dialog open={true}>
+        <DialogContent>Content</DialogContent>
+      </Dialog>,
+    );
+
+    unmount();
+
+    await act(async () => {
+      vi.advanceTimersByTime(350);
+    });
+
+    expect(mockObserve).not.toHaveBeenCalled();
   });
 });

@@ -24,156 +24,95 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          cache: pnpm
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: "Verify no file: protocol in dependencies"
+      - name: Verify no file protocol dependencies
         run: |
-          echo "🔍 Checking for file: protocol dependencies..."
           if grep -q '"file:' package.json; then
-            echo "❌ Error: package.json contains 'file:' protocol dependencies"
-            echo "These must be converted to published versions before merging to main"
-            echo ""
-            echo "Found:"
+            echo "❌ package.json contains 'file:' protocol dependencies:"
             grep '"file:' package.json
             exit 1
           fi
-          echo "✅ No file: protocol dependencies found"
 
       - name: Check @burnt-labs package versions
         id: check_burnt_labs
         run: |
-          echo "📦 Checking @burnt-labs package versions..."
+          BURNT_LABS_PKGS="abstraxion-core account-management signers constants"
+          OUTDATED=""
 
-          # Extract @burnt-labs packages from package.json
-          ABSTRAXION_CORE=$(node -p "require('./package.json').dependencies['@burnt-labs/abstraxion-core'] || 'not-found'")
-          ACCOUNT_MGMT=$(node -p "require('./package.json').dependencies['@burnt-labs/account-management'] || 'not-found'")
-          SIGNERS=$(node -p "require('./package.json').dependencies['@burnt-labs/signers'] || 'not-found'")
-          CONSTANTS=$(node -p "require('./package.json').dependencies['@burnt-labs/constants'] || 'not-found'")
+          for pkg in $BURNT_LABS_PKGS; do
+            FULL="@burnt-labs/$pkg"
+            CURRENT=$(node -p "require('./package.json').dependencies['$FULL'] || 'not-found'")
+            [ "$CURRENT" = "not-found" ] && continue
 
-          echo "Current versions:"
-          echo "  @burnt-labs/abstraxion-core: $ABSTRAXION_CORE"
-          echo "  @burnt-labs/account-management: $ACCOUNT_MGMT"
-          echo "  @burnt-labs/signers: $SIGNERS"
-          echo "  @burnt-labs/constants: $CONSTANTS"
+            LATEST=$(npm view "$FULL" version 2>/dev/null || echo "")
+            [ -z "$LATEST" ] && continue
 
-          # Get latest published versions
-          echo ""
-          echo "Latest published versions:"
-          LATEST_ABSTRAXION_CORE=$(npm view @burnt-labs/abstraxion-core version 2>/dev/null || echo "failed")
-          LATEST_ACCOUNT_MGMT=$(npm view @burnt-labs/account-management version 2>/dev/null || echo "failed")
-          LATEST_SIGNERS=$(npm view @burnt-labs/signers version 2>/dev/null || echo "failed")
-          LATEST_CONSTANTS=$(npm view @burnt-labs/constants version 2>/dev/null || echo "failed")
+            CLEAN=$(echo "$CURRENT" | sed 's/[\^~]//g')
+            echo "$FULL: $CURRENT (latest: $LATEST)"
 
-          echo "  @burnt-labs/abstraxion-core: $LATEST_ABSTRAXION_CORE"
-          echo "  @burnt-labs/account-management: $LATEST_ACCOUNT_MGMT"
-          echo "  @burnt-labs/signers: $LATEST_SIGNERS"
-          echo "  @burnt-labs/constants: $LATEST_CONSTANTS"
-
-          # Check for outdated packages
-          OUTDATED_PACKAGES=""
-
-          if [ "$ABSTRAXION_CORE" != "not-found" ] && [ "$LATEST_ABSTRAXION_CORE" != "failed" ]; then
-            CURRENT_CLEAN=$(echo "$ABSTRAXION_CORE" | sed 's/[\^~]//g')
-            if [ "$CURRENT_CLEAN" != "$LATEST_ABSTRAXION_CORE" ]; then
-              OUTDATED_PACKAGES="${OUTDATED_PACKAGES}@burnt-labs/abstraxion-core|${ABSTRAXION_CORE}|${LATEST_ABSTRAXION_CORE};"
+            if [ "$CLEAN" != "$LATEST" ]; then
+              OUTDATED="${OUTDATED}${FULL}|${CURRENT}|${LATEST};"
             fi
-          fi
+          done
 
-          if [ "$SIGNERS" != "not-found" ] && [ "$LATEST_SIGNERS" != "failed" ]; then
-            CURRENT_CLEAN=$(echo "$SIGNERS" | sed 's/[\^~]//g')
-            if [ "$CURRENT_CLEAN" != "$LATEST_SIGNERS" ]; then
-              OUTDATED_PACKAGES="${OUTDATED_PACKAGES}@burnt-labs/signers|${SIGNERS}|${LATEST_SIGNERS};"
-            fi
-          fi
-
-          if [ "$ACCOUNT_MGMT" != "not-found" ] && [ "$LATEST_ACCOUNT_MGMT" != "failed" ]; then
-            CURRENT_CLEAN=$(echo "$ACCOUNT_MGMT" | sed 's/[\^~]//g')
-            if [ "$CURRENT_CLEAN" != "$LATEST_ACCOUNT_MGMT" ]; then
-              OUTDATED_PACKAGES="${OUTDATED_PACKAGES}@burnt-labs/account-management|${ACCOUNT_MGMT}|${LATEST_ACCOUNT_MGMT};"
-            fi
-          fi
-
-          if [ "$CONSTANTS" != "not-found" ] && [ "$LATEST_CONSTANTS" != "failed" ]; then
-            CURRENT_CLEAN=$(echo "$CONSTANTS" | sed 's/[\^~]//g')
-            if [ "$CURRENT_CLEAN" != "$LATEST_CONSTANTS" ]; then
-              OUTDATED_PACKAGES="${OUTDATED_PACKAGES}@burnt-labs/constants|${CONSTANTS}|${LATEST_CONSTANTS};"
-            fi
-          fi
-
-          if [ -n "$OUTDATED_PACKAGES" ]; then
-            echo ""
+          if [ -n "$OUTDATED" ]; then
             echo "⚠️  Some @burnt-labs packages have updates available"
             echo "outdated=true" >> $GITHUB_OUTPUT
-            echo "packages=$OUTDATED_PACKAGES" >> $GITHUB_OUTPUT
+            echo "packages=$OUTDATED" >> $GITHUB_OUTPUT
           else
-            echo ""
             echo "✅ All @burnt-labs packages are up to date"
             echo "outdated=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Post @burnt-labs package updates comment
+      - name: Post @burnt-labs update comment on PR
         if: github.event_name == 'pull_request' && steps.check_burnt_labs.outputs.outdated == 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            const outdatedPackages = '${{ steps.check_burnt_labs.outputs.packages }}'.split(';').filter(p => p);
+            const packages = '${{ steps.check_burnt_labs.outputs.packages }}'
+              .split(';').filter(Boolean)
+              .map(p => p.split('|'));
 
-            let tableRows = '';
-            let installCommands = '';
+            const tableRows = packages
+              .map(([name, current, latest]) => `| ${name} | \`${current}\` | \`${latest}\` |`)
+              .join('\n');
+            const installCmds = packages
+              .map(([name, , latest]) => `pnpm add ${name}@${latest}`)
+              .join('\n');
 
-            outdatedPackages.forEach(pkg => {
-              const [name, current, latest] = pkg.split('|');
-              tableRows += `| ${name} | \`${current}\` | \`${latest}\` |\n`;
-              installCommands += `pnpm add ${name}@${latest}\n`;
-            });
+            const body = [
+              '## 📦 Dependency Updates Available\n',
+              '| Package | Current | Latest |',
+              '|---------|---------|--------|',
+              tableRows,
+              '\n### To update:\n```bash',
+              installCmds,
+              '```\n',
+              "> ⚠️ Informational only — won't block your PR. Check the [changelog](https://github.com/burnt-labs/xion.js/releases) before updating.",
+            ].join('\n');
 
-            const body = '## 📦 Dependency Updates Available\n\n' +
-              'The following **@burnt-labs** packages have newer versions:\n\n' +
-              '| Package | Current | Latest |\n' +
-              '|---------|---------|--------|\n' +
-              tableRows + '\n' +
-              '### To update all:\n' +
-              '```bash\n' +
-              installCommands +
-              '```\n\n' +
-              '> ⚠️ This is an **informational notice** and won\'t block your PR. Review the [changelog](https://github.com/burnt-labs/xion.js/releases) for breaking changes before updating.';
-
-            // Delete existing comment and post new one at the bottom
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
             const existing = comments.find(c => c.body.includes('📦 Dependency Updates Available'));
-
             if (existing) {
               await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                comment_id: existing.id
+                comment_id: existing.id,
               });
             }
 
@@ -181,73 +120,38 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body
+              body,
             });
 
-      - name: Check @cosmjs version compatibility
+      - name: Check @cosmjs version consistency
         run: |
-          echo "🔍 Checking @cosmjs versions across projects..."
+          # Ensure all local @cosmjs packages use the same version
+          COSMJS_PKGS="stargate crypto proto-signing cosmwasm-stargate"
+          VERSIONS=""
 
-          DASHBOARD_COSMJS=$(node -p "require('./package.json').dependencies['@cosmjs/stargate']")
-          echo "Dashboard @cosmjs/stargate: $DASHBOARD_COSMJS"
+          for pkg in $COSMJS_PKGS; do
+            VER=$(node -p "require('./package.json').dependencies['@cosmjs/$pkg'] || ''")
+            [ -z "$VER" ] && continue
+            echo "@cosmjs/$pkg: $VER"
+            VERSIONS="$VERSIONS$VER\n"
+          done
 
-          # Get version from published xion.js package
-          XIONJS_COSMJS=$(npm view @burnt-labs/signers peerDependencies --json | jq -r '.["@cosmjs/stargate"]' 2>/dev/null || echo "")
-
-          if [ -z "$XIONJS_COSMJS" ]; then
-            echo "⚠️  Could not fetch @cosmjs version from published xion.js packages"
-            echo "Skipping compatibility check"
-            exit 0
-          fi
-
-          echo "xion.js expects: $XIONJS_COSMJS"
-
-          # Extract major.minor versions for comparison
-          DASHBOARD_VER=$(echo "$DASHBOARD_COSMJS" | sed 's/[\^~]//g' | cut -d. -f1,2)
-          XIONJS_VER=$(echo "$XIONJS_COSMJS" | sed 's/[\^~]//g' | cut -d. -f1,2)
-
-          if [ "$DASHBOARD_VER" != "$XIONJS_VER" ]; then
-            echo "❌ Version mismatch detected!"
-            echo "   Dashboard uses: $DASHBOARD_COSMJS (major.minor: $DASHBOARD_VER)"
-            echo "   xion.js expects: $XIONJS_COSMJS (major.minor: $XIONJS_VER)"
-            echo ""
-            echo "This will cause type compatibility issues between Dashboard and xion.js packages."
+          UNIQUE=$(echo -e "$VERSIONS" | grep -v '^$' | sort -u | wc -l)
+          if [ "$UNIQUE" -gt 1 ]; then
+            echo "❌ Mismatched @cosmjs versions — all should use the same version"
             exit 1
           fi
 
-          echo "✅ @cosmjs versions are compatible"
-
-      - name: Check for consistent @cosmjs versions
-        run: |
-          echo "🔍 Checking all @cosmjs packages use the same version..."
-
-          STARGATE=$(node -p "require('./package.json').dependencies['@cosmjs/stargate'] || 'not-found'")
-          CRYPTO=$(node -p "require('./package.json').dependencies['@cosmjs/crypto'] || 'not-found'")
-          PROTO=$(node -p "require('./package.json').dependencies['@cosmjs/proto-signing'] || 'not-found'")
-          COSMWASM=$(node -p "require('./package.json').dependencies['@cosmjs/cosmwasm-stargate'] || 'not-found'")
-
-          echo "@cosmjs/stargate: $STARGATE"
-          echo "@cosmjs/crypto: $CRYPTO"
-          echo "@cosmjs/proto-signing: $PROTO"
-          echo "@cosmjs/cosmwasm-stargate: $COSMWASM"
-
-          # Count unique versions (excluding 'not-found')
-          VERSIONS=$(echo -e "$STARGATE\n$CRYPTO\n$PROTO\n$COSMWASM" | grep -v "not-found" | sort -u | wc -l)
-
-          if [ "$VERSIONS" -gt 1 ]; then
-            echo ""
-            echo "❌ Mismatched @cosmjs versions detected!"
-            echo "All @cosmjs packages should use the same major.minor version."
-            exit 1
+          # Verify compatibility with xion.js peer dependency
+          EXPECTED=$(npm view @burnt-labs/signers peerDependencies --json 2>/dev/null | jq -r '.["@cosmjs/stargate"] // empty')
+          if [ -n "$EXPECTED" ]; then
+            LOCAL=$(node -p "require('./package.json').dependencies['@cosmjs/stargate'] || ''")
+            LOCAL_MM=$(echo "$LOCAL" | sed 's/[\^~]//g' | cut -d. -f1,2)
+            EXPECTED_MM=$(echo "$EXPECTED" | sed 's/[\^~]//g' | cut -d. -f1,2)
+            if [ "$LOCAL_MM" != "$EXPECTED_MM" ]; then
+              echo "❌ @cosmjs/stargate $LOCAL incompatible with xion.js (expects $EXPECTED)"
+              exit 1
+            fi
           fi
 
-          echo ""
-          echo "✅ All @cosmjs packages use consistent versions"
-
-      - name: Summary
-        if: success()
-        run: |
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ All dependency validation checks passed!"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ @cosmjs versions are consistent and compatible"

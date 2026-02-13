@@ -29,6 +29,7 @@ import {
   NavigationButton,
   PasskeyIcon,
   AppleLogoIcon,
+  ZKEmailIcon,
 } from "../ui";
 import { AuthContext, AuthContextProps } from "../AuthContext";
 import { getHumanReadablePubkey } from "../../utils";
@@ -40,11 +41,13 @@ import okxLogo from "../../assets/okx-logo.png";
 import LoginOtpForm from "../LoginOtpForm";
 import { GoogleLogoIcon } from "../ui/icons/GoogleLogo";
 import { TikTokLogoIcon } from "../ui/icons/TikTokLogo";
+import { ZKEmailLogin } from "./ZKEmailLogin";
 import { cn } from "../../utils/classname-util";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import xionLogo from "../../assets/logo.png";
 import { useAuthState, CONNECTION_METHOD } from "../../auth/useAuthState";
+import { AuthStateManager } from "../../auth/AuthStateManager";
 import { getLoginAuthenticatorFromJWT } from "../../auth/session";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
@@ -65,6 +68,8 @@ export const LoginScreen = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [isRedirectingToOAuth, setIsRedirectingToOAuth] = useState(false);
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [showZKEmailLogin, setShowZKEmailLogin] = useState(false);
   const tokenProcessed = useRef(false);
 
   // Use AuthStateManager via hook
@@ -79,11 +84,6 @@ export const LoginScreen = () => {
   // but we can use popups to connect to wallets
   const isInIframe =
     typeof window !== "undefined" && window.self !== window.top;
-
-  // Feature flags from config already account for mainnet/testnet
-  const shouldEnableOkx = FEATURE_FLAGS.okx;
-  const shouldEnableMetamask = FEATURE_FLAGS.metamask;
-  const shouldEnableKeplr = FEATURE_FLAGS.keplr;
 
   /**
    * Handles post-authentication account creation/lookup.
@@ -774,6 +774,37 @@ export const LoginScreen = () => {
     }
   };
 
+  function handleZKEmail(emailSalt: string, emailAddress: string) {
+    console.log(
+      "[AbstraxionSignin] zk-email login with email salt:",
+      emailSalt,
+    );
+
+    // Set auth state FIRST so account discovery (indexer) is triggered immediately
+    startLogin(
+      AUTHENTICATOR_TYPE.ZKEmail,
+      CONNECTION_METHOD.ZKEmail,
+      emailSalt,
+    );
+
+    // Store the email address in localStorage for signing transactions later
+    AuthStateManager.setZKEmailData(emailAddress);
+
+    // Also update context for backward compatibility
+    setConnectionMethod(CONNECTION_METHOD.ZKEmail);
+
+    // Close the zk-email login view (auth modal stays open until account is loaded)
+    setShowZKEmailLogin(false);
+  }
+
+  function handleZKEmailError(error: string) {
+    if (error) {
+      console.error("[AbstraxionSignin] zk-email error:", error);
+    }
+    setAbstraxionError(error);
+    setAuthError(error);
+  }
+
   useEffect(() => {
     const authenticateUser = async () => {
       // Check both query params (popup flow) and hash params (main window flow)
@@ -864,7 +895,13 @@ export const LoginScreen = () => {
 
   return (
     <>
-      {isOnOtpStep ? (
+      {showZKEmailLogin ? (
+        <ZKEmailLogin
+          onLogin={handleZKEmail}
+          onCancel={() => setShowZKEmailLogin(false)}
+          onError={handleZKEmailError}
+        />
+      ) : isOnOtpStep ? (
         <>
           <DialogHeader>
             <DialogTitle>Input 6 Digit Code</DialogTitle>
@@ -953,7 +990,7 @@ export const LoginScreen = () => {
               )}
             </div>
           </div>
-          {shouldEnableOkx || shouldEnableMetamask ? (
+          {FEATURE_FLAGS.okx || FEATURE_FLAGS.metamask || FEATURE_FLAGS.zkemail ? (
             <div className="ui-w-full ui-mb-12 sm:ui-mb-0 ui-flex ui-flex-col ui-gap-3">
               <button
                 className="group ui-flex ui-w-full ui-items-center ui-gap-3"
@@ -970,7 +1007,7 @@ export const LoginScreen = () => {
               </button>
               {showAdvanced ? (
                 <div className="ui-flex ui-w-full ui-gap-2">
-                  {shouldEnableOkx ? (
+                  {FEATURE_FLAGS.okx ? (
                     <BaseButton
                       variant="secondary"
                       size="icon-large"
@@ -985,7 +1022,7 @@ export const LoginScreen = () => {
                       />
                     </BaseButton>
                   ) : null}
-                  {shouldEnableKeplr ? (
+                  {FEATURE_FLAGS.keplr ? (
                     <BaseButton
                       variant="secondary"
                       size="icon-large"
@@ -994,7 +1031,7 @@ export const LoginScreen = () => {
                       <KeplrLogo className="ui-min-w-6 ui-min-h-6" />
                     </BaseButton>
                   ) : null}
-                  {shouldEnableMetamask ? (
+                  {FEATURE_FLAGS.metamask ? (
                     <BaseButton
                       variant="secondary"
                       size="icon-large"
@@ -1014,6 +1051,19 @@ export const LoginScreen = () => {
                         BETA
                       </span>
                       <PasskeyIcon className="ui-min-w-6 ui-min-h-6" />
+                    </BaseButton>
+                  ) : null}
+                  {FEATURE_FLAGS.zkemail ? (
+                    <BaseButton
+                      variant="secondary"
+                      size="icon-large"
+                      onClick={() => setShowZKEmailLogin(true)}
+                      className="ui-relative"
+                    >
+                      <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-emerald-600/80 ui-text-white ui-text-[10px] ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
+                        BETA
+                      </span>
+                      <ZKEmailIcon className="ui-min-w-6 ui-min-h-6" />
                     </BaseButton>
                   ) : null}
                 </div>

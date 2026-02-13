@@ -1,12 +1,13 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useStytch } from "@stytch/react";
-import { AAClient } from "@burnt-labs/signers";
+import { AAClient, GasPrice } from "@burnt-labs/signers";
 import { AuthContext, AuthContextProps } from "../components/AuthContext";
 import { testnetChainInfo } from "@burnt-labs/constants";
 import { formatGasPrice, getGasCalculation } from "../utils/fees";
 import { STYTCH_PROXY_URL } from "../config";
 import { CONNECTION_METHOD } from "../auth/useAuthState";
 import { getConnectionAdapter } from "../connectionAdapters";
+import { AuthStateManager } from "../auth/AuthStateManager";
 
 export const useSigningClient = () => {
   const {
@@ -97,6 +98,21 @@ export const useSigningClient = () => {
           abstractAccount.id,
           abstractAccount.currentAuthenticatorIndex,
         );
+      } else if (connectionMethod === CONNECTION_METHOD.ZKEmail) {
+        // ZK-Email: proofs are generated at sign time via zk-email utils (same flow as authenticator).
+        // Email from session (set at login) is passed so the signer can request proof when user signs.
+        const email = AuthStateManager.getZKEmailData();
+        if (!email) {
+          console.warn(
+            "[useSigningClient] ZK-Email: no email in session; signer not created. Sign in with zk-email to sign transactions.",
+          );
+          return;
+        }
+        signer = (adapter as any).getSigner(
+          abstractAccount.id,
+          abstractAccount.currentAuthenticatorIndex,
+          email,
+        );
       } else {
         console.warn(`Unsupported connection method: ${connectionMethod}`);
         return;
@@ -111,7 +127,7 @@ export const useSigningClient = () => {
         chainInfo.rpc || testnetChainInfo.rpc,
         signer,
         {
-          gasPrice: formatGasPrice(chainInfo),
+          gasPrice: formatGasPrice(chainInfo) as GasPrice,
         },
       );
 

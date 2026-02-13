@@ -33,10 +33,11 @@
   },
   "dependencies": {
     "@braintree/sanitize-url": "^7.1.1",
+    "@marsidev/react-turnstile": "^1.4.1",
     "@burnt-labs/abstraxion-core": "1.0.0-alpha.64",
-    "@burnt-labs/account-management": "1.0.0-alpha.4",
+    "@burnt-labs/account-management": "1.0.0-alpha.7",
     "@burnt-labs/constants": "^0.1.0-alpha.11",
-    "@burnt-labs/signers": "1.0.0-alpha.4",
+    "@burnt-labs/signers": "1.0.0-alpha.6",
     "@burnt-labs/xion-auth-sdk": "^0.3.1",
     "@cosmjs/cosmwasm-stargate": "^0.36.0",
     "@cosmjs/crypto": "^0.36.0",
@@ -52,7 +53,7 @@
     "@stytch/react": "^19.0.0",
     "@stytch/vanilla-js": "^5.41.1",
     "@tanstack/react-query": "^5.74.4",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "bech32": "^2.0.0",
     "camelcase-keys": "^10.0.1",
     "class-variance-authority": "^0.7.1",
@@ -114,5 +115,5 @@
     "react": "$react",
     "react-dom": "$react-dom"
   },
-  "packageManager": "pnpm@10.28.1+sha512.7d7dbbca9e99447b7c3bf7a73286afaaf6be99251eb9498baefa7d406892f67b879adb3a1d7e687fc4ccc1a388c7175fbaae567a26ab44d1067b54fcb0d6a316"
+  "packageManager": "pnpm@10.28.1"
 }

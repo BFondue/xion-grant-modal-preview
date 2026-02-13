@@ -111,26 +111,11 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
       lastCheckTime: 0,
       isObserving: false,
       previousWindowHeight: window.innerHeight,
-      previousWindowWidth: window.innerWidth,
-      naturalContentHeight: 0,
       widthMeasurementTimeout: null as number | null,
       handleWindowResize: null as (() => void) | null,
     });
 
-    React.useEffect(() => {
-      const element = stateRef.current.element;
-      if (element) {
-        const dataState = element.getAttribute("data-state");
-        if (dataState === "closed") {
-          setIsTall(false);
-        }
-      }
-    }, [stateRef.current.element]);
-
-    const measureNaturalContentSize = React.useCallback(() => {
-      const { element } = stateRef.current;
-      if (!element) return { width: 0, height: 0 };
-
+    const measureNaturalContentSize = React.useCallback((element: HTMLDivElement) => {
       const originalStyles = {
         position: element.style.position,
         top: element.style.top,
@@ -158,8 +143,6 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
       const naturalWidth = element.offsetWidth;
       const naturalHeight = element.scrollHeight;
 
-      stateRef.current.naturalContentHeight = naturalHeight;
-
       element.style.position = originalStyles.position;
       element.style.top = originalStyles.top;
       element.style.left = originalStyles.left;
@@ -174,68 +157,20 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
       return { width: naturalWidth, height: naturalHeight };
     }, []);
 
-    const checkHeight = React.useCallback(
-      (forceUpdate = false) => {
-        const { element } = stateRef.current;
-        if (!element) return;
-
+    const checkHeight = React.useCallback((element: HTMLDivElement) => {
         const now = Date.now();
-        if (!forceUpdate && now - stateRef.current.lastCheckTime < 100) return;
         stateRef.current.lastCheckTime = now;
 
-        const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
-        const previousWidth = stateRef.current.previousWindowWidth;
-        const previousHeight = stateRef.current.previousWindowHeight;
-
-        stateRef.current.previousWindowWidth = windowWidth;
         stateRef.current.previousWindowHeight = windowHeight;
+        clearTimeout(stateRef.current.widthMeasurementTimeout as number);
 
-        const isSignificantWidthChange =
-          Math.abs(windowWidth - previousWidth) > 10;
-
-        if (isSignificantWidthChange || forceUpdate) {
-          if (stateRef.current.widthMeasurementTimeout) {
-            clearTimeout(stateRef.current.widthMeasurementTimeout);
-          }
-
-          stateRef.current.widthMeasurementTimeout = window.setTimeout(() => {
-            const { height: naturalHeight } = measureNaturalContentSize();
-
-            const minHeightThreshold = 200;
-            const shouldBeTall =
-              naturalHeight > windowHeight * 0.85 &&
-              naturalHeight > minHeightThreshold;
-
-            if (shouldBeTall !== isTall) {
-              setIsTall(shouldBeTall);
-            }
-          }, 100) as unknown as number;
-
-          return;
-        }
-
-        if (isTall && windowHeight > previousHeight) {
-          const { height: naturalHeight } = measureNaturalContentSize();
-
-          if (naturalHeight <= windowHeight * 0.85) {
-            setIsTall(false);
-          }
-          return;
-        }
-
-        const contentHeight = element.scrollHeight;
-        const minHeightThreshold = 200;
-        const shouldBeTall =
-          contentHeight > windowHeight * 0.85 &&
-          contentHeight > minHeightThreshold;
-
-        if (shouldBeTall !== isTall) {
+        stateRef.current.widthMeasurementTimeout = window.setTimeout(() => {
+          const { height: naturalHeight } = measureNaturalContentSize(element);
+          const shouldBeTall = naturalHeight > Math.max(windowHeight * 0.85, 200);
           setIsTall(shouldBeTall);
-        }
-      },
-      [isTall, measureNaturalContentSize],
-    );
+        }, 100) as unknown as number;
+      }, [measureNaturalContentSize]);
 
     const checkHeightRef = React.useRef(checkHeight);
 
@@ -255,12 +190,8 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
       }
 
       if (stateRef.current.observers) {
-        if (stateRef.current.observers.resize) {
-          stateRef.current.observers.resize.disconnect();
-        }
-        if (stateRef.current.observers.attributes) {
-          stateRef.current.observers.attributes.disconnect();
-        }
+        stateRef.current.observers.resize?.disconnect();
+        stateRef.current.observers.attributes?.disconnect();
         stateRef.current.observers = null;
       }
 
@@ -283,14 +214,15 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
 
       stateRef.current.observers = {};
 
+      checkHeightRef.current(element);
+
       const scheduleCheck = (delay: number) => {
         if (stateRef.current.timeouts.length > 0) {
           stateRef.current.timeouts.forEach((id) => window.clearTimeout(id));
           stateRef.current.timeouts = [];
         }
         const id = window.setTimeout(() => {
-          measureNaturalContentSize();
-          checkHeightRef.current(true);
+          checkHeightRef.current(element);
           stateRef.current.timeouts = stateRef.current.timeouts.filter(
             (t) => t !== id,
           );
@@ -300,26 +232,17 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
 
       scheduleCheck(150);
 
-      const attributeObserver = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-          if (
-            mutation.type === "attributes" &&
-            mutation.attributeName === "data-state"
-          ) {
-            if (element.getAttribute("data-state") === "open") {
-              scheduleCheck(150);
-            }
-          }
-        }
+      const attributeObserver = new MutationObserver(() => {
+        scheduleCheck(150);
       });
       attributeObserver.observe(element, { attributes: true });
       stateRef.current.observers.attributes = attributeObserver;
 
       let resizeTimeout: number | null = null;
       const resizeObserver = new ResizeObserver(() => {
-        if (resizeTimeout) window.clearTimeout(resizeTimeout);
+        if (resizeTimeout !== null) window.clearTimeout(resizeTimeout);
         resizeTimeout = window.setTimeout(() => {
-          checkHeightRef.current(true);
+          checkHeightRef.current(element);
         }, 100) as unknown as number;
       });
 
@@ -331,17 +254,11 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
       window.addEventListener("resize", handleWindowResize);
 
       const startObserving = window.setTimeout(() => {
-        if (element && document.body.contains(element)) {
-          resizeObserver.observe(element);
-          stateRef.current.isObserving = true;
-        }
+        resizeObserver.observe(element);
+        stateRef.current.isObserving = true;
       }, 300);
       stateRef.current.timeouts.push(startObserving);
       stateRef.current.observers.resize = resizeObserver;
-
-      return () => {
-        cleanupObservers();
-      };
     }, [measureNaturalContentSize, cleanupObservers]);
 
     const handleRef = React.useCallback(

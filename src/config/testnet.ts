@@ -19,6 +19,10 @@ export const testnetConfig = {
   abstraxionApiUrl: "https://aa-api.testnet.burnt.com",
   xionApiUrl: "https://api.xion-testnet-2.burnt.com",
   xionRpcUrl: "https://rpc.xion-testnet-2.burnt.com",
+  zkEmailBackendUrl: "https://zk-api.testnet.burnt.com",
+
+  // Turnstile (Cloudflare invisible CAPTCHA)
+  turnstileSiteKey: "0x4AAAAAACUOXqmE31xhK_y8",
 
   // Indexer
   indexerStrategy: "numia" as const,
@@ -49,5 +53,6 @@ export const testnetConfig = {
     keplr: true,
     tiktok: false,
     apple: true,
+    zkemail: true,
   },
 };

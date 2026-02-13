@@ -258,6 +258,12 @@ describe("authenticator-helpers", () => {
       expect(logo).toBeDefined();
       expect(logo.type.name).toBe("AccountWalletLogo");
     });
+
+    it("should return ZKEmailIcon for ZKEMAIL", () => {
+      const logo = getAuthenticatorLogo("ZKEMAIL");
+      expect(logo).toBeDefined();
+      expect(logo.type.name).toBe("ZKEmailIcon");
+    });
   });
 
   describe("extractUserIdFromAuthenticator", () => {
@@ -295,6 +301,12 @@ describe("authenticator-helpers", () => {
       expect(
         extractUserIdFromAuthenticator("identifier.userid", "PASSKEY"),
       ).toBeNull();
+    });
+
+    it("should return authenticator string for ZKEmail type", () => {
+      expect(
+        extractUserIdFromAuthenticator("user@example.com", "ZKEmail"),
+      ).toBe("user@example.com");
     });
 
     it("should handle authenticator with multiple dots", () => {

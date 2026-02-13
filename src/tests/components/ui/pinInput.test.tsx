@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "../..";
+import { render, screen, fireEvent } from "../..";
 import { PinInput } from "../../../components/ui/pinInput";
 
 describe("PinInput", () => {
@@ -254,5 +254,73 @@ describe("PinInput", () => {
 
     // Should not throw and first input should still be focused
     expect(inputs[0]).toHaveValue("");
+  });
+
+  it("does not move focus when typing at last input", async () => {
+    const onComplete = vi.fn();
+    const { user } = await render(
+      <PinInput {...defaultProps} onComplete={onComplete} length={4} />,
+    );
+
+    const inputs = screen.getAllByRole("textbox");
+
+    // Fill first 3 inputs
+    await user.type(inputs[0], "1");
+    await user.type(inputs[1], "2");
+    await user.type(inputs[2], "3");
+
+    // Type in last input - should stay focused on last input
+    await user.type(inputs[3], "4");
+
+    // Last input should still have focus (no next input to move to)
+    expect(inputs[3]).toHaveValue("4");
+    expect(onComplete).toHaveBeenCalledWith("1234");
+  });
+
+  it("handles paste with only non-digit characters", async () => {
+    const onComplete = vi.fn();
+    await render(
+      <PinInput {...defaultProps} onComplete={onComplete} length={4} />,
+    );
+
+    const inputs = screen.getAllByRole("textbox");
+
+    // Use fireEvent for more control over paste data
+    fireEvent.paste(inputs[0], {
+      clipboardData: {
+        getData: () => "abcd",
+      },
+    });
+
+    // All inputs should remain empty since no valid digits
+    inputs.forEach((input) => {
+      expect(input).toHaveValue("");
+    });
+
+    // onComplete should still be called with empty result
+    expect(onComplete).toHaveBeenCalledWith("");
+  });
+
+  it("handles paste with empty string", async () => {
+    const onComplete = vi.fn();
+    await render(
+      <PinInput {...defaultProps} onComplete={onComplete} length={4} />,
+    );
+
+    const inputs = screen.getAllByRole("textbox");
+
+    // Use fireEvent for more control over paste data
+    fireEvent.paste(inputs[0], {
+      clipboardData: {
+        getData: () => "",
+      },
+    });
+
+    // All inputs should remain empty
+    inputs.forEach((input) => {
+      expect(input).toHaveValue("");
+    });
+
+    expect(onComplete).toHaveBeenCalledWith("");
   });
 });

@@ -39,6 +39,18 @@ export const accountFeatures: Record<string, AccountFeatureSet> = {
     features: new Set([FeatureKey.PASSKEY]),
     promotedFeatures: [],
   },
+  // zk-email account contract (code ID 1880, testnet)
+  d27a379ff65eb47a9e538e3a3d46101de2a6c0b86ba3d0bf014c0403849414e6: {
+    checksum:
+      "d27a379ff65eb47a9e538e3a3d46101de2a6c0b86ba3d0bf014c0403849414e6",
+    features: new Set([FeatureKey.PASSKEY, FeatureKey.ZKEMAIL]),
+    promotedFeatures: [
+      {
+        title: "ZK-Email",
+        description: "Add zk-email as an authenticator option.",
+      },
+    ],
+  },
 };
 
 /**
@@ -52,7 +64,9 @@ export function getPromotedFeatures(targetChecksum: string) {
 }
 
 /**
- * Fetches contract checksum for a given code ID
+ * Fetches contract checksum for a given code ID.
+ * Use this with your new account code ID (e.g. in devtools or a one-off script)
+ * to get the checksum to add to accountFeatures above.
  */
 export async function fetchContractChecksum(
   client: CosmWasmClient | AAClient,

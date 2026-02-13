@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import type { InputHTMLAttributes } from "react";
 
 type BaseInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "prefix">;
@@ -21,8 +21,11 @@ export function Input({
   onBlur,
   onFocus,
   onKeyDown,
+  id: externalId,
   ...props
 }: ITextFieldProps) {
+  const generatedId = useId();
+  const inputId = externalId || generatedId;
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -40,6 +43,7 @@ export function Input({
   return (
     <div className={`ui-relative ui-w-full ui-text-left ${className || ""}`}>
       <label
+        htmlFor={inputId}
         className={`ui-relative ui-z-0 ui-w-auto ui-transition-all ui-duration-100 ui-ease-linear  ui-text-secondary-text ${
           isInputFocused || value
             ? "ui-top-0 ui-text-xs ui-leading-tight"
@@ -50,6 +54,7 @@ export function Input({
       </label>
       <input
         {...props}
+        id={inputId}
         className={`${
           baseInputClassName || ""
         } ui-z-10 ui-block ui-h-8 ui-w-full ui-border-b ui-border-border ui-rounded-none ui-relative ${

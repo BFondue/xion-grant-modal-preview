@@ -1,4 +1,10 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
+import React, {
+  ChangeEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { LoginErrorDisplay } from "../LoginErrorDisplay";
 import { useSmartAccount, useSigningClient } from "../../hooks";
 import { validateBech32Address } from "../../utils";
@@ -7,6 +13,12 @@ import { WalletSendReview } from "./WalletSendReview";
 import { WalletSendSuccess } from "./WalletSendSuccess";
 import { useAccountBalance } from "../../hooks/useAccountBalance";
 import { WalletSendWarning } from "./WalletSendWarning";
+import { AuthContext, AuthContextProps } from "../AuthContext";
+import {
+  setZKEmailSigningAbortController,
+  setZKEmailSigningStatus,
+} from "../../auth/zk-email/zk-email-signing-status";
+import { CONNECTION_METHOD } from "../../auth/useAuthState";
 
 export function WalletSendForm({
   setIsOpen,
@@ -32,7 +44,22 @@ export function WalletSendForm({
   const [sendTokensError, setSendTokensError] = useState(false);
   const [transactionHash, setTransactionHash] = useState("");
 
+  const { connectionMethod } = useContext(AuthContext) as AuthContextProps;
   const client = useSigningClient();
+
+  // When on review step with zk-email, set abort controller so closing modal or going back stops polling
+  useEffect(() => {
+    if (!isOnReviewStep || connectionMethod !== CONNECTION_METHOD.ZKEmail)
+      return;
+    setZKEmailSigningStatus(null);
+    const controller = new AbortController();
+    setZKEmailSigningAbortController(controller);
+    return () => {
+      controller.abort();
+      setZKEmailSigningAbortController(null);
+      setZKEmailSigningStatus(null);
+    };
+  }, [isOnReviewStep, connectionMethod]);
 
   const validateAmount = useCallback(() => {
     if (!sendAmount || sendAmount === "0") {

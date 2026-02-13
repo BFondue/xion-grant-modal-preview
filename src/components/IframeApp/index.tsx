@@ -31,6 +31,10 @@ import {
 } from "./hooks";
 import { findBestMatchingAuthenticator } from "../../utils/authenticator-utils";
 import { useAuthState, CONNECTION_METHOD } from "../../auth/useAuthState";
+import {
+  setZKEmailSigningAbortController,
+  setZKEmailSigningStatus,
+} from "../../auth/zk-email/zk-email-signing-status";
 import type {
   ConnectPayload,
   ConnectResponse,
@@ -110,6 +114,23 @@ export function IframeApp({
     openRemoveAuthModal,
     openGrantModal,
   } = modals;
+
+  // When signing modal is open with zk-email, set abort controller so closing/rejecting stops polling
+  useEffect(() => {
+    if (
+      !modals.showSigningModal ||
+      connectionMethod !== CONNECTION_METHOD.ZKEmail
+    )
+      return;
+    setZKEmailSigningStatus(null);
+    const controller = new AbortController();
+    setZKEmailSigningAbortController(controller);
+    return () => {
+      controller.abort();
+      setZKEmailSigningAbortController(null);
+      setZKEmailSigningStatus(null);
+    };
+  }, [modals.showSigningModal, connectionMethod]);
 
   // Use ref to avoid stale closure in useIframeSession callback
   const closeAuthModalRef = useRef(closeAuthModal);
@@ -687,6 +708,7 @@ export function IframeApp({
           modals.closeSigningModal({ error: "User rejected" });
         }}
         transaction={modals.modalState.payload?.transaction}
+        connectionMethod={connectionMethod}
         onApprove={async () => {
           const { payload, resolver } = modals.modalState;
           const transaction = payload?.transaction;

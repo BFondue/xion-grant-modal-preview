@@ -12,6 +12,7 @@ import {
   GoogleLogoIcon,
   GithubLogoIcon,
   XLogoIcon,
+  ZKEmailIcon,
 } from "../../components/ui";
 
 /**
@@ -51,6 +52,7 @@ export const getAuthenticatorLabel = (type: authenticatorTypes): string => {
     ETHWALLET: "EVM Wallet",
     JWT: "Email",
     PASSKEY: "Passkey",
+    ZKEMAIL: "ZKEmail",
   };
   return labels[type] || "";
 };
@@ -89,6 +91,7 @@ export const getAuthenticatorLogo = (
       <EmailIcon className="ui-w-4 ui-h-4" />
     ),
     PASSKEY: <PasskeyIcon />,
+    ZKEMAIL: <ZKEmailIcon className="ui-w-4 ui-h-4" />,
   };
 
   return logoMap[type] || <AccountWalletLogo />;
@@ -102,6 +105,10 @@ export const extractUserIdFromAuthenticator = (
   if (type === AUTHENTICATOR_TYPE.JWT) {
     const parts = authenticator.split(".");
     return parts[1] || null;
+  }
+  // For zk-email, the authenticator is the email address itself
+  if (type === AUTHENTICATOR_TYPE.ZKEmail) {
+    return authenticator;
   }
   return null;
 };

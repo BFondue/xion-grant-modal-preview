@@ -489,6 +489,38 @@ describe("useWalletChangeListener", () => {
   });
 
   describe("Not connected scenarios", () => {
+    it("should not set up wallet listeners for non-wallet connections (e.g. Stytch)", () => {
+      const addEventListenerSpy = vi.spyOn(window, "addEventListener");
+
+      // Login with Stytch (JWT) - not a wallet connection
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.JWT,
+        CONNECTION_METHOD.Stytch,
+        "jwt-authenticator",
+      );
+      AuthStateManager.completeLogin({
+        id: "xion1test",
+        currentAuthenticatorIndex: 0,
+      } as any);
+
+      const { unmount } = renderHook(() => useWalletChangeListener());
+
+      // Should not add keplr_keystorechange listener
+      expect(addEventListenerSpy).not.toHaveBeenCalledWith(
+        "keplr_keystorechange",
+        expect.any(Function),
+      );
+
+      // Should not add MetaMask listener
+      expect(window.ethereum!.on).not.toHaveBeenCalledWith(
+        "accountsChanged",
+        expect.any(Function),
+      );
+
+      unmount();
+      addEventListenerSpy.mockRestore();
+    });
+
     it("should not set up listeners when user is not connected", () => {
       const addEventListenerSpy = vi.spyOn(window, "addEventListener");
 
@@ -566,6 +598,27 @@ describe("useWalletChangeListener", () => {
       );
 
       consoleWarnSpy.mockRestore();
+    });
+
+    it("should handle missing window.ethereum when connected with MetaMask", () => {
+      // Remove window.ethereum
+      delete (window as any).ethereum;
+
+      AuthStateManager.startLogin(
+        AUTHENTICATOR_TYPE.EthWallet,
+        CONNECTION_METHOD.Metamask,
+        "0x1234567890abcdef",
+      );
+      AuthStateManager.completeLogin({
+        id: "xion1test",
+        currentAuthenticatorIndex: 0,
+      } as any);
+
+      // Should not throw when window.ethereum is undefined
+      const { unmount } = renderHook(() => useWalletChangeListener());
+
+      // No event listener should be registered since ethereum is not available
+      unmount();
     });
 
     it("should handle missing chain ID gracefully", async () => {

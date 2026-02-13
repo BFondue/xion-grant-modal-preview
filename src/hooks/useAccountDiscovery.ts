@@ -82,7 +82,9 @@ export const useAccountDiscovery = (
         return [];
       }
 
-      // Query using xion.js composite strategy directly
+      // Query using xion.js composite strategy directly.
+      // Cast authenticatorType: our @burnt-labs/signers includes ZKEmail; account-management's
+      // nested signers type does not yet, but the runtime supports it.
       const result = await accountStrategy.fetchSmartAccounts(
         loginAuthenticator,
         authenticatorType,

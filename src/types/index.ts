@@ -4,7 +4,12 @@ export * from "./migration";
 export * from "./treasury-types";
 export * from "./wallet-account-types";
 
-export type authenticatorTypes = "SECP256K1" | "ETHWALLET" | "JWT" | "PASSKEY";
+export type authenticatorTypes =
+  | "SECP256K1"
+  | "ETHWALLET"
+  | "JWT"
+  | "PASSKEY"
+  | "ZKEMAIL";
 export type JwtSubType =
   | "email"
   | "google"

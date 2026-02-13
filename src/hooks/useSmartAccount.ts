@@ -123,7 +123,7 @@ export const useSmartAccount = () => {
       case "keplr":
       case "okx":
       case "passkey":
-        // For direct wallet connections, rely on authenticator being set
+      case "zkemail":
         return !!authenticator;
       case "metamask":
         return window.ethereum?.isConnected?.() ?? false;

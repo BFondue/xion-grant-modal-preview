@@ -4,6 +4,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
 } from "react";
 import { create } from "@github/webauthn-json/browser-ponyfill";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
@@ -19,6 +20,7 @@ import {
   MetamaskLogo,
   PasskeyIcon,
   AppleLogoIcon,
+  ZKEmailIcon,
 } from "../../ui";
 import { AuthContext, AuthContextProps } from "../../AuthContext";
 import { useSigningClient } from "../../../hooks";
@@ -30,10 +32,14 @@ import { Loading } from "../../Loading";
 import type {
   AddAuthenticator,
   AddJwtAuthenticator,
+  AddZKEmailAuthenticator,
 } from "@burnt-labs/signers";
 import type { Authenticator } from "@burnt-labs/account-management";
 import { validateFeeGrant } from "@burnt-labs/account-management";
 import { AddEmail } from "./AddEmail";
+import { AddZKEmail } from "./AddZKEmail";
+import { ZKEmailAuthenticatorStatus } from "./ZKEmailAuthenticatorStatus";
+import { useZKEmailSigningStatus } from "../../../hooks/useZKEmailSigningStatus";
 import { decodeJwt, JWTPayload } from "jose";
 import { cn } from "../../../utils/classname-util";
 import AnimatedCheckmark from "../../ui/icons/AnimatedCheck";
@@ -43,23 +49,25 @@ import {
   createJwtAuthenticatorIdentifier,
   validateNewAuthenticator,
 } from "../../../utils/authenticator-utils";
-import { CHAIN_ID, FEE_GRANTER_ADDRESS, XION_API_URL } from "../../../config";
-
-const okxFlag = import.meta.env.VITE_OKX_FLAG === "true";
-const metamaskFlag = import.meta.env.VITE_METAMASK_FLAG === "true";
-const isPasskeyFeatureFlagEnabled =
-  import.meta.env.VITE_PASSKEY_FLAG === "true";
-const keplrFlag = import.meta.env.VITE_KEPLR_FLAG === "true";
-const appleFlag = import.meta.env.VITE_APPLE_FLAG === "true";
-
-type AuthenticatorStates =
-  | "none"
-  | "keplr"
-  | "metamask"
-  | "okx"
-  | "passkey"
-  | "jwt"
-  | "apple";
+import {
+  CHAIN_ID,
+  FEE_GRANTER_ADDRESS,
+  XION_API_URL,
+  FEATURE_FLAGS,
+  ZK_EMAIL_HOST,
+  TURNSTILE_SITE_KEY,
+} from "../../../config";
+import {
+  setZKEmailSigningAbortController,
+  setZKEmailSigningStatus,
+  setZKEmailTurnstileTokenProvider,
+} from "../../../auth/zk-email/zk-email-signing-status";
+import {
+  CONNECTION_METHOD,
+  type ConnectionMethod,
+} from "../../../auth/useAuthState";
+import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
+import { getTurnstileTokenForSubmit } from "../../../utils/turnstile";
 
 interface AuthenticatorStateData {
   id: string;
@@ -79,23 +87,52 @@ export function AddAuthenticatorsForm({
 }) {
   // Component specific state
   const [selectedAuthenticator, setSelectedAuthenticator] =
-    useState<AuthenticatorStates>("none");
+    useState<ConnectionMethod>(CONNECTION_METHOD.None);
 
   // General UI state
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isAddingEmail, setIsAddingEmail] = useState(false);
+  const [isAddingZKEmail, setIsAddingZKEmail] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
+  const [zKEmailError, setZKEmailError] = useState<string | null>(null);
 
   // Context state
-  const { abstractAccount, setAbstractAccount, chainInfo, apiUrl, isMainnet } =
-    useContext(AuthContext) as AuthContextProps;
+  const {
+    abstractAccount,
+    setAbstractAccount,
+    chainInfo,
+    apiUrl,
+    isMainnet,
+    connectionMethod,
+  } = useContext(AuthContext) as AuthContextProps;
+  const zkEmailSigningStatus = useZKEmailSigningStatus(
+    connectionMethod === CONNECTION_METHOD.ZKEmail,
+  );
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const turnstileTokenRef = useRef<string | null>(null);
 
-  // Variable to be true if not mainnet, otherwise check flags for mainnet
-  const shouldEnableOkx = !isMainnet || (isMainnet && okxFlag);
-  const shouldEnableMetamask = !isMainnet || (isMainnet && metamaskFlag);
-  const shouldEnableKeplr = !isMainnet || (isMainnet && keplrFlag);
+  // When modal is open with zk-email, set abort controller and Turnstile token provider for signing
+  useEffect(() => {
+    if (connectionMethod !== CONNECTION_METHOD.ZKEmail) return;
+    setZKEmailSigningStatus(null);
+    const controller = new AbortController();
+    setZKEmailSigningAbortController(controller);
+    setZKEmailTurnstileTokenProvider(() =>
+      getTurnstileTokenForSubmit({
+        execute: () => turnstileRef.current?.execute?.() ?? Promise.resolve(),
+        getResponse: () => turnstileRef.current?.getResponse?.() ?? "",
+        getRefToken: () => turnstileTokenRef.current,
+      }),
+    );
+    return () => {
+      controller.abort();
+      setZKEmailSigningAbortController(null);
+      setZKEmailTurnstileTokenProvider(null);
+      setZKEmailSigningStatus(null);
+    };
+  }, [connectionMethod]);
 
   // Hooks
   const { client, getGasCalculation } = useSigningClient();
@@ -103,18 +140,26 @@ export function AddAuthenticatorsForm({
   const stytchClient = useStytch();
   const { session } = useStytchSession();
 
-  // Check if passkey feature is enabled for the account's contract code ID
+  // Check if both passkey and zk-email features are enabled for the account's contract code ID
   const { hasFeatures: isPasskeySupported, isLoadingFeatures } =
     useContractFeatures({
       requestedFeatures: [FeatureKey.PASSKEY],
     });
+  const { hasFeatures: isZKEmailSupported } = useContractFeatures({
+    requestedFeatures: [FeatureKey.ZKEMAIL],
+  });
 
   // Only show passkey option if both the feature flag is enabled and the account contract supports it
   const isPasskeyAuthenticatorAvailable =
-    isPasskeyFeatureFlagEnabled && isPasskeySupported && !isLoadingFeatures;
+    FEATURE_FLAGS.passkey && isPasskeySupported && !isLoadingFeatures;
+  // Only show zk-email if feature flag is on and the account contract supports it (testnet or mainnet with flag)
+  const isZKEmailAuthenticatorAvailable =
+    (!isMainnet || FEATURE_FLAGS.zkemail) &&
+    isZKEmailSupported &&
+    !isLoadingFeatures;
 
   // Functions
-  function handleSwitch(authenticator: AuthenticatorStates) {
+  function handleSwitch(authenticator: ConnectionMethod) {
     setErrorMessage("");
     setSelectedAuthenticator(authenticator);
   }
@@ -122,24 +167,27 @@ export function AddAuthenticatorsForm({
   async function handleSelection() {
     setErrorMessage("");
     switch (selectedAuthenticator) {
-      case "none":
+      case CONNECTION_METHOD.None:
         break;
-      case "keplr":
+      case CONNECTION_METHOD.Keplr:
         await addKeplrAuthenticator();
         break;
-      case "metamask":
+      case CONNECTION_METHOD.Metamask:
         await addEthAuthenticator();
         break;
-      case "okx":
+      case CONNECTION_METHOD.OKX:
         await addOkxAuthenticator();
         break;
-      case "passkey":
+      case CONNECTION_METHOD.Passkey:
         await addPasskeyAuthenticator();
         break;
-      case "jwt":
+      case CONNECTION_METHOD.Stytch:
         setIsAddingEmail(true);
         break;
-      case "apple":
+      case CONNECTION_METHOD.ZKEmail:
+        setIsAddingZKEmail(true);
+        break;
+      case CONNECTION_METHOD.Apple:
         await handleAddAppleAuthenticator();
         break;
       default:
@@ -151,6 +199,7 @@ export function AddAuthenticatorsForm({
     setIsSuccess(true);
     setIsLoading(false);
     setIsAddingEmail(false);
+    setIsAddingZKEmail(false);
   }
 
   async function handleAddAuthenticator(
@@ -322,6 +371,79 @@ export function AddAuthenticatorsForm({
     } catch (error) {
       console.warn(error);
       setErrorMessage("Something went wrong trying to add authenticator");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function addZeroKnowledgeEmailAuthenticator(signature: string, emailSalt: string) {
+    try {
+      setIsLoading(true);
+      setZKEmailError(null);
+
+      if (!abstractAccount) {
+        setZKEmailError("No abstract account");
+        setIsLoading(false);
+        throw new Error("No abstract account");
+      }
+
+      const validation = validateNewAuthenticator(
+        abstractAccount.authenticators,
+        emailSalt,
+        AUTHENTICATOR_TYPE.ZKEmail,
+      );
+
+      if (!validation.isValid) {
+        setZKEmailError(
+          validation.errorMessage || "Cannot add this authenticator",
+        );
+        setIsLoading(false);
+        throw new Error(
+          validation.errorMessage || "Cannot add this authenticator",
+        );
+      }
+
+      if (!ZK_EMAIL_HOST) {
+        setZKEmailError(
+          "ZK-Email configuration error: allowed email host not set",
+        );
+        setIsLoading(false);
+        throw new Error(
+          "ZK_EMAIL_HOST is not configured. Please set VITE_ZK_EMAIL_HOST in your environment.",
+        );
+      }
+      const allowedEmailHost = ZK_EMAIL_HOST;
+
+      const accountIndex = findLowestMissingOrNextIndex(
+        abstractAccount.authenticators,
+      );
+
+      const msg: AddZKEmailAuthenticator = {
+        add_auth_method: {
+          add_authenticator: {
+            ZKEmail: {
+              id: accountIndex,
+              signature: signature,
+              email_salt: emailSalt,
+              allowed_email_hosts: [allowedEmailHost],
+            },
+          },
+        },
+      };
+
+      const authenticatorStateData = {
+        id: `${abstractAccount.id}-${accountIndex}`,
+        type: AUTHENTICATOR_TYPE.ZKEmail,
+        authenticator: emailSalt,
+        authenticatorIndex: accountIndex,
+        version: "1",
+        __typename: "Authenticator",
+      };
+
+      await handleAddAuthenticator(msg, authenticatorStateData);
+    } catch (error) {
+      console.warn(error);
+      setZKEmailError("Something went wrong trying to add authenticator");
     } finally {
       setIsLoading(false);
     }
@@ -828,6 +950,39 @@ export function AddAuthenticatorsForm({
   }, [pendingOAuthJwt, client]);
 
   if (isLoading) {
+    if (zkEmailSigningStatus) {
+      return (
+        <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center ui-w-full">
+          <Loading
+            header="Adding Authenticator"
+            message="Signing with your email. Don't leave the page or close the window."
+          />
+          <ZKEmailAuthenticatorStatus
+            phase={zkEmailSigningStatus.phase}
+            message={zkEmailSigningStatus.message}
+            detail={zkEmailSigningStatus.detail}
+            className="ui-w-full"
+          />
+          {TURNSTILE_SITE_KEY && (
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={TURNSTILE_SITE_KEY}
+              options={{ size: "invisible", execution: "execute" }}
+              onSuccess={(token) => {
+                turnstileTokenRef.current = token;
+              }}
+              onError={() => {
+                turnstileTokenRef.current = null;
+              }}
+              onExpire={() => {
+                turnstileTokenRef.current = null;
+              }}
+            />
+          )}
+        </div>
+      );
+    }
+
     return (
       <Loading
         header="Adding Authenticator"
@@ -843,6 +998,18 @@ export function AddAuthenticatorsForm({
         error={otpError}
         onError={setOtpError}
         onClose={() => setIsOpen(false)}
+      />
+    );
+  }
+
+  if (isAddingZKEmail) {
+    return (
+      <AddZKEmail
+        onSubmit={addZeroKnowledgeEmailAuthenticator}
+        error={zKEmailError}
+        onError={setZKEmailError}
+        onClose={() => setIsOpen(false)}
+        abstractAccount={abstractAccount!}
       />
     );
   }
@@ -886,49 +1053,49 @@ export function AddAuthenticatorsForm({
           <div className="ui-grid ui-grid-cols-3 ui-gap-4 ui-w-fit ui-justify-center ui-mx-auto">
             <BaseButton
               className={cn("ui-w-16 ui-h-16", {
-                "!ui-border-white": selectedAuthenticator === "jwt",
+                "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Stytch,
               })}
-              onClick={() => handleSwitch("jwt")}
+              onClick={() => handleSwitch(CONNECTION_METHOD.Stytch)}
               variant="secondary"
               size="icon-large"
             >
               <EmailIcon className="ui-w-[30px] ui-h-[24px]" />
             </BaseButton>
-            {shouldEnableKeplr ? (
+            {(!isMainnet || FEATURE_FLAGS.keplr) ? (
               <BaseButton
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === "keplr" },
+                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Keplr },
                   "ui-w-16 ui-h-16",
                 )}
-                onClick={() => handleSwitch("keplr")}
+                onClick={() => handleSwitch(CONNECTION_METHOD.Keplr)}
                 variant="secondary"
                 size="icon-large"
               >
                 <KeplrLogo className="ui-w-[26px] ui-h-[26px]" />
               </BaseButton>
             ) : null}
-            {shouldEnableMetamask ? (
+            {(!isMainnet || FEATURE_FLAGS.metamask) ? (
               <BaseButton
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === "metamask" },
+                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Metamask },
                   "ui-w-16 ui-h-16",
                 )}
-                disabled={!shouldEnableMetamask}
-                onClick={() => handleSwitch("metamask")}
+                disabled={isMainnet && !FEATURE_FLAGS.metamask}
+                onClick={() => handleSwitch(CONNECTION_METHOD.Metamask)}
                 variant="secondary"
                 size="icon-large"
               >
                 <MetamaskLogo className="ui-w-[34px] ui-h-[34px]" />
               </BaseButton>
             ) : null}
-            {shouldEnableOkx ? (
+            {(!isMainnet || FEATURE_FLAGS.okx) ? (
               <BaseButton
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === "okx" },
+                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.OKX },
                   "ui-w-16 ui-h-16",
                 )}
-                disabled={!shouldEnableOkx}
-                onClick={() => handleSwitch("okx")}
+                disabled={isMainnet && !FEATURE_FLAGS.okx}
+                onClick={() => handleSwitch(CONNECTION_METHOD.OKX)}
                 variant="secondary"
                 size="icon-large"
               >
@@ -943,11 +1110,11 @@ export function AddAuthenticatorsForm({
             {isPasskeyAuthenticatorAvailable ? (
               <BaseButton
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === "passkey" },
+                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Passkey },
                   "ui-w-16 ui-h-16 ui-relative",
                 )}
                 disabled={!isPasskeyAuthenticatorAvailable}
-                onClick={() => handleSwitch("passkey")}
+                onClick={() => handleSwitch(CONNECTION_METHOD.Passkey)}
                 variant="secondary"
                 size="icon-large"
               >
@@ -957,18 +1124,35 @@ export function AddAuthenticatorsForm({
                 <PasskeyIcon className="ui-w-12" />
               </BaseButton>
             ) : null}
-            {appleFlag ? (
+            {FEATURE_FLAGS.apple ? (
               <BaseButton
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === "apple" },
+                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Apple },
                   "ui-w-16 ui-h-16",
                 )}
-                disabled={!appleFlag}
-                onClick={() => handleSwitch("apple")}
+                disabled={!FEATURE_FLAGS.apple}
+                onClick={() => handleSwitch(CONNECTION_METHOD.Apple)}
                 variant="secondary"
                 size="icon-large"
               >
                 <AppleLogoIcon className="ui-w-[34px] ui-h-[34px]" />
+              </BaseButton>
+            ) : null}
+            {isZKEmailAuthenticatorAvailable ? (
+              <BaseButton
+                className={cn(
+                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.ZKEmail },
+                  "ui-w-16 ui-h-16 ui-relative",
+                )}
+                disabled={!isZKEmailAuthenticatorAvailable}
+                onClick={() => handleSwitch(CONNECTION_METHOD.ZKEmail)}
+                variant="secondary"
+                size="icon-large"
+              >
+                <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500/50 ui-text-white ui-text-[10px] ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
+                  BETA
+                </span>
+                <ZKEmailIcon className="ui-w-8 ui-h-8" />
               </BaseButton>
             ) : null}
           </div>
@@ -984,11 +1168,27 @@ export function AddAuthenticatorsForm({
       ) : (
         <BaseButton
           className="ui-w-full"
-          disabled={selectedAuthenticator === "none"}
+          disabled={selectedAuthenticator === CONNECTION_METHOD.None}
           onClick={handleSelection}
         >
           SET UP AUTHENTICATOR
         </BaseButton>
+      )}
+      {connectionMethod === CONNECTION_METHOD.ZKEmail && TURNSTILE_SITE_KEY && (
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={TURNSTILE_SITE_KEY}
+          options={{ size: "invisible", execution: "execute" }}
+          onSuccess={(token) => {
+            turnstileTokenRef.current = token;
+          }}
+          onError={() => {
+            turnstileTokenRef.current = null;
+          }}
+          onExpire={() => {
+            turnstileTokenRef.current = null;
+          }}
+        />
       )}
     </div>
   );
