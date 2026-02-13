@@ -66,7 +66,7 @@ export function useZKEmailVerificationFlow(
   const setErrorAndNotify = useCallback(
     (message: string) => {
       const displayMessage =
-        message?.trim() ||
+        message.trim() ||
         "Failed to send verification email. Please try again.";
       setError(displayMessage);
       onErrorCallback?.(displayMessage);
@@ -110,7 +110,7 @@ export function useZKEmailVerificationFlow(
           email,
           command,
           xionAddress,
-          token ?? "",
+          token,
         );
 
         if (!data.success) {

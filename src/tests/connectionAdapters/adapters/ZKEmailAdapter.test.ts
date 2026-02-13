@@ -130,4 +130,20 @@ describe("ZKEmailAdapter with feature flag disabled", () => {
 
     expect(adapter.isInstalled()).toBe(false);
   });
+
+  it("should throw from enable when feature flag is disabled", async () => {
+    vi.doMock("../../../config", () => ({
+      FEATURE_FLAGS: {
+        zkemail: false,
+      },
+    }));
+
+    const { ZKEmailAdapter } =
+      await import("../../../connectionAdapters/adapters/ZKEmailAdapter");
+    const adapter = new ZKEmailAdapter();
+
+    await expect(adapter.enable("xion-testnet-2")).rejects.toThrow(
+      "ZK-Email is not supported in this browser",
+    );
+  });
 });

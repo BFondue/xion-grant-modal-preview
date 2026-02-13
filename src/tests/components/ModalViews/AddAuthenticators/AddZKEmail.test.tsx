@@ -16,6 +16,7 @@ import { Dialog, DialogContent } from "../../../../components/ui/dialog";
 import { toUrlSafeBase64 } from "@burnt-labs/signers/crypto";
 import { getZKEmailProofPollingAbortController } from "../../../../auth/zk-email/zk-email-signing-status";
 import * as zkEmailSigningStatus from "../../../../auth/zk-email/zk-email-signing-status";
+import * as zkEmailUtils from "../../../../auth/utils/zk-email";
 
 // Use vi.hoisted to declare mock functions that can be accessed by vi.mock
 const {
@@ -1866,6 +1867,76 @@ describe("AddZKEmail Component", () => {
   });
 
   describe("Edge cases - uncovered branches", () => {
+    it("should use Error.message when proof conversion throws an Error object", async () => {
+      const proofSpy = vi
+        .spyOn(zkEmailUtils, "proofResponseToBase64Signature")
+        .mockImplementation(() => {
+          throw new Error("signature conversion failed");
+        });
+
+      mockCheckZKEmailStatus.mockResolvedValue({
+        proofId: "test-proof-id",
+        status: "proof_generation_success",
+        proof: {
+          proof: { pi_a: ["1"], pi_b: [["2", "3"]], pi_c: ["4"], protocol: "groth16" },
+          publicInputs: new Array(69).fill("0"),
+        },
+      });
+
+      const { user } = await renderComponent();
+      await triggerTurnstileSuccess();
+
+      const emailInput = getEmailInput();
+      await act(async () => {
+        await user.type(emailInput, "test@example.com");
+      });
+
+      const submitButton = screen.getByText("SEND VERIFICATION EMAIL");
+      await act(async () => {
+        fireEvent.click(submitButton);
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+
+      expect(mockOnError).toHaveBeenCalledWith("signature conversion failed");
+      proofSpy.mockRestore();
+    });
+
+    it("should use fallback message when proof conversion throws non-Error", async () => {
+      const proofSpy = vi
+        .spyOn(zkEmailUtils, "proofResponseToBase64Signature")
+        .mockImplementation(
+        () => {
+          throw "string-error";
+        },
+      );
+
+      mockCheckZKEmailStatus.mockResolvedValue({
+        proofId: "test-proof-id",
+        status: "proof_generation_success",
+        proof: {
+          proof: { pi_a: ["1"], pi_b: [["2", "3"]], pi_c: ["4"], protocol: "groth16" },
+          publicInputs: new Array(69).fill("0"),
+        },
+      });
+
+      const { user } = await renderComponent();
+      await triggerTurnstileSuccess();
+
+      const emailInput = getEmailInput();
+      await act(async () => {
+        await user.type(emailInput, "test@example.com");
+      });
+
+      const submitButton = screen.getByText("SEND VERIFICATION EMAIL");
+      await act(async () => {
+        fireEvent.click(submitButton);
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+
+      expect(mockOnError).toHaveBeenCalledWith("Failed to prepare signature");
+      proofSpy.mockRestore();
+    });
+
     it("should handle success response without proofId", async () => {
       // When no proofId is returned, the hook throws and transitions to error phase
       mockVerifyEmailWithZKEmail.mockResolvedValue({

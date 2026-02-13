@@ -150,4 +150,82 @@ describe("useZKEmailSigningStatus", () => {
       message: "Done",
     });
   });
+
+  it("should return null and avoid subscription when disabled", () => {
+    const { result } = renderHook(() => useZKEmailSigningStatus(false));
+
+    act(() => {
+      setZKEmailSigningStatus({
+        phase: "in_progress",
+        message: "Ignored",
+      });
+    });
+
+    expect(result.current).toBeNull();
+  });
+
+  it("should return null and avoid subscribing when disabled", () => {
+    setZKEmailSigningStatus({
+      phase: "in_progress",
+      message: "Should not be observed",
+    });
+
+    const { result } = renderHook(() => useZKEmailSigningStatus(false));
+    expect(result.current).toBeNull();
+
+    act(() => {
+      setZKEmailSigningStatus({
+        phase: "success",
+        message: "Still ignored",
+      });
+    });
+
+    expect(result.current).toBeNull();
+  });
+
+  it("should unsubscribe and return null when toggled from enabled to disabled", () => {
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useZKEmailSigningStatus(enabled),
+      { initialProps: { enabled: true } },
+    );
+
+    act(() => {
+      setZKEmailSigningStatus({
+        phase: "in_progress",
+        message: "Active status",
+      });
+    });
+
+    expect(result.current).toEqual({
+      phase: "in_progress",
+      message: "Active status",
+    });
+
+    rerender({ enabled: false });
+
+    expect(result.current).toBeNull();
+  });
+
+  it("should subscribe when enabled toggles from false to true", () => {
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useZKEmailSigningStatus(enabled),
+      { initialProps: { enabled: false } },
+    );
+
+    expect(result.current).toBeNull();
+
+    act(() => {
+      setZKEmailSigningStatus({
+        phase: "in_progress",
+        message: "visible on enable",
+      });
+    });
+
+    rerender({ enabled: true });
+
+    expect(result.current).toEqual({
+      phase: "in_progress",
+      message: "visible on enable",
+    });
+  });
 });

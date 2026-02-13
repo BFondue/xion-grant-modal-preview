@@ -7,8 +7,12 @@ import {
   getZKEmailStatusMessage,
   isZKEmailStatusComplete,
   isZKEmailStatusSuccess,
+  isValidZKEmailFormat,
   extractEmailSalt,
   generateEmailSaltFromAccountCode,
+  pollZKEmailStatusUntilComplete,
+  proofResponseToBase64Signature,
+  ZK_EMAIL_STATUS,
 } from "../../auth/utils/zk-email";
 
 // Configurable mock values – individual tests can override via mockConfigValues
@@ -762,6 +766,181 @@ describe("zk-email utilities", () => {
       const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
       const body = JSON.parse(callArgs[1].body);
       expect(body.accountCode).toBe("abcdef");
+    });
+  });
+
+  describe("pollZKEmailStatusUntilComplete", () => {
+    it("returns successful terminal status with proof and calls onStatus", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockFetchResponse({
+          proofId: "proof-ok",
+          status: ZK_EMAIL_STATUS.proof_generation_success,
+          proof: {
+            proof: { pi_a: [], pi_b: [], pi_c: [], protocol: "groth16" },
+            publicInputs: ["a", "b"],
+          },
+        }),
+      );
+
+      const onStatus = vi.fn();
+      const result = await pollZKEmailStatusUntilComplete("proof-ok", {
+        onStatus,
+      });
+
+      expect(result.status).toBe(ZK_EMAIL_STATUS.proof_generation_success);
+      expect(onStatus).toHaveBeenCalledTimes(1);
+    });
+
+    it("throws when signal is already aborted", async () => {
+      const controller = new AbortController();
+      controller.abort();
+
+      await expect(
+        pollZKEmailStatusUntilComplete("proof-cancelled", {
+          signal: controller.signal,
+        }),
+      ).rejects.toThrow("Polling cancelled");
+    });
+
+    it("throws timeout error when deadline has passed", async () => {
+      await expect(
+        pollZKEmailStatusUntilComplete("proof-timeout", {
+          timeoutMs: -1,
+        }),
+      ).rejects.toThrow("ZK-Email proof request timed out");
+    });
+
+    it("throws status message when terminal status is failure", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockFetchResponse({
+          proofId: "proof-fail",
+          status: ZK_EMAIL_STATUS.proof_generation_failed,
+        }),
+      );
+
+      await expect(
+        pollZKEmailStatusUntilComplete("proof-fail"),
+      ).rejects.toThrow("Proof generation failed");
+    });
+
+    it("aborts while waiting between polls", async () => {
+      vi.useFakeTimers();
+      const controller = new AbortController();
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockFetchResponse({
+          proofId: "proof-pending",
+          status: ZK_EMAIL_STATUS.initialised,
+        }),
+      );
+
+      const pending = pollZKEmailStatusUntilComplete("proof-pending", {
+        signal: controller.signal,
+        pollIntervalMs: 1000,
+      });
+      pending.catch(() => {});
+
+      controller.abort();
+      await vi.runAllTimersAsync();
+
+      await expect(pending).rejects.toThrow("Polling cancelled");
+      vi.useRealTimers();
+    });
+
+    it("aborts through delay listener callback after first pending status", async () => {
+      vi.useFakeTimers();
+      const controller = new AbortController();
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockFetchResponse({
+          proofId: "proof-pending-delay-abort",
+          status: ZK_EMAIL_STATUS.initialised,
+        }),
+      );
+
+      const pending = pollZKEmailStatusUntilComplete(
+        "proof-pending-delay-abort",
+        {
+          signal: controller.signal,
+          pollIntervalMs: 1000,
+          onStatus: () => {
+            setTimeout(() => controller.abort(), 0);
+          },
+        },
+      );
+      pending.catch(() => {});
+
+      await vi.advanceTimersByTimeAsync(0);
+
+      await expect(pending).rejects.toThrow("Polling cancelled");
+      vi.useRealTimers();
+    });
+
+    it("cancels before wait when signal is aborted by onStatus", async () => {
+      const controller = new AbortController();
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+        mockFetchResponse({
+          proofId: "proof-cancel-in-onstatus",
+          status: ZK_EMAIL_STATUS.initialised,
+        }),
+      );
+
+      await expect(
+        pollZKEmailStatusUntilComplete("proof-cancel-in-onstatus", {
+          signal: controller.signal,
+          onStatus: () => controller.abort(),
+        }),
+      ).rejects.toThrow("Polling cancelled");
+    });
+
+    it("waits and recurses to the next poll when not complete", async () => {
+      vi.useFakeTimers();
+      (global.fetch as ReturnType<typeof vi.fn>)
+        .mockResolvedValueOnce(
+          mockFetchResponse({
+            proofId: "proof-retry",
+            status: ZK_EMAIL_STATUS.initialised,
+          }),
+        )
+        .mockResolvedValueOnce(
+          mockFetchResponse({
+            proofId: "proof-retry",
+            status: ZK_EMAIL_STATUS.proof_generation_success,
+            proof: {
+              proof: { pi_a: [], pi_b: [], pi_c: [], protocol: "groth16" },
+              publicInputs: ["x"],
+            },
+          }),
+        );
+
+      const pending = pollZKEmailStatusUntilComplete("proof-retry", {
+        pollIntervalMs: 1000,
+      });
+      await vi.advanceTimersByTimeAsync(1000);
+
+      const result = await pending;
+      expect(result.status).toBe(ZK_EMAIL_STATUS.proof_generation_success);
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+      vi.useRealTimers();
+    });
+  });
+
+  describe("proofResponseToBase64Signature", () => {
+    it("throws when proof is missing", () => {
+      expect(() =>
+        proofResponseToBase64Signature({
+          proofId: "proof-1",
+          status: ZK_EMAIL_STATUS.proof_generation_success,
+        } as any),
+      ).toThrow("proofResponseToBase64Signature: proof is required");
+    });
+  });
+
+  describe("isValidZKEmailFormat", () => {
+    it("returns false for non-string input", () => {
+      expect(isValidZKEmailFormat(undefined as unknown as string)).toBe(false);
+      expect(isValidZKEmailFormat(null as unknown as string)).toBe(false);
+      expect(isValidZKEmailFormat(123 as unknown as string)).toBe(false);
     });
   });
 });

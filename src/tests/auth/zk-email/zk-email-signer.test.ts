@@ -59,6 +59,9 @@ describe("AAZKEmailSigner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(
+      (() => Promise.resolve("mock-turnstile-token")) as any,
+    );
     // So signDirect proceeds to poll; otherwise it throws "Polling cancelled" before calling pollZKEmailStatusUntilComplete
     vi.mocked(getZKEmailSigningAbortController).mockReturnValue(
       new AbortController(),
@@ -160,6 +163,77 @@ describe("AAZKEmailSigner", () => {
       await expect(
         signerWithWhitespaceEmail.signDirect(mockAbstractAccount, mockSignDoc),
       ).rejects.toThrow("email is required");
+    });
+
+    it("should set status and throw when turnstile provider is missing", async () => {
+      vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(null as any);
+
+      await expect(
+        signer.signDirect(mockAbstractAccount, mockSignDoc),
+      ).rejects.toThrow("requires Turnstile token");
+
+      expect(setZKEmailSigningStatus).toHaveBeenCalledWith({
+        phase: "error",
+        message: "Security verification is required. Please try again.",
+      });
+    });
+
+    it("should handle non-Error turnstile provider failure", async () => {
+      vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(
+        (() => Promise.reject("provider failed")) as any,
+      );
+
+      await expect(
+        signer.signDirect(mockAbstractAccount, mockSignDoc),
+      ).rejects.toThrow("Failed to complete security verification.");
+
+      expect(setZKEmailSigningStatus).toHaveBeenCalledWith({
+        phase: "error",
+        message: "Failed to complete security verification.",
+      });
+    });
+
+    it("should preserve Error message when turnstile provider rejects with Error", async () => {
+      vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(
+        (() => Promise.reject(new Error("turnstile explode"))) as any,
+      );
+
+      await expect(
+        signer.signDirect(mockAbstractAccount, mockSignDoc),
+      ).rejects.toThrow("turnstile explode");
+
+      expect(setZKEmailSigningStatus).toHaveBeenCalledWith({
+        phase: "error",
+        message: "turnstile explode",
+      });
+    });
+
+    it("should fail when turnstile token provider is missing", async () => {
+      vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(null);
+
+      await expect(
+        signer.signDirect(mockAbstractAccount, mockSignDoc),
+      ).rejects.toThrow("requires Turnstile token");
+
+      expect(setZKEmailSigningStatus).toHaveBeenCalledWith({
+        phase: "error",
+        message: "Security verification is required. Please try again.",
+      });
+    });
+
+    it("should map non-Error turnstile provider failure to fallback message", async () => {
+      vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(() =>
+        Promise.reject("bad-token-flow"),
+      );
+
+      await expect(
+        signer.signDirect(mockAbstractAccount, mockSignDoc),
+      ).rejects.toThrow("Failed to complete security verification.");
+
+      expect(setZKEmailSigningStatus).toHaveBeenCalledWith({
+        phase: "error",
+        message: "Failed to complete security verification.",
+      });
     });
 
     it("should throw error when verification fails", async () => {
@@ -276,6 +350,23 @@ describe("AAZKEmailSigner", () => {
       ).rejects.toThrow("Signing cancelled");
     });
 
+    it("should clear status when polling is cancelled", async () => {
+      vi.mocked(verifyEmailWithZKEmail).mockResolvedValue({
+        success: true,
+        proofId: "proof-123",
+      });
+
+      vi.mocked(pollZKEmailStatusUntilComplete).mockRejectedValue(
+        new Error("Polling cancelled"),
+      );
+
+      await expect(
+        signer.signDirect(mockAbstractAccount, mockSignDoc),
+      ).rejects.toThrow("Polling cancelled");
+
+      expect(setZKEmailSigningStatus).toHaveBeenCalledWith(null);
+    });
+
     it("should timeout after 5 minutes", async () => {
       vi.mocked(verifyEmailWithZKEmail).mockResolvedValue({
         success: true,
@@ -304,6 +395,23 @@ describe("AAZKEmailSigner", () => {
       await expect(
         signer.signDirect(mockAbstractAccount, mockSignDoc),
       ).rejects.toThrow();
+    });
+
+    it("should clear status on polling cancelled", async () => {
+      vi.mocked(verifyEmailWithZKEmail).mockResolvedValue({
+        success: true,
+        proofId: "proof-123",
+      });
+
+      vi.mocked(pollZKEmailStatusUntilComplete).mockRejectedValue(
+        new Error("Polling cancelled"),
+      );
+
+      await expect(
+        signer.signDirect(mockAbstractAccount, mockSignDoc),
+      ).rejects.toThrow("Polling cancelled");
+
+      expect(setZKEmailSigningStatus).toHaveBeenCalledWith(null);
     });
   });
 
@@ -639,6 +747,44 @@ describe("AAZKEmailSigner", () => {
           phase: "in_progress",
           detail:
             "Generating zero-knowledge proof. This may take 10-30 seconds.",
+        }),
+      );
+    });
+
+    it("omits progress detail for non-email_replied status updates", async () => {
+      const mockProof = {
+        pi_a: ["1"],
+        pi_b: [
+          ["2", "3"],
+          ["4", "5"],
+          ["6", "7"],
+        ],
+        pi_c: ["8"],
+      };
+      vi.mocked(verifyEmailWithZKEmail).mockResolvedValue({
+        success: true,
+        proofId: "proof-123",
+      });
+      vi.mocked(pollZKEmailStatusUntilComplete).mockImplementation(
+        async (_proofId, options) => {
+          options?.onStatus?.({
+            proofId: "proof-123",
+            status: "email_sent_awaiting_reply",
+          } as any);
+          return {
+            proofId: "proof-123",
+            status: "proof_generation_success" as const,
+            proof: { proof: mockProof, publicInputs: ["pub1"] },
+          } as any;
+        },
+      );
+
+      await signer.signDirect(mockAbstractAccount, mockSignDoc);
+
+      expect(setZKEmailSigningStatus).toHaveBeenCalledWith(
+        expect.objectContaining({
+          phase: "in_progress",
+          detail: undefined,
         }),
       );
     });

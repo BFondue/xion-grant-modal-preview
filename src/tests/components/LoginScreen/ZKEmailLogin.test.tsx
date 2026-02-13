@@ -13,6 +13,8 @@ import { screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { render } from "../..";
 import { ZKEmailLogin } from "../../../components/LoginScreen/ZKEmailLogin";
 import { Dialog, DialogContent } from "../../../components/ui/dialog";
+import { Turnstile } from "@marsidev/react-turnstile";
+import { getTurnstileTokenForSubmit } from "../../../utils/turnstile";
 
 // Mock zk-email utilities
 const mockVerifyEmailWithZKEmail = vi.fn();
@@ -54,18 +56,53 @@ vi.mock("../../../auth/zk-email/zk-email-signing-status", () => ({
 
 // Mock config - disable Turnstile in tests
 vi.mock("../../../config", () => ({
-  TURNSTILE_SITE_KEY: "", // Empty string disables Turnstile
+  TURNSTILE_SITE_KEY: "test-site-key",
   IS_DEV: false,
 }));
 
 // Mock Turnstile component
 vi.mock("@marsidev/react-turnstile", () => ({
-  Turnstile: vi.fn(() => null),
+  Turnstile: vi.fn(
+    ({ onSuccess, onError, onExpire, ref }: any) => {
+      if (ref && typeof ref === "object") {
+        ref.current = {
+          execute: vi.fn(async () => {
+            onSuccess?.("mock-turnstile-token");
+          }),
+          getResponse: vi.fn(() => "mock-turnstile-token"),
+        };
+      }
+      return (
+        <div data-testid="turnstile-widget">
+          <button onClick={() => onSuccess?.("mock-turnstile-token")}>
+            turnstile-success
+          </button>
+          <button onClick={() => onError?.()}>turnstile-error</button>
+          <button onClick={() => onExpire?.()}>turnstile-expire</button>
+        </div>
+      );
+    },
+  ),
 }));
 
 // Mock turnstile utils so getTurnstileToken resolves and verification flow can call verifyEmailWithZkEmail
 vi.mock("../../../utils/turnstile", () => ({
-  getTurnstileTokenForSubmit: vi.fn(() => Promise.resolve("mock-turnstile-token")),
+  getTurnstileTokenForSubmit: vi.fn(
+    async ({
+      execute,
+      getResponse,
+      getRefToken,
+    }: {
+      execute: () => Promise<void>;
+      getResponse: () => string;
+      getRefToken: () => string | null;
+    }) => {
+      await execute();
+      const refToken = getRefToken();
+      const responseToken = getResponse();
+      return refToken || responseToken || "mock-turnstile-token";
+    },
+  ),
 }));
 
 // Mock @burnt-labs/signers - use importOriginal to preserve other exports
@@ -1436,6 +1473,117 @@ describe("ZKEmailLogin", () => {
   });
 
   describe("edge cases - uncovered branches", () => {
+    it("should handle non-Error thrown while extracting email salt on success", async () => {
+      mockVerifyEmailWithZKEmail.mockResolvedValue({
+        success: true,
+        proofId: "proof-123",
+      });
+      mockPollZKEmailStatusUntilComplete.mockResolvedValue({
+        proofId: "proof-123",
+        status: "complete",
+        proof: {
+          proof: { pi_a: [], pi_b: [], pi_c: [], protocol: "groth16" },
+          publicInputs: ["value"],
+        },
+      });
+      mockExtractEmailSalt.mockImplementation(() => {
+        throw "bad extract";
+      });
+
+      renderComponent();
+      await goToEmailVerificationMode();
+
+      const emailInput = screen.getByLabelText(/enter your email address/i);
+      fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+
+      const addressInput = screen.getByLabelText(/enter your XION address/i);
+      fireEvent.change(addressInput, {
+        target: { value: "xion1testaddress123" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: /send email/i }));
+      await vi.advanceTimersByTimeAsync(3000);
+
+      await waitFor(() => {
+        expect(mockOnError).toHaveBeenCalledWith("Failed to get account code");
+      });
+    });
+
+    it("should use Error.message when extractEmailSalt throws an Error object on success", async () => {
+      mockVerifyEmailWithZKEmail.mockResolvedValue({
+        success: true,
+        proofId: "proof-123",
+      });
+      mockPollZKEmailStatusUntilComplete.mockResolvedValue({
+        proofId: "proof-123",
+        status: "complete",
+        proof: {
+          proof: { pi_a: [], pi_b: [], pi_c: [], protocol: "groth16" },
+          publicInputs: ["value"],
+        },
+      });
+      mockExtractEmailSalt.mockImplementation(() => {
+        throw new Error("salt extraction failed");
+      });
+
+      renderComponent();
+      await goToEmailVerificationMode();
+
+      const emailInput = screen.getByLabelText(/enter your email address/i);
+      fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+
+      const addressInput = screen.getByLabelText(/enter your XION address/i);
+      fireEvent.change(addressInput, {
+        target: { value: "xion1testaddress123" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: /send email/i }));
+      await vi.advanceTimersByTimeAsync(3000);
+
+      await waitFor(() => {
+        expect(mockOnError).toHaveBeenCalledWith("salt extraction failed");
+      });
+    });
+
+    it("should execute turnstile success, error, and expire callbacks", async () => {
+      renderComponent();
+      await goToEmailVerificationMode();
+
+      fireEvent.click(screen.getByText("turnstile-success"));
+      fireEvent.click(screen.getByText("turnstile-error"));
+      fireEvent.click(screen.getByText("turnstile-expire"));
+
+      expect(screen.getByTestId("turnstile-widget")).toBeInTheDocument();
+    });
+
+    it("falls back to empty turnstile response when getResponse is unavailable", async () => {
+      vi.mocked(Turnstile).mockImplementationOnce(({ ref }: any) => {
+        if (ref && typeof ref === "object") {
+          ref.current = {
+            execute: vi.fn(async () => {}),
+          };
+        }
+        return <div data-testid="turnstile-widget-no-response" />;
+      });
+
+      renderComponent();
+      await goToEmailVerificationMode();
+
+      const emailInput = screen.getByLabelText(/enter your email address/i);
+      fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+
+      const addressInput = screen.getByLabelText(/enter your XION address/i);
+      fireEvent.change(addressInput, {
+        target: { value: "xion1testaddress123" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: /send email/i }));
+
+      await waitFor(() => {
+        expect(getTurnstileTokenForSubmit).toHaveBeenCalled();
+      });
+    });
+
     it("should handle non-Error thrown from generateEmailSaltFromAccountCode", async () => {
       // Covers L168 false branch: err instanceof Error ? err.message : "Failed to generate email salt"
       mockGenerateEmailSaltFromAccountCode.mockRejectedValue("string error");

@@ -7,6 +7,8 @@ import {
   getZKEmailSigningAbortController,
   setZKEmailProofPollingAbortController,
   getZKEmailProofPollingAbortController,
+  setZKEmailTurnstileTokenProvider,
+  getZKEmailTurnstileTokenProvider,
   ZKEmailSigningStatus,
 } from "../../../auth/zk-email/zk-email-signing-status";
 
@@ -16,6 +18,7 @@ describe("zk-email-signing-status", () => {
     setZKEmailSigningStatus(null);
     setZKEmailSigningAbortController(null);
     setZKEmailProofPollingAbortController(null);
+    setZKEmailTurnstileTokenProvider(null);
   });
 
   describe("signing status", () => {
@@ -225,6 +228,24 @@ describe("zk-email-signing-status", () => {
       expect(getZKEmailSigningAbortController()).not.toBe(
         getZKEmailProofPollingAbortController(),
       );
+    });
+  });
+
+  describe("turnstile token provider", () => {
+    it("should set and get turnstile token provider", async () => {
+      const provider = vi.fn().mockResolvedValue("token-123");
+      setZKEmailTurnstileTokenProvider(provider);
+
+      const currentProvider = getZKEmailTurnstileTokenProvider();
+      expect(currentProvider).toBe(provider);
+      await expect(currentProvider?.()).resolves.toBe("token-123");
+    });
+
+    it("should clear turnstile token provider", () => {
+      setZKEmailTurnstileTokenProvider(async () => "token");
+      setZKEmailTurnstileTokenProvider(null);
+
+      expect(getZKEmailTurnstileTokenProvider()).toBeNull();
     });
   });
 });

@@ -861,4 +861,46 @@ describe("AuthStateManager", () => {
       ).not.toThrow();
     });
   });
+
+  describe("clearZKEmailData", () => {
+    it("should remove the ZK-Email session key from localStorage", () => {
+      AuthStateManager.clearZKEmailData();
+
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith("zkEmailAddress");
+    });
+
+    it("should handle localStorage remove errors gracefully", () => {
+      localStorageMock.removeItem.mockImplementation(() => {
+        throw new Error("localStorage remove error");
+      });
+
+      expect(() => AuthStateManager.clearZKEmailData()).not.toThrow();
+    });
+  });
+
+  describe("setError edge cases", () => {
+    it("should clear existing error when setError is called with empty string", () => {
+      AuthStateManager.setError("Existing error");
+      expect(AuthStateManager.getState().error).toBe("Existing error");
+
+      AuthStateManager.setError("");
+      expect(AuthStateManager.getState().error).toBeNull();
+    });
+
+    it("should clear existing error when setError is called with whitespace", () => {
+      AuthStateManager.setError("Existing error");
+      expect(AuthStateManager.getState().error).toBe("Existing error");
+
+      AuthStateManager.setError("   ");
+      expect(AuthStateManager.getState().error).toBeNull();
+    });
+
+    it("should treat non-string error values as clear", () => {
+      AuthStateManager.setError("Existing error");
+      expect(AuthStateManager.getState().error).toBe("Existing error");
+
+      AuthStateManager.setError(undefined as unknown as string);
+      expect(AuthStateManager.getState().error).toBeNull();
+    });
+  });
 });

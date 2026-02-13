@@ -36,10 +36,8 @@ export const PinInput: React.FC<PinInputProps> = ({
 
   const handleBackspace = (index: number) => {
     const newPin = [...pin];
-    if (index >= 0) {
-      newPin[index] = "";
-      inputRefs.current[index - 1]?.focus();
-    }
+    newPin[index] = "";
+    inputRefs.current[index - 1]?.focus();
 
     setPin(newPin);
   };
@@ -60,9 +58,7 @@ export const PinInput: React.FC<PinInputProps> = ({
     const newPin = [...pin];
 
     pastedDigits.forEach((digit, index) => {
-      if (index < length) {
-        newPin[index] = digit;
-      }
+      newPin[index] = digit;
     });
 
     setPin(newPin);
