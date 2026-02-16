@@ -1,4 +1,4 @@
-// Grant modal mock data — Wrinkle Game preview
+// Grant modal mock data
 import { Permission } from "./types";
 
 export const MOCK_APP = {
