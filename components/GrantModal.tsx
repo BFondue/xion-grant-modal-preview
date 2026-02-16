@@ -72,13 +72,13 @@ function ApproveState({
         <button
           type="button"
           onClick={onDeny}
-          className="min-h-[44px] text-body text-text-secondary transition-colors duration-fast hover:text-text-primary active:text-text-primary"
+          className="text-body text-text-secondary transition-colors duration-fast hover:text-text-primary active:text-text-primary"
         >
           Deny
         </button>
         <button
           type="button"
-          className="min-h-[44px] text-caption text-text-muted transition-colors duration-fast hover:text-text-secondary active:text-text-secondary"
+          className="text-caption text-text-muted transition-colors duration-fast hover:text-text-secondary active:text-text-secondary"
         >
           Use a different account
         </button>
