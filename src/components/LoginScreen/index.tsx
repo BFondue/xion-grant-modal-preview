@@ -53,7 +53,7 @@ import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
   NETWORK,
   FEATURE_FLAGS,
-  STYTCH_PUBLIC_TOKEN,
+  getStytchPublicToken,
   STYTCH_PROXY_URL,
 } from "../../config";
 
@@ -151,7 +151,7 @@ export const LoginScreen = () => {
     const redirectUrl = `${origin}/callback`;
 
     // Manually construct OAuth URL to open in popup instead of redirecting iframe
-    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const publicToken = getStytchPublicToken();
     const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const googleOAuthUrl =
       `${baseUrl}/public/oauth/google/start?` +
@@ -229,7 +229,7 @@ export const LoginScreen = () => {
     // Redirect to our callback page
     const redirectUrl = `${origin}/callback`;
 
-    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const publicToken = getStytchPublicToken();
     const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const appleOAuthUrl =
       `${baseUrl}/public/oauth/apple/start?` +
@@ -312,7 +312,7 @@ export const LoginScreen = () => {
     // Redirect to our callback page
     const redirectUrl = `${origin}/callback`;
 
-    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const publicToken = getStytchPublicToken();
     const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const tiktokOAuthUrl =
       `${baseUrl}/public/oauth/tiktok/start?` +

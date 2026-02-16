@@ -78,6 +78,7 @@ vi.mock("../../../hooks/useCreateJwtAccount", () => ({
 
 mockEnvironmentVariables({
   VITE_TIKTOK_FLAG: "true",
+  VITE_STYTCH_PUBLIC_TOKEN: "test-public-token",
 });
 
 const setupTest = () => {

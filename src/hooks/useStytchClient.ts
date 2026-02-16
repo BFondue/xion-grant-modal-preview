@@ -1,19 +1,15 @@
 import { useStytch } from "@stytch/react";
 import { StytchHeadlessClient } from "@stytch/vanilla-js/headless";
-import { STYTCH_PROXY_URL, STYTCH_PUBLIC_TOKEN } from "../config";
+import { STYTCH_PROXY_URL, getStytchPublicToken } from "../config";
 
 // Create a singleton instance for StytchProvider initialization
 let stytchClientInstance: StytchHeadlessClient | null = null;
 
 export function getStytchClient(): StytchHeadlessClient | null {
-  if (!STYTCH_PUBLIC_TOKEN) {
-    console.error("Missing STYTCH_PUBLIC_TOKEN environment variable");
-    return null;
-  }
-
   if (!stytchClientInstance) {
     try {
-      stytchClientInstance = new StytchHeadlessClient(STYTCH_PUBLIC_TOKEN, {
+      const token = getStytchPublicToken();
+      stytchClientInstance = new StytchHeadlessClient(token, {
         cookieOptions: {
           jwtCookieName: "stytch_session_jwt",
         },
