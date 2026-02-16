@@ -40,7 +40,7 @@ export class EthWalletAdapter implements ConnectionAdapter {
       return false;
     }
 
-    return !!(window.ethereum as any).isMetaMask;
+    return !!window.ethereum.isMetaMask;
   }
 
   /**
@@ -51,7 +51,7 @@ export class EthWalletAdapter implements ConnectionAdapter {
       throw new Error("Ethereum wallet not installed");
     }
 
-    if (!(window.ethereum as any).isMetaMask) {
+    if (!window.ethereum.isMetaMask) {
       throw new Error("MetaMask not detected");
     }
 

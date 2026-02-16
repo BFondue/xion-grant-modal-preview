@@ -22,7 +22,7 @@ interface MessageHandlerCallbacks {
   onSignAndBroadcast: (
     origin: string,
     payload: SignTransactionPayload,
-  ) => Promise<any>;
+  ) => Promise<SignTransactionResponse>;
   onGetAddress: (origin: string) => { address: string | null };
   onDisconnect: (origin: string) => Promise<DisconnectResponse>;
   onAddAuthenticator: (

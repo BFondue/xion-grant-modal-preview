@@ -110,7 +110,7 @@ describe("AAPasskeySigner", () => {
         }),
       };
 
-      (get as any).mockResolvedValue(mockCredential);
+      vi.mocked(get).mockResolvedValue(mockCredential);
 
       const response = await signer.signDirect("signerAddress", mockSignDoc);
 
@@ -138,7 +138,7 @@ describe("AAPasskeySigner", () => {
       const mockCredential = {
         toJSON: () => ({ id: "mock-id" }),
       };
-      (get as any).mockResolvedValue(mockCredential);
+      vi.mocked(get).mockResolvedValue(mockCredential);
 
       await signer.signDirect("signerAddress", mockSignDoc);
 
@@ -162,7 +162,7 @@ describe("AAPasskeySigner", () => {
       );
 
       const webAuthnError = new Error("User cancelled the operation");
-      (get as any).mockRejectedValue(webAuthnError);
+      vi.mocked(get).mockRejectedValue(webAuthnError);
 
       await expect(
         signer.signDirect("signerAddress", mockSignDoc),

@@ -3,7 +3,7 @@ import { renderHook, waitFor, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useSigningClient } from "../../hooks/useSigningClient";
 import { AuthContext } from "../../components/AuthContext";
-import { CONNECTION_METHOD } from "../../auth/useAuthState";
+import { CONNECTION_METHOD, type ConnectionMethod } from "../../auth/useAuthState";
 
 import {
   AADirectSigner,
@@ -13,6 +13,7 @@ import {
 } from "@burnt-labs/signers";
 import { AbstractAccountJWTSigner } from "../../auth/jwt/jwt-signer";
 import { AuthStateManager } from "../../auth/AuthStateManager";
+import type { ConnectionAdapter } from "../../connectionAdapters/types";
 
 const { mockGetTokens } = vi.hoisted(() => {
   const mockGetTokens = vi
@@ -95,8 +96,8 @@ vi.mock("../../connectionAdapters", () => ({
     if (connectionMethod === "stytch") {
       // JWT adapter
       mockAdapter.getSigner = vi.fn(
-        (abstractAccount, authIndex, sessionToken, apiUrl) => {
-          return new (AbstractAccountJWTSigner as any)(
+        (abstractAccount: string, authIndex: number, sessionToken: string, apiUrl: string) => {
+          return new (AbstractAccountJWTSigner as unknown as new (...args: unknown[]) => unknown)(
             abstractAccount,
             authIndex,
             sessionToken,
@@ -107,12 +108,12 @@ vi.mock("../../connectionAdapters", () => ({
     } else if (connectionMethod === "keplr" || connectionMethod === "okx") {
       // Secp256k1 adapter
       mockAdapter.getSigner = vi.fn(async () => {
-        return new (AADirectSigner as any)();
+        return new (AADirectSigner as unknown as new () => unknown)();
       });
     } else if (connectionMethod === "metamask") {
       // EthWallet adapter
       mockAdapter.getSigner = vi.fn(() => {
-        return new (AAEthSigner as any)();
+        return new (AAEthSigner as unknown as new () => unknown)();
       });
     } else if (connectionMethod === "passkey") {
       // Passkey adapter
@@ -122,7 +123,7 @@ vi.mock("../../connectionAdapters", () => ({
     } else if (connectionMethod === "zkemail") {
       // ZKEmail adapter
       mockAdapter.getSigner = vi.fn(
-        (_abstractAccount, _authIndex, _email) => {
+        () => {
           return { type: "zkemail-signer" }; // Mock zkemail signer
         },
       );
@@ -150,7 +151,7 @@ describe("useSigningClient", () => {
     contextValue = {},
   }: {
     children: React.ReactNode;
-    contextValue?: any;
+    contextValue?: Record<string, unknown>;
   }) => (
     <AuthContext.Provider
       value={{
@@ -171,11 +172,11 @@ describe("useSigningClient", () => {
     // Mock window.keplr
     window.keplr = {
       getOfflineSigner: vi.fn().mockReturnValue({}),
-    } as any;
+    } as unknown as typeof window.keplr;
     // Mock window.ethereum
     window.ethereum = {
       request: vi.fn(),
-    } as any;
+    } as unknown as typeof window.ethereum;
     // Mock window.okxwallet
     window.okxwallet = {
       keplr: {
@@ -183,13 +184,13 @@ describe("useSigningClient", () => {
         signArbitrary: vi.fn(),
         getOfflineSigner: vi.fn().mockReturnValue({}),
       },
-    } as any;
+    } as unknown as typeof window.okxwallet;
   });
 
   afterEach(() => {
-    delete (window as any).keplr;
-    delete (window as any).ethereum;
-    delete (window as any).okxwallet;
+    delete (window as unknown as Record<string, unknown>).keplr;
+    delete (window as unknown as Record<string, unknown>).ethereum;
+    delete (window as unknown as Record<string, unknown>).okxwallet;
   });
 
   it("should return client when initialized with stytch", async () => {
@@ -386,7 +387,7 @@ describe("useSigningClient", () => {
   it("should handle missing signer gracefully", async () => {
     // Mock window.keplr to be undefined for keplr connection
     const originalKeplr = window.keplr;
-    delete (window as any).keplr;
+    delete (window as unknown as Record<string, unknown>).keplr;
 
     const { result } = renderHook(() => useSigningClient(), {
       wrapper: ({ children }) =>
@@ -469,7 +470,7 @@ describe("useSigningClient", () => {
   it("should update keplr state on keplr_keystorechange event", async () => {
     // Start with no keplr
     const originalKeplr = window.keplr;
-    delete (window as any).keplr;
+    delete (window as unknown as Record<string, unknown>).keplr;
 
     const { result } = renderHook(() => useSigningClient(), {
       wrapper: ({ children }) =>
@@ -485,7 +486,7 @@ describe("useSigningClient", () => {
     // Should be undefined initially
     expect(result.current.client).toBeUndefined();
 
-    const connectSpy = AAClient.connectWithSigner as any;
+    const connectSpy = vi.mocked(AAClient.connectWithSigner);
     connectSpy.mockClear();
 
     // Restore keplr and trigger event
@@ -511,7 +512,7 @@ describe("useSigningClient", () => {
         wrapper({
           children,
           contextValue: {
-            connectionMethod: "unknown-method" as any,
+            connectionMethod: "unknown-method" as unknown as ConnectionMethod,
             authenticatorType: AUTHENTICATOR_TYPE.JWT,
           },
         }),
@@ -540,7 +541,7 @@ describe("useSigningClient", () => {
       isInstalled: () => true,
       enable: vi.fn().mockResolvedValue(undefined),
       getSigner: vi.fn().mockReturnValue(null),
-    } as any);
+    } as unknown as ConnectionAdapter);
 
     const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {
       // silently ignore
@@ -580,7 +581,7 @@ describe("useSigningClient", () => {
       isInstalled: () => true,
       enable: vi.fn().mockRejectedValue(new Error("Enable failed")),
       getSigner: vi.fn(),
-    } as any);
+    } as unknown as ConnectionAdapter);
 
     const consoleErrorSpy = vi
       .spyOn(console, "error")
@@ -615,7 +616,7 @@ describe("useSigningClient", () => {
     // Start with keplr defined
     window.keplr = {
       getOfflineSigner: vi.fn().mockReturnValue({}),
-    } as any;
+    } as unknown as typeof window.keplr;
 
     const { result } = renderHook(() => useSigningClient(), {
       wrapper: ({ children }) =>
@@ -634,7 +635,7 @@ describe("useSigningClient", () => {
     });
 
     // Now remove keplr and trigger the event
-    delete (window as any).keplr;
+    delete (window as unknown as Record<string, unknown>).keplr;
 
     act(() => {
       window.dispatchEvent(new Event("keplr_keystorechange"));
@@ -650,7 +651,7 @@ describe("useSigningClient", () => {
   });
 
   it("should use testnet RPC when chainInfo.rpc is undefined", async () => {
-    const connectSpy = AAClient.connectWithSigner as any;
+    const connectSpy = vi.mocked(AAClient.connectWithSigner);
     connectSpy.mockClear();
 
     const chainInfoWithoutRpc = {

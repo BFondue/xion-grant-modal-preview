@@ -7,7 +7,7 @@
  * @param jwt - The JWT string to decode
  * @returns The decoded payload or null if invalid
  */
-export function decodeJwt(jwt: string): any | null {
+export function decodeJwt(jwt: string): Record<string, unknown> | null {
   try {
     // JWT structure: header.payload.signature
     const parts = jwt.split(".");
@@ -48,8 +48,8 @@ export function extractAbstractAccountFromJwt(jwt: string): {
   }
 
   return {
-    address: payload.abstract_account_address || null,
-    txHash: payload.abstract_account_transaction_hash || null,
+    address: (payload.abstract_account_address as string) || null,
+    txHash: (payload.abstract_account_transaction_hash as string) || null,
   };
 }
 
@@ -58,7 +58,7 @@ export function extractAbstractAccountFromJwt(jwt: string): {
  * @param jwt - The JWT string
  * @returns Object containing all custom claims
  */
-export function extractCustomClaims(jwt: string): Record<string, any> {
+export function extractCustomClaims(jwt: string): Record<string, unknown> {
   const payload = decodeJwt(jwt);
 
   if (!payload) {
@@ -83,7 +83,7 @@ export function extractCustomClaims(jwt: string): Record<string, any> {
   ];
 
   // Filter out standard claims to get only custom ones
-  const customClaims: Record<string, any> = {};
+  const customClaims: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(payload)) {
     if (!standardClaims.includes(key)) {
       customClaims[key] = value;

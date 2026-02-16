@@ -397,7 +397,7 @@ describe("authenticator-helpers", () => {
     it("should return empty string when emails is undefined", () => {
       const user = {
         user_id: "user123",
-        emails: undefined as any,
+        emails: undefined as unknown as Array<{ email: string }>,
       };
       expect(getUserEmail(user, "user123")).toBe("");
     });

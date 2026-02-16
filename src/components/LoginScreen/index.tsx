@@ -68,7 +68,6 @@ export const LoginScreen = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [isRedirectingToOAuth, setIsRedirectingToOAuth] = useState(false);
-  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [showZKEmailLogin, setShowZKEmailLogin] = useState(false);
   const tokenProcessed = useRef(false);
 
@@ -625,7 +624,7 @@ export const LoginScreen = () => {
 
       // First, try to suggest the chain (OKX might not have Xion configured)
       try {
-        await keplr.experimentalSuggestChain(chainInfo as any);
+        await keplr.experimentalSuggestChain(chainInfo);
         console.log("[AbstraxionSignin] OKX chain suggested successfully");
       } catch (suggestError) {
         console.log(

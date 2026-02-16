@@ -14,7 +14,6 @@ import { render } from "../../..";
 import { AddZKEmail } from "../../../../components/ModalViews/AddAuthenticators/AddZKEmail";
 import { Dialog, DialogContent } from "../../../../components/ui/dialog";
 import { toUrlSafeBase64 } from "@burnt-labs/signers/crypto";
-import { getZKEmailProofPollingAbortController } from "../../../../auth/zk-email/zk-email-signing-status";
 import * as zkEmailSigningStatus from "../../../../auth/zk-email/zk-email-signing-status";
 import * as zkEmailUtils from "../../../../auth/utils/zk-email";
 

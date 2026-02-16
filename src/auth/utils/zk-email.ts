@@ -439,7 +439,7 @@ export function proofResponseToBase64Signature(
   if (!statusResponse.proof) {
     throw new Error("proofResponseToBase64Signature: proof is required");
   }
-  const { proof, publicInputs } = statusResponse.proof;
+  const { proof: _proof, publicInputs } = statusResponse.proof;
   const signature = JSON.stringify(statusResponse.proof);
   const base64Signature = Buffer.from(signature, "utf-8").toString("base64");
   const emailSalt = extractEmailSalt(publicInputs);
