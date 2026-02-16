@@ -10,7 +10,7 @@ export default function Home() {
   const [state, setState] = useState<ModalState>("approve");
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-surface-page px-phi-lg py-phi-3xl">
+    <main className="flex min-h-screen flex-col items-center bg-surface-page px-phi-md py-phi-xl sm:px-phi-lg sm:py-phi-3xl">
       <StateTabs current={state} onChange={setState} />
       <GrantModal
         appName={MOCK_APP.name}

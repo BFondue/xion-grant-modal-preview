@@ -17,7 +17,7 @@ interface StateTabsProps {
 
 export function StateTabs({ current, onChange }: StateTabsProps) {
   return (
-    <div className="mb-phi-xl flex items-center justify-center gap-phi-xs">
+    <div className="mb-phi-xl flex flex-wrap items-center justify-center gap-phi-xs">
       {TABS.map((tab) => (
         <button
           key={tab.value}

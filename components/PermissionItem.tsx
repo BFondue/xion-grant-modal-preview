@@ -27,7 +27,7 @@ export function PermissionItem({
   return (
     <div
       className={cn(
-        "rounded-[8px] px-phi-md py-phi-sm -mx-phi-md transition-colors duration-normal",
+        "rounded-button px-phi-md py-phi-sm -mx-phi-md transition-colors duration-normal",
         expandable && pulsing && "bg-surface-page",
         expandable && !pulsing && "hover:bg-surface-page/60"
       )}
@@ -40,7 +40,7 @@ export function PermissionItem({
           expandable && "cursor-pointer"
         )}
       >
-        <span className="mt-[2px] h-[6px] w-[6px] flex-shrink-0 rounded-full bg-accent-trust" />
+        <span className="mt-phi-2xs h-phi-sm w-phi-sm flex-shrink-0 rounded-full bg-accent-trust" />
         <span className="flex-1 text-body text-text-primary">{label}</span>
         {expandable && (
           <ChevronDown
@@ -61,7 +61,7 @@ export function PermissionItem({
           )}
         >
           <div className="overflow-hidden">
-            <p className="pl-[16px] pt-phi-xs text-caption text-text-muted">
+            <p className="pl-phi-lg pt-phi-xs text-caption text-text-muted">
               {description}
             </p>
           </div>

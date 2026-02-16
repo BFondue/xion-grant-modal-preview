@@ -65,20 +65,20 @@ function ApproveState({
         <button
           type="button"
           onClick={onAllow}
-          className="h-phi-2xl w-full rounded-button bg-cta text-body-lg font-medium text-white transition-opacity duration-fast hover:opacity-90"
+          className="h-phi-2xl min-h-[44px] w-full rounded-button bg-cta text-body-lg font-medium text-white transition-opacity duration-fast hover:opacity-90 active:opacity-80"
         >
           Allow
         </button>
         <button
           type="button"
           onClick={onDeny}
-          className="text-body text-text-secondary transition-colors duration-fast hover:text-text-primary"
+          className="min-h-[44px] text-body text-text-secondary transition-colors duration-fast hover:text-text-primary active:text-text-primary"
         >
           Deny
         </button>
         <button
           type="button"
-          className="text-caption text-text-muted transition-colors duration-fast hover:text-text-secondary"
+          className="min-h-[44px] text-caption text-text-muted transition-colors duration-fast hover:text-text-secondary active:text-text-secondary"
         >
           Use a different account
         </button>
@@ -91,8 +91,8 @@ function ApproveState({
           onClick={() => setShowAddress((v) => !v)}
           className="flex items-center gap-phi-xs transition-opacity duration-fast hover:opacity-70"
         >
-          <Shield size={12} className="text-amber-600" />
-          <span className="text-caption text-amber-600 font-medium">Secured by XION</span>
+          <Shield size={12} className="text-amber-700" />
+          <span className="text-caption text-amber-700 font-medium">Secured by XION</span>
         </button>
         {showAddress && (
           <button
@@ -104,7 +104,7 @@ function ApproveState({
             }}
             className="flex items-center gap-phi-xs animate-fade-in transition-opacity duration-fast hover:opacity-70"
           >
-            <span className={cn("text-[12px] leading-[1.618]", copied ? "text-accent-trust" : "text-text-muted")}>
+            <span className={cn("text-caption", copied ? "text-accent-trust" : "text-text-muted")}>
               {copied ? "Copied!" : truncateAddress(walletAddress)}
             </span>
             {copied ? (
@@ -169,7 +169,7 @@ export function GrantModal(props: GrantModalProps) {
   return (
     <div
       className={cn(
-        "w-full max-w-[480px] rounded-card border border-surface-border bg-surface p-phi-xl shadow-lg",
+        "w-full max-w-[480px] rounded-card border border-surface-border bg-surface p-phi-lg sm:p-phi-xl shadow-lg",
         "animate-scale-in"
       )}
     >

@@ -6,6 +6,13 @@ export const metadata: Metadata = {
   description: "Preview the redesigned XION grant approval modal",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: {
