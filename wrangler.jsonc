@@ -18,6 +18,7 @@
   "env": {
     "mainnet": {
       "name": "xion-dashboard-mainnet",
+      "workers_dev": false,
       "routes": [
         {
           "pattern": "settings.burnt.com",
@@ -42,6 +43,7 @@
     },
     "testnet": {
       "name": "xion-dashboard-testnet",
+      "workers_dev": false,
       "routes": [
         {
           "pattern": "settings.testnet.burnt.com",
