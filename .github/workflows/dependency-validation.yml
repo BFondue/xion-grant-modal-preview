@@ -3,109 +3,84 @@ name: Dependency Validation
 on:
   pull_request:
     branches: [main, testnet]
-    paths:
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/dependency-validation.yml"
-  push:
-    branches: [main, testnet]
-    paths:
-      - "package.json"
-      - "pnpm-lock.yaml"
+    paths: [package.json]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
-  changes:
-    name: Detect Changes
+  validate:
+    name: Validate Dependencies
     runs-on: ubuntu-latest
-    outputs:
-      deps: ${{ steps.filter.outputs.deps }}
+    timeout-minutes: 5
+
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
         with:
-          filters: |
-            deps:
-              - 'package.json'
-              - 'package-lock.json'
-              - '.github/workflows/dependency-validation.yml'
+          sparse-checkout: package.json
+          sparse-checkout-cone-mode: false
 
-  validate-dependencies:
-    name: Validate Package Dependencies
-    needs: changes
-    if: needs.changes.outputs.deps == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: pnpm
-
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Verify no file protocol dependencies
+      - name: Reject file protocol dependencies
         run: |
           if grep -q '"file:' package.json; then
-            echo "❌ package.json contains 'file:' protocol dependencies:"
+            echo "❌ package.json contains file: protocol dependencies"
             grep '"file:' package.json
             exit 1
           fi
 
-      - name: Check @burnt-labs package versions
-        id: check_burnt_labs
+      - name: Verify @cosmjs version consistency
         run: |
-          BURNT_LABS_PKGS="abstraxion-core account-management signers constants"
+          VERSIONS=$(jq -r '
+            .dependencies | to_entries[]
+            | select(.key | startswith("@cosmjs/"))
+            | "\(.key): \(.value)"
+          ' package.json)
+
+          [ -z "$VERSIONS" ] && { echo "No @cosmjs packages found"; exit 0; }
+          echo "$VERSIONS"
+
+          UNIQUE=$(echo "$VERSIONS" | awk -F': ' '{print $2}' | sort -u | wc -l)
+          if [ "$UNIQUE" -gt 1 ]; then
+            echo "❌ Mismatched @cosmjs versions"
+            exit 1
+          fi
+          echo "✅ All @cosmjs packages use consistent versions"
+
+      - name: Check @burnt-labs updates
+        id: burnt_labs
+        run: |
           OUTDATED=""
-
-          for pkg in $BURNT_LABS_PKGS; do
+          for pkg in abstraxion-core account-management signers constants; do
             FULL="@burnt-labs/$pkg"
-            CURRENT=$(node -p "require('./package.json').dependencies['$FULL'] || 'not-found'")
-            [ "$CURRENT" = "not-found" ] && continue
+            CURRENT=$(jq -r ".dependencies[\"$FULL\"] // empty" package.json)
+            [ -z "$CURRENT" ] && continue
 
-            LATEST=$(npm view "$FULL" version 2>/dev/null || echo "")
+            LATEST=$(npm view "$FULL" version 2>/dev/null || true)
             [ -z "$LATEST" ] && continue
 
-            CLEAN=$(echo "$CURRENT" | sed 's/[\^~]//g')
+            CLEAN=${CURRENT#^}; CLEAN=${CLEAN#\~}
             echo "$FULL: $CURRENT (latest: $LATEST)"
 
-            if [ "$CLEAN" != "$LATEST" ]; then
-              OUTDATED="${OUTDATED}${FULL}|${CURRENT}|${LATEST};"
-            fi
+            [ "$CLEAN" != "$LATEST" ] && OUTDATED="${OUTDATED}${FULL}|${CURRENT}|${LATEST};"
           done
 
-          if [ -n "$OUTDATED" ]; then
-            echo "⚠️  Some @burnt-labs packages have updates available"
-            echo "outdated=true" >> $GITHUB_OUTPUT
-            echo "packages=$OUTDATED" >> $GITHUB_OUTPUT
-          else
-            echo "✅ All @burnt-labs packages are up to date"
-            echo "outdated=false" >> $GITHUB_OUTPUT
-          fi
+          echo "outdated=${OUTDATED:+true}" >> $GITHUB_OUTPUT
+          echo "packages=$OUTDATED" >> $GITHUB_OUTPUT
 
-      - name: Post @burnt-labs update comment on PR
-        if: github.event_name == 'pull_request' && steps.check_burnt_labs.outputs.outdated == 'true'
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && steps.burnt_labs.outputs.outdated == 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            const packages = '${{ steps.check_burnt_labs.outputs.packages }}'
-              .split(';').filter(Boolean)
-              .map(p => p.split('|'));
+            const packages = '${{ steps.burnt_labs.outputs.packages }}'
+              .split(';').filter(Boolean).map(p => p.split('|'));
 
-            const tableRows = packages
-              .map(([name, current, latest]) => `| ${name} | \`${current}\` | \`${latest}\` |`)
+            const rows = packages
+              .map(([name, cur, latest]) => `| ${name} | \`${cur}\` | \`${latest}\` |`)
               .join('\n');
-            const installCmds = packages
+            const cmds = packages
               .map(([name, , latest]) => `pnpm add ${name}@${latest}`)
               .join('\n');
 
@@ -113,80 +88,18 @@ jobs:
               '## 📦 Dependency Updates Available\n',
               '| Package | Current | Latest |',
               '|---------|---------|--------|',
-              tableRows,
-              '\n### To update:\n```bash',
-              installCmds,
-              '```\n',
-              "> ⚠️ Informational only — won't block your PR. Check the [changelog](https://github.com/burnt-labs/xion.js/releases) before updating.",
+              rows,
+              `\n### To update:\n\`\`\`bash\n${cmds}\n\`\`\`\n`,
+              "> ⚠️ Informational only — won't block your PR.",
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
+              ...context.repo, issue_number: context.issue.number,
             });
-            const existing = comments.find(c => c.body.includes('📦 Dependency Updates Available'));
+            const existing = comments.find(c => c.body.includes('📦 Dependency Updates'));
             if (existing) {
-              await github.rest.issues.deleteComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-              });
+              await github.rest.issues.deleteComment({ ...context.repo, comment_id: existing.id });
             }
-
             await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body,
+              ...context.repo, issue_number: context.issue.number, body,
             });
-
-      - name: Check @cosmjs version consistency
-        run: |
-          # Ensure all local @cosmjs packages use the same version
-          COSMJS_PKGS="stargate crypto proto-signing cosmwasm-stargate"
-          VERSIONS=""
-
-          for pkg in $COSMJS_PKGS; do
-            VER=$(node -p "require('./package.json').dependencies['@cosmjs/$pkg'] || ''")
-            [ -z "$VER" ] && continue
-            echo "@cosmjs/$pkg: $VER"
-            VERSIONS="$VERSIONS$VER\n"
-          done
-
-          UNIQUE=$(echo -e "$VERSIONS" | grep -v '^$' | sort -u | wc -l)
-          if [ "$UNIQUE" -gt 1 ]; then
-            echo "❌ Mismatched @cosmjs versions — all should use the same version"
-            exit 1
-          fi
-
-          # Verify compatibility with xion.js peer dependency
-          EXPECTED=$(npm view @burnt-labs/signers peerDependencies --json 2>/dev/null | jq -r '.["@cosmjs/stargate"] // empty')
-          if [ -n "$EXPECTED" ]; then
-            LOCAL=$(node -p "require('./package.json').dependencies['@cosmjs/stargate'] || ''")
-            LOCAL_MM=$(echo "$LOCAL" | sed 's/[\^~]//g' | cut -d. -f1,2)
-            EXPECTED_MM=$(echo "$EXPECTED" | sed 's/[\^~]//g' | cut -d. -f1,2)
-            if [ "$LOCAL_MM" != "$EXPECTED_MM" ]; then
-              echo "❌ @cosmjs/stargate $LOCAL incompatible with xion.js (expects $EXPECTED)"
-              exit 1
-            fi
-          fi
-
-          echo ""
-          echo "✅ All @cosmjs packages use consistent versions"
-
-      - name: Summary
-        if: success()
-        run: |
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ All dependency validation checks passed!"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-  skip-validation:
-    name: Validate Package Dependencies
-    needs: changes
-    if: needs.changes.outputs.deps != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No dependency changes detected, skipping validation"

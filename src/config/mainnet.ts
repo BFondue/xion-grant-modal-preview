@@ -54,4 +54,5 @@ export const mainnetConfig = {
     apple: true,
     zkemail: false,
   },
+  zkEmailHost: "gmail.com",
 };

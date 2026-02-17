@@ -55,4 +55,5 @@ export const testnetConfig = {
     apple: true,
     zkemail: true,
   },
+  zkEmailHost: "gmail.com",
 };

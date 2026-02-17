@@ -6,21 +6,7 @@ on:
       environment:
         required: true
         type: string
-        description: "Deployment environment (testnet, mainnet)"
-      wrangler-command:
-        required: true
-        type: string
-        description: "Wrangler command (deploy or versions upload)"
-      build-mode:
-        required: false
-        type: string
-        default: ""
-        description: "Vite build mode (defaults to environment name)"
-      message:
-        required: false
-        type: string
-        default: ""
-        description: "Version message for versions upload"
+        description: "Deployment environment (testnet or mainnet)"
     outputs:
       deployment-url:
         description: "The deployment URL"
@@ -31,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ inputs.environment }}
-      url: ${{ steps.extract-url.outputs.deployment-url }}
+      url: ${{ steps.set-url.outputs.deployment-url }}
     permissions:
       contents: read
       deployments: write
     outputs:
-      deployment-url: ${{ steps.extract-url.outputs.deployment-url }}
+      deployment-url: ${{ steps.set-url.outputs.deployment-url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -51,57 +37,33 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build app
-        run: pnpm exec vite build --mode ${{ inputs.build-mode || inputs.environment }}
+        run: pnpm exec vite build --mode ${{ inputs.environment }}
         env:
-          # Network selector (drives src/config/index.ts)
-          VITE_NETWORK: ${{ vars.VITE_NETWORK }}
-          # Release version
-          VITE_APP_VERSION: ${{ inputs.message || github.sha }}
-          # Secrets (no defaults in config)
+          CLOUDFLARE_ENV: ${{ inputs.environment }}
+          VITE_NETWORK: ${{ inputs.environment }}
+          VITE_APP_VERSION: ${{ github.event.release.tag_name || github.sha }}
           VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.VITE_STYTCH_PUBLIC_TOKEN || secrets.VITE_DEFAULT_STYTCH_PUBLIC_TOKEN }}
           VITE_NUMIA_TOKEN: ${{ secrets.VITE_NUMIA_TOKEN }}
 
       - name: Deploy to Cloudflare
-        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.BURNT_CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.BURNT_CLOUDFLARE_ACCOUNT_ID }}
-          command: ${{ inputs.wrangler-command }} --env=${{ inputs.environment }}${{ inputs.wrangler-command != 'deploy' && inputs.message && format(' --message="{0}"', inputs.message) || '' }}
+          command: deploy
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          environment: ${{ inputs.environment }}
           packageManager: pnpm
 
-      - name: Extract deployment URL
-        id: extract-url
-        env:
-          OUTPUT: ${{ steps.deploy.outputs.command-output }}
-          VERSION: ${{ inputs.message }}
+      - name: Set deployment URL
+        id: set-url
         run: |
-          ENV="${{ inputs.environment }}"
-
-          # Fixed URLs for mainnet and testnet
-          if [[ "$ENV" == "mainnet" ]]; then
+          if [[ "${{ inputs.environment }}" == "mainnet" ]]; then
             URL="https://settings.burnt.com"
-          elif [[ "$ENV" == "testnet" ]]; then
-            URL="https://settings.testnet.burnt.com"
           else
-            # Preview environments — extract URL from wrangler output
-            VERSION_ID=$(echo "$OUTPUT" | grep -oE 'Worker Version ID: [a-f0-9-]+' | cut -d' ' -f4 | head -1 || true)
-
-            if [ -n "$VERSION_ID" ]; then
-              SHORT_VERSION_ID=$(echo "$VERSION_ID" | cut -d'-' -f1)
-              URL="https://${SHORT_VERSION_ID}-xion-dashboard-${ENV}.burnt.workers.dev"
-            elif echo "$OUTPUT" | grep -qE 'https://[^ ]+\.workers\.dev'; then
-              URL=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.workers\.dev' | head -1)
-            else
-              URL="https://xion-dashboard-${ENV}.burnt.workers.dev"
-            fi
+            URL="https://settings.testnet.burnt.com"
           fi
 
           echo "deployment-url=$URL" >> $GITHUB_OUTPUT
           echo "### 🚀 Deployed to ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -n "$VERSION" ]; then
-            echo "**Version:** $VERSION" >> $GITHUB_STEP_SUMMARY
-          fi
           echo "**URL:** $URL" >> $GITHUB_STEP_SUMMARY

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAuthState, CONNECTION_METHOD } from "../auth/useAuthState";
 import { AuthStateManager } from "../auth/AuthStateManager";
+import { CHAIN_ID } from "../config";
 import { getHumanReadablePubkey } from "../utils";
 
 /**
@@ -53,8 +54,8 @@ export function useWalletChangeListener() {
             return;
           }
 
-          // Get the chain ID from environment
-          const chainId = import.meta.env.VITE_CHAIN_ID;
+          // Get the chain ID from config
+          const chainId = CHAIN_ID;
           if (!chainId) {
             console.error(
               "[useWalletChangeListener] No Chain ID is configured",

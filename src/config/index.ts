@@ -2,8 +2,6 @@ import { mainnetConfig } from "./mainnet";
 import { testnetConfig } from "./testnet";
 // will add devnetConfig later, use testnetConfig for now
 import { testnetConfig as devnetConfig } from "./testnet";
-import mainnetAssets from "../data/mainnet/assetlist.json";
-import testnetAssets from "../data/testnet/assetlist.json";
 
 // =============================================================================
 // Helper Functions
@@ -43,10 +41,6 @@ export const networkConfig =
 
 // Re-export network config type
 export type NetworkConfig = typeof networkConfig;
-
-// Select fallback assets based on environment
-export const FALLBACK_ASSETS =
-  NETWORK === "mainnet" ? mainnetAssets : testnetAssets;
 
 // =============================================================================
 // Chain Configuration
@@ -134,7 +128,6 @@ export const XION_RPC_URL =
 
 export const STYTCH_PROXY_URL =
   import.meta.env.VITE_XION_STYTCH_API || networkConfig.stytchProxyUrl;
-console.log("STYTCH_PROXY_URL:", STYTCH_PROXY_URL);
 
 // AA-API URL - used for account abstraction operations
 export const ABSTRAXION_API_URL =
@@ -147,7 +140,7 @@ export const TURNSTILE_SITE_KEY =
   import.meta.env.VITE_TURNSTILE_SITE_KEY || networkConfig.turnstileSiteKey;
 
 // Allowed email host for ZK-Email authentication
-export const ZK_EMAIL_HOST = import.meta.env.VITE_ZK_EMAIL_HOST || "";
+export const ZK_EMAIL_HOST = import.meta.env.VITE_ZK_EMAIL_HOST || ""
 
 // =============================================================================
 // Indexer Configuration
