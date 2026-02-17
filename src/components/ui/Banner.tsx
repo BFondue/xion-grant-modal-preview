@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { BaseButton } from "./buttons/baseButton";
+import { Button } from "./button";
 import { CloseIcon } from "./icons";
 import { AuthContext } from "../AuthContext";
 
@@ -49,24 +49,24 @@ export const Banner: React.FC<BannerProps> = ({ className }) => {
           <div className="ui-flex ui-flex-wrap ui-items-center ui-gap-x-2">
             <span className="ui-font-akkuratLL">
               We are migrating to testnet-2 soon!{" "}
-              <BaseButton
+              <Button
                 variant="text"
                 size="text"
                 onClick={handleLinkClick}
                 className="ui-underline ui-text-testnet ui-text-base !ui-inline"
               >
                 Learn more
-              </BaseButton>
+              </Button>
             </span>
           </div>
         </div>
 
         <button
           onClick={handleDismiss}
-          className="ui-p-1 ui-rounded-full ui-text-white hover:ui-bg-white/10 ui-transition-colors ui-cursor-pointer ui-ml-3"
+          className="ui-p-1 ui-rounded-full ui-text-text-primary hover:ui-bg-black/10 ui-transition-colors ui-cursor-pointer ui-ml-3"
           aria-label="Dismiss"
         >
-          <CloseIcon className="ui-h-4 ui-w-4 ui-text-white" strokeWidth={2} />
+          <CloseIcon className="ui-h-4 ui-w-4 ui-text-text-primary" strokeWidth={2} />
         </button>
       </div>
     </div>

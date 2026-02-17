@@ -122,34 +122,34 @@ const AuthenticatorItemComponent: React.FC<AuthenticatorItemProps> = ({
 
   return (
     <TooltipProvider>
-      <div className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-5 ui-min-h-16 ui-bg-black/50 ui-rounded-xl">
+      <div className="ui-flex ui-items-center ui-justify-between ui-px-4 ui-py-4 ui-min-h-16 ui-bg-surface-page ui-rounded-xl">
         <div className="ui-flex ui-flex-1 ui-items-center">
-          <div className="ui-flex ui-w-8 ui-h-8 ui-bg-[#434040] ui-items-center ui-justify-center ui-rounded-full">
+          <div className="ui-flex ui-w-8 ui-h-8 ui-bg-gray-200 ui-items-center ui-justify-center ui-rounded-full">
             {logo}
           </div>
           <div className="ui-flex ui-flex-1 ui-pr-1 ui-items-start md:!ui-items-center ui-flex-col-reverse md:!ui-flex-row">
             {!(isEmailAuth && showEmail && isCurrentAuthenticator) && (
               <div className="ui-ml-4 ui-flex ui-items-center ui-justify-between">
-                <p className="ui-text-base">{authenticatorLabel}</p>
+                <p className="ui-text-body">{authenticatorLabel}</p>
               </div>
             )}
             {isEmailAuth && showEmail && isCurrentAuthenticator && email && (
               <div className="ui-ml-4 ui-flex ui-items-center ui-max-w-full ui-justify-between">
-                <p className="ui-text-secondary-text ui-break-all ui-max-w-full ui-text-base">
+                <p className="ui-text-secondary-text ui-break-all ui-max-w-full ui-text-body">
                   {email}
                 </p>
               </div>
             )}
             {isCurrentAuthenticator && (
               <div
-                className={`ui-ml-3 ui-px-1.5 ui-py-[1px] ui-rounded-sm ui-flex ui-border ${
+                className={`ui-ml-2.5 ui-px-1.5 ui-py-[1px] ui-rounded-sm ui-flex ui-border ${
                   isMainnet ? "ui-border-mainnet-bg" : "ui-border-testnet-bg"
                 }`}
               >
                 <p
                   className={`${
                     isMainnet ? "ui-text-mainnet" : "ui-text-testnet"
-                  } ui-text-xs ui-whitespace-nowrap ui-leading-[20px]`}
+                  } ui-text-caption ui-whitespace-nowrap ui-leading-[20px]`}
                 >
                   Active Session
                 </p>
@@ -161,7 +161,7 @@ const AuthenticatorItemComponent: React.FC<AuthenticatorItemProps> = ({
         <div className="ui-flex ui-items-center ui-gap-4">
           {isEmailAuth && isCurrentAuthenticator && email && (
             <button
-              className="ui-text-white"
+              className="ui-text-text-primary"
               onClick={handleToggleEmail}
               aria-label={showEmail ? "Hide email" : "Show email"}
             >
@@ -172,7 +172,7 @@ const AuthenticatorItemComponent: React.FC<AuthenticatorItemProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  className={`ui-text-white ${
+                  className={`ui-text-text-primary ${
                     !canRemove ? "ui-opacity-50 ui-cursor-not-allowed" : ""
                   }`}
                   onClick={canRemove ? handleRemove : undefined}

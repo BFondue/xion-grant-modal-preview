@@ -22,7 +22,7 @@ export const ModalAnchor = forwardRef<HTMLDivElement, WithChildrenProps>(
         ref={ref}
         {...props}
       >
-        <div className="ui-absolute ui-z-[999] ui-inset-0 ui-bg-modal-overlay ui-blur-md ui-bg-no-repeat ui-bg-cover ui-bg-center ui-bg-fixed ui-opacity-70" />
+        <div className="ui-absolute ui-z-[999] ui-inset-0 ui-bg-black/50" />
         {children}
       </div>
     );
@@ -39,7 +39,7 @@ export function Modal({
   return (
     <div
       className={cn(
-        "ui-relative ui-h-full ui-w-full ui-max-w-[465px] ui-text-black ui-rounded ui-z-[1000] ui-bg-black/25 backdrop-blur-xl",
+        "ui-relative ui-h-full ui-w-full ui-max-w-[465px] ui-text-text-primary ui-rounded ui-z-[1000] ui-bg-white ui-shadow-xl",
         className,
       )}
       {...props}

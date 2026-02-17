@@ -16,8 +16,8 @@ export const BrowserIcon = ({ className }: { className?: string }) => {
         width="159.467"
         height="104"
         rx="12"
-        fill="white"
-        fillOpacity="0.2"
+        fill="#111827"
+        fillOpacity="0.05"
       />
       <rect
         x="0.5"
@@ -25,36 +25,36 @@ export const BrowserIcon = ({ className }: { className?: string }) => {
         width="158.467"
         height="103"
         rx="11.5"
-        stroke="white"
-        strokeOpacity="0.4"
+        stroke="#111827"
+        strokeOpacity="0.2"
       />
       <circle
         cx="12.1334"
         cy="6.93203"
         r="2.6"
-        fill="white"
-        fillOpacity="0.4"
+        fill="#111827"
+        fillOpacity="0.2"
       />
       <circle
         cx="22.5333"
         cy="6.93203"
         r="2.6"
-        fill="white"
-        fillOpacity="0.4"
+        fill="#111827"
+        fillOpacity="0.2"
       />
       <circle
         cx="32.9333"
         cy="6.93203"
         r="2.6"
-        fill="white"
-        fillOpacity="0.4"
+        fill="#111827"
+        fillOpacity="0.2"
       />
       <line
         y1="12.5"
         x2="159.467"
         y2="12.5"
-        stroke="white"
-        strokeOpacity="0.4"
+        stroke="#111827"
+        strokeOpacity="0.2"
       />
     </svg>
   );

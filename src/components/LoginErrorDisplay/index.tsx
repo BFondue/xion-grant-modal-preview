@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -45,25 +45,25 @@ export const LoginErrorDisplay = ({
   };
 
   return (
-    <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-center ui-justify-center ui-gap-8">
+    <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-center ui-justify-center ui-gap-6">
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
 
       {errorMessage && (
-        <div className="ui-w-full ui-border ui-border-destructive ui-rounded-lg ui-bg-destructive/10 ui-p-4 ui-flex ui-flex-col ui-items-center ui-text-center ui-gap-3">
+        <div className="ui-w-full ui-border ui-border-destructive ui-rounded-lg ui-bg-destructive/10 ui-p-4 ui-flex ui-flex-col ui-items-center ui-text-center ui-gap-2.5">
           <ErrorIcon />
-          <span className="ui-font-bold ui-text-lg ui-leading-[21.6px]">
+          <span className="ui-font-bold ui-text-body-lg ui-leading-[21.6px]">
             Error Message
           </span>
-          <p className="ui-text-base ui-font-bold">{errorMessage}</p>
+          <p className="ui-text-body ui-font-bold">{errorMessage}</p>
         </div>
       )}
 
-      <BaseButton className="ui-w-full" onClick={handleButtonClick}>
+      <Button className="ui-w-full" onClick={handleButtonClick}>
         {buttonText}
-      </BaseButton>
+      </Button>
     </div>
   );
 };

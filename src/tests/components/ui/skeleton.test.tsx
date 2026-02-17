@@ -10,9 +10,7 @@ describe("Skeleton Component", () => {
   it("renders with default classes", () => {
     render(<Skeleton data-testid="skeleton" />);
     const skeleton = screen.getByTestId("skeleton");
-    expect(skeleton).toHaveClass(
-      "ui-animate-pulse ui-rounded-md ui-bg-white/20",
-    );
+    expect(skeleton).toHaveClass("ui-animate-pulse", "ui-rounded-md");
   });
 
   it("renders children when provided", () => {
@@ -34,7 +32,11 @@ describe("Skeleton Component", () => {
     );
     const skeleton = screen.getByTestId("skeleton");
     expect(skeleton).toHaveClass(
-      "custom-width custom-height custom-color ui-animate-pulse ui-rounded-md ui-bg-white/20",
+      "custom-width",
+      "custom-height",
+      "custom-color",
+      "ui-animate-pulse",
+      "ui-rounded-md",
     );
   });
 });

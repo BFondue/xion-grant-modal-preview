@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  BaseButton,
+  Button,
   ChevronDownIcon,
   DialogHeader,
   DialogTitle,
@@ -155,22 +155,22 @@ export function WalletSendInput({
     dollarValue: number | undefined;
   }) => {
     return (
-      <div className="ui-flex ui-items-center ui-gap-3">
+      <div className="ui-flex ui-items-center ui-gap-2.5">
         <img className="ui-w-[40px] ui-h-[40px]" src={imageUrl} />
 
         <div className="ui-flex ui-flex-col ui-items-start ui-gap-1">
-          <p className="ui-text-base ui-leading-[20px] ui-font-bold">
+          <p className="ui-text-body ui-font-bold">
             {symbol.toUpperCase()}
           </p>
-          <p className="ui-text-sm ui-leading-none ui-flex ui-items-center ui-gap-1.5">
+          <p className="ui-text-caption ui-leading-none ui-flex ui-items-center ui-gap-1.5">
             <WalletIcon
-              color="white"
+              color="#111827"
               backgroundColor="hsl(var(--background))"
               width={14}
               height={12}
             />
             {(value ?? 0).toFixed(2)}
-            <span className="ui-h-[3px] ui-w-[3px] ui-rounded-full ui-bg-white/80" />
+            <span className="ui-h-[3px] ui-w-[3px] ui-rounded-full ui-bg-text-secondary" />
             <span className="ui-text-secondary-text">
               ${(dollarValue ?? 0).toFixed(2)} USD
             </span>
@@ -184,7 +184,7 @@ export function WalletSendInput({
     return (
       <div className="ui-relative">
         <div
-          className={`ui-flex ui-items-center ui-justify-between ui-p-4 ui-bg-black/50 hover:ui-cursor-pointer hover:ui-bg-[#262626] ui-relative ui-z-10 ui-transition-all ui-duration-300 ${
+          className={`ui-flex ui-items-center ui-justify-between ui-p-4 ui-bg-surface-page hover:ui-cursor-pointer hover:ui-bg-gray-200 ui-relative ui-z-10 ui-transition-all ui-duration-300 ${
             showDropdown ? "ui-rounded-tr-lg ui-rounded-tl-lg" : "ui-rounded-lg"
           }`}
           onClick={() => setShowDropdown(!showDropdown)}
@@ -204,7 +204,7 @@ export function WalletSendInput({
             showDropdown
               ? "ui-absolute ui-left-0 ui-opacity-100 ui-translate-y-0"
               : "ui-absolute ui-left-0 -ui-translate-y-full ui-opacity-0"
-          } ui-w-full ui-rounded-bl-lg ui-rounded-br-lg ui-bg-black ui-border-t ui-border-white/20 ui-z-0 ui-shadow-[0_6px_12px_4px_rgba(0,0,0,0.5)]
+          } ui-w-full ui-rounded-bl-lg ui-rounded-br-lg ui-bg-white ui-border-t ui-border-surface-border ui-z-0 ui-shadow-[0_6px_12px_4px_rgba(0,0,0,0.1)]
           ui-transition-[opacity_300ms,transform_300ms]`}
         >
           {balances.map((balance, index) => {
@@ -216,7 +216,7 @@ export function WalletSendInput({
 
             return (
               <div
-                className={`ui-flex ui-items-center ui-p-4 hover:ui-cursor-pointer hover:ui-bg-[#262626] ui-transition-all ui-duration-300 ${
+                className={`ui-flex ui-items-center ui-p-4 hover:ui-cursor-pointer hover:ui-bg-gray-200 ui-transition-all ui-duration-300 ${
                   isLast ? "ui-rounded-b-lg" : ""
                 }`}
                 key={index + balance.symbol}
@@ -263,18 +263,18 @@ export function WalletSendInput({
         <DialogHeader>
           <DialogTitle>Send</DialogTitle>
         </DialogHeader>
-        <div className="ui-flex ui-flex-col ui-gap-8 ui-mt-2">
+        <div className="ui-flex ui-flex-col ui-gap-6 ui-mt-1.5">
           {currencyDropdown()}
-          <div className="ui-flex ui-flex-col ui-gap-2 -ui-mb-5">
+          <div className="ui-flex ui-flex-col ui-gap-2.5 -ui-mb-4">
             <div className="ui-flex ui-justify-between ui-px-1">
-              <p className="ui-font-bold">Amount</p>
+              <p className="ui-text-body ui-font-bold">Amount</p>
               <p className="ui-text-secondary-text">
                 =$
                 {(Number(sendAmount) * selectedCurrency.price).toFixed(2)} USD
               </p>
             </div>
             <div
-              className={`ui-flex ui-items-center ui-justify-between ui-gap-2 ui-px-6 ui-py-4 ui-border ${
+              className={`ui-flex ui-items-center ui-justify-between ui-gap-1.5 ui-px-6 ui-py-4 ui-border ${
                 amountError ? "ui-border-destructive" : "ui-border-border"
               } ui-rounded-[12px]`}
             >
@@ -294,7 +294,7 @@ export function WalletSendInput({
                 {selectedCurrency.symbol.toUpperCase()}
               </p>
             </div>
-            <p className="ui-text-destructive ui-h-5 ui-text-sm ui-pl-1">
+            <p className="ui-text-destructive ui-h-5 ui-text-caption ui-pl-1">
               {amountError}
             </p>
           </div>
@@ -314,12 +314,12 @@ export function WalletSendInput({
           placeholder="Memo (Optional)"
           value={userMemo}
         />
-        <div className="ui-flex ui-flex-col ui-gap-2 ui-mt-2">
-          <div className="ui-flex ui-items-center ui-text-sm ui-justify-between ui-h-5">
+        <div className="ui-flex ui-flex-col ui-gap-2.5 ui-mt-1.5">
+          <div className="ui-flex ui-items-center ui-text-body ui-justify-between ui-h-5">
             {renderEstimatedFee()}
           </div>
 
-          <BaseButton
+          <Button
             disabled={
               !!estimatingError ||
               isCalculatingFee ||
@@ -330,10 +330,10 @@ export function WalletSendInput({
               setIsLoading(true);
               onStart();
             }}
-            className="ui-mb-10 sm:ui-mb-0"
+            className=""
           >
             {isLoading ? <SpinnerV2 size="sm" color="black" /> : "REVIEW"}
-          </BaseButton>
+          </Button>
         </div>
       </div>
     </>

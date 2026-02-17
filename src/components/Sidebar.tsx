@@ -49,12 +49,12 @@ export function Sidebar({ onClose }: SidebarProps) {
             href={option.path}
             target="_blank"
             className={cn(
-              "ui-text-[32px] ui-font-bold ui-leading-[120%] ui-text-white/60",
+              "ui-text-[32px] ui-font-bold ui-leading-[120%] ui-text-text-secondary",
             )}
             rel="noreferrer"
             onClick={onClose}
           >
-            <span className="ui-flex ui-items-center ui-gap-3">
+            <span className="ui-flex ui-items-center ui-gap-2.5">
               {option.text}
               <ExternalLinkIcon size={24} />
             </span>
@@ -66,8 +66,8 @@ export function Sidebar({ onClose }: SidebarProps) {
           key={option.text}
           to={option.path}
           className={cn(
-            "ui-text-[32px] ui-leading-[120%] ui-font-bold ui-text-white/60",
-            { "ui-text-white": pathname === option.path },
+            "ui-text-[32px] ui-leading-[120%] ui-font-bold ui-text-text-secondary",
+            { "ui-text-text-primary": pathname === option.path },
           )}
           onClick={onClose}
         >
@@ -81,35 +81,35 @@ export function Sidebar({ onClose }: SidebarProps) {
     <div className="ui-min-h-dvh ui-bg-background ui-flex ui-flex-col ui-w-[320px] ui-px-6">
       {/* Header with Logo and Network */}
       <div className="ui-flex ui-items-center ui-justify-between ui-py-4">
-        <div className="ui-flex ui-items-center ui-space-x-2">
+        <div className="ui-flex ui-items-center ui-space-x-1.5">
           <img
             src={xionLogo}
             alt="XION Logo"
             width="90"
             height="32"
-            className="ui-mb-1.5"
+            className="ui-mb-1.5 ui-brightness-0"
           />
           <NetworkBadge isMainnet={isMainnet} />
         </div>
         {onClose && (
-          <button onClick={onClose} className="ui-text-white">
+          <button onClick={onClose} className="ui-text-text-primary">
             <CloseIcon />
           </button>
         )}
       </div>
 
-      <div className="ui-flex ui-flex-col ui-justify-center ui-flex-1 ui-gap-8">
+      <div className="ui-flex ui-flex-col ui-justify-center ui-flex-1 ui-gap-6">
         {renderNavOptions()}
       </div>
 
       <div className="ui-py-6">
         <div className="ui-flex ui-items-center ui-justify-between">
-          <div className="ui-flex ui-items-center ui-space-x-3">
+          <div className="ui-flex ui-items-center ui-space-x-2.5">
             <WalletIcon
-              color="white"
+              color="#111827"
               backgroundColor="hsla(var(--background), 1)"
             />
-            <span className="ui-text-lg ui-font-bold">
+            <span className="ui-text-body-lg ui-font-bold">
               {account?.id && truncateAddress(account.id)}
             </span>
           </div>

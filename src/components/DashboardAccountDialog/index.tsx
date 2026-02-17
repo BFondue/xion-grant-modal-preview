@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  BaseButton,
+  Button,
   CloseIcon,
   DialogClose,
 } from "../ui";
@@ -89,7 +89,7 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-12">
+        <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-10">
           <DialogClose className="ui-absolute ui-top-6 ui-right-6">
             <CloseIcon strokeWidth={2} className="ui-w-4 ui-h-4" />
           </DialogClose>
@@ -107,16 +107,16 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
 
           <div className="ui-flex ui-w-full ui-flex-col ui-gap-6">
             {loading && uniqueAccounts.length === 0 ? (
-              <div className="ui-flex ui-justify-center ui-py-8">
-                <p className="ui-text-sm ui-text-secondary-text">
+              <div className="ui-flex ui-justify-center ui-py-6">
+                <p className="ui-text-body ui-text-secondary-text">
                   Loading accounts...
                 </p>
               </div>
             ) : (
               <>
                 {/* Active Account Section */}
-                <div className="ui-flex ui-flex-col ui-gap-2">
-                  <p className="ui-text-sm ui-text-secondary-text ui-font-medium">
+                <div className="ui-flex ui-flex-col ui-gap-2.5">
+                  <p className="ui-text-body ui-text-secondary-text ui-font-medium">
                     Active Account
                   </p>
                   {uniqueAccounts.map((account, index) => {
@@ -126,16 +126,16 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
                     return (
                       <div
                         key={`${account.id}-${index}`}
-                        className="ui-flex ui-items-center ui-gap-3 ui-p-4 ui-h-[55px] ui-rounded-lg ui-px-4 ui-py-3 ui-bg-white/[0.08] ui-border ui-border-white/30"
+                        className="ui-flex ui-items-center ui-gap-2.5 ui-p-4 ui-h-[55px] ui-rounded-lg ui-px-4 ui-py-2.5 ui-bg-surface-page ui-border ui-border-surface-border"
                       >
                         <div className="ui-flex ui-flex-col ui-flex-1 ui-text-left">
-                          <p className="ui-text-base ui-font-semibold">
+                          <p className="ui-text-body-lg ui-font-semibold">
                             Personal Account{" "}
                             {uniqueAccounts.length > 1 ? index + 1 : ""}
                           </p>
                         </div>
-                        <div className="ui-bg-white/10 ui-px-1.5 ui-py-0.5 ui-rounded-[4px] ui-text-xs ui-font-bold">
-                          <span className="ui-text-white/80">
+                        <div className="ui-bg-surface-page ui-px-1.5 ui-py-0.5 ui-rounded-[4px] ui-text-caption ui-font-bold">
+                          <span className="ui-text-text-primary">
                             {truncateAddress(account.id)}
                           </span>
                         </div>
@@ -146,8 +146,8 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
 
                 {/* Other Accounts Section */}
                 {uniqueAccounts.length > 1 && (
-                  <div className="ui-flex ui-flex-col ui-gap-2">
-                    <p className="ui-text-sm ui-text-secondary-text ui-font-medium">
+                  <div className="ui-flex ui-flex-col ui-gap-2.5">
+                    <p className="ui-text-body ui-text-secondary-text ui-font-medium">
                       Other Accounts
                     </p>
                     {uniqueAccounts.map((account, index) => {
@@ -158,15 +158,15 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
                         <button
                           key={`${account.id}-${index}`}
                           onClick={() => handleAccountSwitch(index)}
-                          className="ui-flex ui-items-center ui-gap-3 ui-p-4 ui-h-[55px] ui-rounded-lg ui-px-4 ui-py-3 ui-transition-all ui-bg-white/[0.05] ui-border ui-border-white/10 hover:ui-bg-white/[0.08] hover:ui-border-white/20 ui-cursor-pointer"
+                          className="ui-flex ui-items-center ui-gap-2.5 ui-p-4 ui-h-[55px] ui-rounded-lg ui-px-4 ui-py-2.5 ui-transition-all ui-bg-white ui-border ui-border-surface-border hover:ui-bg-surface-page hover:ui-border-gray-300 ui-cursor-pointer"
                         >
                           <div className="ui-flex ui-flex-col ui-flex-1 ui-text-left">
-                            <p className="ui-text-base ui-font-semibold">
+                            <p className="ui-text-body-lg ui-font-semibold">
                               Personal Account {index + 1}
                             </p>
                           </div>
-                          <div className="ui-bg-white/10 ui-px-1.5 ui-py-0.5 ui-rounded-[4px] ui-text-xs ui-font-bold">
-                            <span className="ui-text-white/80">
+                          <div className="ui-bg-surface-page ui-px-1.5 ui-py-0.5 ui-rounded-[4px] ui-text-caption ui-font-bold">
+                            <span className="ui-text-text-primary">
                               {truncateAddress(account.id)}
                             </span>
                           </div>
@@ -180,13 +180,13 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
           </div>
 
           <DialogFooter className="ui-w-full">
-            <BaseButton
+            <Button
               variant="destructive"
               className="ui-w-full"
               onClick={handleDisconnect}
             >
               DISCONNECT
-            </BaseButton>
+            </Button>
           </DialogFooter>
         </div>
       </DialogContent>

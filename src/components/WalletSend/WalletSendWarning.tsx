@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -16,7 +16,7 @@ export function WalletSendWarning({
   onCancel,
 }: WalletSendWarningProps) {
   return (
-    <div className="ui-p-0 ui-flex ui-flex-col ui-gap-12 ui-items-center">
+    <div className="ui-p-0 ui-flex ui-flex-col ui-gap-10 ui-items-center">
       <DialogHeader className="ui-flex ui-flex-col ui-gap-4 ui-w-full">
         <DialogTitle>Are you sure?</DialogTitle>
         <DialogDescription>
@@ -24,17 +24,17 @@ export function WalletSendWarning({
           cannot be reversed.
         </DialogDescription>
       </DialogHeader>
-      <div className="ui-flex ui-flex-col ui-gap-2 ui-w-full">
-        <BaseButton
+      <div className="ui-flex ui-flex-col ui-gap-2.5 ui-w-full">
+        <Button
           onClick={onContinue}
           variant="destructive"
           className="ui-w-full"
         >
           CONTINUE
-        </BaseButton>
-        <BaseButton onClick={onCancel} className="ui-w-full">
+        </Button>
+        <Button onClick={onCancel} className="ui-w-full">
           CANCEL
-        </BaseButton>
+        </Button>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import xionLogo from "../assets/logo.png";
 import { useSmartAccount } from "../hooks";
 import { WalletIcon } from "./ui/icons/Wallet";
 import { ExternalLinkIcon } from "./ui/icons/ExternalLink";
-import { BaseButton } from "./ui/buttons/baseButton";
+import { Button } from "./ui/button";
 import { NetworkBadge } from "./ui/NetworkBadge";
 import { Sidebar } from "./Sidebar";
 import { truncateAddress } from "../utils";
@@ -57,18 +57,18 @@ export function TopNav() {
     <>
       <nav className="ui-w-full ui-px-6 ui-py-4">
         <div className="ui-max-w-7xl ui-mx-auto ui-flex ui-items-center ui-justify-between">
-          <div className="ui-flex ui-items-center ui-space-x-3">
+          <div className="ui-flex ui-items-center ui-space-x-2.5">
             <img
               src={xionLogo}
               alt="XION Logo"
               width="90"
               height="32"
-              className="ui-mb-2"
+              className="ui-mb-1.5 ui-brightness-0"
             />
             <NetworkBadge isMainnet={isMainnet} />
           </div>
 
-          <div className="ui-hidden md:ui-flex ui-items-center ui-justify-center ui-flex-1 ui-gap-8">
+          <div className="ui-hidden md:ui-flex ui-items-center ui-justify-center ui-flex-1 ui-gap-6">
             {NAV_OPTIONS.map((option) => {
               if (option.external) {
                 return (
@@ -76,7 +76,7 @@ export function TopNav() {
                     key={option.text}
                     href={option.path}
                     target="_blank"
-                    className="ui-text-white/60 hover:ui-text-white ui-transition-colors"
+                    className="ui-text-text-secondary hover:ui-text-text-primary ui-transition-colors"
                     rel="noreferrer"
                   >
                     <span className="ui-flex ui-items-center ui-font-bold">
@@ -91,8 +91,8 @@ export function TopNav() {
                   key={option.text}
                   to={option.path}
                   className={cn(
-                    "ui-transition-colors ui-font-bold ui-text-white/60 hover:ui-text-white",
-                    { "!ui-text-white": pathname === option.path },
+                    "ui-transition-colors ui-font-bold ui-text-text-secondary hover:ui-text-text-primary",
+                    { "!ui-text-text-primary": pathname === option.path },
                   )}
                 >
                   {option.text}
@@ -101,9 +101,9 @@ export function TopNav() {
             })}
           </div>
 
-          <div className="ui-flex ui-items-center ui-space-x-2">
+          <div className="ui-flex ui-items-center ui-space-x-1.5">
             <div className="ui-hidden md:ui-block">
-              <BaseButton
+              <Button
                 size="small"
                 onClick={() => {
                   if (account?.id) {
@@ -112,29 +112,29 @@ export function TopNav() {
                     setIsOpen(true);
                   }
                 }}
-                className="!ui-px-3 !ui-py-1.5 ui-bg-transparent hover:ui-bg-white/10"
+                className="!ui-px-2.5 !ui-py-1.5 ui-bg-transparent hover:ui-bg-surface-page"
               >
-                <div className="ui-flex ui-items-center ui-space-x-2">
+                <div className="ui-flex ui-items-center ui-space-x-1.5">
                   <WalletIcon
-                    color="white"
+                    color="#111827"
                     backgroundColor="hsla(var(--background), 1)"
                   />
-                  <span className="ui-text-white ui-font-bold">
+                  <span className="ui-text-text-primary ui-font-bold">
                     {account?.id && truncateAddress(account.id)}
                   </span>
                 </div>
-              </BaseButton>
+              </Button>
             </div>
 
-            <BaseButton
+            <Button
               onClick={() => setShowMobileSidebar(true)}
-              className="md:ui-hidden !ui-p-2 ui-bg-transparent hover:ui-bg-white/10"
+              className="md:ui-hidden !ui-p-1.5 ui-bg-transparent hover:ui-bg-surface-page"
             >
               <div className="ui-flex ui-flex-col ui-items-end ui-gap-1.5">
-                <div className="ui-w-[24px] ui-h-0.5 ui-bg-white" />
-                <div className="ui-w-[16px] ui-h-0.5 ui-bg-white" />
+                <div className="ui-w-[24px] ui-h-0.5 ui-bg-text-primary" />
+                <div className="ui-w-[16px] ui-h-0.5 ui-bg-text-primary" />
               </div>
-            </BaseButton>
+            </Button>
           </div>
         </div>
       </nav>
@@ -148,7 +148,7 @@ export function TopNav() {
             : "ui-opacity-0 ui-pointer-events-none",
         )}
       >
-        <div className="ui-absolute ui-inset-0 ui-transition-all ui-duration-200 ui-bg-[#131313]/80 ui-backdrop-blur-sm" />
+        <div className="ui-absolute ui-inset-0 ui-transition-all ui-duration-200 ui-bg-black/50 ui-backdrop-blur-sm" />
         <div
           className={cn(
             "ui-relative ui-z-10 ui-flex ui-justify-end ui-transition-transform ui-duration-300 ui-ease-out",
