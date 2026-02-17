@@ -1,0 +1,16 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "abstraxion-dashboard": "0.16.0-rc.0"
+  },
+  "changesets": [
+    "cold-clubs-return",
+    "eighty-papayas-move",
+    "lazy-humans-feel",
+    "metal-lights-greet",
+    "nice-rules-argue",
+    "spotty-rooms-yell",
+    "violet-swans-joke"
+  ]
+}
