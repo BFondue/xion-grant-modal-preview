@@ -1,5 +1,13 @@
 # abstraxion-dashboard
 
+## 0.16.1-rc.2
+
+### Patch Changes
+
+- [#318](https://github.com/burnt-labs/xion-dashboard-app/pull/318) [`8f5b7ac`](https://github.com/burnt-labs/xion-dashboard-app/commit/8f5b7acf8831b81ff473586da391fda7dc12d2ae) Thanks [@2xburnt](https://github.com/2xburnt)! - Fix mainnet and testnet links in github deployments
+
+- [#318](https://github.com/burnt-labs/xion-dashboard-app/pull/318) [`1ab1d19`](https://github.com/burnt-labs/xion-dashboard-app/commit/1ab1d19d69b684c407f720a16ab1a7fad46dafa4) Thanks [@2xburnt](https://github.com/2xburnt)! - fix merge
+
 ## 0.16.1-rc.1
 
 ### Patch Changes
