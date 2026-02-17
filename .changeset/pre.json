@@ -5,6 +5,7 @@
     "abstraxion-dashboard": "0.16.0-rc.0"
   },
   "changesets": [
+    "early-snails-sneeze",
     "fix-ci-deployments"
   ]
 }
