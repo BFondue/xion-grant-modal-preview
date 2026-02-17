@@ -53,34 +53,13 @@ jobs:
       - name: Build app
         run: pnpm exec vite build --mode ${{ inputs.build-mode || inputs.environment }}
         env:
-          # Cloudflare environment
-          CLOUDFLARE_ENV: ${{ inputs.environment }}
+          # Network selector (drives src/config/index.ts)
+          VITE_NETWORK: ${{ vars.VITE_NETWORK }}
           # Release version
           VITE_APP_VERSION: ${{ inputs.message || github.sha }}
-          # Secrets
+          # Secrets (no defaults in config)
           VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.VITE_STYTCH_PUBLIC_TOKEN || secrets.VITE_DEFAULT_STYTCH_PUBLIC_TOKEN }}
           VITE_NUMIA_TOKEN: ${{ secrets.VITE_NUMIA_TOKEN }}
-          # Network & API configuration
-          VITE_NETWORK: ${{ vars.VITE_NETWORK }}
-          VITE_CHAIN_ID: ${{ vars.VITE_CHAIN_ID }}
-          VITE_XION_RPC_URL: ${{ vars.VITE_XION_RPC_URL }}
-          VITE_ABSTRAXION_API_URL: ${{ vars.VITE_ABSTRAXION_API_URL }}
-          VITE_XION_STYTCH_API: ${{ vars.VITE_XION_STYTCH_API }}
-          VITE_DEFAULT_INDEXER_URL: ${{ vars.VITE_DEFAULT_INDEXER_URL }}
-          VITE_INDEXER_STRATEGY: ${{ vars.VITE_INDEXER_STRATEGY }}
-          VITE_NUMIA_URL: ${{ vars.VITE_NUMIA_URL }}
-          # Account configuration
-          VITE_DEFAULT_ACCOUNT_CONTRACT_CODE_ID: ${{ vars.VITE_DEFAULT_ACCOUNT_CONTRACT_CODE_ID }}
-          VITE_FEE_GRANTER_ADDRESS: ${{ vars.VITE_FEE_GRANTER_ADDRESS }}
-          VITE_GAS_ADJUSTMENT: ${{ vars.VITE_GAS_ADJUSTMENT }}
-          VITE_GAS_MARGIN: ${{ vars.VITE_GAS_MARGIN }}
-          # Feature flags
-          VITE_KEPLR_FLAG: ${{ vars.VITE_KEPLR_FLAG }}
-          VITE_METAMASK_FLAG: ${{ vars.VITE_METAMASK_FLAG }}
-          VITE_OKX_FLAG: ${{ vars.VITE_OKX_FLAG }}
-          VITE_PASSKEY_FLAG: ${{ vars.VITE_PASSKEY_FLAG }}
-          VITE_APPLE_FLAG: ${{ vars.VITE_APPLE_FLAG }}
-          VITE_ZKEMAIL_FLAG: ${{ vars.VITE_ZKEMAIL_FLAG }}
 
       - name: Deploy to Cloudflare
         id: deploy
@@ -88,7 +67,7 @@ jobs:
         with:
           apiToken: ${{ secrets.BURNT_CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.BURNT_CLOUDFLARE_ACCOUNT_ID }}
-          command: ${{ inputs.wrangler-command }} --env=${{ inputs.environment }}${{ inputs.message && format(' --message="{0}"', inputs.message) || '' }}
+          command: ${{ inputs.wrangler-command }} --env=${{ inputs.environment }}${{ inputs.wrangler-command != 'deploy' && inputs.message && format(' --message="{0}"', inputs.message) || '' }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
 

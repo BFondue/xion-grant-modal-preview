@@ -2,4 +2,4 @@
 "abstraxion-dashboard": patch
 ---
 
-refactor: Move Off shuttle
+Fix deployment urls
