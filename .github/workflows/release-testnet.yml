@@ -74,26 +74,6 @@ jobs:
           git config gpg.format ssh
           git config user.signingkey /tmp/.git_signing_key
 
-      - name: 🔖 Enter prerelease mode (if not already)
-        run: |
-          if [ ! -f .changeset/pre.json ]; then
-            pnpm changeset pre enter rc
-            git add .changeset/pre.json
-            git commit -m "chore: enter prerelease mode"
-            git push
-          else
-            # File exists — check if we're actually in pre mode
-            MODE=$(node -e "console.log(require('./.changeset/pre.json').mode)")
-            if [ "$MODE" != "pre" ]; then
-              pnpm changeset pre enter rc
-              git add .changeset/pre.json
-              git commit -m "chore: re-enter prerelease mode"
-              git push
-            else
-              echo "Already in prerelease mode, skipping"
-            fi
-          fi
-
       - name: 📣 Create Release Candidate PR or Publish RC
         id: changesets
         uses: changesets/action@v1
