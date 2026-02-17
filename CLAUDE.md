@@ -85,11 +85,13 @@ src/
 - **AbstraxionGrant**: Permission grant management
 - **AbstraxionMigrate**: Account migration utilities
 
-### Environment Configuration
+### Environment & Configuration
 
-- Separate configs for mainnet (`.env.mainnet`) and testnet (`.env.testnet`)
-- Build scripts enforce no `.env` file in production builds
-- Use Vite modes for environment-specific builds
+- **Always use `src/config/index.ts` exports** (e.g. `CHAIN_ID`, `RPC_URL`, `NETWORK`) instead of reading `import.meta.env` directly in application or test code.
+- `src/config/index.ts` reads env vars internally and applies defaults from `src/config/mainnet.ts` / `src/config/testnet.ts`, so consuming code never needs to reference `import.meta.env.VITE_*`.
+- `.env` files (`.env.mainnet`, `.env.testnet`) are for **local development overrides only**. Deployment values live in the config files.
+- Build scripts enforce no `.env` file in production builds.
+- In tests, mock config values via `vi.mock("../../config", ...)` rather than setting `import.meta.env` directly.
 
 ### Development Patterns
 

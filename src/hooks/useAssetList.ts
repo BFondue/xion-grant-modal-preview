@@ -12,7 +12,6 @@ import {
   COINGECKO_API_URL,
   getAssetEndpoint,
   networkConfig,
-  FALLBACK_ASSETS,
 } from "../config";
 
 /**
@@ -20,17 +19,11 @@ import {
  * @returns The asset list and query info
  */
 export const fetchAssetList = async (): Promise<AssetList> => {
-  try {
-    const response = await axios.get(getAssetEndpoint());
-    if (response.status !== 200) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching asset list:", error);
-    // Fallback to local assets
-    return FALLBACK_ASSETS as AssetList;
+  const response = await axios.get(getAssetEndpoint());
+  if (response.status !== 200) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
+  return response.data;
 };
 
 /**
