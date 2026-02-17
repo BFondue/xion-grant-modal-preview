@@ -93,7 +93,7 @@ describe("getEthWalletAddress", () => {
     window.ethereum = {
       isMetaMask: true,
       request: vi.fn().mockResolvedValue(["0x123"]),
-    } as any;
+    } as unknown as typeof window.ethereum;
     const address = await getEthWalletAddress();
     expect(address).toBe("0x123");
   });
@@ -102,7 +102,7 @@ describe("getEthWalletAddress", () => {
     window.ethereum = {
       isMetaMask: true,
       request: vi.fn().mockResolvedValue([]),
-    } as any;
+    } as unknown as typeof window.ethereum;
     await expect(getEthWalletAddress()).rejects.toThrow("No accounts found");
   });
 
@@ -110,7 +110,7 @@ describe("getEthWalletAddress", () => {
     window.ethereum = {
       isMetaMask: true,
       request: vi.fn().mockRejectedValue(new Error("Unknown")),
-    } as any;
+    } as unknown as typeof window.ethereum;
     await expect(getEthWalletAddress()).rejects.toThrow(
       "Failed to get Ethereum address",
     );
@@ -142,7 +142,7 @@ describe("getSecp256k1Pubkey", () => {
     };
     window.keplr = {
       getKey: vi.fn().mockResolvedValue(mockKey),
-    } as any;
+    } as unknown as typeof window.keplr;
 
     const result = await getSecp256k1Pubkey("chain-id", "keplr");
     expect(result.address).toBe("xion1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6ltfe6");
@@ -161,7 +161,7 @@ describe("getSecp256k1Pubkey", () => {
         enable: vi.fn(),
         getKey: vi.fn().mockResolvedValue(mockKey),
       },
-    } as any;
+    } as unknown as typeof window.okxwallet;
 
     const result = await getSecp256k1Pubkey("chain-id", "okx");
     expect(result.address).toBe("xion1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6ltfe6");
@@ -169,7 +169,7 @@ describe("getSecp256k1Pubkey", () => {
   });
 
   it("throws if okxwallet.keplr is not available", async () => {
-    window.okxwallet = {} as any;
+    window.okxwallet = {} as unknown as typeof window.okxwallet;
     await expect(getSecp256k1Pubkey("chain-id", "okx")).rejects.toThrow(
       "OKX Keplr integration not found",
     );
@@ -178,7 +178,7 @@ describe("getSecp256k1Pubkey", () => {
   it("throws if no pubkey returned", async () => {
     window.keplr = {
       getKey: vi.fn().mockResolvedValue({ bech32Address: "xion1addr" }),
-    } as any;
+    } as unknown as typeof window.keplr;
     await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
       "No public key found",
     );
@@ -187,7 +187,7 @@ describe("getSecp256k1Pubkey", () => {
   it("throws if key is null", async () => {
     window.keplr = {
       getKey: vi.fn().mockResolvedValue(null),
-    } as any;
+    } as unknown as typeof window.keplr;
     await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
       "No public key found",
     );
@@ -196,7 +196,7 @@ describe("getSecp256k1Pubkey", () => {
   it("wraps unknown errors", async () => {
     window.keplr = {
       getKey: vi.fn().mockRejectedValue(new Error("Unknown error")),
-    } as any;
+    } as unknown as typeof window.keplr;
     await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
       "Failed to get public key",
     );
@@ -207,7 +207,7 @@ describe("getSecp256k1Pubkey", () => {
       getKey: vi
         .fn()
         .mockRejectedValue(new WalletAccountError("tech", "user denied")),
-    } as any;
+    } as unknown as typeof window.keplr;
     await expect(getSecp256k1Pubkey("chain-id", "keplr")).rejects.toThrow(
       "tech",
     );
@@ -232,7 +232,7 @@ describe("signWithEthWallet", () => {
     window.ethereum = {
       isMetaMask: true,
       request: vi.fn().mockResolvedValue(mockSignature),
-    } as any;
+    } as unknown as typeof window.ethereum;
     const sig = await signWithEthWallet("msg", "addr");
     expect(sig).toBe(mockSignature);
   });
@@ -241,7 +241,7 @@ describe("signWithEthWallet", () => {
     window.ethereum = {
       isMetaMask: true,
       request: vi.fn().mockResolvedValue(null),
-    } as any;
+    } as unknown as typeof window.ethereum;
     await expect(signWithEthWallet("msg", "addr")).rejects.toThrow(
       "No signature returned",
     );
@@ -251,7 +251,7 @@ describe("signWithEthWallet", () => {
     window.ethereum = {
       isMetaMask: true,
       request: vi.fn().mockRejectedValue(new Error("Unknown error")),
-    } as any;
+    } as unknown as typeof window.ethereum;
     await expect(signWithEthWallet("msg", "addr")).rejects.toThrow(
       "Failed to sign with Ethereum wallet",
     );
@@ -263,7 +263,7 @@ describe("signWithEthWallet", () => {
       request: vi
         .fn()
         .mockRejectedValue(new WalletAccountError("tech", "user denied")),
-    } as any;
+    } as unknown as typeof window.ethereum;
     await expect(signWithEthWallet("msg", "addr")).rejects.toThrow("tech");
   });
 });
@@ -290,7 +290,7 @@ describe("signWithSecp256k1Wallet", () => {
       signArbitrary: vi.fn().mockResolvedValue({
         signature: "AQID", // Base64 for 010203
       }),
-    } as any;
+    } as unknown as typeof window.keplr;
 
     const sig = await signWithSecp256k1Wallet("msg", "chain", "addr", "keplr");
     expect(sig).toBe("010203");
@@ -303,7 +303,7 @@ describe("signWithSecp256k1Wallet", () => {
           signature: "AQID",
         }),
       },
-    } as any;
+    } as unknown as typeof window.okxwallet;
 
     const sig = await signWithSecp256k1Wallet("msg", "chain", "addr", "okx");
     expect(sig).toBe("010203");
@@ -312,7 +312,7 @@ describe("signWithSecp256k1Wallet", () => {
   it("throws if no signature returned", async () => {
     window.keplr = {
       signArbitrary: vi.fn().mockResolvedValue(null),
-    } as any;
+    } as unknown as typeof window.keplr;
     await expect(
       signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
     ).rejects.toThrow("No signature returned");
@@ -321,7 +321,7 @@ describe("signWithSecp256k1Wallet", () => {
   it("throws if signature object has no signature property", async () => {
     window.keplr = {
       signArbitrary: vi.fn().mockResolvedValue({ pub_key: "key" }),
-    } as any;
+    } as unknown as typeof window.keplr;
     await expect(
       signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
     ).rejects.toThrow("No signature returned");
@@ -330,7 +330,7 @@ describe("signWithSecp256k1Wallet", () => {
   it("wraps unknown errors", async () => {
     window.keplr = {
       signArbitrary: vi.fn().mockRejectedValue(new Error("Unknown error")),
-    } as any;
+    } as unknown as typeof window.keplr;
     await expect(
       signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
     ).rejects.toThrow("Failed to sign with Cosmos wallet");
@@ -341,7 +341,7 @@ describe("signWithSecp256k1Wallet", () => {
       signArbitrary: vi
         .fn()
         .mockRejectedValue(new WalletAccountError("tech", "user denied")),
-    } as any;
+    } as unknown as typeof window.keplr;
     await expect(
       signWithSecp256k1Wallet("msg", "chain", "addr", "keplr"),
     ).rejects.toThrow("tech");

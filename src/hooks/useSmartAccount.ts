@@ -97,7 +97,7 @@ export const useSmartAccount = () => {
         );
         // Clear account so it gets re-fetched with new key
         if (account) {
-          updateAccount({ ...account, id: "" } as any);
+          updateAccount({ ...account, id: "" });
         }
       }
     };

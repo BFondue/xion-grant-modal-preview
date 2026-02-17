@@ -53,7 +53,7 @@ import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
   NETWORK,
   FEATURE_FLAGS,
-  STYTCH_PUBLIC_TOKEN,
+  getStytchPublicToken,
   STYTCH_PROXY_URL,
 } from "../../config";
 
@@ -68,7 +68,6 @@ export const LoginScreen = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [isRedirectingToOAuth, setIsRedirectingToOAuth] = useState(false);
-  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [showZKEmailLogin, setShowZKEmailLogin] = useState(false);
   const tokenProcessed = useRef(false);
 
@@ -151,7 +150,7 @@ export const LoginScreen = () => {
     const redirectUrl = `${origin}/callback`;
 
     // Manually construct OAuth URL to open in popup instead of redirecting iframe
-    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const publicToken = getStytchPublicToken();
     const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const googleOAuthUrl =
       `${baseUrl}/public/oauth/google/start?` +
@@ -229,7 +228,7 @@ export const LoginScreen = () => {
     // Redirect to our callback page
     const redirectUrl = `${origin}/callback`;
 
-    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const publicToken = getStytchPublicToken();
     const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const appleOAuthUrl =
       `${baseUrl}/public/oauth/apple/start?` +
@@ -312,7 +311,7 @@ export const LoginScreen = () => {
     // Redirect to our callback page
     const redirectUrl = `${origin}/callback`;
 
-    const publicToken = STYTCH_PUBLIC_TOKEN;
+    const publicToken = getStytchPublicToken();
     const baseUrl = STYTCH_PROXY_URL || window.location.origin;
     const tiktokOAuthUrl =
       `${baseUrl}/public/oauth/tiktok/start?` +
@@ -625,7 +624,7 @@ export const LoginScreen = () => {
 
       // First, try to suggest the chain (OKX might not have Xion configured)
       try {
-        await keplr.experimentalSuggestChain(chainInfo as any);
+        await keplr.experimentalSuggestChain(chainInfo);
         console.log("[AbstraxionSignin] OKX chain suggested successfully");
       } catch (suggestError) {
         console.log(

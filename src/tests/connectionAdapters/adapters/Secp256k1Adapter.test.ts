@@ -12,24 +12,24 @@ vi.mock("@burnt-labs/signers", async () => {
   const actual = await vi.importActual("@burnt-labs/signers");
 
   class MockAADirectSigner {
-    offlineSigner: any;
+    offlineSigner: unknown;
     abstractAccount: string;
     accountAuthenticatorIndex: number;
     signArbitraryFn: (
       chainId: string,
       signer: string,
       data: string | Uint8Array,
-    ) => Promise<any>;
+    ) => Promise<unknown>;
 
     constructor(
-      offlineSigner: any,
+      offlineSigner: unknown,
       account: string,
       index: number,
       signArbitraryFn: (
         chainId: string,
         signer: string,
         data: string | Uint8Array,
-      ) => Promise<any>,
+      ) => Promise<unknown>,
     ) {
       this.offlineSigner = offlineSigner;
       this.abstractAccount = account;

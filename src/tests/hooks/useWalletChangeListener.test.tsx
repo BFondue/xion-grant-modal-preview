@@ -6,6 +6,7 @@ import {
   CONNECTION_METHOD,
 } from "../../auth/AuthStateManager";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
+import type { SelectedSmartAccount } from "../../types/wallet-account-types";
 
 // Mock dependencies
 vi.mock("../../utils", () => ({
@@ -29,7 +30,7 @@ describe("useWalletChangeListener", () => {
       getKey: vi.fn().mockResolvedValue({
         pubKey: new Uint8Array([1, 2, 3, 4]),
       }),
-    } as any;
+    } as unknown as typeof window.keplr;
 
     // Mock OKX wallet
     window.okxwallet = {
@@ -38,22 +39,22 @@ describe("useWalletChangeListener", () => {
           pubKey: new Uint8Array([1, 2, 3, 4]),
         }),
       },
-    } as any;
+    } as unknown as typeof window.okxwallet;
 
     // Mock MetaMask
     window.ethereum = {
       on: vi.fn(),
       removeListener: vi.fn(),
-    } as any;
+    } as unknown as typeof window.ethereum;
 
     // Initialize auth state manager
     AuthStateManager.initialize();
   });
 
   afterEach(() => {
-    delete (window as any).keplr;
-    delete (window as any).okxwallet;
-    delete (window as any).ethereum;
+    delete (window as unknown as Record<string, unknown>).keplr;
+    delete (window as unknown as Record<string, unknown>).okxwallet;
+    delete (window as unknown as Record<string, unknown>).ethereum;
     localStorage.clear();
   });
 
@@ -70,7 +71,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       // Render the hook
       renderHook(() => useWalletChangeListener());
@@ -108,7 +109,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 
@@ -136,7 +137,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 
@@ -168,13 +169,13 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 
       // Get the accountsChanged handler that was registered
-      const onCall = (window.ethereum!.on as any).mock.calls.find(
-        (call: any) => call[0] === "accountsChanged",
+      const onCall = vi.mocked(window.ethereum!.on).mock.calls.find(
+        (call: unknown[]) => call[0] === "accountsChanged",
       );
       expect(onCall).toBeDefined();
       const accountsChangedHandler = onCall[1];
@@ -199,13 +200,13 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 
       // Get the accountsChanged handler
-      const onCall = (window.ethereum!.on as any).mock.calls.find(
-        (call: any) => call[0] === "accountsChanged",
+      const onCall = vi.mocked(window.ethereum!.on).mock.calls.find(
+        (call: unknown[]) => call[0] === "accountsChanged",
       );
       const accountsChangedHandler = onCall[1];
 
@@ -229,13 +230,13 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 
       // Get the accountsChanged handler
-      const onCall = (window.ethereum!.on as any).mock.calls.find(
-        (call: any) => call[0] === "accountsChanged",
+      const onCall = vi.mocked(window.ethereum!.on).mock.calls.find(
+        (call: unknown[]) => call[0] === "accountsChanged",
       );
       const accountsChangedHandler = onCall[1];
 
@@ -262,7 +263,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1keplr",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       const { rerender, unmount } = renderHook(() => useWalletChangeListener());
 
@@ -288,15 +289,15 @@ describe("useWalletChangeListener", () => {
         AuthStateManager.completeLogin({
           id: "xion1metamask",
           currentAuthenticatorIndex: 0,
-        } as any);
+        } as unknown as SelectedSmartAccount);
       });
 
       // Force rerender to trigger useEffect with new connection method
       rerender();
 
       // Step 4: Simulate MetaMask account change
-      const onCall = (window.ethereum!.on as any).mock.calls.find(
-        (call: any) => call[0] === "accountsChanged",
+      const onCall = vi.mocked(window.ethereum!.on).mock.calls.find(
+        (call: unknown[]) => call[0] === "accountsChanged",
       );
 
       // BUG: If previousAuthenticator wasn't reset, it will still have "authenticator_1" (Keplr)
@@ -333,7 +334,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1metamask",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       const { rerender, unmount } = renderHook(() => useWalletChangeListener());
 
@@ -352,7 +353,7 @@ describe("useWalletChangeListener", () => {
         AuthStateManager.completeLogin({
           id: "xion1keplr",
           currentAuthenticatorIndex: 0,
-        } as any);
+        } as unknown as SelectedSmartAccount);
       });
 
       rerender();
@@ -387,7 +388,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1keplr",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       const { rerender, unmount } = renderHook(() => useWalletChangeListener());
 
@@ -402,7 +403,7 @@ describe("useWalletChangeListener", () => {
         AuthStateManager.completeLogin({
           id: "xion1metamask",
           currentAuthenticatorIndex: 0,
-        } as any);
+        } as unknown as SelectedSmartAccount);
       });
 
       rerender();
@@ -417,7 +418,7 @@ describe("useWalletChangeListener", () => {
         AuthStateManager.completeLogin({
           id: "xion1okx",
           currentAuthenticatorIndex: 0,
-        } as any);
+        } as unknown as SelectedSmartAccount);
       });
 
       rerender();
@@ -454,7 +455,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       const { unmount } = renderHook(() => useWalletChangeListener());
 
@@ -475,7 +476,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       const { unmount } = renderHook(() => useWalletChangeListener());
 
@@ -501,7 +502,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       const { unmount } = renderHook(() => useWalletChangeListener());
 
@@ -543,7 +544,7 @@ describe("useWalletChangeListener", () => {
         .spyOn(console, "warn")
         .mockImplementation(() => {});
 
-      delete (window as any).keplr;
+      delete (window as unknown as Record<string, unknown>).keplr;
 
       AuthStateManager.startLogin(
         AUTHENTICATOR_TYPE.Secp256K1,
@@ -553,7 +554,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 
@@ -574,7 +575,7 @@ describe("useWalletChangeListener", () => {
         .spyOn(console, "warn")
         .mockImplementation(() => {});
 
-      delete (window as any).okxwallet;
+      delete (window as unknown as Record<string, unknown>).okxwallet;
 
       AuthStateManager.startLogin(
         AUTHENTICATOR_TYPE.Secp256K1,
@@ -584,7 +585,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 
@@ -602,7 +603,7 @@ describe("useWalletChangeListener", () => {
 
     it("should handle missing window.ethereum when connected with MetaMask", () => {
       // Remove window.ethereum
-      delete (window as any).ethereum;
+      delete (window as unknown as Record<string, unknown>).ethereum;
 
       AuthStateManager.startLogin(
         AUTHENTICATOR_TYPE.EthWallet,
@@ -612,7 +613,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       // Should not throw when window.ethereum is undefined
       const { unmount } = renderHook(() => useWalletChangeListener());
@@ -636,7 +637,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 
@@ -669,7 +670,7 @@ describe("useWalletChangeListener", () => {
       AuthStateManager.completeLogin({
         id: "xion1test",
         currentAuthenticatorIndex: 0,
-      } as any);
+      } as unknown as SelectedSmartAccount);
 
       renderHook(() => useWalletChangeListener());
 

@@ -33,7 +33,7 @@ describe("AbstractAccountJWTSigner", () => {
           mockAccount,
           mockIndex,
           mockToken,
-          undefined as any,
+          undefined as unknown as string,
         ),
     ).toThrow(
       "JWT signer requires an apiUrl parameter (e.g., your JWT authentication service endpoint)",
@@ -63,7 +63,7 @@ describe("AbstractAccountJWTSigner", () => {
 
   it("should return empty accounts if abstract account is undefined", async () => {
     const signer = new AbstractAccountJWTSigner(
-      undefined as any,
+      undefined as unknown as string,
       mockIndex,
       mockToken,
       mockApiUrl,
@@ -90,7 +90,7 @@ describe("AbstractAccountJWTSigner", () => {
       ok: true,
       json: async () => ({ session_jwt: "mock-jwt" }),
     };
-    (global.fetch as any).mockResolvedValue(mockResponse);
+    vi.mocked(global.fetch).mockResolvedValue(mockResponse);
 
     const response = await signer.signDirect("user@example.com", mockSignDoc);
 
@@ -128,7 +128,7 @@ describe("AbstractAccountJWTSigner", () => {
       mockApiUrl,
     );
     const mockSignDoc = SignDoc.fromPartial({});
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: false,
       status: 401,
       text: async () => "Unauthorized",
@@ -147,7 +147,7 @@ describe("AbstractAccountJWTSigner", () => {
       mockApiUrl,
     );
     const mockSignDoc = SignDoc.fromPartial({});
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: false,
       status: 500,
       text: vi.fn().mockRejectedValue(new Error("stream error")),
@@ -166,7 +166,7 @@ describe("AbstractAccountJWTSigner", () => {
       mockApiUrl,
     );
     const mockSignDoc = SignDoc.fromPartial({});
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       json: async () => ({}),
     });
@@ -189,7 +189,7 @@ describe("AbstractAccountJWTSigner", () => {
       ok: true,
       json: async () => ({ session_jwt: "mock-jwt" }),
     };
-    (global.fetch as any).mockResolvedValue(mockResponse);
+    vi.mocked(global.fetch).mockResolvedValue(mockResponse);
 
     const response = await signer.signDirectArb(message);
 
@@ -217,7 +217,7 @@ describe("AbstractAccountJWTSigner", () => {
       ok: true,
       json: async () => ({ session_jwt: "mock-jwt" }),
     };
-    (global.fetch as any).mockResolvedValue(mockResponse);
+    vi.mocked(global.fetch).mockResolvedValue(mockResponse);
 
     await signer.signDirectArb(message, customToken);
 
@@ -248,7 +248,7 @@ describe("AbstractAccountJWTSigner", () => {
       mockToken,
       mockApiUrl,
     );
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: false,
       status: 401,
       text: async () => "Unauthorized",
@@ -266,7 +266,7 @@ describe("AbstractAccountJWTSigner", () => {
       mockToken,
       mockApiUrl,
     );
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: false,
       status: 500,
       text: vi.fn().mockRejectedValue(new Error("stream error")),
@@ -284,7 +284,7 @@ describe("AbstractAccountJWTSigner", () => {
       mockToken,
       mockApiUrl,
     );
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       json: async () => ({}),
     });

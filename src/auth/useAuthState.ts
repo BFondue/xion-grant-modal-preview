@@ -23,6 +23,7 @@ import {
   AuthStateManager,
   ConnectionMethod,
   CONNECTION_METHOD,
+  type StytchLikeClient,
 } from "./AuthStateManager";
 import { SelectedSmartAccount } from "../types/wallet-account-types";
 import type { AuthenticatorType } from "@burnt-labs/signers";
@@ -85,7 +86,7 @@ export function useAuthState() {
    * @param origin - Optional origin for session cleanup
    * @param stytchClient - Optional Stytch client for session revocation
    */
-  const logout = useCallback(async (origin?: string, stytchClient?: any) => {
+  const logout = useCallback(async (origin?: string, stytchClient?: StytchLikeClient) => {
     await AuthStateManager.logout(origin, stytchClient);
   }, []);
 

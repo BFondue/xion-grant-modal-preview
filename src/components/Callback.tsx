@@ -366,7 +366,7 @@ export function Callback() {
         ? networks.mainnet
         : networks.testnet;
 
-      let result: { type: string; data: any };
+      let result: { type: string; data: Record<string, unknown> };
 
       switch (walletType) {
         case "keplr":
@@ -545,7 +545,7 @@ export function Callback() {
 // Wallet connection functions
 async function connectKeplr(
   network: ChainInfo,
-): Promise<{ type: string; data: any }> {
+): Promise<{ type: string; data: Record<string, unknown> }> {
   if (!window.keplr) {
     throw new Error(
       "Keplr wallet extension not found. Please install it first.",
@@ -575,7 +575,7 @@ async function connectKeplr(
 
 async function connectOkx(
   network: ChainInfo,
-): Promise<{ type: string; data: any }> {
+): Promise<{ type: string; data: Record<string, unknown> }> {
   if (!window.okxwallet?.keplr) {
     throw new Error("OKX wallet extension not found. Please install it first.");
   }
@@ -603,7 +603,7 @@ async function connectOkx(
   };
 }
 
-async function connectMetamask(): Promise<{ type: string; data: any }> {
+async function connectMetamask(): Promise<{ type: string; data: Record<string, unknown> }> {
   if (!window.ethereum) {
     throw new Error(
       "MetaMask wallet extension not found. Please install it first.",

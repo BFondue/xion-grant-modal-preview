@@ -95,7 +95,7 @@ describe("zk-email utilities", () => {
         proofId: "proof-123",
       };
 
-      (global.fetch as any).mockResolvedValue(
+      vi.mocked(global.fetch).mockResolvedValue(
         mockFetchResponse(mockResponseBody),
       );
 
@@ -118,7 +118,7 @@ describe("zk-email utilities", () => {
       );
 
       // Verify the body contains all required fields including turnstileToken
-      const callArgs = (global.fetch as any).mock.calls[0];
+      const callArgs = vi.mocked(global.fetch).mock.calls[0];
       const body = JSON.parse(callArgs[1].body);
       expect(body).toEqual({
         email: "test@example.com",
@@ -131,7 +131,7 @@ describe("zk-email utilities", () => {
     });
 
     it("sends command as provided (caller may pass raw or pre-encoded)", async () => {
-      (global.fetch as any).mockResolvedValue(
+      vi.mocked(global.fetch).mockResolvedValue(
         mockFetchResponse({ success: true }),
       );
 
@@ -142,7 +142,7 @@ describe("zk-email utilities", () => {
         "token",
       );
 
-      const callArgs = (global.fetch as any).mock.calls[0];
+      const callArgs = vi.mocked(global.fetch).mock.calls[0];
       const body = JSON.parse(callArgs[1].body);
 
       // Command is sent as provided (caller encodes if needed)
@@ -150,7 +150,7 @@ describe("zk-email utilities", () => {
     });
 
     it("throws error when response is not ok", async () => {
-      (global.fetch as any).mockResolvedValue(
+      vi.mocked(global.fetch).mockResolvedValue(
         mockFetchResponse({ error: "Invalid turnstile token" }, false),
       );
 
@@ -165,7 +165,7 @@ describe("zk-email utilities", () => {
     });
 
     it("throws generic error when no error message in response", async () => {
-      (global.fetch as any).mockResolvedValue(mockFetchResponse({}, false));
+      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse({}, false));
 
       await expect(
         verifyEmailWithZKEmail(
@@ -185,7 +185,7 @@ describe("zk-email utilities", () => {
         status: "email_sent_awaiting_reply",
       };
 
-      (global.fetch as any).mockResolvedValue(mockFetchResponse(mockStatus));
+      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockStatus));
 
       const result = await checkZKEmailStatus("proof-123");
 
@@ -213,16 +213,16 @@ describe("zk-email utilities", () => {
         },
       };
 
-      (global.fetch as any).mockResolvedValue(mockFetchResponse(mockStatus));
+      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse(mockStatus));
 
       const result = await checkZKEmailStatus("proof-123");
 
       expect(result.proof?.publicInputs).toEqual(["output1", "output2"]);
-      expect((result.proof as any)?.publicOutputs).toBeUndefined();
+      expect((result.proof as unknown as Record<string, unknown>)?.publicOutputs).toBeUndefined();
     });
 
     it("throws error when response is not ok", async () => {
-      (global.fetch as any).mockResolvedValue(
+      vi.mocked(global.fetch).mockResolvedValue(
         mockFetchResponse({ error: "Proof not found" }, false),
       );
 
@@ -232,7 +232,7 @@ describe("zk-email utilities", () => {
     });
 
     it("throws generic error when no error message in response", async () => {
-      (global.fetch as any).mockResolvedValue(mockFetchResponse({}, false));
+      vi.mocked(global.fetch).mockResolvedValue(mockFetchResponse({}, false));
 
       await expect(checkZKEmailStatus("invalid-id")).rejects.toThrow(
         "Failed to check ZK-Email status",
@@ -279,7 +279,7 @@ describe("zk-email utilities", () => {
 
     it("returns default message for unknown status", () => {
       // Cast to ZkEmailStatus to test the default case
-      expect(getZKEmailStatusMessage("unknown_status" as any)).toBe(
+      expect(getZKEmailStatusMessage("unknown_status" as unknown as Parameters<typeof getZKEmailStatusMessage>[0])).toBe(
         "Processing verification...",
       );
     });
@@ -931,7 +931,7 @@ describe("zk-email utilities", () => {
         proofResponseToBase64Signature({
           proofId: "proof-1",
           status: ZK_EMAIL_STATUS.proof_generation_success,
-        } as any),
+        } as unknown as Parameters<typeof proofResponseToBase64Signature>[0]),
       ).toThrow("proofResponseToBase64Signature: proof is required");
     });
   });

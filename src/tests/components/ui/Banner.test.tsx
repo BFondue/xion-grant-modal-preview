@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "../..";
 import Banner from "../../../components/ui/Banner";
 import { AuthContext } from "../../../components/AuthContext";
+import type { ChainInfo } from "@burnt-labs/constants";
 
 // Mock localStorage
 const localStorageMock = {
@@ -33,7 +34,7 @@ describe("Banner", () => {
 
   const renderWithContext = async (chainId: string) => {
     const contextValue = {
-      chainInfo: { chainId } as any,
+      chainInfo: { chainId } as unknown as ChainInfo,
       abstraxionAccount: undefined,
       abstraxionError: undefined,
       isLoggedIn: false,
@@ -104,7 +105,7 @@ describe("Banner", () => {
 
   it("should apply custom className", async () => {
     const contextValue = {
-      chainInfo: { chainId: "xion-testnet-1" } as any,
+      chainInfo: { chainId: "xion-testnet-1" } as unknown as ChainInfo,
       abstraxionAccount: undefined,
       abstraxionError: undefined,
       isLoggedIn: false,
@@ -126,7 +127,7 @@ describe("Banner", () => {
 
   it("should not render when chainInfo is undefined", async () => {
     const contextValue = {
-      chainInfo: undefined as any,
+      chainInfo: undefined as unknown as ChainInfo,
       abstraxionAccount: undefined,
       abstraxionError: undefined,
       isLoggedIn: false,

@@ -74,7 +74,7 @@ describe("AddZKEmail branch edges", () => {
 
   it("uses turnstile fallback token when ref is null", async () => {
     const capturedTokens: string[] = [];
-    const startVerification = vi.fn(async (params: any) => {
+    const startVerification = vi.fn(async (params: { getTurnstileToken: () => Promise<string> }) => {
       const token = await params.getTurnstileToken();
       capturedTokens.push(token);
     });
@@ -85,7 +85,7 @@ describe("AddZKEmail branch edges", () => {
       isProcessing: false,
       verificationResult: null,
       startVerification,
-    } as any);
+    } as unknown as ReturnType<typeof useZKEmailVerificationFlow>);
 
     const { user } = await render(
       <Dialog open={true}>
@@ -120,7 +120,7 @@ describe("AddZKEmail branch edges", () => {
       isProcessing: false,
       verificationResult: { proof: { publicInputs: [] } },
       startVerification: vi.fn(),
-    } as any);
+    } as unknown as ReturnType<typeof useZKEmailVerificationFlow>);
 
     render(
       <Dialog open={true}>
