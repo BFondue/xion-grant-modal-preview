@@ -79,22 +79,22 @@ jobs:
         run: |
           ENV="${{ inputs.environment }}"
 
-          # Try to extract Version ID for preview URLs
-          VERSION_ID=$(echo "$OUTPUT" | grep -oE 'Worker Version ID: [a-f0-9-]+' | cut -d' ' -f4 | head -1 || true)
-
-          if [ -n "$VERSION_ID" ]; then
-            # Extract short version ID (first 8 chars before the first hyphen)
-            SHORT_VERSION_ID=$(echo "$VERSION_ID" | cut -d'-' -f1)
-            # Preview URL format: https://<short-version-id>-<worker-name>.<subdomain>.workers.dev
-            URL="https://${SHORT_VERSION_ID}-xion-dashboard-${ENV}.burnt.workers.dev"
-          elif echo "$OUTPUT" | grep -qE 'https://[^ ]+\.workers\.dev'; then
-            URL=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.workers\.dev' | head -1)
+          # Fixed URLs for mainnet and testnet
+          if [[ "$ENV" == "mainnet" ]]; then
+            URL="https://settings.burnt.com"
+          elif [[ "$ENV" == "testnet" ]]; then
+            URL="https://settings.testnet.burnt.com"
           else
-            # Fallback to custom domain
-            if [[ "$ENV" == "mainnet" ]]; then
-              URL="https://settings.burnt.com"
+            # Preview environments — extract URL from wrangler output
+            VERSION_ID=$(echo "$OUTPUT" | grep -oE 'Worker Version ID: [a-f0-9-]+' | cut -d' ' -f4 | head -1 || true)
+
+            if [ -n "$VERSION_ID" ]; then
+              SHORT_VERSION_ID=$(echo "$VERSION_ID" | cut -d'-' -f1)
+              URL="https://${SHORT_VERSION_ID}-xion-dashboard-${ENV}.burnt.workers.dev"
+            elif echo "$OUTPUT" | grep -qE 'https://[^ ]+\.workers\.dev'; then
+              URL=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.workers\.dev' | head -1)
             else
-              URL="https://settings.testnet.burnt.com"
+              URL="https://xion-dashboard-${ENV}.burnt.workers.dev"
             fi
           fi
 
