@@ -4,6 +4,7 @@ import { cleanup } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { configure } from "@testing-library/react";
 
+
 configure({
   asyncUtilTimeout: 1000,
 });
