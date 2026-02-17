@@ -4,7 +4,14 @@ export interface Permission {
   expandable: boolean;
 }
 
-export type ModalState = "approve" | "loading" | "success" | "error";
+export type ModalState = "approve" | "loading" | "success" | "error" | "security-warning";
+
+export interface SecurityWarningData {
+  /** The URL the user is actually being redirected to */
+  redirectUrl: string;
+  /** The URL registered in the treasury contract */
+  registeredUrl: string;
+}
 
 export interface GrantModalProps {
   appName: string;
@@ -14,6 +21,7 @@ export interface GrantModalProps {
   expiresIn: string;
   walletAddress: string;
   state: ModalState;
+  securityWarning?: SecurityWarningData;
   onAllow: () => void;
   onDeny: () => void;
 }

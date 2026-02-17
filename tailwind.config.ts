@@ -18,6 +18,7 @@ const config: Config = {
           DEFAULT: "#6366F1",
           trust: "#0D9488",
           error: "#EF4444",
+          warning: "#D97706",
         },
         surface: {
           DEFAULT: "#FFFFFF",
