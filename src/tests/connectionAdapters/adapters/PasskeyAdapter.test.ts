@@ -70,7 +70,6 @@ describe("PasskeyAdapter", () => {
       // @ts-expect-error - testing undefined window
       delete global.window;
 
-      const _adapter = new PasskeyAdapter();
       // Need to check in a context where window is undefined
       // This is tricky in JSDOM, so we'll mock the check
       // @ts-expect-error - restoring window
@@ -102,7 +101,7 @@ describe("PasskeyAdapter", () => {
     it("should resolve when platform authenticator is available", async () => {
       (
         window.PublicKeyCredential
-          .isUserVerifyingPlatformAuthenticatorAvailable as any
+          .isUserVerifyingPlatformAuthenticatorAvailable as unknown as ReturnType<typeof vi.fn>
       ).mockResolvedValue(true);
 
       await expect(adapter.enable("xion-testnet-1")).resolves.toBeUndefined();
@@ -121,7 +120,7 @@ describe("PasskeyAdapter", () => {
     it("should throw when no platform authenticator is available", async () => {
       (
         window.PublicKeyCredential
-          .isUserVerifyingPlatformAuthenticatorAvailable as any
+          .isUserVerifyingPlatformAuthenticatorAvailable as unknown as ReturnType<typeof vi.fn>
       ).mockResolvedValue(false);
 
       await expect(adapter.enable("xion-testnet-1")).rejects.toThrow(

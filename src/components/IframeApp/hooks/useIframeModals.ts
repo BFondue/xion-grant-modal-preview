@@ -14,8 +14,8 @@ export type ModalType =
 
 interface ModalState {
   type: ModalType;
-  payload?: any;
-  resolver?: (value: any) => void;
+  payload?: unknown;
+  resolver?: (value: unknown) => void;
 }
 
 /**
@@ -32,7 +32,7 @@ export function useIframeModals() {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Use ref to track the current resolver to avoid stale closure issues
-  const resolverRef = useRef<((value: any) => void) | undefined>(undefined);
+  const resolverRef = useRef<((value: unknown) => void) | undefined>(undefined);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -41,7 +41,7 @@ export function useIframeModals() {
 
   // Generic modal open function
   const openModal = useCallback(
-    (type: ModalType, payload?: any, resolver?: (value: any) => void) => {
+    (type: ModalType, payload?: unknown, resolver?: (value: unknown) => void) => {
       setModalState({
         type,
         payload,
@@ -54,7 +54,7 @@ export function useIframeModals() {
   const isTransitioningRef = useRef(false);
 
   // Generic modal close function - uses ref to avoid dependency on modalState
-  const closeModal = useCallback((resolveValue?: any) => {
+  const closeModal = useCallback((resolveValue?: unknown) => {
     const resolver = resolverRef.current;
 
     // Call resolver first - this might trigger the next modal opening
@@ -77,7 +77,7 @@ export function useIframeModals() {
 
   // Special function to transition to another modal without closing (to avoid flash)
   const transitionToModal = useCallback(
-    (type: ModalType, payload?: any, resolver?: (value: any) => void) => {
+    (type: ModalType, payload?: unknown, resolver?: (value: unknown) => void) => {
       isTransitioningRef.current = true;
       setModalState({
         type,
@@ -90,7 +90,7 @@ export function useIframeModals() {
 
   // Auth modal handlers
   const openAuthModal = useCallback(
-    (resolver: (value: any) => void) => {
+    (resolver: (value: unknown) => void) => {
       openModal("auth", undefined, resolver);
     },
     [openModal],
@@ -111,7 +111,7 @@ export function useIframeModals() {
   const openSigningModal = useCallback(
     (
       transaction: SignTransactionPayload["transaction"],
-      resolver: (value: any) => void,
+      resolver: (value: unknown) => void,
     ) => {
       setIsTransitioning(true);
       setTimeout(() => {
@@ -123,7 +123,7 @@ export function useIframeModals() {
   );
 
   const closeSigningModal = useCallback(
-    (result?: any) => {
+    (result?: unknown) => {
       closeModal(result);
     },
     [closeModal],
@@ -131,14 +131,14 @@ export function useIframeModals() {
 
   // Add authenticator modal handlers
   const openAddAuthModal = useCallback(
-    (payload: AddAuthenticatorPayload, resolver: (value: any) => void) => {
+    (payload: AddAuthenticatorPayload, resolver: (value: unknown) => void) => {
       openModal("addAuth", payload, resolver);
     },
     [openModal],
   );
 
   const closeAddAuthModal = useCallback(
-    (result?: any) => {
+    (result?: unknown) => {
       closeModal(result);
     },
     [closeModal],
@@ -146,14 +146,14 @@ export function useIframeModals() {
 
   // Remove authenticator modal handlers
   const openRemoveAuthModal = useCallback(
-    (authenticatorId: number, resolver: (value: any) => void) => {
+    (authenticatorId: number, resolver: (value: unknown) => void) => {
       openModal("removeAuth", { authenticatorId }, resolver);
     },
     [openModal],
   );
 
   const closeRemoveAuthModal = useCallback(
-    (result?: any) => {
+    (result?: unknown) => {
       closeModal(result);
     },
     [closeModal],
@@ -164,7 +164,7 @@ export function useIframeModals() {
     (
       treasuryAddress: string,
       grantee: string,
-      resolver: (value: any) => void,
+      resolver: (value: unknown) => void,
     ) => {
       openModal("grant", { treasuryAddress, grantee }, resolver);
     },

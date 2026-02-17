@@ -43,6 +43,10 @@ import {
   verifyEmailWithZKEmail,
   pollZKEmailStatusUntilComplete,
 } from "../../../auth/utils/zk-email";
+import type {
+  ZKEmailStatusResponse,
+  ZKProof,
+} from "../../../auth/utils/zk-email";
 import {
   setZKEmailSigningStatus,
   getZKEmailSigningAbortController,
@@ -60,7 +64,7 @@ describe("AAZKEmailSigner", () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(
-      (() => Promise.resolve("mock-turnstile-token")) as any,
+      () => Promise.resolve("mock-turnstile-token"),
     );
     // So signDirect proceeds to poll; otherwise it throws "Polling cancelled" before calling pollZKEmailStatusUntilComplete
     vi.mocked(getZKEmailSigningAbortController).mockReturnValue(
@@ -166,7 +170,7 @@ describe("AAZKEmailSigner", () => {
     });
 
     it("should set status and throw when turnstile provider is missing", async () => {
-      vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(null as any);
+      vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(null);
 
       await expect(
         signer.signDirect(mockAbstractAccount, mockSignDoc),
@@ -180,7 +184,7 @@ describe("AAZKEmailSigner", () => {
 
     it("should handle non-Error turnstile provider failure", async () => {
       vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(
-        (() => Promise.reject("provider failed")) as any,
+        () => Promise.reject("provider failed"),
       );
 
       await expect(
@@ -195,7 +199,7 @@ describe("AAZKEmailSigner", () => {
 
     it("should preserve Error message when turnstile provider rejects with Error", async () => {
       vi.mocked(getZKEmailTurnstileTokenProvider).mockReturnValue(
-        (() => Promise.reject(new Error("turnstile explode"))) as any,
+        () => Promise.reject(new Error("turnstile explode")),
       );
 
       await expect(
@@ -289,7 +293,7 @@ describe("AAZKEmailSigner", () => {
           proof: mockProof,
           publicInputs: mockPublicInputs,
         },
-      } as any);
+      } as unknown as ZKEmailStatusResponse);
 
       const result = await signer.signDirect(mockAbstractAccount, mockSignDoc);
 
@@ -324,7 +328,7 @@ describe("AAZKEmailSigner", () => {
           proof: mockProof,
           publicInputs: ["pub1"],
         },
-      } as any);
+      } as unknown as ZKEmailStatusResponse);
 
       const result = await signer.signDirect(mockAbstractAccount, mockSignDoc);
 
@@ -659,7 +663,7 @@ describe("AAZKEmailSigner", () => {
         proofId: "proof-123",
         status: "proof_generation_success",
         proof: {
-          proof: {} as any,
+          proof: {} as unknown as ZKProof,
           publicInputs: [],
         },
       });
@@ -731,12 +735,12 @@ describe("AAZKEmailSigner", () => {
           options?.onStatus?.({
             proofId: "proof-123",
             status: "email_replied",
-          } as any);
+          } as unknown as ZKEmailStatusResponse);
           return {
             proofId: "proof-123",
             status: "proof_generation_success" as const,
             proof: { proof: mockProof, publicInputs: ["pub1"] },
-          } as any;
+          } as unknown as ZKEmailStatusResponse;
         },
       );
 
@@ -770,12 +774,12 @@ describe("AAZKEmailSigner", () => {
           options?.onStatus?.({
             proofId: "proof-123",
             status: "email_sent_awaiting_reply",
-          } as any);
+          } as unknown as ZKEmailStatusResponse);
           return {
             proofId: "proof-123",
             status: "proof_generation_success" as const,
             proof: { proof: mockProof, publicInputs: ["pub1"] },
-          } as any;
+          } as unknown as ZKEmailStatusResponse;
         },
       );
 
@@ -842,7 +846,7 @@ describe("AAZKEmailSigner", () => {
         proofId: "proof-123",
         status: "proof_generation_success" as const,
         proof: {
-          proof: undefined as any, // JSON.stringify(undefined) => undefined
+          proof: undefined as unknown as ZKProof, // JSON.stringify(undefined) => undefined
           publicInputs: ["pub1"],
         },
       });
@@ -865,7 +869,7 @@ describe("AAZKEmailSigner", () => {
         proofId: "proof-123",
         status: "proof_generation_success" as const,
         proof: {
-          proof: "not-an-object" as any, // JSON.stringify("x") => '"x"', JSON.parse('"x"') => "x"
+          proof: "not-an-object" as unknown as ZKProof, // JSON.stringify("x") => '"x"', JSON.parse('"x"') => "x"
           publicInputs: ["pub1"],
         },
       });
@@ -881,15 +885,17 @@ describe("AAZKEmailSigner", () => {
       // Override JSON.stringify to return invalid JSON for the proof object.
       const origStringify = JSON.stringify;
       let callCount = 0;
-      vi.spyOn(JSON, "stringify").mockImplementation((...args: any[]) => {
-        callCount++;
-        // The proof and publicInputs stringify calls happen inside pollForProof resolve
-        // Call sequence: proof (first), publicInputs (second)
-        if (callCount === 1) {
-          return "{invalid-json"; // Return non-empty but unparseable string for proof
-        }
-        return origStringify.apply(JSON, args);
-      });
+      vi.spyOn(JSON, "stringify").mockImplementation(
+        (...args: Parameters<typeof JSON.stringify>) => {
+          callCount++;
+          // The proof and publicInputs stringify calls happen inside pollForProof resolve
+          // Call sequence: proof (first), publicInputs (second)
+          if (callCount === 1) {
+            return "{invalid-json"; // Return non-empty but unparseable string for proof
+          }
+          return origStringify.apply(JSON, args);
+        },
+      );
 
       vi.mocked(verifyEmailWithZKEmail).mockResolvedValue({
         success: true,
@@ -927,9 +933,7 @@ describe("AAZKEmailSigner", () => {
 
     it("should handle non-Error thrown by JSON.parse in buildDirectSignResponse", async () => {
       // Covers L246: false branch of parseErr instanceof Error
-      const origParse = JSON.parse;
       vi.spyOn(JSON, "parse").mockImplementation(() => {
-        // eslint-disable-next-line no-throw-literal
         throw "parse-non-error";
       });
 
@@ -978,7 +982,6 @@ describe("AAZKEmailSigner", () => {
 
       // Make checkZkEmailStatus throw a non-Error
       vi.mocked(pollZKEmailStatusUntilComplete).mockImplementation(async () => {
-        // eslint-disable-next-line no-throw-literal
         throw "non-error-string";
       });
 

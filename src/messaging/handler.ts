@@ -2,6 +2,7 @@ import { MessageChannelResponder } from "./channel";
 import { VALID_MESSAGE_TARGETS } from "./types";
 import type {
   IframeMessage,
+  ConnectPayload,
   ConnectResponse,
   SignTransactionPayload,
   SignTransactionResponse,
@@ -13,6 +14,7 @@ import type {
   RemoveAuthenticatorResponse,
   RequestGrantPayload,
   RequestGrantResponse,
+  MessageTarget,
 } from "./types";
 
 /**
@@ -20,7 +22,7 @@ import type {
  */
 export interface MessageHandlerCallbacks {
   /** Called when SDK requests authentication */
-  onConnect: (origin: string, payload?: any) => Promise<ConnectResponse>;
+  onConnect: (origin: string, payload?: ConnectPayload) => Promise<ConnectResponse>;
   /** Called when SDK requests transaction signing */
   onSignTransaction: (
     origin: string,
@@ -30,7 +32,7 @@ export interface MessageHandlerCallbacks {
   onSignAndBroadcast: (
     origin: string,
     payload: SignTransactionPayload,
-  ) => Promise<any>;
+  ) => Promise<SignTransactionResponse>;
   /** Called when SDK requests current address */
   onGetAddress: (origin: string) => GetAddressResponse;
   /** Called when SDK requests disconnect */
@@ -187,7 +189,7 @@ export class IframeMessageHandler {
     // Validate message target
     if (
       message.target &&
-      !VALID_MESSAGE_TARGETS.includes(message.target as any)
+      !VALID_MESSAGE_TARGETS.includes(message.target as MessageTarget)
     ) {
       // Not a message for us
       return;
@@ -282,12 +284,12 @@ export class IframeMessageHandler {
     try {
       switch (message.type) {
         case "CONNECT":
-          await this.handleConnect(port, origin, (message as any).payload);
+          await this.handleConnect(port, origin, message.payload as ConnectPayload | undefined);
           break;
 
         case "SIGN_TRANSACTION":
           await this.handleSignTransaction(
-            (message as any).payload,
+            message.payload as SignTransactionPayload,
             port,
             origin,
           );
@@ -295,7 +297,7 @@ export class IframeMessageHandler {
 
         case "SIGN_AND_BROADCAST":
           await this.handleSignAndBroadcast(
-            (message as any).payload,
+            message.payload as SignTransactionPayload,
             port,
             origin,
           );
@@ -311,7 +313,7 @@ export class IframeMessageHandler {
 
         case "ADD_AUTHENTICATOR":
           await this.handleAddAuthenticator(
-            (message as any).payload,
+            message.payload as AddAuthenticatorPayload,
             port,
             origin,
           );
@@ -319,14 +321,14 @@ export class IframeMessageHandler {
 
         case "REMOVE_AUTHENTICATOR":
           await this.handleRemoveAuthenticator(
-            (message as any).payload,
+            message.payload as RemoveAuthenticatorPayload,
             port,
             origin,
           );
           break;
 
         case "REQUEST_GRANT":
-          await this.handleRequestGrant((message as any).payload, port, origin);
+          await this.handleRequestGrant(message.payload as RequestGrantPayload, port, origin);
           break;
 
         default:
@@ -370,7 +372,7 @@ export class IframeMessageHandler {
   private async handleConnect(
     port: MessagePort,
     origin: string,
-    payload?: any,
+    payload?: ConnectPayload,
   ): Promise<void> {
     try {
       const response = await this.callbacks.onConnect(origin, payload);

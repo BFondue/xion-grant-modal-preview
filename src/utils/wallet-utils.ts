@@ -269,7 +269,7 @@ export async function signWithSecp256k1Wallet(
 
     // Use Keplr's signArbitrary to create an ADR-036 wrapped signature
     // The backend's verifySecp256k1Signature now handles ADR-036 verification
-    const signArbResult = await (wallet as any).signArbitrary(
+    const signArbResult = await wallet.signArbitrary(
       chainId,
       userAddress,
       message,

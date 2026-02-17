@@ -253,10 +253,13 @@ export const FEATURE_FLAGS = {
 // =============================================================================
 
 // Required for Stytch SDK initialization
-export const STYTCH_PUBLIC_TOKEN = getEnvOrThrow(
-  "VITE_STYTCH_PUBLIC_TOKEN",
-  "Stytch public token for SDK initialization",
-);
+// Lazy-loaded to avoid throwing at module import time (e.g. during tests)
+export function getStytchPublicToken(): string {
+  return getEnvOrThrow(
+    "VITE_STYTCH_PUBLIC_TOKEN",
+    "Stytch public token for SDK initialization",
+  );
+}
 
 // =============================================================================
 // External OAuth Configuration

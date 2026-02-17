@@ -52,7 +52,7 @@ describe("useZKEmailVerificationFlow", () => {
         proof: { pi_a: [], pi_b: [], pi_c: [], protocol: "groth16" },
         publicInputs: ["salt"],
       },
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof pollZKEmailStatusUntilComplete>>);
   });
 
   afterEach(() => {
@@ -109,10 +109,10 @@ describe("useZKEmailVerificationFlow", () => {
         proof: { pi_a: [], pi_b: [], pi_c: [], protocol: "groth16" },
         publicInputs: ["salt"],
       },
-    } as any;
+    } as unknown as Awaited<ReturnType<typeof pollZKEmailStatusUntilComplete>>;
     vi.mocked(pollZKEmailStatusUntilComplete).mockImplementation(
       async (_proofId, opts) => {
-        opts?.onStatus?.({ proofId: "proof-123", status: "generating_proof" } as any);
+        opts?.onStatus?.({ proofId: "proof-123", status: "generating_proof" } as unknown as Awaited<ReturnType<typeof pollZKEmailStatusUntilComplete>>);
         return pollResult;
       },
     );
@@ -149,7 +149,7 @@ describe("useZKEmailVerificationFlow", () => {
   it("throws when verification succeeds but proofId is missing", async () => {
     vi.mocked(verifyEmailWithZKEmail).mockResolvedValue({
       success: true,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof verifyEmailWithZKEmail>>);
     vi.mocked(toActionableZKEmailError).mockImplementation((msg) => `mapped:${msg}`);
     const onError = vi.fn();
     const { result } = renderHook(() => useZKEmailVerificationFlow({ onError }));
@@ -307,7 +307,7 @@ describe("useZKEmailVerificationFlow", () => {
     vi.mocked(verifyEmailWithZKEmail).mockResolvedValue({
       success: false,
       error: "rate limited",
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof verifyEmailWithZKEmail>>);
     vi.mocked(toActionableZKEmailError).mockImplementation((msg) => `mapped:${msg}`);
     const onError = vi.fn();
     const { result } = renderHook(() => useZKEmailVerificationFlow({ onError }));
@@ -388,7 +388,7 @@ describe("useZKEmailVerificationFlow", () => {
   it("uses default error when data.error is falsy on failure", async () => {
     vi.mocked(verifyEmailWithZKEmail).mockResolvedValue({
       success: false,
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof verifyEmailWithZKEmail>>);
     vi.mocked(toActionableZKEmailError).mockImplementation((msg) => `mapped:${msg}`);
     const onError = vi.fn();
     const { result } = renderHook(() => useZKEmailVerificationFlow({ onError }));
@@ -410,7 +410,7 @@ describe("useZKEmailVerificationFlow", () => {
 
   it("handles null polling controller gracefully when timeout fires after unmount", async () => {
     vi.mocked(setZKEmailProofPollingAbortController).mockImplementation(() => {});
-    vi.mocked(getZKEmailProofPollingAbortController).mockReturnValue(null as any);
+    vi.mocked(getZKEmailProofPollingAbortController).mockReturnValue(null as unknown as AbortController);
     const onError = vi.fn();
     const { result } = renderHook(() => useZKEmailVerificationFlow({ onError }));
 

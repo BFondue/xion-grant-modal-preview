@@ -91,6 +91,18 @@ export const AUTH_STORAGE_KEYS = {
  */
 export const ZK_EMAIL_SESSION_KEY = "zkEmailAddress" as const;
 
+/**
+ * Minimal interface for Stytch-like clients used in auth operations.
+ * Avoids importing the full Stytch SDK into auth modules.
+ */
+export interface StytchLikeClient {
+  session?: {
+    getTokens?: () => Record<string, unknown> | null;
+    revoke?: () => Promise<unknown>;
+    authenticate?: () => Promise<{ status_code?: number }>;
+  };
+}
+
 class AuthStateManagerClass {
   private state: AuthState = {
     status: "disconnected",
@@ -345,7 +357,7 @@ class AuthStateManagerClass {
    * Logout - clears all auth state and storage
    * Transitions: any → disconnecting → disconnected
    */
-  async logout(origin?: string, stytchClient?: any): Promise<void> {
+  async logout(origin?: string, stytchClient?: StytchLikeClient): Promise<void> {
     const prevState = { ...this.state };
 
     // Transition to disconnecting
@@ -365,7 +377,7 @@ class AuthStateManagerClass {
       try {
         const tokens = stytchClient.session?.getTokens?.();
         if (tokens) {
-          await stytchClient.session.revoke();
+          await stytchClient.session?.revoke?.();
           console.log("[AuthStateManager] Stytch session revoked");
         }
       } catch (error) {

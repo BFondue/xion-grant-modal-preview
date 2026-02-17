@@ -9,7 +9,7 @@ const mockObserve = vi.fn();
 const mockDisconnect = vi.fn();
 
 class ResizeObserver {
-  constructor(callback: any) {
+  constructor(callback: ResizeObserverCallback) {
     mockResizeObserver(callback);
   }
   observe = mockObserve;
@@ -25,7 +25,7 @@ const mockMutationObserve = vi.fn();
 const mockMutationDisconnect = vi.fn();
 
 class MutationObserver {
-  constructor(callback: any) {
+  constructor(callback: MutationCallback) {
     mockMutationObserver(callback);
   }
   observe = mockMutationObserve;
@@ -33,7 +33,7 @@ class MutationObserver {
   takeRecords = vi.fn();
 }
 
-global.MutationObserver = MutationObserver as any;
+global.MutationObserver = MutationObserver as unknown as typeof globalThis.MutationObserver;
 
 describe("Dialog Observers", () => {
   beforeEach(() => {

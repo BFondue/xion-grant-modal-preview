@@ -12,6 +12,8 @@
  * Sessions are keyed by origin to prevent cross-origin session sharing.
  */
 
+import type { StytchLikeClient } from "./AuthStateManager";
+
 // ============================================================================
 // JWT Types and Utilities
 // ============================================================================
@@ -32,7 +34,7 @@ export interface DecodedJWT {
   iat: number;
   aud?: string | string[];
   sub?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -64,6 +66,14 @@ export function decodeJWT(jwt: string): DecodedJWT {
 }
 
 /**
+ * Recursive record type for claim extraction from JWT payloads and session objects.
+ * Allows deep optional chaining without unsafe `any`.
+ */
+interface ClaimSource {
+  [key: string]: ClaimSource | undefined;
+}
+
+/**
  * Claim extraction paths in priority order
  * Each path is a function that attempts to extract claims from a source
  *
@@ -75,7 +85,7 @@ export function decodeJWT(jwt: string): DecodedJWT {
  * 5. Nested session: stytch_session.session.custom_claims
  * 6. Direct claims: abstract_account_address at root
  */
-const CLAIM_PATHS: Array<(source: any) => any> = [
+const CLAIM_PATHS: Array<(source: ClaimSource) => ClaimSource | undefined> = [
   // 1. Modern: direct xion claims at root
   (source) => source["https://xion.burnt.com/claims"],
 
@@ -108,18 +118,24 @@ const CLAIM_PATHS: Array<(source: any) => any> = [
  * @param source - Decoded JWT payload or session object
  * @returns XionClaims with address and authenticatorIndex
  */
-export function extractXionClaims(source: any): XionClaims {
+export function extractXionClaims(source: unknown): XionClaims {
   if (!source || typeof source !== "object") {
     return { address: null, authenticatorIndex: 0 };
   }
 
+  const claimSource = source as ClaimSource;
+
   for (const getClaims of CLAIM_PATHS) {
     try {
-      const claims = getClaims(source);
-      if (claims?.abstract_account_address) {
+      const claims = getClaims(claimSource);
+      if (
+        claims &&
+        typeof claims === "object" &&
+        "abstract_account_address" in claims
+      ) {
         return {
-          address: claims.abstract_account_address,
-          authenticatorIndex: claims.current_authenticator_index ?? 0,
+          address: String(claims.abstract_account_address),
+          authenticatorIndex: Number(claims.current_authenticator_index ?? 0),
         };
       }
     } catch {
@@ -171,7 +187,7 @@ export function getAuthenticatorIndexFromJWT(jwt: string): number {
  * @param session - Stytch session object
  * @returns Address or null if not found
  */
-export function getAddressFromSession(session: any): string | null {
+export function getAddressFromSession(session: unknown): string | null {
   if (!session) return null;
   return extractXionClaims(session).address;
 }
@@ -182,7 +198,7 @@ export function getAddressFromSession(session: any): string | null {
  * @param session - Stytch session object
  * @returns Authenticator index (defaults to 0 if not found)
  */
-export function getAuthenticatorIndexFromSession(session: any): number {
+export function getAuthenticatorIndexFromSession(session: unknown): number {
   if (!session) return 0;
   return extractXionClaims(session).authenticatorIndex;
 }
@@ -459,14 +475,14 @@ export class SessionManager {
    * Validate session with Stytch
    * Returns true if session is valid, false otherwise
    */
-  static async validateSessionWithStytch(stytchClient: any): Promise<boolean> {
+  static async validateSessionWithStytch(stytchClient: StytchLikeClient | null | undefined): Promise<boolean> {
     if (!stytchClient) {
       return false;
     }
 
     try {
-      const result = await stytchClient.session.authenticate();
-      return result && result.status_code === 200;
+      const result = await stytchClient.session?.authenticate?.();
+      return !!result && result.status_code === 200;
     } catch (error) {
       console.error("Error validating session with Stytch:", error);
       return false;

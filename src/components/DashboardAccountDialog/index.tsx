@@ -16,6 +16,7 @@ import { useAccountDiscovery } from "../../hooks/useAccountDiscovery";
 import { truncateAddress } from "../../utils";
 import { AuthContext, AuthContextProps } from "../AuthContext";
 import { deduplicateAccountsById } from "../../utils/authenticator-utils";
+import type { Authenticator } from "@burnt-labs/account-management";
 
 interface DashboardAccountDialogProps {
   isOpen: boolean;
@@ -64,7 +65,7 @@ export const DashboardAccountDialog: React.FC<DashboardAccountDialogProps> = ({
         // Find the authenticator that matches the current login method
         const matchingAuthenticator =
           selectedAccount.authenticators.find(
-            (auth: any) => auth.authenticator === loginAuthenticator,
+            (auth: Authenticator) => auth.authenticator === loginAuthenticator,
           ) || selectedAccount.authenticators[0];
 
         setAbstractAccount({
