@@ -7,6 +7,7 @@
   "changesets": [
     "early-snails-sneeze",
     "fix-ci-deployments",
+    "pretty-games-repeat",
     "quiet-ideas-greet",
     "some-paws-warn"
   ]

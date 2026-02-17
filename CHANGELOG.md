@@ -1,5 +1,11 @@
 # abstraxion-dashboard
 
+## 0.16.1-rc.3
+
+### Patch Changes
+
+- [#324](https://github.com/burnt-labs/xion-dashboard-app/pull/324) [`06157ab`](https://github.com/burnt-labs/xion-dashboard-app/commit/06157ab4c4759ec8ef640ca9091ecc2adeb9cca6) Thanks [@2xburnt](https://github.com/2xburnt)! - Fix workflows for branch protection
+
 ## 0.16.1-rc.2
 
 ### Patch Changes
