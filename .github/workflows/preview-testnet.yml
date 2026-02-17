@@ -11,12 +11,69 @@ jobs:
 
   preview:
     needs: test
-    uses: ./.github/workflows/build-and-deploy.yml
-    with:
-      environment: testnet
-      wrangler-command: versions upload
-      message: "PR #${{ github.event.pull_request.number }}"
-    secrets: inherit
+    runs-on: ubuntu-latest
+    environment:
+      name: testnet
+      url: ${{ steps.extract-url.outputs.deployment-url }}
+    permissions:
+      contents: read
+      deployments: write
+    outputs:
+      deployment-url: ${{ steps.extract-url.outputs.deployment-url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build app
+        run: pnpm exec vite build --mode testnet
+        env:
+          CLOUDFLARE_ENV: testnet
+          VITE_NETWORK: testnet
+          VITE_APP_VERSION: "PR #${{ github.event.pull_request.number }}"
+          VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.VITE_STYTCH_PUBLIC_TOKEN || secrets.VITE_DEFAULT_STYTCH_PUBLIC_TOKEN }}
+          VITE_NUMIA_TOKEN: ${{ secrets.VITE_NUMIA_TOKEN }}
+
+      - name: Upload preview version
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.BURNT_CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.BURNT_CLOUDFLARE_ACCOUNT_ID }}
+          command: versions upload --env=testnet --message="PR #${{ github.event.pull_request.number }}"
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          environment: testnet
+          packageManager: pnpm
+
+      - name: Extract deployment URL
+        id: extract-url
+        env:
+          OUTPUT: ${{ steps.deploy.outputs.command-output }}
+        run: |
+          VERSION_ID=$(echo "$OUTPUT" | grep -oE 'Worker Version ID: [a-f0-9-]+' | cut -d' ' -f4 | head -1 || true)
+
+          if [ -n "$VERSION_ID" ]; then
+            SHORT_VERSION_ID=$(echo "$VERSION_ID" | cut -d'-' -f1)
+            URL="https://${SHORT_VERSION_ID}-xion-dashboard-testnet.burnt.workers.dev"
+          elif echo "$OUTPUT" | grep -qE 'https://[^ ]+\.workers\.dev'; then
+            URL=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.workers\.dev' | head -1)
+          else
+            URL="https://xion-dashboard-testnet.burnt.workers.dev"
+          fi
+
+          echo "deployment-url=$URL" >> $GITHUB_OUTPUT
+          echo "### 🚀 Preview deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**PR:** #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** $URL" >> $GITHUB_STEP_SUMMARY
 
   comment:
     needs: preview
