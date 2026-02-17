@@ -1,5 +1,11 @@
 # abstraxion-dashboard
 
+## 0.16.1-rc.0
+
+### Patch Changes
+
+- [#318](https://github.com/burnt-labs/xion-dashboard-app/pull/318) [`8495749`](https://github.com/burnt-labs/xion-dashboard-app/commit/8495749fc9b7fd21a3b1073859518125caaaf19c) Thanks [@2xburnt](https://github.com/2xburnt)! - Fix CI deployment pipeline: inline deploy jobs in release workflows to bypass GITHUB_TOKEN limitation, add robust pre.json mode handling, and fix wrangler deploy --message flag error
+
 ## 0.16.0
 
 ### Minor Changes
