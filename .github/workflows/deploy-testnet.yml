@@ -3,6 +3,7 @@ name: Deploy Testnet
 on:
   release:
     types: [prereleased]
+  workflow_dispatch:
 
 jobs:
   test:
