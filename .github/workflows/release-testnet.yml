@@ -25,6 +25,8 @@ jobs:
     name: 🚀 Release Candidate
     runs-on: ubuntu-latest
     needs: test
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
     steps:
       - name: ⬇️ Checkout
         uses: actions/checkout@v4
@@ -79,6 +81,17 @@ jobs:
             git add .changeset/pre.json
             git commit -m "chore: enter prerelease mode"
             git push
+          else
+            # File exists — check if we're actually in pre mode
+            MODE=$(node -e "console.log(require('./.changeset/pre.json').mode)")
+            if [ "$MODE" != "pre" ]; then
+              pnpm changeset pre enter rc
+              git add .changeset/pre.json
+              git commit -m "chore: re-enter prerelease mode"
+              git push
+            else
+              echo "Already in prerelease mode, skipping"
+            fi
           fi
 
       - name: 📣 Create Release Candidate PR or Publish RC
@@ -92,3 +105,17 @@ jobs:
           setupGitUser: false
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+
+  # Deploy to testnet when changesets publishes an RC release.
+  # This runs inline to avoid the GITHUB_TOKEN limitation where
+  # release events created by GITHUB_TOKEN don't trigger other workflows.
+  deploy:
+    name: 🚀 Deploy to Testnet
+    needs: [test, release]
+    if: needs.release.outputs.published == 'true'
+    uses: ./.github/workflows/build-and-deploy.yml
+    with:
+      environment: testnet
+      wrangler-command: deploy
+      message: ${{ github.sha }}
+    secrets: inherit

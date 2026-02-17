@@ -1,16 +1,13 @@
 {
-  "mode": "exit",
+  "mode": "pre",
   "tag": "rc",
   "initialVersions": {
-    "abstraxion-dashboard": "0.15.0"
+    "abstraxion-dashboard": "0.16.0-rc.0"
   },
   "changesets": [
-    "cold-clubs-return",
-    "eighty-papayas-move",
-    "lazy-humans-feel",
-    "metal-lights-greet",
-    "nice-rules-argue",
-    "spotty-rooms-yell",
-    "violet-swans-joke"
+    "early-snails-sneeze",
+    "fix-ci-deployments",
+    "quiet-ideas-greet",
+    "some-paws-warn"
   ]
 }

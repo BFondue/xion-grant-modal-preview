@@ -63,7 +63,7 @@ vi.mock("../../../config", () => ({
 // Mock Turnstile component
 vi.mock("@marsidev/react-turnstile", () => ({
   Turnstile: vi.fn(
-    ({ onSuccess, onError, onExpire, ref }: any) => {
+    ({ onSuccess, onError, onExpire, ref }: { onSuccess?: (token: string) => void; onError?: () => void; onExpire?: () => void; ref?: React.Ref<unknown> }) => {
       if (ref && typeof ref === "object") {
         ref.current = {
           execute: vi.fn(async () => {
@@ -1557,7 +1557,7 @@ describe("ZKEmailLogin", () => {
     });
 
     it("falls back to empty turnstile response when getResponse is unavailable", async () => {
-      vi.mocked(Turnstile).mockImplementationOnce(({ ref }: any) => {
+      vi.mocked(Turnstile).mockImplementationOnce(({ ref }: { ref?: React.Ref<unknown> }) => {
         if (ref && typeof ref === "object") {
           ref.current = {
             execute: vi.fn(async () => {}),

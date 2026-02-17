@@ -18,6 +18,8 @@ import { Dialog, DialogContent } from "../ui/dialog";
 import { SessionManager, getAddressFromJWT } from "../../auth/session";
 import AddAuthenticatorsModal from "../ModalViews/AddAuthenticators/AddAuthenticatorsModal";
 import RemoveAuthenticatorModal from "../ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
+import type { Authenticator } from "@burnt-labs/account-management";
+import type { StdFee } from "@cosmjs/amino";
 import { SigningModal } from "./SigningModal";
 import { LoginGrantApproval } from "../LoginGrantApproval";
 import { App } from "../App";
@@ -143,7 +145,7 @@ export function IframeApp({
     if (!isStandalone && !currentOrigin) {
       // Check if we're in standalone context and set origin
       try {
-        if (window.parent && (window.parent as any).__xionSDK !== undefined) {
+        if (window.parent && (window.parent as unknown as Record<string, unknown>).__xionSDK !== undefined) {
           setCurrentOrigin(window.location.origin);
         }
       } catch {
@@ -345,8 +347,8 @@ export function IframeApp({
                 treasuryAddress: payload.grantParams!.treasuryAddress,
                 grantee: payload.grantParams!.grantee,
               },
-              (result: any) => {
-                if (result.success) {
+              (result: unknown) => {
+                if ((result as { success: boolean }).success) {
                   resolve({ address });
                 } else {
                   reject(new Error("Grant denied"));
@@ -395,10 +397,11 @@ export function IframeApp({
       // The modal's resolver will be called when authentication completes
       console.log("[IframeApp] No existing session, showing auth modal");
       return new Promise((resolve, reject) => {
-        openAuthModal(async (result: any) => {
-          if (result?.address) {
+        openAuthModal(async (result: unknown) => {
+          const connectResult = result as { address?: string };
+          if (connectResult?.address) {
             try {
-              const finalResult = await handleGrantAfterConnect(result.address);
+              const finalResult = await handleGrantAfterConnect(connectResult.address);
               resolve(finalResult);
             } catch (e) {
               reject(e);
@@ -426,7 +429,7 @@ export function IframeApp({
     ): Promise<SignTransactionResponse> => {
       setCurrentOrigin(origin);
       return new Promise((resolve) => {
-        openSigningModal(payload.transaction, resolve);
+        openSigningModal(payload.transaction, (value: unknown) => resolve(value as SignTransactionResponse));
       });
     },
     [openSigningModal],
@@ -434,14 +437,15 @@ export function IframeApp({
 
   // Handle SIGN_AND_BROADCAST request
   const handleSignAndBroadcast = useCallback(
-    (origin: string, payload: SignTransactionPayload): Promise<any> => {
+    (origin: string, payload: SignTransactionPayload): Promise<SignTransactionResponse> => {
       setCurrentOrigin(origin);
       return new Promise((resolve, reject) => {
-        openSigningModal(payload.transaction, (result: any) => {
-          if (result.error) {
-            reject(new Error(result.error));
+        openSigningModal(payload.transaction, (result: unknown) => {
+          const signingResult = result as { error?: string; signedTx?: unknown };
+          if (signingResult.error) {
+            reject(new Error(signingResult.error));
           } else {
-            resolve(result);
+            resolve(signingResult as SignTransactionResponse);
           }
         });
       });
@@ -485,7 +489,7 @@ export function IframeApp({
     ): Promise<AddAuthenticatorResponse> => {
       setCurrentOrigin(origin);
       return new Promise((resolve) => {
-        openAddAuthModal(payload, resolve);
+        openAddAuthModal(payload, (value: unknown) => resolve(value as AddAuthenticatorResponse));
       });
     },
     [openAddAuthModal],
@@ -499,7 +503,7 @@ export function IframeApp({
     ): Promise<RemoveAuthenticatorResponse> => {
       setCurrentOrigin(origin);
       return new Promise((resolve) => {
-        openRemoveAuthModal(payload.authenticatorId, resolve);
+        openRemoveAuthModal(payload.authenticatorId, (value: unknown) => resolve(value as RemoveAuthenticatorResponse));
       });
     },
     [openRemoveAuthModal],
@@ -554,7 +558,7 @@ export function IframeApp({
           clearTimeout(timeout);
 
           console.log("[IframeApp] abstractAccount ready, opening grant modal");
-          openGrantModal(payload.treasuryAddress, payload.grantee, resolve);
+          openGrantModal(payload.treasuryAddress, payload.grantee, (value: unknown) => resolve(value as RequestGrantResponse));
         });
       });
     },
@@ -582,7 +586,7 @@ export function IframeApp({
         window.parent !== window &&
         window.parent.location.origin === window.location.origin;
       // Check if parent has the XionSDK marker
-      return isSameOrigin && (window.parent as any).__xionSDK !== undefined;
+      return isSameOrigin && (window.parent as unknown as Record<string, unknown>).__xionSDK !== undefined;
     } catch {
       return false;
     }
@@ -691,11 +695,11 @@ export function IframeApp({
           }
         }}
         authenticator={
-          modals.modalState.payload?.authenticatorId
+          (modals.modalState.payload as { authenticatorId?: number })?.authenticatorId
             ? {
                 authenticator: {
-                  id: modals.modalState.payload.authenticatorId,
-                } as any,
+                  id: (modals.modalState.payload as { authenticatorId: number }).authenticatorId,
+                } as unknown as Authenticator,
               }
             : undefined
         }
@@ -707,11 +711,11 @@ export function IframeApp({
         onClose={() => {
           modals.closeSigningModal({ error: "User rejected" });
         }}
-        transaction={modals.modalState.payload?.transaction}
+        transaction={(modals.modalState.payload as { transaction?: SignTransactionPayload["transaction"] } | undefined)?.transaction ?? null}
         connectionMethod={connectionMethod}
         onApprove={async () => {
           const { payload, resolver } = modals.modalState;
-          const transaction = payload?.transaction;
+          const transaction = (payload as { transaction?: SignTransactionPayload["transaction"] } | undefined)?.transaction;
 
           if (!transaction || !resolver || !signingClient || !abstractAccount) {
             console.error("[IframeApp] Missing required data for signing");
@@ -737,7 +741,7 @@ export function IframeApp({
             const result = await signingClient.signAndBroadcast(
               abstractAccount.id,
               transaction.messages,
-              fee as any,
+              fee as StdFee | "auto",
               transaction.memo || "",
             );
 
@@ -781,10 +785,10 @@ export function IframeApp({
           {abstractAccount ? (
             <LoginGrantApproval
               contracts={[]}
-              grantee={modals.modalState.payload?.grantee || ""}
+              grantee={(modals.modalState.payload as { grantee?: string } | undefined)?.grantee || ""}
               stake={false}
               bank={[]}
-              treasury={modals.modalState.payload?.treasuryAddress}
+              treasury={(modals.modalState.payload as { treasuryAddress?: string } | undefined)?.treasuryAddress}
               onApprove={() => {
                 console.log("[IframeApp] Grant approved, closing modal");
                 modals.closeGrantModal(true);

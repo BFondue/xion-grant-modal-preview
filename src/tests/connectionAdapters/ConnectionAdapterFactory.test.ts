@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
+import { AUTHENTICATOR_TYPE, type AuthenticatorType } from "@burnt-labs/signers";
 import { CONNECTION_METHOD } from "../../auth/AuthStateManager";
 import {
   getConnectionAdapter,
@@ -173,7 +173,7 @@ describe("ConnectionAdapterFactory", () => {
     describe("unsupported authenticator types", () => {
       it("should throw for unknown authenticator type", () => {
         expect(() =>
-          getConnectionAdapter("UnknownType" as any, CONNECTION_METHOD.Keplr),
+          getConnectionAdapter("UnknownType" as unknown as AuthenticatorType, CONNECTION_METHOD.Keplr),
         ).toThrow(
           "Unsupported authenticator type: UnknownType with connection method: keplr",
         );
@@ -200,7 +200,7 @@ describe("ConnectionAdapterFactory", () => {
 
     it("should return false for unsupported combination", () => {
       const available = isConnectionAvailable(
-        "InvalidType" as any,
+        "InvalidType" as unknown as AuthenticatorType,
         CONNECTION_METHOD.Keplr,
       );
       expect(available).toBe(false);

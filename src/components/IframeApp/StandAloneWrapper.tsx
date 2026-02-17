@@ -40,7 +40,7 @@ export function StandAloneWrapper() {
         });
 
         // Store SDK instance globally for debugging
-        (window as any).__xionSDK = sdk;
+        (window as unknown as Record<string, unknown>).__xionSDK = sdk;
 
         console.log(
           "[StandaloneWrapper] XionSDK initialized, calling connect...",

@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useAuthState } from "../../auth/useAuthState";
 import { AuthStateManager } from "../../auth/AuthStateManager";
+import type { AuthState } from "../../auth/AuthStateManager";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
+
+type MockedAuthStateManager = typeof AuthStateManager & {
+  _setMockState: (newState: Partial<AuthState>) => void;
+  _resetMockState: () => void;
+};
 
 // Mock AuthStateManager
 vi.mock("../../auth/AuthStateManager", () => {
@@ -56,7 +62,7 @@ describe("useAuthState", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset mock state
-    (AuthStateManager as any)._resetMockState();
+    (AuthStateManager as unknown as MockedAuthStateManager)._resetMockState();
   });
 
   describe("state properties", () => {
@@ -77,7 +83,7 @@ describe("useAuthState", () => {
     });
 
     it("should return computed isConnected as true when connected with account", () => {
-      (AuthStateManager as any)._setMockState({
+      (AuthStateManager as unknown as MockedAuthStateManager)._setMockState({
         status: "connected",
         connectionMethod: "stytch",
         account: {
@@ -95,7 +101,7 @@ describe("useAuthState", () => {
     });
 
     it("should return isConnecting when in connecting state", () => {
-      (AuthStateManager as any)._setMockState({
+      (AuthStateManager as unknown as MockedAuthStateManager)._setMockState({
         status: "connecting",
         connectionMethod: "stytch",
         account: undefined,
@@ -110,7 +116,7 @@ describe("useAuthState", () => {
     });
 
     it("should return isDisconnecting when in disconnecting state", () => {
-      (AuthStateManager as any)._setMockState({
+      (AuthStateManager as unknown as MockedAuthStateManager)._setMockState({
         status: "disconnecting",
         connectionMethod: "stytch",
         account: undefined,
@@ -130,7 +136,7 @@ describe("useAuthState", () => {
     });
 
     it("should return address from account", () => {
-      (AuthStateManager as any)._setMockState({
+      (AuthStateManager as unknown as MockedAuthStateManager)._setMockState({
         status: "connected",
         connectionMethod: "stytch",
         account: {
@@ -297,7 +303,7 @@ describe("useAuthState", () => {
 
       // Simulate state change
       act(() => {
-        (AuthStateManager as any)._setMockState({
+        (AuthStateManager as unknown as MockedAuthStateManager)._setMockState({
           status: "connecting",
           connectionMethod: "stytch",
           account: undefined,

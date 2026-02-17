@@ -16,7 +16,7 @@ import { CONNECTION_METHOD, type ConnectionMethod } from "../../auth/useAuthStat
 interface TransactionData {
   messages: Array<{
     typeUrl: string;
-    value: any;
+    value: unknown;
   }>;
   fee: {
     amount: Array<{
@@ -87,7 +87,7 @@ export function SigningModal({
             {/* Transaction Messages */}
             <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
               <h5 className="ui-text-sm ui-font-bold">Transaction Messages</h5>
-              {transaction.messages.map((msg: any, index: number) => (
+              {transaction.messages.map((msg: { typeUrl: string; value: unknown }, index: number) => (
                 <div key={index} className="ui-flex ui-flex-col ui-gap-2">
                   <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
                     <h6 className="ui-text-sm ui-text-secondary-text">Type</h6>
@@ -124,7 +124,7 @@ export function SigningModal({
                 <h6 className="ui-text-sm">Fee Amount</h6>
                 <p className="ui-text-sm ui-font-bold ui-font-mono">
                   {transaction.fee.amount
-                    .map((a: any) => `${a.amount} ${a.denom.toUpperCase()}`)
+                    .map((a: { denom: string; amount: string }) => `${a.amount} ${a.denom.toUpperCase()}`)
                     .join(", ")}
                 </p>
               </div>

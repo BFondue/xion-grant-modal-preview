@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { formatGasPrice, getGasCalculation } from "../../utils/fees";
 import { GasPrice } from "@cosmjs/stargate";
+import type { ChainInfo } from "@burnt-labs/constants";
 
 // We need to be able to change the mock implementation of config
 const mocks = vi.hoisted(() => ({
@@ -39,7 +40,7 @@ const mockChainInfo = {
 
 describe("formatGasPrice", () => {
   it("formats gas price correctly from chain info", () => {
-    const result = formatGasPrice(mockChainInfo as any);
+    const result = formatGasPrice(mockChainInfo as unknown as ChainInfo);
     expect(result).toBeInstanceOf(GasPrice);
     expect(result.amount.toString()).toBe("0.01");
     expect(result.denom).toBe("uxion");
@@ -57,7 +58,7 @@ describe("getGasCalculation", () => {
     // Expected gas = ceil(100000 * 1.2 + 1000) = ceil(120000 + 1000) = 121000
     // Fee = 121000 * 0.01 = 1210 uxion
 
-    const fee = getGasCalculation(simmedGas, mockChainInfo as any);
+    const fee = getGasCalculation(simmedGas, mockChainInfo as unknown as ChainInfo);
 
     expect(fee.amount[0].denom).toBe("uxion");
     expect(fee.amount[0].amount).toBe("1210");
@@ -65,14 +66,14 @@ describe("getGasCalculation", () => {
   });
 
   it("calculates fee correctly with fallback values", () => {
-    mocks.GAS_ADJUSTMENT = undefined as any;
-    mocks.GAS_MARGIN = undefined as any;
+    mocks.GAS_ADJUSTMENT = undefined as unknown as number;
+    mocks.GAS_MARGIN = undefined as unknown as number;
 
     const simmedGas = 100000;
     // Expected gas = ceil(100000 * 1.4 + 2000) = ceil(140000 + 2000) = 142000
     // Fee = 142000 * 0.01 = 1420 uxion
 
-    const fee = getGasCalculation(simmedGas, mockChainInfo as any);
+    const fee = getGasCalculation(simmedGas, mockChainInfo as unknown as ChainInfo);
 
     expect(fee.amount[0].denom).toBe("uxion");
     expect(fee.amount[0].amount).toBe("1420");

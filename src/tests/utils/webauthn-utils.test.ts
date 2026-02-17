@@ -21,7 +21,7 @@ describe("webauthn-utils", () => {
     type: "public-key",
     clientExtensionResults: {},
     authenticatorAttachment: "platform",
-  } as any;
+  } as unknown as PublicKeyCredential;
 
   beforeEach(() => {
     localStorage.clear();

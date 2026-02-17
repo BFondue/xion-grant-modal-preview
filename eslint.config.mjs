@@ -33,7 +33,10 @@ export default [
       "react/prop-types": "off",
       // Downgrade to warnings - should be fixed incrementally
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
 ];

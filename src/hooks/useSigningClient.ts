@@ -7,6 +7,11 @@ import { formatGasPrice, getGasCalculation } from "../utils/fees";
 import { STYTCH_PROXY_URL } from "../config";
 import { CONNECTION_METHOD } from "../auth/useAuthState";
 import { getConnectionAdapter } from "../connectionAdapters";
+import type { JWTAdapter } from "../connectionAdapters/adapters/JWTAdapter";
+import type { Secp256k1Adapter } from "../connectionAdapters/adapters/Secp256k1Adapter";
+import type { EthWalletAdapter } from "../connectionAdapters/adapters/EthWalletAdapter";
+import type { PasskeyAdapter } from "../connectionAdapters/adapters/PasskeyAdapter";
+import type { ZKEmailAdapter } from "../connectionAdapters/adapters/ZKEmailAdapter";
 import { AuthStateManager } from "../auth/AuthStateManager";
 
 export const useSigningClient = () => {
@@ -70,10 +75,10 @@ export const useSigningClient = () => {
       // Each adapter's getSigner has different parameters based on its needs
       if (connectionMethod === CONNECTION_METHOD.Stytch) {
         // JWT adapter needs session token and API URL
-        signer = (adapter as any).getSigner(
+        signer = (adapter as JWTAdapter).getSigner(
           abstractAccount.id,
           abstractAccount.currentAuthenticatorIndex,
-          sessionToken,
+          sessionToken!,
           STYTCH_PROXY_URL,
         );
       } else if (
@@ -81,20 +86,20 @@ export const useSigningClient = () => {
         connectionMethod === CONNECTION_METHOD.OKX
       ) {
         // Secp256k1 adapters need chainId
-        signer = await (adapter as any).getSigner(
+        signer = await (adapter as Secp256k1Adapter).getSigner(
           chainInfo.chainId,
           abstractAccount.id,
           abstractAccount.currentAuthenticatorIndex,
         );
       } else if (connectionMethod === CONNECTION_METHOD.Metamask) {
         // Eth adapters don't need chainId
-        signer = (adapter as any).getSigner(
+        signer = (adapter as EthWalletAdapter).getSigner(
           abstractAccount.id,
           abstractAccount.currentAuthenticatorIndex,
         );
       } else if (connectionMethod === CONNECTION_METHOD.Passkey) {
         // Passkey adapter
-        signer = (adapter as any).getSigner(
+        signer = (adapter as PasskeyAdapter).getSigner(
           abstractAccount.id,
           abstractAccount.currentAuthenticatorIndex,
         );
@@ -108,7 +113,7 @@ export const useSigningClient = () => {
           );
           return;
         }
-        signer = (adapter as any).getSigner(
+        signer = (adapter as ZKEmailAdapter).getSigner(
           abstractAccount.id,
           abstractAccount.currentAuthenticatorIndex,
           email,

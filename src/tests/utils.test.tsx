@@ -54,7 +54,7 @@ describe("utils.tsx", () => {
   });
 
   describe("Component Testing Utilities", () => {
-    const TestComponent = forwardRef<HTMLDivElement, any>((props, ref) => (
+    const TestComponent = forwardRef<HTMLDivElement, Record<string, unknown>>((props, ref) => (
       <div ref={ref} {...props}>
         Test
       </div>
@@ -71,7 +71,7 @@ describe("utils.tsx", () => {
   });
 
   describe("Form Testing Utilities", () => {
-    const TestInput = (props: any) => <input {...props} />;
+    const TestInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} />;
 
     describe("testFormInputBehavior", () => {
       testFormInputBehavior(TestInput);
