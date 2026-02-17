@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@bfondue/ui";
+import { cn } from "@/lib/utils";
 import { ModalState } from "@/lib/types";
 
 const TABS: { label: string; value: ModalState }[] = [

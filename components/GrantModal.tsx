@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Shield, Check, X, Loader2, Lock, Copy, CheckCheck, AlertTriangle, ChevronDown } from "lucide-react";
-import { cn } from "@bfondue/ui";
+import { cn } from "@/lib/utils";
 import { GrantModalProps, SecurityWarningData } from "@/lib/types";
 import { PermissionItem } from "./PermissionItem";
 
