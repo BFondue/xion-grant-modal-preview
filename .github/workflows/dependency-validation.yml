@@ -15,8 +15,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      deps: ${{ steps.filter.outputs.deps }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            deps:
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/dependency-validation.yml'
+
   validate-dependencies:
     name: Validate Package Dependencies
+    needs: changes
+    if: needs.changes.outputs.deps == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -154,4 +172,21 @@ jobs:
             fi
           fi
 
-          echo "✅ @cosmjs versions are consistent and compatible"
+          echo ""
+          echo "✅ All @cosmjs packages use consistent versions"
+
+      - name: Summary
+        if: success()
+        run: |
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ All dependency validation checks passed!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  skip-validation:
+    name: Validate Package Dependencies
+    needs: changes
+    if: needs.changes.outputs.deps != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No dependency changes detected, skipping validation"
