@@ -8,6 +8,17 @@ import {
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import type { SelectedSmartAccount } from "../../types/wallet-account-types";
 
+// Mutable mock value for CHAIN_ID
+const mockConfigValues: Record<string, unknown> = {
+  CHAIN_ID: "xion-testnet-1",
+};
+
+vi.mock("../../config", () => ({
+  get CHAIN_ID() {
+    return mockConfigValues.CHAIN_ID;
+  },
+}));
+
 // Mock dependencies
 vi.mock("../../utils", () => ({
   getHumanReadablePubkey: vi.fn((pubKey: Uint8Array) => {
@@ -22,8 +33,8 @@ describe("useWalletChangeListener", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Set up environment
-    import.meta.env.VITE_CHAIN_ID = mockChainId;
+    // Set up config mock
+    mockConfigValues.CHAIN_ID = mockChainId;
 
     // Mock Keplr wallet
     window.keplr = {
@@ -627,7 +638,7 @@ describe("useWalletChangeListener", () => {
         .spyOn(console, "error")
         .mockImplementation(() => {});
 
-      delete import.meta.env.VITE_CHAIN_ID;
+      mockConfigValues.CHAIN_ID = "";
 
       AuthStateManager.startLogin(
         AUTHENTICATOR_TYPE.Secp256K1,
@@ -651,7 +662,7 @@ describe("useWalletChangeListener", () => {
       );
 
       consoleErrorSpy.mockRestore();
-      import.meta.env.VITE_CHAIN_ID = mockChainId;
+      mockConfigValues.CHAIN_ID = mockChainId;
     });
 
     it("should handle errors during keystore change gracefully", async () => {
