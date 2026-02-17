@@ -1,5 +1,11 @@
 # abstraxion-dashboard
 
+## 0.16.1-rc.1
+
+### Patch Changes
+
+- [#318](https://github.com/burnt-labs/xion-dashboard-app/pull/318) [`25542b6`](https://github.com/burnt-labs/xion-dashboard-app/commit/25542b641c6b5303267c05147dfcf5afbb8c776f) Thanks [@2xburnt](https://github.com/2xburnt)! - Fix deployment urls
+
 ## 0.16.1-rc.0
 
 ### Patch Changes
