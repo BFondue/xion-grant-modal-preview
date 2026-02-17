@@ -20,6 +20,7 @@ export const testnetConfig = {
   xionApiUrl: "https://api.xion-testnet-2.burnt.com",
   xionRpcUrl: "https://rpc.xion-testnet-2.burnt.com",
   zkEmailBackendUrl: "https://zk-api.testnet.burnt.com",
+  zkEmailHost: "https://zk-api.testnet.burnt.com",
 
   // Turnstile (Cloudflare invisible CAPTCHA)
   turnstileSiteKey: "0x4AAAAAACUOXqmE31xhK_y8",
@@ -35,7 +36,7 @@ export const testnetConfig = {
   feeGranterAddress: "xion1xrqz2wpt4rw8rtdvrc4n4yn5h54jm0nn4evn2x",
 
   // Contract Code IDs
-  defaultAccountContractCodeId: "1",
+  defaultAccountContractCodeId: "1880",
 
   // Gas
   gasAdjustment: 1.8,
@@ -55,5 +56,4 @@ export const testnetConfig = {
     apple: true,
     zkemail: true,
   },
-  zkEmailHost: "gmail.com",
 };

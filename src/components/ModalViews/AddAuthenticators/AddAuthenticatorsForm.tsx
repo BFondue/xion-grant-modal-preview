@@ -154,7 +154,7 @@ export function AddAuthenticatorsForm({
     FEATURE_FLAGS.passkey && isPasskeySupported && !isLoadingFeatures;
   // Only show zk-email if feature flag is on and the account contract supports it (testnet or mainnet with flag)
   const isZKEmailAuthenticatorAvailable =
-    (!isMainnet || FEATURE_FLAGS.zkemail) &&
+    FEATURE_FLAGS.zkemail &&
     isZKEmailSupported &&
     !isLoadingFeatures;
 
