@@ -53,8 +53,9 @@ jobs:
       - name: Build app
         run: pnpm exec vite build --mode ${{ inputs.build-mode || inputs.environment }}
         env:
+          CLOUDFLARE_ENV: ${{ inputs.environment }}
           # Network selector (drives src/config/index.ts)
-          VITE_NETWORK: ${{ vars.VITE_NETWORK }}
+          VITE_NETWORK: ${{ inputs.environment }}
           # Release version
           VITE_APP_VERSION: ${{ inputs.message || github.sha }}
           # Secrets (no defaults in config)
@@ -69,6 +70,7 @@ jobs:
           accountId: ${{ secrets.BURNT_CLOUDFLARE_ACCOUNT_ID }}
           command: ${{ inputs.wrangler-command }} --env=${{ inputs.environment }}${{ inputs.wrangler-command != 'deploy' && inputs.message && format(' --message="{0}"', inputs.message) || '' }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          environment: ${{ inputs.environment }}
           packageManager: pnpm
 
       - name: Extract deployment URL
