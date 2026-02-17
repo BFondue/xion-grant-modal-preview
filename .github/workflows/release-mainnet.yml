@@ -74,21 +74,6 @@ jobs:
           git config gpg.format ssh
           git config user.signingkey /tmp/.git_signing_key
 
-      - name: ⛔️ Exit prerelease mode (if active)
-        run: |
-          if [ -f .changeset/pre.json ]; then
-            # Only exit if we're actually in pre mode (not already exited)
-            MODE=$(node -e "console.log(require('./.changeset/pre.json').mode)")
-            if [ "$MODE" = "pre" ]; then
-              pnpm changeset pre exit
-              git add .changeset/pre.json
-              git commit -m "chore: exit prerelease mode"
-              git push
-            else
-              echo "pre.json exists but already in exit mode, skipping"
-            fi
-          fi
-
       - name: 📣 Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
