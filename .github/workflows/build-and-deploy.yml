@@ -88,7 +88,7 @@ jobs:
         with:
           apiToken: ${{ secrets.BURNT_CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.BURNT_CLOUDFLARE_ACCOUNT_ID }}
-          command: ${{ inputs.wrangler-command }} --env=${{ inputs.environment }}${{ inputs.message && format(' --message="{0}"', inputs.message) || '' }}
+          command: ${{ inputs.wrangler-command }} --env=${{ inputs.environment }}${{ inputs.wrangler-command != 'deploy' && inputs.message && format(' --message="{0}"', inputs.message) || '' }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
 
