@@ -96,6 +96,4 @@ jobs:
     uses: ./.github/workflows/build-and-deploy.yml
     with:
       environment: mainnet
-      wrangler-command: deploy
-      message: ${{ github.sha }}
     secrets: inherit
