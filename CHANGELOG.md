@@ -1,5 +1,11 @@
 # abstraxion-dashboard
 
+## 0.16.1-rc.4
+
+### Patch Changes
+
+- [#326](https://github.com/burnt-labs/xion-dashboard-app/pull/326) [`3bac896`](https://github.com/burnt-labs/xion-dashboard-app/commit/3bac896509172c7bb6425c321aca7342be682ad3) Thanks [@2xburnt](https://github.com/2xburnt)! - add CLOUDFLARE_ENV
+
 ## 0.16.1-rc.3
 
 ### Patch Changes
