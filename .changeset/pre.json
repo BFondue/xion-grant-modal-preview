@@ -6,6 +6,8 @@
   },
   "changesets": [
     "early-snails-sneeze",
-    "fix-ci-deployments"
+    "fix-ci-deployments",
+    "quiet-ideas-greet",
+    "some-paws-warn"
   ]
 }
