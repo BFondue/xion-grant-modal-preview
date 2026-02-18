@@ -28,6 +28,6 @@ describe("WalletActionButton", () => {
   it("applies hover styles correctly", async () => {
     const { container } = await render(<WalletActionButton type="send" />);
     const button = container.firstChild as HTMLElement;
-    expect(button).toHaveClass("hover:ui-bg-black/70");
+    expect(button).toHaveClass("hover:ui-bg-surface-border");
   });
 });

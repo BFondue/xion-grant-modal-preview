@@ -1,5 +1,5 @@
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -36,7 +36,7 @@ export function WalletSendSuccess({
 
   return (
     <>
-      <div className="ui-p-0 ui-flex ui-flex-col ui-gap-8 max-h-full ui-h-full">
+      <div className="ui-p-0 ui-flex ui-flex-col ui-gap-6 max-h-full ui-h-full">
         <DialogHeader>
           <DialogTitle>Success!</DialogTitle>
           <DialogDescription>
@@ -44,22 +44,22 @@ export function WalletSendSuccess({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="ui-flex ui-flex-col ui-gap-8">
+        <div className="ui-flex ui-flex-col ui-gap-6">
           <div className="ui-h-[1px] ui-w-full ui-bg-border" />
 
           <div className="ui-flex ui-flex-col ui-gap-6">
-            <div className="ui-flex ui-flex-col ui-gap-3">
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-bold ui-leading-[16px] ui-text-secondary-text">
+            <div className="ui-flex ui-flex-col ui-gap-2.5">
+              <p className="ui-w-full ui-text-center ui-text-label ui-text-secondary-text">
                 Transfer Amount
               </p>
-              <div className="ui-flex ui-flex-col ui-gap-2">
+              <div className="ui-flex ui-flex-col ui-gap-2.5">
                 <p className="ui-w-full ui-text-center ui-text-[40px] ui-leading-none ui-font-bold">
                   {sendAmount}{" "}
                   <span className="ui-text-[40px] ui-leading-none">
                     {selectedCurrency.asset.display.toUpperCase()}
                   </span>
                 </p>
-                <p className="ui-w-full ui-text-center ui-text-sm ui-text-secondary-text">
+                <p className="ui-w-full ui-text-center ui-text-body ui-text-secondary-text">
                   ${(Number(sendAmount) * selectedCurrency.price).toFixed(2)}{" "}
                   USD
                 </p>
@@ -71,16 +71,16 @@ export function WalletSendSuccess({
         </div>
 
         <div className="ui-flex ui-flex-col ui-gap-4">
-          <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
-            <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
-              <h5 className="ui-text-sm">From</h5>
+          <div className="ui-flex ui-flex-col ui-gap-4 ui-p-4 ui-rounded-lg ui-bg-surface-page">
+            <div className="ui-flex ui-items-center ui-justify-between ui-gap-1.5">
+              <h5 className="ui-text-body">From</h5>
               <InteractiveTooltip
                 content={
                   <a
                     href={getExplorerAddressUrl(account.id)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
+                    className="ui-text-body ui-text-text-secondary hover:ui-underline ui-inline-block"
                   >
                     <span className="ui-break-all ui-inline">{account.id}</span>
                     <ExternalLinkIcon
@@ -90,21 +90,21 @@ export function WalletSendSuccess({
                   </a>
                 }
               >
-                <p className="ui-text-sm ui-font-bold">
+                <p className="ui-text-label">
                   {truncateAddress(account.id, 8, 8)}
                 </p>
               </InteractiveTooltip>
             </div>
 
-            <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
-              <h5 className="ui-text-sm">To</h5>
+            <div className="ui-flex ui-items-center ui-justify-between ui-gap-1.5">
+              <h5 className="ui-text-body">To</h5>
               <InteractiveTooltip
                 content={
                   <a
                     href={getExplorerAddressUrl(recipientAddress)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
+                    className="ui-text-body ui-text-text-secondary hover:ui-underline ui-inline-block"
                   >
                     <span className="ui-break-all ui-inline">
                       {recipientAddress}
@@ -116,30 +116,30 @@ export function WalletSendSuccess({
                   </a>
                 }
               >
-                <p className="ui-text-sm ui-font-bold">
+                <p className="ui-text-label">
                   {truncateAddress(recipientAddress, 8, 8)}
                 </p>
               </InteractiveTooltip>
             </div>
 
             {userMemo && (
-              <div className="ui-flex ui-items-start ui-justify-between ui-gap-2 ui-flex-wrap">
-                <h5 className="ui-text-sm">Memo</h5>
-                <p className="ui-text-sm ui-font-bold ui-max-w-[50%] ui-break-words ui-text-end">
+              <div className="ui-flex ui-items-start ui-justify-between ui-gap-1.5 ui-flex-wrap">
+                <h5 className="ui-text-body">Memo</h5>
+                <p className="ui-text-label ui-max-w-[50%] ui-break-words ui-text-end">
                   {userMemo}
                 </p>
               </div>
             )}
           </div>
 
-          <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
-            <div className="ui-flex ui-justify-between ui-gap-2">
-              <p className="ui-text-sm">Transaction Link</p>
+          <div className="ui-flex ui-flex-col ui-gap-4 ui-p-4 ui-rounded-lg ui-bg-surface-page">
+            <div className="ui-flex ui-justify-between ui-gap-1.5">
+              <p className="ui-text-label">Transaction Link</p>
               <a
                 href={getExplorerTxUrl(transactionHash)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ui-text-sm ui-text-white hover:ui-underline ui-inline-block"
+                className="ui-text-body ui-text-cta hover:ui-underline ui-inline-block"
               >
                 View on Explorer
                 <ExternalLinkIcon
@@ -151,12 +151,12 @@ export function WalletSendSuccess({
           </div>
         </div>
 
-        <BaseButton
+        <Button
           onClick={() => handleConfirmClick()}
-          className="ui-mt-2 ui-mb-10 sm:ui-mb-0"
+          className="ui-mt-1.5"
         >
           CLOSE
-        </BaseButton>
+        </Button>
       </div>
     </>
   );

@@ -22,7 +22,7 @@ const SPINNER_SIZES: Record<
  */
 const SpinnerV2: React.FC<SpinnerV2Props> = ({
   size = "md",
-  color = "white",
+  color = "black",
 }) => {
   const pixelSize = SPINNER_SIZES[size];
 

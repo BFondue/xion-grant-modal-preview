@@ -28,13 +28,13 @@ export function ZKEmailAuthenticatorStatus({
         aria-live="polite"
       >
         <div className="ui-p-4 ui-bg-yellow-900/20 ui-border ui-border-yellow-500/50 ui-rounded-lg ui-w-full">
-          <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
-            <SpinnerV2 size="sm" color="white" />
-            <p className="ui-text-sm ui-font-medium ui-text-yellow-400">
+          <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
+            <SpinnerV2 size="sm" color="black" />
+            <p className="ui-text-label ui-text-yellow-400">
               {message}
             </p>
           </div>
-          {detail && <p className="ui-text-xs ui-text-yellow-300">{detail}</p>}
+          {detail && <p className="ui-text-caption ui-text-yellow-300">{detail}</p>}
         </div>
       </div>
     );
@@ -48,13 +48,13 @@ export function ZKEmailAuthenticatorStatus({
         aria-live="polite"
       >
         <div className="ui-p-4 ui-bg-green-900/20 ui-border ui-border-green-500/50 ui-rounded-lg ui-w-full">
-          <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
+          <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
             <div className="ui-w-2 ui-h-2 ui-bg-green-500 ui-rounded-full" />
-            <p className="ui-text-sm ui-font-medium ui-text-green-400">
+            <p className="ui-text-label ui-text-green-400">
               {message}
             </p>
           </div>
-          {detail && <p className="ui-text-xs ui-text-green-300">{detail}</p>}
+          {detail && <p className="ui-text-caption ui-text-green-300">{detail}</p>}
         </div>
       </div>
     );
@@ -67,12 +67,12 @@ export function ZKEmailAuthenticatorStatus({
         role="alert"
       >
         <div className="ui-p-4 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg ui-w-full">
-          <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
-            <p className="ui-text-sm ui-font-medium ui-text-red-400">
+          <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
+            <p className="ui-text-label ui-text-red-400">
               {message}
             </p>
           </div>
-          {detail && <p className="ui-text-xs ui-text-red-300">{detail}</p>}
+          {detail && <p className="ui-text-caption ui-text-red-300">{detail}</p>}
         </div>
       </div>
     );

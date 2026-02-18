@@ -43,7 +43,7 @@ export function App() {
                 {/* Tiles */}
                 <div className="ui-mx-auto ui-flex ui-max-w-7xl">
                   {/* Left Tiles */}
-                  <div className="ui-flex-grow-2 ui-gap-8 ui-flex ui-flex-col ui-max-w-[700px] ui-mx-auto">
+                  <div className="ui-flex-grow-2 ui-gap-6 ui-flex ui-flex-col ui-max-w-[700px] ui-mx-auto">
                     <Overview account={account} />
                     {account && (
                       <AccountMigration

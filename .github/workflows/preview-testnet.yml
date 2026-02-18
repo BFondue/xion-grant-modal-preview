@@ -2,8 +2,8 @@ name: Preview Testnet
 
 on:
   pull_request:
-    branches: [testnet]
-    types: [opened, synchronize, reopened]
+    branches: 
+      - testnet
 
 jobs:
   test:

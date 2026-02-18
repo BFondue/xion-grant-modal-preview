@@ -4,9 +4,15 @@ import { cleanup } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { configure } from "@testing-library/react";
 
+
 configure({
   asyncUtilTimeout: 1000,
 });
+
+// input-otp library uses document.elementFromPoint which jsdom doesn't support
+if (typeof document !== "undefined" && !document.elementFromPoint) {
+  document.elementFromPoint = () => null;
+}
 
 expect.extend(matchers);
 

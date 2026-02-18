@@ -9,7 +9,7 @@ export function WalletSend({ trigger }: { trigger: ReactElement }) {
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
-        className="ui-text-white"
+        className="ui-text-text-primary"
         onPointerDownOutside={(e) => e.preventDefault()}
         closeButton
       >

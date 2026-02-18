@@ -11,7 +11,7 @@ import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -952,7 +952,7 @@ export function AddAuthenticatorsForm({
   if (isLoading) {
     if (zkEmailSigningStatus) {
       return (
-        <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center ui-w-full">
+        <div className="ui-flex ui-flex-col ui-gap-10 ui-items-center ui-w-full">
           <Loading
             header="Adding Authenticator"
             message="Signing with your email. Don't leave the page or close the window."
@@ -1015,7 +1015,7 @@ export function AddAuthenticatorsForm({
   }
 
   return (
-    <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center">
+    <div className="ui-flex ui-flex-col ui-gap-10 ui-items-center">
       <DialogHeader>
         {isSuccess ? (
           <>
@@ -1051,20 +1051,20 @@ export function AddAuthenticatorsForm({
             SKIP FOR NOW
           </Button> */}
           <div className="ui-grid ui-grid-cols-3 ui-gap-4 ui-w-fit ui-justify-center ui-mx-auto">
-            <BaseButton
+            <Button
               className={cn("ui-w-16 ui-h-16", {
-                "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Stytch,
+                "!ui-border-cta": selectedAuthenticator === CONNECTION_METHOD.Stytch,
               })}
               onClick={() => handleSwitch(CONNECTION_METHOD.Stytch)}
               variant="secondary"
               size="icon-large"
             >
               <EmailIcon className="ui-w-[30px] ui-h-[24px]" />
-            </BaseButton>
+            </Button>
             {(!isMainnet || FEATURE_FLAGS.keplr) ? (
-              <BaseButton
+              <Button
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Keplr },
+                  { "!ui-border-cta": selectedAuthenticator === CONNECTION_METHOD.Keplr },
                   "ui-w-16 ui-h-16",
                 )}
                 onClick={() => handleSwitch(CONNECTION_METHOD.Keplr)}
@@ -1072,12 +1072,12 @@ export function AddAuthenticatorsForm({
                 size="icon-large"
               >
                 <KeplrLogo className="ui-w-[26px] ui-h-[26px]" />
-              </BaseButton>
+              </Button>
             ) : null}
             {(!isMainnet || FEATURE_FLAGS.metamask) ? (
-              <BaseButton
+              <Button
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Metamask },
+                  { "!ui-border-cta": selectedAuthenticator === CONNECTION_METHOD.Metamask },
                   "ui-w-16 ui-h-16",
                 )}
                 disabled={isMainnet && !FEATURE_FLAGS.metamask}
@@ -1086,12 +1086,12 @@ export function AddAuthenticatorsForm({
                 size="icon-large"
               >
                 <MetamaskLogo className="ui-w-[34px] ui-h-[34px]" />
-              </BaseButton>
+              </Button>
             ) : null}
             {(!isMainnet || FEATURE_FLAGS.okx) ? (
-              <BaseButton
+              <Button
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.OKX },
+                  { "!ui-border-cta": selectedAuthenticator === CONNECTION_METHOD.OKX },
                   "ui-w-16 ui-h-16",
                 )}
                 disabled={isMainnet && !FEATURE_FLAGS.okx}
@@ -1104,13 +1104,14 @@ export function AddAuthenticatorsForm({
                   height={36}
                   width={36}
                   alt="OKX Logo"
+                  className="ui-brightness-0"
                 />
-              </BaseButton>
+              </Button>
             ) : null}
             {isPasskeyAuthenticatorAvailable ? (
-              <BaseButton
+              <Button
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Passkey },
+                  { "!ui-border-cta": selectedAuthenticator === CONNECTION_METHOD.Passkey },
                   "ui-w-16 ui-h-16 ui-relative",
                 )}
                 disabled={!isPasskeyAuthenticatorAvailable}
@@ -1122,12 +1123,12 @@ export function AddAuthenticatorsForm({
                   BETA
                 </span>
                 <PasskeyIcon className="ui-w-12" />
-              </BaseButton>
+              </Button>
             ) : null}
             {FEATURE_FLAGS.apple ? (
-              <BaseButton
+              <Button
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.Apple },
+                  { "!ui-border-cta": selectedAuthenticator === CONNECTION_METHOD.Apple },
                   "ui-w-16 ui-h-16",
                 )}
                 disabled={!FEATURE_FLAGS.apple}
@@ -1136,12 +1137,12 @@ export function AddAuthenticatorsForm({
                 size="icon-large"
               >
                 <AppleLogoIcon className="ui-w-[34px] ui-h-[34px]" />
-              </BaseButton>
+              </Button>
             ) : null}
             {isZKEmailAuthenticatorAvailable ? (
-              <BaseButton
+              <Button
                 className={cn(
-                  { "!ui-border-white": selectedAuthenticator === CONNECTION_METHOD.ZKEmail },
+                  { "!ui-border-cta": selectedAuthenticator === CONNECTION_METHOD.ZKEmail },
                   "ui-w-16 ui-h-16 ui-relative",
                 )}
                 disabled={!isZKEmailAuthenticatorAvailable}
@@ -1153,26 +1154,26 @@ export function AddAuthenticatorsForm({
                   BETA
                 </span>
                 <ZKEmailIcon className="ui-w-8 ui-h-8" />
-              </BaseButton>
+              </Button>
             ) : null}
           </div>
         </>
       ) : null}
       {isSuccess ? (
-        <div className="ui-flex ui-flex-col ui-gap-12 ui-w-full ui-items-center">
+        <div className="ui-flex ui-flex-col ui-gap-10 ui-w-full ui-items-center">
           <AnimatedCheckmark />
-          <BaseButton className="ui-w-full" onClick={() => setIsOpen(false)}>
+          <Button className="ui-w-full" onClick={() => setIsOpen(false)}>
             Done
-          </BaseButton>
+          </Button>
         </div>
       ) : (
-        <BaseButton
+        <Button
           className="ui-w-full"
           disabled={selectedAuthenticator === CONNECTION_METHOD.None}
           onClick={handleSelection}
         >
           SET UP AUTHENTICATOR
-        </BaseButton>
+        </Button>
       )}
       {connectionMethod === CONNECTION_METHOD.ZKEmail && TURNSTILE_SITE_KEY && (
         <Turnstile

@@ -71,6 +71,7 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
+        "@": path.resolve(__dirname, "./src"),
         stream: "stream-browserify",
         buffer: "buffer",
         // Force all react imports to resolve to the same version
