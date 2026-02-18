@@ -30,7 +30,7 @@ export default defineConfig({
       reporter: ["text", "html", "lcov"],
       exclude: [
         "node_modules/",
-        "src/tests/setup.ts",
+        "src/tests/**",
         "**/*.d.ts",
         "**/*.config.*",
         "**/index.ts",

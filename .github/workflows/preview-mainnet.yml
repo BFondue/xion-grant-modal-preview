@@ -1,9 +1,8 @@
-name: Preview Testnet
+name: Preview Mainnet
 
 on:
-  pull_request:
-    branches:
-      - main
+  release:
+    types: [published]
 
 jobs:
   test:
@@ -13,6 +12,6 @@ jobs:
     needs: test
     uses: ./.github/workflows/build-preview.yml
     with:
-      environment: testnet
-      message: "PR #${{ github.event.pull_request.number }}"
+      environment: mainnet
+      message: "${{ github.event.release.tag_name }}"
     secrets: inherit

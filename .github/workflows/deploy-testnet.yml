@@ -28,7 +28,7 @@ jobs:
 
   deploy:
     needs: release
-    uses: ./.github/workflows/build-and-deploy.yml
+    uses: ./.github/workflows/build-deploy.yml
     with:
       environment: testnet
     secrets: inherit
