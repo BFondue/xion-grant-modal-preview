@@ -59,7 +59,7 @@ export function Input({
           baseInputClassName || ""
         } ui-z-10 ui-block ui-h-8 ui-w-full ui-border-b ui-border-border ui-rounded-none ui-relative ${
           error ? "ui-border-destructive" : ""
-        } ui-bg-transparent ui-font-akkuratLL ui-py-4 !ui-text-base ui-text-zinc-100 ui-font-normal ui-leading-tight ui-outline-none`}
+        } ui-bg-transparent ui-font-akkuratLL ui-py-4 !ui-text-base ui-text-text-primary ui-font-normal ui-leading-tight ui-outline-none`}
         onBlur={handleBlur}
         onFocus={handleFocus}
         onKeyDown={onKeyDown}

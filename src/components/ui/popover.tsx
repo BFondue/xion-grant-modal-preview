@@ -1,37 +1,30 @@
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { cn } from "../../utils/classname-util";
+import { cn } from "@/utils/classname-util";
 
 const Popover = PopoverPrimitive.Root;
 
 const PopoverTrigger = PopoverPrimitive.Trigger;
 
-interface PopoverContentProps extends React.ComponentPropsWithoutRef<
-  typeof PopoverPrimitive.Content
-> {
-  className?: string;
-}
+const PopoverAnchor = PopoverPrimitive.Anchor;
 
 const PopoverContent = React.forwardRef<
-  React.ElementRef<typeof PopoverPrimitive.Content>,
-  PopoverContentProps
->(({ className, children, ...props }, forwardedRef) => (
+  React.ComponentRef<typeof PopoverPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
+>(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
+      ref={ref}
+      align={align}
+      sideOffset={sideOffset}
       className={cn(
-        "ui-rounded-md ui-text-white ui-z-50 ui-p-2 ui-bg-[#2a2a2a]",
-        "ui-shadow-[0px_6px_10px_6px_hsl(0deg_0%_0%_/_60%)]",
-        "ui-data-[state=open]:ui-data-[side=top]:ui-animate-slideDownAndFade ui-data-[state=open]:ui-data-[side=right]:ui-animate-slideLeftAndFade ui-data-[state=open]:ui-data-[side=bottom]:ui-animate-slideUpAndFade ui-data-[state=open]:ui-data-[side=left]:ui-animate-slideRightAndFade",
+        "ui-z-50 ui-w-72 ui-rounded-md ui-border ui-bg-white ui-p-4 ui-text-text-primary ui-shadow-md ui-outline-none data-[state=open]:ui-animate-in data-[state=closed]:ui-animate-out data-[state=closed]:ui-fade-out-0 data-[state=open]:ui-fade-in-0 data-[state=closed]:ui-zoom-out-95 data-[state=open]:ui-zoom-in-95 data-[side=bottom]:ui-slide-in-from-top-2 data-[side=left]:ui-slide-in-from-right-2 data-[side=right]:ui-slide-in-from-left-2 data-[side=top]:ui-slide-in-from-bottom-2",
         className,
       )}
-      ref={forwardedRef}
       {...props}
-    >
-      {children}
-      <PopoverPrimitive.Arrow className="ui-fill-[#2a2a2a]" />
-    </PopoverPrimitive.Content>
+    />
   </PopoverPrimitive.Portal>
 ));
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
-export { Popover, PopoverTrigger, PopoverContent };
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };

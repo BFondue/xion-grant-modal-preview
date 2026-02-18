@@ -604,9 +604,9 @@ export function IframeApp({
     if (loginAuthenticator && connectionMethod !== CONNECTION_METHOD.None) {
       return (
         <div className="ui-flex ui-flex-col ui-w-full ui-h-full ui-items-center ui-justify-center ui-bg-background">
-          <div className="ui-text-center ui-p-8">
+          <div className="ui-text-center ui-p-6">
             <div className="ui-animate-spin ui-w-8 ui-h-8 ui-border-2 ui-border-primary ui-border-t-transparent ui-rounded-full ui-mx-auto ui-mb-4" />
-            <p className="ui-text-gray-600">Loading your account...</p>
+            <p className="ui-text-body ui-text-text-secondary">Loading your account...</p>
           </div>
         </div>
       );
@@ -616,11 +616,11 @@ export function IframeApp({
     if (isStandalone || isInStandaloneIframe) {
       return (
         <div className="ui-flex ui-flex-col ui-w-full ui-h-full ui-items-center ui-justify-center ui-bg-background">
-          <div className="ui-text-center ui-p-8">
-            <h1 className="ui-text-2xl ui-font-bold ui-mb-4">
+          <div className="ui-text-center ui-p-6">
+            <h1 className="ui-text-title-lg ui-mb-4">
               Welcome to XION Auth
             </h1>
-            <p className="ui-text-gray-600 ui-mb-6">
+            <p className="ui-text-body ui-text-text-secondary ui-mb-6">
               Please sign in to continue
             </p>
           </div>
@@ -803,9 +803,9 @@ export function IframeApp({
               }}
             />
           ) : (
-            <div className="ui-p-8 ui-text-center">
+            <div className="ui-p-6 ui-text-center">
               <div className="ui-animate-spin ui-w-8 ui-h-8 ui-border-2 ui-border-primary ui-border-t-transparent ui-rounded-full ui-mx-auto ui-mb-4" />
-              <p className="ui-text-gray-400">Loading account...</p>
+              <p className="ui-text-body ui-text-text-muted">Loading account...</p>
             </div>
           )}
         </DialogContent>

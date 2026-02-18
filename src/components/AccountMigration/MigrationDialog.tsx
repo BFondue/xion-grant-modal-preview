@@ -6,10 +6,15 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  BaseButton,
+  Button,
 } from "../ui";
 import { Skeleton } from "../ui/skeleton";
-import { Accordion } from "../ui/accordion";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "../ui/accordion";
 import {
   getPromotedFeatures,
   fetchContractChecksum,
@@ -62,52 +67,64 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
     ? getPromotedFeatures(targetChecksum)
     : [];
 
-  const accordionItems = migrationFeatures.map((feature) => ({
-    title: feature.title,
-    children: feature.description,
-    expandable: true,
-  }));
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent closeButton>
-        <DialogHeader>
-          <DialogTitle className="ui-text-center">Account Upgrade</DialogTitle>
-          <DialogDescription className="ui-text-center">
-            We have recently upgraded our accounts. You will need to accept the
-            upgrade to get new account features.
-          </DialogDescription>
-        </DialogHeader>
+        <div className="ui-animate-scale-in">
+          <DialogHeader>
+            <DialogTitle className="ui-text-center">Account Upgrade</DialogTitle>
+            <DialogDescription className="ui-text-center">
+              We have recently upgraded our accounts. You will need to accept the
+              upgrade to get new account features.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div>
-          <h3 className="ui-text-lg ui-font-medium ui-mb-4">
-            New upgrade features:
-          </h3>
-          {isLoading ? (
-            <div className="ui-space-y-4">
-              <Skeleton className="ui-h-6 ui-w-3/4" />
-              <Skeleton className="ui-h-4 ui-w-full" />
-              <Skeleton className="ui-h-6 ui-w-3/4" />
-              <Skeleton className="ui-h-4 ui-w-full" />
-            </div>
-          ) : (
-            <Accordion items={accordionItems} />
-          )}
-        </div>
-
-        <DialogFooter>
-          <div className="ui-p-4 ui-bg-transparent ui-border ui-border-warning ui-rounded-lg ui-text-warning ui-text-sm">
-            If you don&apos;t migrate nothing will change, but you will not get
-            the new account features.
+          <div>
+            <h3 className="ui-text-body-lg ui-font-medium ui-mb-4">
+              New upgrade features:
+            </h3>
+            {isLoading ? (
+              <div className="ui-space-y-4">
+                <Skeleton className="ui-h-6 ui-w-3/4" />
+                <Skeleton className="ui-h-4 ui-w-full" />
+                <Skeleton className="ui-h-6 ui-w-3/4" />
+                <Skeleton className="ui-h-4 ui-w-full" />
+              </div>
+            ) : (
+              <Accordion
+                type="multiple"
+                className="ui-list-none ui-p-4 ui-bg-surface-page ui-rounded-lg ui-flex ui-flex-col ui-gap-4"
+              >
+                {migrationFeatures.map((feature, index) => (
+                  <AccordionItem
+                    key={index}
+                    value={`feature-${index}`}
+                    className="ui-border-b-0"
+                  >
+                    <AccordionTrigger className="ui-py-0">
+                      {feature.title}
+                    </AccordionTrigger>
+                    <AccordionContent>{feature.description}</AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            )}
           </div>
-          <BaseButton
-            onClick={onUpgrade}
-            className="ui-w-full"
-            disabled={isLoading || !targetChecksum}
-          >
-            {isLoading ? "Loading..." : "MIGRATE"}
-          </BaseButton>
-        </DialogFooter>
+
+          <DialogFooter>
+            <div className="ui-p-4 ui-bg-transparent ui-border ui-border-warning ui-rounded-lg ui-text-warning ui-text-body">
+              If you don&apos;t migrate nothing will change, but you will not get
+              the new account features.
+            </div>
+            <Button
+              onClick={onUpgrade}
+              className="ui-w-full"
+              disabled={isLoading || !targetChecksum}
+            >
+              {isLoading ? "Loading..." : "MIGRATE"}
+            </Button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

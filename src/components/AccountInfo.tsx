@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { BaseButton, CloseIcon } from "./ui";
+import { Button, CloseIcon } from "./ui";
 import { useStytchUser } from "@stytch/react";
 import RemoveAuthenticatorModal from "./ModalViews/RemoveAuthenticator/RemoveAuthenticatorModal";
 import AddAuthenticatorsModal from "./ModalViews/AddAuthenticators/AddAuthenticatorsModal";
@@ -55,23 +55,23 @@ export const AccountInfo = () => {
   };
 
   return (
-    <div className="ui-bg-[#262626] ui-p-6 ui-rounded-xl">
-      <div className="ui-flex ui-flex-col ui-gap-[42px]">
+    <div className="ui-bg-surface-page ui-p-6 ui-rounded-xl">
+      <div className="ui-flex ui-flex-col ui-gap-10">
         <div className="ui-flex">
-          <div className="ui-flex ui-flex-1 ui-flex-col ui-gap-5">
+          <div className="ui-flex ui-flex-1 ui-flex-col ui-gap-4">
             <div className="ui-flex ui-items-center ui-justify-between">
-              <h3 className="ui-leading-[24px] ui-text-lg md:ui-text-xl ui-font-bold">
+              <h3 className="ui-leading-[24px] ui-text-body-lg md:ui-text-title">
                 Your Authenticators
               </h3>
               <AddAuthenticatorsModal
                 trigger={
-                  <BaseButton
+                  <Button
                     size="small"
                     onClick={() => setIsAddModalOpen(true)}
                     className={cn(
-                      "ui-h-fit ui-w-fit ui-min-w-fit ui-gap-1 ui-font-bold ui-bg-transparent ui-rounded-lg ui-border ui-border-border ui-text-white/60",
-                      "hover:ui-text-white hover:ui-bg-white/[0.05] ui-transition-all ui-duration-300",
-                      "ui-px-1.5 ui-py-1 ui-text-xs md:ui-px-2.5 md:ui-py-1.5 md:ui-text-base",
+                      "ui-h-fit ui-w-fit ui-min-w-fit ui-gap-1 ui-font-bold ui-bg-transparent ui-rounded-lg ui-border ui-border-border ui-text-text-secondary",
+                      "hover:ui-text-text-primary hover:ui-bg-surface-page ui-transition-all ui-duration-300",
+                      "ui-px-1.5 ui-py-1 ui-text-caption md:ui-px-2.5 md:ui-py-1.5 md:ui-text-body",
                     )}
                   >
                     <CloseIcon
@@ -79,11 +79,11 @@ export const AccountInfo = () => {
                       className="ui-w-2.5 ui-h-2.5 md:ui-w-3 md:ui-h-3 ui-rotate-45"
                     />
                     Add more
-                  </BaseButton>
+                  </Button>
                 }
               />
             </div>
-            <div className="ui-flex ui-flex-col ui-gap-5">
+            <div className="ui-flex ui-flex-col ui-gap-4">
               {abstractAccount && (
                 <AuthenticatorsList
                   authenticators={abstractAccount.authenticators}

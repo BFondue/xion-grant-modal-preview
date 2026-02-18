@@ -49,23 +49,23 @@ export function Overview({ account }: OverviewProps) {
   return (
     <div className="ui-overflow-hidden ui-relative ui-rounded-xl ">
       <div className="ui-w-full ui-p-6 ui-flex ui-flex-col ui-gap-6 ui-z-10 ui-relative">
-        <div className="ui-flex ui-flex-col ui-gap-8 md:ui-gap-12">
-          <div className="ui-flex ui-flex-col md:ui-flex-row ui-gap-2 md:ui-gap-4 ui-items-start md:ui-items-center">
-            <h3 className="ui-text-2xl ui-font-bold ui-leading-7">
+        <div className="ui-flex ui-flex-col ui-gap-6 md:ui-gap-10">
+          <div className="ui-flex ui-flex-col md:ui-flex-row ui-gap-1.5 md:ui-gap-4 ui-items-start md:ui-items-center">
+            <h3 className="ui-text-title-lg ui-leading-7">
               Personal Account
             </h3>
             <CopyAddress xionAddress={account?.id} />
           </div>
 
           <div className="ui-w-full ui-flex ui-flex-col ui-gap-6 ">
-            <div className="ui-flex ui-flex-col ui-gap-3">
+            <div className="ui-flex ui-flex-col ui-gap-2.5">
               {balances && (
                 <h1 className="ui-text-[28px] sm:ui-text-[32px] md:ui-text-[40px] ui-leading-[36px] ui-font-bold">
                   ${basicFormatCurrency(totalDollarValue)}
                 </h1>
               )}
             </div>
-            <div className="ui-flex ui-w-full ui-gap-3">
+            <div className="ui-flex ui-w-full ui-gap-2.5">
               {account?.id && (
                 <WalletReceive
                   xionAddress={account.id}
@@ -91,7 +91,7 @@ export function Overview({ account }: OverviewProps) {
 
         <Divider className="ui-my-0" />
 
-        <div className="ui-flex ui-flex-col ui-gap-5">
+        <div className="ui-flex ui-flex-col ui-gap-4">
           {splitBalances.featuredBalances.length === 0 && (
             <OverviewBalanceTableSkeleton />
           )}
@@ -104,15 +104,15 @@ export function Overview({ account }: OverviewProps) {
                 <OverviewBalanceTable assets={splitBalances.otherBalances} />
               )}
             </div>
-            <div className="ui-flex ui-items-center ui-justify-between ui-mt-2">
-              <div className="ui-text-white/40 ui-text-base font-normal leading-normal">
+            <div className="ui-flex ui-items-center ui-justify-between ui-mt-1.5">
+              <div className="ui-text-text-secondary ui-text-body ui-font-normal ui-leading-normal">
                 {showAllBalances
                   ? `${balances.length} items`
                   : `+${splitBalances.otherBalances.length} more`}
               </div>
               <div
                 onClick={toggleShowAllBalances}
-                className="text-right text-white text-sm font-normal underline leading-tight hover:ui-cursor-pointer ui-underline"
+                className="ui-text-right ui-text-text-primary ui-text-body ui-font-normal ui-underline ui-leading-tight hover:ui-cursor-pointer"
               >
                 {showAllBalances ? "Show less" : "Show all"}
               </div>
@@ -125,15 +125,7 @@ export function Overview({ account }: OverviewProps) {
           // Positioning and dimensions
           "ui-absolute ui-inset-0 ui-z-0",
           // Visual styling
-          "ui-bg-[#2C2C2C]/100 ui-backdrop-blur-sm ui-rounded-xl ui-shadow-[inset_0_0_1px_1px_rgba(225,225,225,0.2)]",
-        )}
-      />
-      <div
-        className={cn(
-          // Positioning and dimensions
-          "ui-absolute ui-inset-0 ui-z-0",
-          // Visual styling
-          "ui-bg-modal-static ui-bg-center ui-bg-fixed ui-opacity-[25%] ui-rounded-xl",
+          "ui-bg-white ui-border ui-border-surface-border ui-shadow-sm ui-rounded-xl",
         )}
       />
     </div>

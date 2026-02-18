@@ -107,7 +107,7 @@ describe("Popover Components", () => {
 
       const content = screen.getByTestId("content");
       expect(content).toHaveClass("ui-rounded-md");
-      expect(content).toHaveClass("ui-text-white");
+      expect(content).toHaveClass("ui-text-text-primary");
       expect(content).toHaveClass("ui-z-50");
     });
 

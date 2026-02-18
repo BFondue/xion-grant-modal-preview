@@ -2,13 +2,8 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate/build/stargateclient";
 import { EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { BaseButton } from "../ui";
-import {
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
+import { Button } from "../ui";
+import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 import { useSmartAccount, useSigningClient } from "../../hooks";
 import {
@@ -32,19 +27,57 @@ import { isContractGrantConfigValid } from "@burnt-labs/account-management";
 import { validateFeeGrant } from "@burnt-labs/account-management";
 import { useTreasuryDiscovery } from "../../hooks/useTreasuryDiscovery";
 import { safeRedirectOrDisconnect } from "../../utils/redirect-utils";
-import { CopyAddress } from "../CopyAddress";
 import xionLogo from "../../assets/logo.png";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
+import AnimatedX from "../ui/icons/AnimatedX";
 import FallbackImage from "../FallbackImage";
 import {
   getDomainAndProtocol,
   isUrlSafe,
   urlsMatch,
 } from "@burnt-labs/account-management";
-import { ChevronDownIcon, WarningIcon } from "../ui/icons";
+import { ChevronDownIcon, WarningIcon, CopyIcon, CheckIcon } from "../ui/icons";
 import { isMainnet } from "../../config";
 import { parseTreasuryMetadata } from "../../types/treasury-types";
+import { truncateAddress } from "../../utils";
+import { cn } from "../../utils/classname-util";
+
+// Inline SVG icons used only in this component
+const LockIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="10"
+    height="10"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+);
+
+const ShieldIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  </svg>
+);
 
 interface AbstraxionGrantProps {
   contracts: ContractGrantDescription[];
@@ -78,9 +111,6 @@ export const LoginGrantApproval = ({
     AuthContext,
   ) as AuthContextProps;
 
-  // abstractAccount from context can be used as fallback when account from indexer is not yet available
-  // This happens when the account is freshly created and indexer hasn't caught up
-
   const [inProgress, setInProgress] = useState(false);
   const [inCheckProgress, setInCheckProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -88,6 +118,8 @@ export const LoginGrantApproval = ({
   const [grantError, setGrantError] = useState<string | null>(null);
   const [retryCooldown, setRetryCooldown] = useState(0);
   const [securityRiskCollapsed, setSecurityRiskCollapsed] = useState(false);
+  const [showAddress, setShowAddress] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Use React Query hook for treasury discovery
   const {
@@ -99,17 +131,26 @@ export const LoginGrantApproval = ({
   // Extract permissions and params from query result
   const permissions = treasuryData?.permissionDescriptions || [];
   const treasuryParams = treasuryData?.params || {
-    display_url: "",
     redirect_url: "",
     icon_url: "",
     metadata: "",
   };
 
   // Parse metadata JSON string to object
-  // xion.js returns metadata as a JSON string (defaults to "{}" if empty)
   const parsedMetadata = useMemo(() => {
     return parseTreasuryMetadata(treasuryParams.metadata);
   }, [treasuryParams.metadata]);
+
+  // Derive app display name and domain from redirect_url
+  const appDomain = useMemo(() => {
+    if (treasuryParams.redirect_url) {
+      return getDomainAndProtocol(treasuryParams.redirect_url);
+    }
+    return undefined;
+  }, [treasuryParams.redirect_url]);
+
+  // Display name: use domain if available, fallback to "A 3rd party" for legacy flows
+  const appDisplayName = appDomain || "A 3rd party";
 
   // Check if redirect_uri is the official OAuth2 address
   const isOfficialOAuth2Redirect = (
@@ -130,15 +171,13 @@ export const LoginGrantApproval = ({
   // Check if redirect_uri matches treasury params or is official OAuth2 when isOAuth2App is true
   const isRedirectUriValid = (): boolean => {
     if (!treasury || !redirect_uri || !treasuryParams.redirect_url) {
-      return true; // If no redirect_uri provided, consider it valid
+      return true;
     }
 
-    // If it matches the configured redirect_url, it's valid
     if (urlsMatch(treasuryParams.redirect_url, redirect_uri)) {
       return true;
     }
 
-    // If is_oauth2_app is true and redirect_uri is official OAuth2 address, it's valid
     if (
       parsedMetadata.is_oauth2_app &&
       isOfficialOAuth2Redirect(redirect_uri)
@@ -158,7 +197,6 @@ export const LoginGrantApproval = ({
   useEffect(
     function handleSuccessCallback() {
       if (showSuccess) {
-        // If callback is provided (iframe mode), use it instead of redirect
         if (onApprove) {
           const timer = setTimeout(() => {
             onApprove();
@@ -166,7 +204,6 @@ export const LoginGrantApproval = ({
           return () => clearTimeout(timer);
         }
 
-        // Otherwise, redirect (standalone mode)
         if (redirect_uri) {
           const redirectTimer = setTimeout(() => {
             safeRedirectOrDisconnect(
@@ -195,7 +232,6 @@ export const LoginGrantApproval = ({
   );
 
   const handleDeny = () => {
-    // If callback is provided (iframe mode), use it instead of redirect
     if (onDenyCallback) {
       onDenyCallback();
       return;
@@ -337,7 +373,6 @@ export const LoginGrantApproval = ({
   const grant = async () => {
     try {
       setInProgress(true);
-      // Extra check for security
       if (abstraxionError) {
         throw new Error("There's been an error. Cannot continue.");
       }
@@ -362,7 +397,6 @@ export const LoginGrantApproval = ({
         ),
       );
 
-      // Check if fee grant exists
       const feeGrantResult = await validateFeeGrant(
         chainInfo.rest,
         FEE_GRANTER_ADDRESS,
@@ -399,7 +433,6 @@ export const LoginGrantApproval = ({
       let errorMessage =
         error instanceof Error ? error.message : "An unknown error occurred";
 
-      // Detect authenticator not found error and provide a more helpful message
       if (
         errorMessage.includes("Authenticator") &&
         errorMessage.includes("not found")
@@ -412,9 +445,7 @@ export const LoginGrantApproval = ({
       }
 
       setGrantError(errorMessage);
-      // Start 10 second cooldown
       setRetryCooldown(10);
-      // Notify iframe mode about the error (but don't close, let user retry or deny)
       if (onError) {
         onError(errorMessage);
       }
@@ -475,281 +506,279 @@ export const LoginGrantApproval = ({
     }
   }, [redirect_uri, setAbstraxionError]);
 
-  return (
-    <div>
-      {showSuccess ? (
-        <>
-          <DialogHeader>
-            <DialogTitle>Login Successful!</DialogTitle>
-            <DialogDescription className="ui-leading-[14px]">
-              You will now be redirected to your application.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="ui-flex ui-items-center ui-justify-center ui-my-20">
-            <AnimatedCheckmark />
+  const handleCopyAddress = () => {
+    if (account?.id) {
+      navigator.clipboard.writeText(account.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
+  const renderContent = () => {
+    // --- Success state ---
+    if (showSuccess) {
+      return (
+        <div className="ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
+          <AnimatedCheckmark />
+          <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
+            Access granted
+          </h2>
+          <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">
+            You will now be redirected to your application.
+          </p>
+          <img
+            src={xionLogo}
+            alt="XION Logo"
+            width="90"
+            height="32"
+            className="ui-mx-auto ui-mt-10 ui-brightness-0"
+          />
+        </div>
+      );
+    }
+
+    // --- Loading state (grant in progress) ---
+    if (inProgress) {
+      return (
+        <div className="ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
+          <SpinnerV2 size="lg" color="black" />
+          <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
+            Granting access...
+          </h2>
+          <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">
+            Confirming permissions for {appDisplayName}
+          </p>
+        </div>
+      );
+    }
+
+    // --- Error state ---
+    if (grantError) {
+      return (
+        <div className="ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
+          <AnimatedX />
+          <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
+            Something went wrong
+          </h2>
+          <p className="ui-mt-1.5 ui-text-body ui-text-text-muted ui-max-w-[360px]">
+            {grantError}
+          </p>
+          <div className="ui-mt-6 ui-flex ui-flex-col ui-items-center ui-gap-2.5 ui-w-full">
+            <Button
+              className="ui-w-full"
+              disabled={retryCooldown > 0}
+              onClick={() => {
+                setGrantError(null);
+                setRetryCooldown(0);
+                grant();
+              }}
+            >
+              {retryCooldown > 0
+                ? `RETRY IN ${retryCooldown}s`
+                : "TRY AGAIN"}
+            </Button>
+            <Button variant="text" size="text" onClick={handleDeny}>
+              Deny
+            </Button>
           </div>
-          <DialogFooter>
-            <img
-              src={xionLogo}
-              alt="XION Logo"
-              width="90"
-              height="32"
-              className="ui-mx-auto"
-            />
-          </DialogFooter>
-        </>
-      ) : (
-        <>
-          <DialogHeader>
-            <DialogTitle>3rd Party Requesting</DialogTitle>
-            {isTreasuryQueryLoading ? (
-              <div className="ui-mt-8 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
-                <Skeleton className="ui-h-[70px] ui-w-[70px] ui-rounded-2xl" />
-                <Skeleton className="ui-h-9 ui-w-32" />
-              </div>
-            ) : (
-              <>
-                {treasuryParams.icon_url || treasuryParams.redirect_url ? (
-                  <div className="ui-relative ui-mt-8 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
-                    {isOfficialOAuth2Redirect(redirect_uri) && (
-                      <div className="ui-absolute ui-top-2 ui-right-2 ui-px-4 ui-py-2 ui-bg-blue-500/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-shadow-lg ui-z-10">
-                        <span className="ui-text-blue-300 ui-font-bold ui-text-sm ui-uppercase ui-tracking-wide">
-                          OAuth2 App
-                        </span>
-                      </div>
-                    )}
-                    {treasuryParams.icon_url && (
-                      <div className="ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
-                        <FallbackImage
-                          src={treasuryParams.icon_url}
-                          fallbackSrc={burntAvatar}
-                          alt="App Icon"
-                          width={70}
-                          className="ui-object-cover ui-max-h-[100px]"
-                        />
-                      </div>
-                    )}
-                    {treasuryParams.redirect_url && (
-                      <div className="ui-text-white ui-font-bold ui-text-base ui-leading-[16px] ui-px-3 ui-py-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-rounded-lg">
-                        {treasuryParams.redirect_url}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="ui-relative ui-mb-8 ui-mt-6 ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4">
-                    {isOfficialOAuth2Redirect(redirect_uri) && (
-                      <div className="ui-absolute ui-top-2 ui-right-2 ui-px-4 ui-py-2 ui-bg-blue-500/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-shadow-lg ui-z-10">
-                        <span className="ui-text-blue-300 ui-font-bold ui-text-sm ui-uppercase ui-tracking-wide">
-                          OAuth2 App
-                        </span>
-                      </div>
-                    )}
-                    <div className="ui-flex ui-items-center ui-justify-center ui-p-2.5 ui-bg-[rgba(255,255,255,0.05)] ui-w-fit ui-rounded-2xl ui-mx-auto">
-                      <FallbackImage
-                        src={burntAvatar}
-                        fallbackSrc={burntAvatar}
-                        alt="App Icon"
-                        width={70}
-                        className="ui-object-cover"
-                      />
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </DialogHeader>
+        </div>
+      );
+    }
 
-          {account?.id && (
-            <div className="ui-mt-4 ui-mb-2 ui-text-center">
-              <div className="ui-text-sm ui-text-secondary-text ui-mb-2">
-                Granting permissions for:
-              </div>
-              <div className="ui-flex ui-justify-center">
-                <CopyAddress xionAddress={account.id} fullAddress={true} />
-              </div>
-            </div>
-          )}
-
-          {treasury ? (
-            <div className="ui-py-8">
-              <PermissionsList
-                permissions={permissions}
-                isLoading={isTreasuryQueryLoading}
-              />
+    // --- Approve state ---
+    return (
+      <>
+        {/* App Identity */}
+        <div className="ui-flex ui-flex-col ui-items-center ui-text-center">
+          {isTreasuryQueryLoading ? (
+            <div className="ui-flex ui-flex-col ui-items-center ui-gap-2.5">
+              <Skeleton className="ui-h-10 ui-w-10 ui-rounded-button" />
+              <Skeleton className="ui-h-7 ui-w-32" />
+              <Skeleton className="ui-h-5 ui-w-40" />
             </div>
           ) : (
             <>
-              <h1 className="ui-text-base ui-font-bold ui-leading-[16px] ui-mb-3">
-                A 3rd party would like:
-              </h1>
-              <div className="ui-mb-12">
-                <LegacyPermissionsList
-                  contracts={contracts}
-                  bank={bank}
-                  stake={stake}
-                />
-              </div>
+              {isOfficialOAuth2Redirect(redirect_uri) && (
+                <div className="ui-mb-1.5 ui-px-2.5 ui-py-1 ui-bg-blue-50 ui-border ui-border-blue-200 ui-rounded-lg">
+                  <span className="ui-text-blue-600 ui-font-bold ui-text-caption ui-uppercase ui-tracking-wide">
+                    OAuth2 App
+                  </span>
+                </div>
+              )}
+              <FallbackImage
+                src={treasuryParams.icon_url || burntAvatar}
+                fallbackSrc={burntAvatar}
+                alt="App Icon"
+                width={42}
+                height={42}
+                className="ui-rounded-button ui-object-cover"
+              />
+              <h2 className="ui-mt-1.5 ui-text-title ui-text-text-primary">
+                {appDisplayName}
+              </h2>
+              {appDomain && (
+                <div className="ui-mt-1.5 ui-inline-flex ui-items-center ui-gap-1 ui-rounded-full ui-border ui-border-surface-border ui-bg-surface-page ui-px-2.5 ui-py-0.5">
+                  <LockIcon className="ui-text-accent-trust" />
+                  <span className="ui-text-caption ui-text-text-muted">
+                    {appDomain}
+                  </span>
+                </div>
+              )}
+              <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">
+                is requesting permissions
+              </p>
             </>
           )}
+        </div>
 
-          <DialogFooter>
-            {hasUrlMismatch && !isTreasuryQueryLoading ? (
-              <>
-                <div className="ui-w-full ui-mb-1">
-                  <div className="ui-p-4 ui-bg-[#2d1600] ui-border ui-border-[#ff9800] ui-rounded-xl ui-shadow-lg">
-                    <button
-                      className="ui-w-full ui-flex ui-items-center ui-justify-between ui-text-left"
-                      onClick={() =>
-                        setSecurityRiskCollapsed(!securityRiskCollapsed)
-                      }
-                    >
-                      <div className="ui-flex ui-items-center ui-gap-2">
-                        <WarningIcon className="ui-text-[#ff9800] ui-w-5 ui-h-5" />
-                        <span className="ui-text-[#ff9800] ui-font-semibold ui-text-base">
-                          Potential Security Risk
-                        </span>
-                      </div>
-                      <span
-                        className={`ui-text-[#ff9800] ui-text-lg ui-transition-transform ui-duration-200 ${
-                          securityRiskCollapsed ? "ui-rotate-180" : ""
-                        }`}
-                      >
-                        <ChevronDownIcon
-                          isUp={!securityRiskCollapsed}
-                          className="ui-h-5 ui-w-5"
-                        />
-                      </span>
-                    </button>
-                    {!securityRiskCollapsed && (
-                      <div className="ui-mt-3">
-                        <div className="ui-text-[#ffb74d] ui-text-sm ui-mb-2">
-                          The URL you are connecting to:
-                        </div>
-                        <div className="ui-block ui-font-mono ui-text-white ui-text-base ui-font-bold ui-mb-3 ui-bg-[#3a2200] ui-px-2 ui-py-1 ui-rounded">
-                          {getDomainAndProtocol(redirect_uri)}
-                        </div>
-                        <div className="ui-text-[#ffb74d] ui-text-sm ui-mb-2">
-                          does not match the URL provided by the app developer:
-                        </div>
-                        <div className="ui-block ui-font-mono ui-text-white ui-text-base ui-font-bold ui-mb-3 ui-bg-[#3a2200] ui-px-2 ui-py-1 ui-rounded">
-                          {getDomainAndProtocol(treasuryParams.redirect_url)}
-                        </div>
-                        <div className="ui-text-[#ff9800] ui-text-xs">
-                          Proceed with caution, this could be a malicious link.
-                        </div>
-                      </div>
-                    )}
+        <Separator className="ui-my-2.5" />
+
+        {/* Permissions */}
+        {treasury ? (
+          <PermissionsList
+            permissions={permissions}
+            isLoading={isTreasuryQueryLoading}
+            appName={appDisplayName}
+          />
+        ) : (
+          <LegacyPermissionsList
+            contracts={contracts}
+            bank={bank}
+            stake={stake}
+            appName={appDisplayName}
+          />
+        )}
+
+        <Separator className="ui-my-2.5" />
+
+        {/* URL Mismatch Warning */}
+        {hasUrlMismatch && !isTreasuryQueryLoading && (
+          <>
+            <div className="ui-mb-2.5">
+              <div className="ui-p-4 ui-bg-amber-50 ui-border ui-border-amber-400 ui-rounded-xl ui-shadow-lg">
+                <button
+                  className="ui-w-full ui-flex ui-items-center ui-justify-between ui-text-left"
+                  onClick={() =>
+                    setSecurityRiskCollapsed(!securityRiskCollapsed)
+                  }
+                >
+                  <div className="ui-flex ui-items-center ui-gap-1.5">
+                    <WarningIcon className="ui-text-amber-600 ui-w-5 ui-h-5" />
+                    <span className="ui-text-amber-600 ui-font-semibold ui-text-body-lg">
+                      Potential Security Risk
+                    </span>
                   </div>
-                </div>
-                <div className="ui-mb-4 ui-pl-1">
-                  <Checkbox
-                    variant="warning"
-                    checked={urlMismatchConfirmed}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      // Only allow changing if not in progress or if there's an error
-                      if (!inProgress || grantError) {
-                        setUrlMismatchConfirmed(e.target.checked);
-                        // Collapse the security risk card when confirmed
-                        if (e.target.checked) {
-                          setSecurityRiskCollapsed(true);
-                        }
-                      }
-                    }}
-                    disabled={inProgress && !grantError}
-                    label="Confirm you want to continue"
+                  <ChevronDownIcon
+                    isUp={!securityRiskCollapsed}
+                    className="ui-h-5 ui-w-5 ui-text-amber-600"
                   />
-                </div>
-                {grantError && (
-                  <div className="ui-w-full ui-mb-4 ui-p-4 ui-bg-red-500/10 ui-border ui-border-red-500/20 ui-rounded-xl">
-                    <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
-                      <WarningIcon className="ui-text-red-500 ui-w-4 ui-h-4" />
-                      <span className="ui-text-red-500 ui-font-semibold ui-text-sm">
-                        Grant Failed
-                      </span>
+                </button>
+                {!securityRiskCollapsed && (
+                  <div className="ui-mt-2.5">
+                    <div className="ui-text-amber-700 ui-text-body ui-mb-1.5">
+                      The URL you are connecting to:
                     </div>
-                    <div className="ui-text-red-400 ui-text-sm">
-                      {grantError}
+                    <div className="ui-block ui-font-mono ui-text-text-primary ui-text-body ui-font-bold ui-mb-2.5 ui-bg-amber-100 ui-px-1.5 ui-py-1 ui-rounded">
+                      {getDomainAndProtocol(redirect_uri)}
                     </div>
-                  </div>
-                )}
-                <BaseButton
-                  className="ui-w-full"
-                  disabled={
-                    inProgress ||
-                    !client ||
-                    isTreasuryQueryLoading ||
-                    inCheckProgress ||
-                    !urlMismatchConfirmed ||
-                    retryCooldown > 0
-                  }
-                  onClick={() => {
-                    setGrantError(null);
-                    setRetryCooldown(0);
-                    grant();
-                  }}
-                >
-                  {inProgress ? (
-                    <SpinnerV2 size="sm" color="black" />
-                  ) : retryCooldown > 0 ? (
-                    `RETRY IN ${retryCooldown}s`
-                  ) : grantError ? (
-                    "RETRY"
-                  ) : (
-                    "ACCEPT AND CONTINUE"
-                  )}
-                </BaseButton>
-              </>
-            ) : (
-              <>
-                {grantError && (
-                  <div className="ui-w-full ui-mb-4 ui-p-4 ui-bg-red-500/10 ui-border ui-border-red-500/20 ui-rounded-xl">
-                    <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
-                      <WarningIcon className="ui-text-red-500 ui-w-4 ui-h-4" />
-                      <span className="ui-text-red-500 ui-font-semibold ui-text-sm">
-                        Grant Failed
-                      </span>
+                    <div className="ui-text-amber-700 ui-text-body ui-mb-1.5">
+                      does not match the URL provided by the app developer:
                     </div>
-                    <div className="ui-text-red-400 ui-text-sm">
-                      {grantError}
+                    <div className="ui-block ui-font-mono ui-text-text-primary ui-text-body ui-font-bold ui-mb-2.5 ui-bg-amber-100 ui-px-1.5 ui-py-1 ui-rounded">
+                      {getDomainAndProtocol(treasuryParams.redirect_url)}
+                    </div>
+                    <div className="ui-text-amber-600 ui-text-caption">
+                      Proceed with caution, this could be a malicious link.
                     </div>
                   </div>
                 )}
-                <BaseButton
-                  className="ui-w-full"
-                  disabled={
-                    inProgress ||
-                    !client ||
-                    isTreasuryQueryLoading ||
-                    inCheckProgress ||
-                    retryCooldown > 0
+              </div>
+            </div>
+            <div className="ui-mb-2.5 ui-pl-1">
+              <Checkbox
+                variant="warning"
+                checked={urlMismatchConfirmed}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  if (!inProgress || grantError) {
+                    setUrlMismatchConfirmed(e.target.checked);
+                    if (e.target.checked) {
+                      setSecurityRiskCollapsed(true);
+                    }
                   }
-                  onClick={() => {
-                    setGrantError(null);
-                    setRetryCooldown(0);
-                    grant();
-                  }}
-                >
-                  {inProgress ? (
-                    <SpinnerV2 size="sm" color="black" />
-                  ) : retryCooldown > 0 ? (
-                    `RETRY IN ${retryCooldown}s`
-                  ) : grantError ? (
-                    "RETRY"
-                  ) : (
-                    "ACCEPT AND CONTINUE"
-                  )}
-                </BaseButton>
-              </>
-            )}
-            <BaseButton variant="destructive" onClick={handleDeny}>
-              DENY ACCESS
-            </BaseButton>
-            <BaseButton variant="text" size="text" onClick={xionDisconnect}>
-              SWITCH ACCOUNT
-            </BaseButton>
-          </DialogFooter>
-        </>
-      )}
-    </div>
-  );
+                }}
+                disabled={inProgress && !grantError}
+                label="Confirm you want to continue"
+              />
+            </div>
+          </>
+        )}
+
+        {/* Actions */}
+        <div className="ui-mt-2.5 ui-flex ui-flex-col ui-items-center ui-gap-2.5">
+          <Button
+            className="ui-w-full"
+            disabled={
+              isTreasuryQueryLoading ||
+              !client ||
+              inCheckProgress ||
+              (hasUrlMismatch ? !urlMismatchConfirmed : false)
+            }
+            onClick={() => {
+              grant();
+            }}
+          >
+            Allow
+          </Button>
+          <Button variant="text" size="text" onClick={handleDeny}>
+            Deny
+          </Button>
+          <Button
+            variant="text"
+            size="text"
+            className="ui-text-caption ui-text-text-muted"
+            onClick={xionDisconnect}
+          >
+            Use a different account
+          </Button>
+        </div>
+
+        {/* Footer — Secured by XION + wallet address */}
+        <div className="ui-mt-4 ui-flex ui-flex-col ui-items-center ui-gap-1">
+          <button
+            type="button"
+            onClick={() => setShowAddress((v) => !v)}
+            className="ui-flex ui-items-center ui-gap-1 ui-transition-opacity ui-duration-fast hover:ui-opacity-70"
+          >
+            <ShieldIcon className="ui-text-amber-700" />
+            <span className="ui-text-caption ui-text-amber-700 ui-font-medium">
+              Secured by XION
+            </span>
+          </button>
+          {showAddress && account?.id && (
+            <button
+              type="button"
+              onClick={handleCopyAddress}
+              className="ui-flex ui-items-center ui-gap-1 ui-animate-fade-in ui-transition-opacity ui-duration-fast hover:ui-opacity-70"
+            >
+              <span
+                className={cn(
+                  "ui-text-caption",
+                  copied ? "ui-text-accent-trust" : "ui-text-text-muted",
+                )}
+              >
+                {copied ? "Copied!" : truncateAddress(account.id)}
+              </span>
+              {copied ? (
+                <CheckIcon color="#0D9488" />
+              ) : (
+                <CopyIcon color="#71717A" width={10} height={12} />
+              )}
+            </button>
+          )}
+        </div>
+      </>
+    );
+  };
+
+  return <div className="ui-animate-scale-in">{renderContent()}</div>;
 };

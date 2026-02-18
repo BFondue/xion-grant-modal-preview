@@ -69,9 +69,9 @@ export function StandAloneWrapper() {
   return (
     <div className="ui-w-full ui-h-svh ui-fixed ui-inset-0 ui-bg-background">
       <div className="ui-flex ui-items-center ui-justify-center ui-h-full">
-        <div className="ui-text-center ui-p-8">
+        <div className="ui-text-center ui-p-6">
           <div className="ui-animate-spin ui-w-8 ui-h-8 ui-border-2 ui-border-primary ui-border-t-transparent ui-rounded-full ui-mx-auto ui-mb-4" />
-          <p className="ui-text-gray-600">Initializing...</p>
+          <p className="ui-text-body ui-text-text-secondary">Initializing...</p>
         </div>
       </div>
     </div>

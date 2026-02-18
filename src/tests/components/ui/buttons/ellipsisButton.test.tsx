@@ -10,7 +10,7 @@ describe("EllipsisButton", () => {
   it("renders with correct default styles", async () => {
     const { container } = await render(<EllipsisButton />);
     expect(container.firstChild).toHaveClass(
-      "ui-w-7 ui-h-7 ui-rounded-full ui-border ui-border-white/60",
+      "ui-w-7 ui-h-7 ui-rounded-full ui-border ui-border-surface-border",
     );
   });
 
@@ -25,7 +25,7 @@ describe("EllipsisButton", () => {
   it("renders three dots", async () => {
     const { container } = await render(<EllipsisButton />);
     const dots = container.getElementsByClassName(
-      "ui-bg-white/60 ui-rounded-full",
+      "ui-bg-text-secondary ui-rounded-full",
     );
     expect(dots).toHaveLength(3);
   });
@@ -44,6 +44,6 @@ describe("EllipsisButton", () => {
   it("applies hover styles correctly", async () => {
     const { container } = await render(<EllipsisButton />);
     const button = container.firstChild as HTMLElement;
-    expect(button).toHaveClass("hover:ui-bg-white/10");
+    expect(button).toHaveClass("hover:ui-bg-surface-page");
   });
 });

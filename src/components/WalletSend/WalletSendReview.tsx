@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -56,7 +56,7 @@ export function WalletSendReview({
 
   return (
     <>
-      <div className="ui-p-0 ui-flex ui-flex-col ui-gap-8 ui-max-h-full ui-h-full">
+      <div className="ui-p-0 ui-flex ui-flex-col ui-gap-6 ui-max-h-full ui-h-full">
         <DialogHeader>
           <DialogTitle>Review</DialogTitle>
           <DialogDescription>
@@ -72,22 +72,22 @@ export function WalletSendReview({
           />
         )}
 
-        <div className="ui-flex ui-flex-col ui-gap-8">
+        <div className="ui-flex ui-flex-col ui-gap-6">
           <div className="ui-h-[1px] ui-w-full ui-bg-border" />
 
           <div className="ui-flex ui-flex-col ui-gap-6">
-            <div className="ui-flex ui-flex-col ui-gap-3">
-              <p className="ui-w-full ui-text-center ui-text-sm ui-font-bold ui-leading-[16px] ui-text-secondary-text">
+            <div className="ui-flex ui-flex-col ui-gap-2.5">
+              <p className="ui-w-full ui-text-center ui-text-label ui-text-secondary-text">
                 Transfer Amount
               </p>
-              <div className="ui-flex ui-flex-col ui-gap-2">
+              <div className="ui-flex ui-flex-col ui-gap-2.5">
                 <p className="ui-w-full ui-text-center ui-text-[40px] ui-leading-none ui-font-bold">
                   {sendAmount}{" "}
                   <span className="ui-text-[40px] ui-leading-none">
                     {selectedCurrency.symbol.toUpperCase()}
                   </span>
                 </p>
-                <p className="ui-w-full ui-text-center ui-text-sm ui-text-secondary-text">
+                <p className="ui-w-full ui-text-center ui-text-body ui-text-secondary-text">
                   ${(Number(sendAmount) * selectedCurrency.price).toFixed(2)}{" "}
                   USD
                 </p>
@@ -98,16 +98,16 @@ export function WalletSendReview({
           <div className="ui-h-[1px] ui-w-full ui-bg-border" />
         </div>
 
-        <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
-          <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
-            <h5 className="ui-text-sm">From</h5>
+        <div className="ui-flex ui-flex-col ui-gap-4 ui-p-4 ui-rounded-lg ui-bg-surface-page">
+          <div className="ui-flex ui-items-center ui-justify-between ui-gap-1.5">
+            <h5 className="ui-text-body">From</h5>
             <InteractiveTooltip
               content={
                 <a
                   href={getExplorerAddressUrl(account.id)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
+                  className="ui-text-body ui-text-text-secondary hover:ui-underline ui-inline-block"
                 >
                   <span className="ui-break-all ui-inline">{account.id}</span>
                   <ExternalLinkIcon
@@ -117,21 +117,21 @@ export function WalletSendReview({
                 </a>
               }
             >
-              <p className="ui-text-sm ui-font-bold">
+              <p className="ui-text-label">
                 {truncateAddress(account.id, 8, 8)}
               </p>
             </InteractiveTooltip>
           </div>
 
-          <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
-            <h5 className="ui-text-sm">To</h5>
+          <div className="ui-flex ui-items-center ui-justify-between ui-gap-1.5">
+            <h5 className="ui-text-body">To</h5>
             <InteractiveTooltip
               content={
                 <a
                   href={getExplorerAddressUrl(recipientAddress)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ui-text-sm ui-text-[#D1D5DB] hover:ui-underline ui-inline-block"
+                  className="ui-text-body ui-text-text-secondary hover:ui-underline ui-inline-block"
                 >
                   <span className="ui-break-all ui-inline">
                     {recipientAddress}
@@ -143,16 +143,16 @@ export function WalletSendReview({
                 </a>
               }
             >
-              <p className="ui-text-sm ui-font-bold">
+              <p className="ui-text-label">
                 {truncateAddress(recipientAddress, 8, 8)}
               </p>
             </InteractiveTooltip>
           </div>
 
           {userMemo && (
-            <div className="ui-flex ui-items-start ui-justify-between ui-gap-2 ui-flex-wrap">
-              <h5 className="ui-text-sm">Memo</h5>
-              <p className="ui-text-sm ui-font-bold ui-max-w-[50%] ui-break-words ui-text-end">
+            <div className="ui-flex ui-items-start ui-justify-between ui-gap-1.5 ui-flex-wrap">
+              <h5 className="ui-text-body">Memo</h5>
+              <p className="ui-text-label ui-max-w-[50%] ui-break-words ui-text-end">
                 {userMemo}
               </p>
             </div>
@@ -161,10 +161,10 @@ export function WalletSendReview({
 
         {/* USDC on Xion is not supported by exchanges, the below renders a small warning message for the user */}
         {selectedCurrency.symbol === "USDC" && (
-          <div className="ui-w-full ui-p-4 ui-bg-[#2d1600] ui-border ui-border-[#ff9800] ui-rounded-xl">
-            <div className="ui-flex ui-items-center ui-gap-2">
-              <WarningIcon className="ui-h-5 ui-w-5 ui-text-[#ff9800] ui-flex-shrink-0" />
-              <p className="ui-text-sm ui-font-medium ui-text-[#ffb74d] ui-text-center">
+          <div className="ui-w-full ui-p-4 ui-bg-amber-50 ui-border ui-border-amber-400 ui-rounded-xl">
+            <div className="ui-flex ui-items-center ui-gap-1.5">
+              <WarningIcon className="ui-h-5 ui-w-5 ui-text-amber-600 ui-flex-shrink-0" />
+              <p className="ui-text-body ui-font-medium ui-text-amber-700 ui-text-center">
                 Centralized exchanges may not support this type of asset. Avoid
                 transferring to centralized exchanges.
               </p>
@@ -172,8 +172,8 @@ export function WalletSendReview({
           </div>
         )}
 
-        <div className="ui-flex ui-gap-3">
-          <BaseButton
+        <div className="ui-flex ui-gap-2.5">
+          <Button
             variant="secondary"
             size="icon-large"
             className={cn("ui-group/basebutton", {
@@ -183,17 +183,17 @@ export function WalletSendReview({
             disabled={isLoading}
           >
             <div className="ui-flex ui-items-center ui-justify-center">
-              <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
-              <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
+              <ChevronRightIcon className="ui-fill-text-secondary ui-rotate-180 group-hover/basebutton:ui-fill-text-primary" />
+              <ChevronRightIcon className="ui-fill-text-secondary ui-rotate-180 group-hover/basebutton:ui-fill-text-primary" />
             </div>
-          </BaseButton>
-          <BaseButton
+          </Button>
+          <Button
             disabled={isLoading}
             onClick={handleProceedClick}
             className="ui-w-full"
           >
             {isLoading ? <SpinnerV2 size="sm" color="black" /> : "CONFIRM"}
-          </BaseButton>
+          </Button>
         </div>
       </div>
     </>
