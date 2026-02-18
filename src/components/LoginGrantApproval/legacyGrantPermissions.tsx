@@ -20,9 +20,9 @@ export function LegacyGrantPermissions({
   return (
     <>
       {contracts && contracts.length >= 1 ? (
-        <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
-          <span className="ui-mr-2">
-            <CheckIcon color="white" />
+        <li className="ui-flex ui-items-baseline ui-text-body ui-mb-4">
+          <span className="ui-mr-1.5">
+            <CheckIcon color="#111827" />
           </span>
           <div className="ui-flex ui-flex-col">
             <div className="ui-flex ui-items-center">
@@ -30,14 +30,14 @@ export function LegacyGrantPermissions({
 
               <button
                 onClick={toggleContractsList}
-                className="ui-ml-2 ui-cursor-pointer"
+                className="ui-ml-1.5 ui-cursor-pointer"
               >
                 <ChevronDownIcon isUp={isContractsOpen} />
               </button>
             </div>
             <div className="ui-max-h-96 ui-overflow-y-scroll">
               {isContractsOpen && (
-                <ul className="ui-list-disc ui-mt-2 ui-ml-4 ui-transition-all">
+                <ul className="ui-list-disc ui-mt-1.5 ui-ml-4 ui-transition-all">
                   {contracts.map((contract, index) => (
                     <li key={index}>
                       <p className="ui-break-words ui-max-w-xs">
@@ -54,13 +54,13 @@ export function LegacyGrantPermissions({
         </li>
       ) : null}
       {stake ? (
-        <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
-          <span className="ui-mr-2">
-            <CheckIcon color="white" />
+        <li className="ui-flex ui-items-baseline ui-text-body ui-mb-4">
+          <span className="ui-mr-1.5">
+            <CheckIcon color="#111827" />
           </span>
           <div className="ui-flex ui-flex-col">
             Permission to manage staking operations
-            <ul className="ui-list-disc ui-mt-2 ui-ml-4">
+            <ul className="ui-list-disc ui-mt-1.5 ui-ml-4">
               <li>Stake Tokens</li>
               <li>Withdraw Staking Rewards</li>
               <li>Manage Unbonding</li>
@@ -69,9 +69,9 @@ export function LegacyGrantPermissions({
         </li>
       ) : null}
       {bank && bank.length >= 1 ? (
-        <li className="ui-flex ui-items-baseline ui-text-sm ui-mb-4">
-          <span className="ui-mr-2">
-            <CheckIcon color="white" />
+        <li className="ui-flex ui-items-baseline ui-text-body ui-mb-4">
+          <span className="ui-mr-1.5">
+            <CheckIcon color="#111827" />
           </span>
           <div>
             Permission to send tokens with a spend limit of{" "}
@@ -84,9 +84,9 @@ export function LegacyGrantPermissions({
           </div>
         </li>
       ) : null}
-      <li className="ui-flex ui-items-baseline ui-text-sm">
-        <span className="ui-mr-2">
-          <CheckIcon color="white" />
+      <li className="ui-flex ui-items-baseline ui-text-body">
+        <span className="ui-mr-1.5">
+          <CheckIcon color="#111827" />
         </span>
         Log you in to their app
       </li>

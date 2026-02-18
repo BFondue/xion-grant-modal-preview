@@ -11,7 +11,7 @@ const FooterLogin = () => {
         </span>
         <a
           href="https://burnt.com/terms-and-conditions"
-          className="ui-pl-1 ui-text-white ui-underline ui-font-bold"
+          className="ui-pl-1 ui-text-text-primary ui-underline ui-font-bold"
         >
           Disclaimer
         </a>
@@ -35,7 +35,7 @@ const FooterLogin = () => {
             href="https://burnt.com/terms-and-conditions"
             className="ui-w-[70px] ui-h-[24px] sm:ui-w-[108px] sm:ui-h-[39px]"
           >
-            <img src={xionLogo} alt="XION Logo" width="108" height="39" />
+            <img src={xionLogo} alt="XION Logo" width="108" height="39" className="ui-brightness-0" />
           </a>
         </div>
       </div>

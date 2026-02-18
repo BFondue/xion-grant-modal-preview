@@ -3,11 +3,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../utils/classname-util";
 
 const checkboxVariants = cva(
-  "ui-w-4 ui-h-4 ui-rounded ui-border ui-flex ui-items-center ui-justify-center ui-transition-colors ui-duration-200 focus-visible:ui-outline-none focus-visible:ui-ring-2 focus-visible:ui-ring-white focus-visible:ui-ring-offset-2 focus-visible:ui-ring-offset-black",
+  "ui-w-4 ui-h-4 ui-rounded ui-border ui-flex ui-items-center ui-justify-center ui-transition-colors ui-duration-200 focus-visible:ui-outline-none focus-visible:ui-ring-2 focus-visible:ui-ring-cta focus-visible:ui-ring-offset-2 focus-visible:ui-ring-offset-white",
   {
     variants: {
       variant: {
-        default: "ui-border-white",
+        default: "ui-border-gray-400",
         warning: "ui-border-warning focus-visible:ui-ring-warning",
         destructive: "ui-border-destructive focus-visible:ui-ring-destructive",
       },
@@ -23,7 +23,7 @@ const checkmarkVariants = cva(
   {
     variants: {
       variant: {
-        default: "ui-bg-white",
+        default: "ui-bg-cta",
         warning: "ui-bg-warning",
         destructive: "ui-bg-destructive",
       },

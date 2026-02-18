@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -96,7 +96,7 @@ export const AddZKEmail: React.FC<AddZKEmailProps> = ({
     : "Processing verification...";
 
   return (
-    <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center">
+    <div className="ui-flex ui-flex-col ui-gap-10 ui-items-center">
       <DialogHeader>
         <DialogTitle>
           {phase === "error" && displayError?.includes("already added")
@@ -133,13 +133,13 @@ export const AddZKEmail: React.FC<AddZKEmailProps> = ({
       {phase === "waiting" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
           <div className="ui-p-4 ui-bg-blue-900/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-w-full">
-            <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
+            <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
               <div className="ui-w-2 ui-h-2 ui-bg-blue-500 ui-rounded-full ui-animate-pulse"></div>
-              <p className="ui-text-sm ui-font-medium ui-text-blue-400">
+              <p className="ui-text-label ui-text-blue-400">
                 Verification email sent!
               </p>
             </div>
-            <p className="ui-text-xs ui-text-blue-300">
+            <p className="ui-text-caption ui-text-blue-300">
               Please check your email and reply &quot;confirm&quot; to the
               verification email to continue. The zk-proof will be generated
               automatically.
@@ -151,9 +151,9 @@ export const AddZKEmail: React.FC<AddZKEmailProps> = ({
       {phase === "polling" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
           <div className="ui-p-4 ui-bg-yellow-900/20 ui-border ui-border-yellow-500/50 ui-rounded-lg ui-w-full">
-            <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
-              <SpinnerV2 size="sm" color="white" />
-              <p className="ui-text-sm ui-font-medium ui-text-yellow-400">
+            <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
+              <SpinnerV2 size="sm" color="black" />
+              <p className="ui-text-label ui-text-yellow-400">
                 {currentStatus === ZK_EMAIL_STATUS.email_sent_awaiting_reply
                   ? "Waiting for email reply..."
                   : currentStatus === ZK_EMAIL_STATUS.email_replied
@@ -161,7 +161,7 @@ export const AddZKEmail: React.FC<AddZKEmailProps> = ({
                     : "Processing verification..."}
               </p>
             </div>
-            <p className="ui-text-xs ui-text-yellow-300">
+            <p className="ui-text-caption ui-text-yellow-300">
               {currentStatus === ZK_EMAIL_STATUS.email_sent_awaiting_reply
                 ? 'Please check your email and reply "confirm" to continue.'
                 : currentStatus === ZK_EMAIL_STATUS.email_replied
@@ -175,13 +175,13 @@ export const AddZKEmail: React.FC<AddZKEmailProps> = ({
       {phase === "success" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
           <div className="ui-p-4 ui-bg-green-900/20 ui-border ui-border-green-500/50 ui-rounded-lg ui-w-full">
-            <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
+            <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
               <div className="ui-w-2 ui-h-2 ui-bg-green-500 ui-rounded-full"></div>
-              <p className="ui-text-sm ui-font-medium ui-text-green-400">
+              <p className="ui-text-label ui-text-green-400">
                 Proof generated successfully!
               </p>
             </div>
-            <p className="ui-text-xs ui-text-green-300">
+            <p className="ui-text-caption ui-text-green-300">
               Your email has been verified and the zero-knowledge proof is
               ready. The authenticator has been added to your account.
             </p>
@@ -192,44 +192,44 @@ export const AddZKEmail: React.FC<AddZKEmailProps> = ({
       {phase === "error" &&
         displayError &&
         !displayError.includes("already added") && (
-          <div className="ui-p-3 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg ui-w-full">
-            <p className="ui-text-sm ui-text-red-400">{displayError}</p>
+          <div className="ui-p-2.5 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg ui-w-full">
+            <p className="ui-text-body ui-text-red-400">{displayError}</p>
           </div>
         )}
 
-      <div className="ui-flex ui-gap-3 ui-w-full">
+      <div className="ui-flex ui-gap-2.5 ui-w-full">
         {phase === "success" || phase === "error" ? (
-          <BaseButton
+          <Button
             variant="secondary"
             onClick={onClose}
             className="ui-flex-1"
           >
             CLOSE
-          </BaseButton>
+          </Button>
         ) : (
           <>
-            <BaseButton
+            <Button
               variant="secondary"
               onClick={onClose}
               className="ui-flex-1"
               disabled={isProcessing}
             >
               CANCEL
-            </BaseButton>
+            </Button>
             {phase === "form" && (
-              <BaseButton
+              <Button
                 className="ui-flex-1"
                 onClick={handleSubmit}
                 disabled={!email || isProcessing}
               >
                 SEND VERIFICATION EMAIL
-              </BaseButton>
+              </Button>
             )}
           </>
         )}
       </div>
 
-      <div className="ui-text-center ui-text-xs ui-text-gray-500">
+      <div className="ui-text-center ui-text-caption ui-text-gray-500">
         <p>
           This process uses zero-knowledge proofs to verify your email without
           revealing any sensitive information.

@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -15,19 +15,19 @@ interface LoadingProps {
 
 export const Loading = ({ header, message }: LoadingProps) => {
   return (
-    <div className="ui-flex ui-flex-col ui-justify-center ui-items-center ui-gap-12 ui-w-full">
+    <div className="ui-flex ui-flex-col ui-justify-center ui-items-center ui-gap-10 ui-w-full">
       <DialogHeader>
         <DialogTitle>{header}</DialogTitle>
         <DialogDescription>{message}</DialogDescription>
       </DialogHeader>
-      <div className="ui-flex ui-w-full ui-items-center ui-justify-center ui-text-white">
-        <SpinnerV2 size="lg" color="white" />
+      <div className="ui-flex ui-w-full ui-items-center ui-justify-center ui-text-text-primary">
+        <SpinnerV2 size="lg" color="black" />
       </div>
 
       <DialogFooter>
-        <BaseButton className="ui-w-full" disabled={true}>
+        <Button className="ui-w-full" disabled={true}>
           SET UP AUTHENTICATOR
-        </BaseButton>
+        </Button>
       </DialogFooter>
     </div>
   );

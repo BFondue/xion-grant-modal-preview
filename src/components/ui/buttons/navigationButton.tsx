@@ -17,9 +17,9 @@ const NavigationButton = React.forwardRef<
       ref={ref}
       {...props}
       className={cn(
-        "ui-h-[55px] ui-bg-white/[0.05] ui-text-white ui-border ui-rounded-lg ui-px-4 ui-py-3 ui-text-base ui-font-bold",
+        "ui-h-[55px] ui-bg-surface-page ui-text-text-primary ui-border ui-rounded-lg ui-px-4 ui-py-3 ui-text-base ui-font-bold",
         "ui-flex ui-items-center ui-justify-start ui-gap-3",
-        "hover:ui-bg-white/[0.15] ui-transition-colors ui-duration-100 ui-ease-in-out",
+        "hover:ui-bg-surface-border ui-transition-colors ui-duration-100 ui-ease-in-out",
         { "ui-justify-between": subLabel },
         className,
       )}
@@ -35,7 +35,7 @@ const NavigationButton = React.forwardRef<
 
       <div className="ui-flex ui-items-center ui-gap-3">
         {subLabel && subLabel}
-        {rightArrow && <ChevronRightIcon color="white" />}
+        {rightArrow && <ChevronRightIcon color="#111827" />}
       </div>
     </button>
   );

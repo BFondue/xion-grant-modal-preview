@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -65,7 +65,7 @@ export function AddEmail({
   }
 
   return (
-    <div className="ui-flex ui-flex-col ui-gap-12 ui-items-center">
+    <div className="ui-flex ui-flex-col ui-gap-10 ui-items-center">
       <DialogHeader>
         <DialogTitle>
           {error && error.includes("already added")
@@ -90,29 +90,29 @@ export function AddEmail({
             onChange={(e) => setEmail(e.target.value)}
             className="ui-w-full"
           />
-          <BaseButton
+          <Button
             className="ui-w-full"
             onClick={handleEmail}
             disabled={!email}
           >
             SEND VERIFICATION CODE
-          </BaseButton>
+          </Button>
         </>
       ) : error && error.includes("already added") ? (
         // Show dedicated error screen for duplicate email
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
-          <div className="ui-flex ui-flex-col ui-gap-2 ui-text-center">
+          <div className="ui-flex ui-flex-col ui-gap-1.5 ui-text-center">
             <p className="ui-text-destructive ui-font-semibold">
               Email Already Added
             </p>
-            <p className="ui-text-secondary-text ui-text-sm">
+            <p className="ui-text-secondary-text ui-text-body">
               The email <span className="ui-font-semibold">{savedEmail}</span>{" "}
               is already linked as an authenticator for this account.
             </p>
           </div>
-          <BaseButton onClick={onClose || (() => {})} className="ui-w-full">
+          <Button onClick={onClose || (() => {})} className="ui-w-full">
             CLOSE
-          </BaseButton>
+          </Button>
         </div>
       ) : (
         // Show OTP form for normal flow

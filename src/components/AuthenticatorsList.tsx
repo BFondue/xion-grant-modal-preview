@@ -64,7 +64,7 @@ export const AuthenticatorsList: React.FC<AuthenticatorsListProps> = ({
   // Handle empty state
   if (!authenticators || authenticators.length === 0) {
     return (
-      <div className="ui-flex ui-items-center ui-justify-center ui-px-4 ui-py-8 ui-text-secondary-text">
+      <div className="ui-flex ui-items-center ui-justify-center ui-px-4 ui-py-6 ui-text-secondary-text">
         No authenticators configured
       </div>
     );
@@ -80,7 +80,7 @@ export const AuthenticatorsList: React.FC<AuthenticatorsListProps> = ({
   }
 
   return (
-    <div className="ui-flex ui-flex-col ui-gap-5">
+    <div className="ui-flex ui-flex-col ui-gap-4">
       {sortedAuthenticators.map((authenticator) => {
         const userId = extractUserIdFromAuthenticator(
           authenticator.authenticator,

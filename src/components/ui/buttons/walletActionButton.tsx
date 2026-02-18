@@ -21,13 +21,13 @@ const WalletActionButton = React.forwardRef<
       ref={ref}
       {...props}
       className={cn(
-        "ui-flex ui-flex-col ui-items-start ui-gap-3 ui-bg-black/50 ui-rounded-xl ui-p-3 ui-w-full ui-max-w-[150px]",
-        "hover:ui-bg-black/70 ui-transition-colors ui-duration-200",
+        "ui-flex ui-flex-col ui-items-start ui-gap-3 ui-bg-surface-page ui-rounded-xl ui-p-3 ui-w-full ui-max-w-[150px]",
+        "hover:ui-bg-surface-border ui-transition-colors ui-duration-200",
         className,
       )}
     >
       {typeIcon}
-      <p className="ui-text-white ui-text-sm ui-leading-4 ui-font-bold">
+      <p className="ui-text-text-primary ui-text-sm ui-leading-4 ui-font-bold">
         {typeText}
       </p>
     </button>

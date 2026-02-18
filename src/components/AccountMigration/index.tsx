@@ -2,7 +2,8 @@ import { useContext, useState } from "react";
 import { MsgMigrateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { Uint53 } from "@cosmjs/math";
 import { toUtf8 } from "@cosmjs/encoding";
-import { Spinner, BaseButton } from "../ui";
+import { Button } from "../ui";
+import SpinnerV2 from "../ui/icons/SpinnerV2";
 import { AuthContext, AuthContextProps } from "../AuthContext";
 import { useSmartAccount, useSigningClient } from "../../hooks";
 import { validateFeeGrant } from "@burnt-labs/account-management";
@@ -103,30 +104,30 @@ export const AccountMigration = ({
 
   if (inProgress) {
     return (
-      <div className="ui-w-full ui-min-h-[100px] ui-flex ui-items-center ui-justify-center ui-text-white">
-        <Spinner />
+      <div className="ui-w-full ui-min-h-[100px] ui-flex ui-items-center ui-justify-center ui-text-text-primary">
+        <SpinnerV2 size="lg" color="black" />
       </div>
     );
   }
 
   return (
     <>
-      <div className="ui-w-full ui-rounded-xl ui-bg-transparent ui-border ui-border-dashed ui-border-white/20 ui-p-4 ui-flex ui-flex-col sm:ui-flex-row ui-gap-4 sm:ui-justify-between ui-items-center">
+      <div className="ui-w-full ui-rounded-xl ui-bg-transparent ui-border ui-border-dashed ui-border-surface-border ui-p-4 ui-flex ui-flex-col sm:ui-flex-row ui-gap-4 sm:ui-justify-between ui-items-center">
         <div>
-          <h2 className="ui-text-xl ui-font-bold">
+          <h2 className="ui-text-title">
             Account Migration Available!
           </h2>
-          <p className="ui-text-secondary-text ui-text-sm">
+          <p className="ui-text-secondary-text ui-text-body">
             New features and security improvements.
           </p>
         </div>
-        <BaseButton
+        <Button
           size="small"
           onClick={() => setDialogOpen(true)}
           className="ui-w-full sm:ui-w-auto"
         >
           LEARN MORE
-        </BaseButton>
+        </Button>
       </div>
 
       <MigrationDialog

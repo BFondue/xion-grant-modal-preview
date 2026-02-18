@@ -1,10 +1,10 @@
 import React from "react";
 
-const AnimatedCheckmark = () => {
+const AnimatedX = () => {
   return (
     <div
       className="ui-flex ui-items-center ui-justify-center ui-w-24 ui-h-24"
-      aria-label="Animated checkmark"
+      aria-label="Animated error"
       role="img"
     >
       <div
@@ -16,7 +16,7 @@ const AnimatedCheckmark = () => {
         }}
       >
         <svg
-          data-testid="animated-check-icon"
+          data-testid="animated-x-icon"
           viewBox="0 0 100 100"
           className="ui-w-full ui-h-full"
           xmlns="http://www.w3.org/2000/svg"
@@ -26,7 +26,7 @@ const AnimatedCheckmark = () => {
             cy="50"
             r="45"
             fill="none"
-            stroke="#2563EB"
+            stroke="#EF4444"
             strokeWidth="10"
             style={{
               strokeDasharray: "283",
@@ -36,17 +36,29 @@ const AnimatedCheckmark = () => {
             }}
           />
           <path
-            d="M30 50L45 65L70 35"
+            d="M35 35L65 65"
             fill="none"
-            stroke="#2563EB"
+            stroke="#EF4444"
             strokeWidth="10"
             strokeLinecap="round"
-            strokeLinejoin="round"
             style={{
-              strokeDasharray: "75",
-              strokeDashoffset: "75",
+              strokeDasharray: "43",
+              strokeDashoffset: "43",
               animation:
                 "drawCheck 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards",
+            }}
+          />
+          <path
+            d="M65 35L35 65"
+            fill="none"
+            stroke="#EF4444"
+            strokeWidth="10"
+            strokeLinecap="round"
+            style={{
+              strokeDasharray: "43",
+              strokeDashoffset: "43",
+              animation:
+                "drawCheck 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.55s forwards",
             }}
           />
         </svg>
@@ -68,7 +80,7 @@ const AnimatedCheckmark = () => {
               stroke-dashoffset: 0;
             }
           }
-          
+
           @keyframes drawCheck {
             to {
               stroke-dashoffset: 0;
@@ -80,4 +92,4 @@ const AnimatedCheckmark = () => {
   );
 };
 
-export default AnimatedCheckmark;
+export default AnimatedX;

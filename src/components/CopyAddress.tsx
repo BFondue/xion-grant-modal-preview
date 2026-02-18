@@ -30,12 +30,12 @@ export function CopyAddress({
     <div
       onClick={copyXionAddress}
       className={cn(
-        "ui-inline-flex ui-h-fit ui-cursor-pointer ui-items-center ui-gap-1 ui-px-[6px] ui-py-[3px] ui-bg-white/10 ui-rounded-[4px] hover:ui-bg-white/15 ui-transition-colors",
+        "ui-inline-flex ui-h-fit ui-cursor-pointer ui-items-center ui-gap-1 ui-px-[6px] ui-py-[3px] ui-bg-surface-page ui-rounded-[4px] hover:ui-bg-gray-200 ui-transition-colors",
         "ui-text-xs ui-font-bold ui-leading-[14px]",
         className,
       )}
     >
-      <p className="ui-text-white/80">
+      <p className="ui-text-text-primary">
         <span className="ui-hidden sm:ui-inline">
           {fullAddress ? xionAddress : truncateAddress(xionAddress)}
         </span>
@@ -44,10 +44,10 @@ export function CopyAddress({
         </span>
       </p>
       {copied ? (
-        <CheckIcon color="white" />
+        <CheckIcon color="#111827" />
       ) : (
         <CopyIcon
-          color="rgba(255, 255, 255, 0.7)"
+          color="rgba(107, 114, 128, 1)"
           height={iconHeight}
           width={iconWidth}
         />
