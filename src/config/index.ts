@@ -140,7 +140,7 @@ export const TURNSTILE_SITE_KEY =
   import.meta.env.VITE_TURNSTILE_SITE_KEY || networkConfig.turnstileSiteKey;
 
 // Allowed email host for ZK-Email authentication
-export const ZK_EMAIL_HOST = import.meta.env.VITE_ZK_EMAIL_HOST || ""
+export const ZK_EMAIL_RECEIVER_EMAIL_ID = import.meta.env.VITE_ZK_EMAIL_RECEIVER_EMAIL_ID || networkConfig.zkEmailReceiverEmailId;
 
 // =============================================================================
 // Indexer Configuration
