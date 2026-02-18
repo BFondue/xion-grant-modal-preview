@@ -18,9 +18,8 @@ import React, {
 import { stytchClient as stytchClientSingleton } from "../../hooks/useStytchClient";
 import { get } from "@github/webauthn-json/browser-ponyfill";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   Input,
@@ -869,26 +868,12 @@ export const LoginScreen = () => {
 
   if (isRedirectingToOAuth) {
     return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Verifying Login</DialogTitle>
-          <DialogDescription>
-            Please complete the login in the popup window.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="ui-flex ui-items-center ui-justify-center ui-my-20">
-          <SpinnerV2 size="lg" color="white" />
-        </div>
-        <DialogFooter>
-          <img
-            src={xionLogo}
-            alt="XION Logo"
-            width="90"
-            height="32"
-            className="ui-mx-auto"
-          />
-        </DialogFooter>
-      </>
+      <div className="ui-animate-scale-in ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
+        <SpinnerV2 size="lg" color="black" />
+        <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">Verifying Login</h2>
+        <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">Please complete the login in the popup window.</p>
+        <img src={xionLogo} alt="XION Logo" width="90" height="32" className="ui-mx-auto ui-mt-10 ui-brightness-0" />
+      </div>
     );
   }
 
@@ -901,7 +886,7 @@ export const LoginScreen = () => {
           onError={handleZKEmailError}
         />
       ) : isOnOtpStep ? (
-        <>
+        <div className="ui-animate-scale-in">
           <DialogHeader>
             <DialogTitle>Input 6 Digit Code</DialogTitle>
             <DialogDescription>
@@ -914,20 +899,20 @@ export const LoginScreen = () => {
             handleOtp={handleOtp}
             handleResendCode={handleEmail}
           />
-        </>
+        </div>
       ) : (
-        <>
+        <div className="ui-animate-scale-in">
           <DialogHeader>
-            <div className="ui-flex ui-flex-col ui-items-center ui-gap-2 ui-w-full">
-              <div className="ui-flex ui-items-center ui-space-x-3">
+            <div className="ui-flex ui-flex-col ui-items-center ui-gap-2.5 ui-w-full">
+              <div className="ui-flex ui-items-center ui-gap-2.5">
                 <img
                   src={xionLogo}
                   alt="XION Logo"
                   width="108"
                   height="39"
-                  className="ui-mb-2"
+                  className="ui-mb-1.5 ui-brightness-0"
                 />
-                <div className="ui-flex ui-justify-between ui-items-center ui-h-[18px] ui-bg-testnet-bg ui-px-1 ui-py-0 ui-mb-2 ui-text-testnet ui-rounded-[4px] ui-text-[10px] ui-tracking-widest">
+                <div className="ui-flex ui-justify-between ui-items-center ui-h-[18px] ui-bg-testnet-bg ui-px-1 ui-py-0 ui-mb-1.5 ui-text-testnet ui-rounded-[4px] ui-text-[10px] ui-tracking-widest">
                   {NETWORK.toUpperCase()}
                 </div>
               </div>
@@ -947,24 +932,24 @@ export const LoginScreen = () => {
                 onBlur={validateEmail}
                 onKeyDown={(e) => e.key === "Enter" && handleEmail()}
               />
-              <BaseButton
+              <Button
                 onClick={handleEmail}
                 disabled={!!emailError || isSendingEmail}
-                className={"ui-mt-2"}
+                className={"ui-mt-1.5"}
               >
                 {isSendingEmail ? (
                   <SpinnerV2 size="sm" color="black" />
                 ) : (
                   "LOG IN / SIGN UP"
                 )}
-              </BaseButton>
+              </Button>
             </div>
-            <div className="ui-flex ui-items-center ui-justify-center ui-gap-3">
+            <div className="ui-flex ui-items-center ui-justify-center ui-gap-2.5">
               <span className="ui-h-px ui-bg-border ui-w-full" />
-              <h6 className="ui-text-xs ui-text-secondary-text">OR</h6>
+              <h6 className="ui-text-caption ui-text-secondary-text">OR</h6>
               <span className="ui-h-px ui-bg-border ui-w-full" />
             </div>
-            <div className="ui-flex ui-flex-col ui-gap-2">
+            <div className="ui-flex ui-flex-col ui-gap-2.5">
               <NavigationButton
                 icon={<GoogleLogoIcon />}
                 onClick={loginWithGoogle}
@@ -990,24 +975,24 @@ export const LoginScreen = () => {
             </div>
           </div>
           {FEATURE_FLAGS.okx || FEATURE_FLAGS.metamask || FEATURE_FLAGS.zkemail ? (
-            <div className="ui-w-full ui-mb-12 sm:ui-mb-0 ui-flex ui-flex-col ui-gap-3">
+            <div className="ui-w-full ui-flex ui-flex-col ui-gap-2.5">
               <button
-                className="group ui-flex ui-w-full ui-items-center ui-gap-3"
+                className="group ui-flex ui-w-full ui-items-center ui-gap-2.5"
                 onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
               >
                 Advanced Options
                 {/* Down Caret */}
                 <ChevronRightIcon
                   className={cn(
-                    "ui-fill-white/50 ui-rotate-180 group-hover/base button:ui-fill-white",
+                    "ui-fill-text-secondary ui-rotate-180 group-hover/base button:ui-fill-text-primary",
                     showAdvanced ? "-ui-rotate-[90deg]" : "ui-rotate-90",
                   )}
                 />
               </button>
               {showAdvanced ? (
-                <div className="ui-flex ui-w-full ui-gap-2">
+                <div className="ui-flex ui-w-full ui-gap-1.5">
                   {FEATURE_FLAGS.okx ? (
-                    <BaseButton
+                    <Button
                       variant="secondary"
                       size="icon-large"
                       onClick={handleOkx}
@@ -1017,30 +1002,30 @@ export const LoginScreen = () => {
                         height={82}
                         width={50}
                         alt="OKX Logo"
-                        className="ui-min-w-7"
+                        className="ui-min-w-7 ui-brightness-0"
                       />
-                    </BaseButton>
+                    </Button>
                   ) : null}
                   {FEATURE_FLAGS.keplr ? (
-                    <BaseButton
+                    <Button
                       variant="secondary"
                       size="icon-large"
                       onClick={handleKeplr}
                     >
                       <KeplrLogo className="ui-min-w-6 ui-min-h-6" />
-                    </BaseButton>
+                    </Button>
                   ) : null}
                   {FEATURE_FLAGS.metamask ? (
-                    <BaseButton
+                    <Button
                       variant="secondary"
                       size="icon-large"
                       onClick={handleMetamask}
                     >
                       <MetamaskLogo className="ui-min-w-6 ui-min-h-6" />
-                    </BaseButton>
+                    </Button>
                   ) : null}
                   {FEATURE_FLAGS.passkey ? (
-                    <BaseButton
+                    <Button
                       variant="secondary"
                       size="icon-large"
                       onClick={getPasskey}
@@ -1050,10 +1035,10 @@ export const LoginScreen = () => {
                         BETA
                       </span>
                       <PasskeyIcon className="ui-min-w-6 ui-min-h-6" />
-                    </BaseButton>
+                    </Button>
                   ) : null}
                   {FEATURE_FLAGS.zkemail ? (
-                    <BaseButton
+                    <Button
                       variant="secondary"
                       size="icon-large"
                       onClick={() => setShowZKEmailLogin(true)}
@@ -1063,17 +1048,17 @@ export const LoginScreen = () => {
                         BETA
                       </span>
                       <ZKEmailIcon className="ui-min-w-6 ui-min-h-6" />
-                    </BaseButton>
+                    </Button>
                   ) : null}
                 </div>
               ) : null}
             </div>
           ) : null}
-        </>
+        </div>
       )}
 
       {/* Disclaimer */}
-      <div className="ui-text-xs ui-font-normal ui-leading-5 ui-text-center ui-max-w-[340px] ui-mx-auto ui-mt-4">
+      <div className="ui-text-caption ui-text-center ui-max-w-[340px] ui-mx-auto ui-mt-4">
         <span className="ui-text-secondary-text">
           By continuing, you agree to and acknowledge that you have read and
           understand the{" "}
@@ -1082,7 +1067,7 @@ export const LoginScreen = () => {
           href="https://burnt.com/terms-and-conditions"
           target="_blank"
           rel="noreferrer"
-          className="ui-text-white ui-underline ui-font-bold"
+          className="ui-text-text-primary ui-underline ui-font-bold"
         >
           Disclaimer
         </a>

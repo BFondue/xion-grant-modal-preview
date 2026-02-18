@@ -16,7 +16,7 @@ export const ZKEmailIcon: React.FC<ZKEmailIconProps> = ({ className }) => {
       aria-hidden="true"
     >
       {/* Rounded square background */}
-      <rect x="2" y="2" width="36" height="36" rx="10" fill="#0a0a0a" />
+      <rect x="2" y="2" width="36" height="36" rx="10" fill="#111827" />
 
       {/* @ symbol – outer ring */}
       <circle

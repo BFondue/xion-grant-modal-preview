@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  BaseButton,
+  Button,
 } from "../ui";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import { useState } from "react";
@@ -65,7 +65,7 @@ export function SigningModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="md:ui-max-w-2xl">
-        <div className="ui-p-0 ui-flex ui-flex-col ui-gap-8 ui-max-h-full ui-h-full">
+        <div className="ui-p-0 ui-flex ui-flex-col ui-gap-6 ui-max-h-full ui-h-full">
           <DialogHeader>
             <DialogTitle>Sign Transaction</DialogTitle>
             <DialogDescription>
@@ -81,25 +81,25 @@ export function SigningModal({
             />
           )}
 
-          <div className="ui-flex ui-flex-col ui-gap-8">
+          <div className="ui-flex ui-flex-col ui-gap-6">
             <div className="ui-h-[1px] ui-w-full ui-bg-border" />
 
             {/* Transaction Messages */}
-            <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
-              <h5 className="ui-text-sm ui-font-bold">Transaction Messages</h5>
+            <div className="ui-flex ui-flex-col ui-gap-4 ui-p-4 ui-rounded-lg ui-bg-surface-page">
+              <h5 className="ui-text-label">Transaction Messages</h5>
               {transaction.messages.map((msg: { typeUrl: string; value: unknown }, index: number) => (
-                <div key={index} className="ui-flex ui-flex-col ui-gap-2">
-                  <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
-                    <h6 className="ui-text-sm ui-text-secondary-text">Type</h6>
-                    <p className="ui-text-sm ui-font-bold ui-font-mono ui-text-xs">
+                <div key={index} className="ui-flex ui-flex-col ui-gap-1.5">
+                  <div className="ui-flex ui-items-center ui-justify-between ui-gap-1.5">
+                    <h6 className="ui-text-body ui-text-secondary-text">Type</h6>
+                    <p className="ui-text-caption ui-font-bold ui-font-mono">
                       {msg.typeUrl}
                     </p>
                   </div>
-                  <div className="ui-flex ui-flex-col ui-gap-2">
-                    <h6 className="ui-text-sm ui-text-secondary-text">
+                  <div className="ui-flex ui-flex-col ui-gap-1.5">
+                    <h6 className="ui-text-body ui-text-secondary-text">
                       Details
                     </h6>
-                    <pre className="ui-text-xs ui-font-mono ui-bg-black/30 ui-p-3 ui-rounded ui-overflow-x-auto ui-max-h-48">
+                    <pre className="ui-text-caption ui-font-mono ui-bg-gray-100 ui-p-2.5 ui-rounded ui-overflow-x-auto ui-max-h-48">
                       {JSON.stringify(msg.value, null, 2)}
                     </pre>
                   </div>
@@ -110,19 +110,19 @@ export function SigningModal({
             <div className="ui-h-[1px] ui-w-full ui-bg-border" />
 
             {/* Fee Details */}
-            <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
-              <h5 className="ui-text-sm ui-font-bold">Fee Details</h5>
+            <div className="ui-flex ui-flex-col ui-gap-4 ui-p-4 ui-rounded-lg ui-bg-surface-page">
+              <h5 className="ui-text-label">Fee Details</h5>
 
-              <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
-                <h6 className="ui-text-sm">Gas Limit</h6>
-                <p className="ui-text-sm ui-font-bold ui-font-mono">
+              <div className="ui-flex ui-items-center ui-justify-between ui-gap-1.5">
+                <h6 className="ui-text-body">Gas Limit</h6>
+                <p className="ui-text-label ui-font-mono">
                   {transaction.fee.gas}
                 </p>
               </div>
 
-              <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
-                <h6 className="ui-text-sm">Fee Amount</h6>
-                <p className="ui-text-sm ui-font-bold ui-font-mono">
+              <div className="ui-flex ui-items-center ui-justify-between ui-gap-1.5">
+                <h6 className="ui-text-body">Fee Amount</h6>
+                <p className="ui-text-label ui-font-mono">
                   {transaction.fee.amount
                     .map((a: { denom: string; amount: string }) => `${a.amount} ${a.denom.toUpperCase()}`)
                     .join(", ")}
@@ -130,9 +130,9 @@ export function SigningModal({
               </div>
 
               {transaction.fee.granter && (
-                <div className="ui-flex ui-items-center ui-justify-between ui-gap-2">
-                  <h6 className="ui-text-sm">Paid By (Treasury)</h6>
-                  <p className="ui-text-sm ui-font-bold ui-font-mono ui-text-green-400">
+                <div className="ui-flex ui-items-center ui-justify-between ui-gap-1.5">
+                  <h6 className="ui-text-body">Paid By (Treasury)</h6>
+                  <p className="ui-text-label ui-font-mono ui-text-green-400">
                     {transaction.fee.granter.slice(0, 12)}...
                     {transaction.fee.granter.slice(-8)}
                   </p>
@@ -143,10 +143,10 @@ export function SigningModal({
             {transaction.memo && (
               <>
                 <div className="ui-h-[1px] ui-w-full ui-bg-border" />
-                <div className="ui-flex ui-flex-col ui-gap-5 ui-p-5 ui-rounded-lg ui-bg-black/50">
-                  <div className="ui-flex ui-items-start ui-justify-between ui-gap-2 ui-flex-wrap">
-                    <h5 className="ui-text-sm">Memo</h5>
-                    <p className="ui-text-sm ui-font-bold ui-max-w-[70%] ui-break-words ui-text-end">
+                <div className="ui-flex ui-flex-col ui-gap-4 ui-p-4 ui-rounded-lg ui-bg-surface-page">
+                  <div className="ui-flex ui-items-start ui-justify-between ui-gap-1.5 ui-flex-wrap">
+                    <h5 className="ui-text-body">Memo</h5>
+                    <p className="ui-text-label ui-max-w-[70%] ui-break-words ui-text-end">
                       {transaction.memo}
                     </p>
                   </div>
@@ -155,19 +155,19 @@ export function SigningModal({
             )}
           </div>
 
-          <div className="ui-flex ui-gap-3">
-            <BaseButton
+          <div className="ui-flex ui-gap-2.5">
+            <Button
               variant="secondary"
               size="icon-large"
               onClick={onReject}
               disabled={isLoading}
             >
               <div className="ui-flex ui-items-center ui-justify-center">
-                <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
-                <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
+                <ChevronRightIcon className="ui-fill-text-secondary ui-rotate-180 group-hover/basebutton:ui-fill-text-primary" />
+                <ChevronRightIcon className="ui-fill-text-secondary ui-rotate-180 group-hover/basebutton:ui-fill-text-primary" />
               </div>
-            </BaseButton>
-            <BaseButton
+            </Button>
+            <Button
               onClick={handleApprove}
               className="ui-w-full"
               disabled={isLoading}
@@ -177,7 +177,7 @@ export function SigningModal({
               ) : (
                 "APPROVE & SIGN"
               )}
-            </BaseButton>
+            </Button>
           </div>
         </div>
       </DialogContent>

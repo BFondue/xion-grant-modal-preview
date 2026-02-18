@@ -1,79 +1,54 @@
-import React, { useState } from "react";
+import * as React from "react";
+import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "./icons/ChevronDown";
-import { cn } from "../../utils/classname-util";
+import { cn } from "@/utils/classname-util";
 
-interface AccordionItemProps extends Omit<
-  React.HTMLAttributes<HTMLLIElement>,
-  "title"
-> {
-  title: React.ReactNode;
-  children?: React.ReactNode;
-  icon?: React.ReactNode;
-  isFirst?: boolean;
-  isLast?: boolean;
-  expandable?: boolean;
-}
+const Accordion = AccordionPrimitive.Root;
 
-export const AccordionItem: React.FC<AccordionItemProps> = ({
-  title,
-  children,
-  icon,
-  expandable = false,
-  className,
-  ...props
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const toggleOpen = () => setIsOpen(!isOpen);
+const AccordionItem = React.forwardRef<
+  React.ComponentRef<typeof AccordionPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
+>(({ className, ...props }, ref) => (
+  <AccordionPrimitive.Item
+    ref={ref}
+    className={cn("ui-border-b", className)}
+    {...props}
+  />
+));
+AccordionItem.displayName = "AccordionItem";
 
-  return (
-    <li
+const AccordionTrigger = React.forwardRef<
+  React.ComponentRef<typeof AccordionPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
+>(({ className, children, ...props }, ref) => (
+  <AccordionPrimitive.Header className="ui-flex">
+    <AccordionPrimitive.Trigger
+      ref={ref}
       className={cn(
-        `ui-flex ui-items-baseline ui-text-base ui-overflow-x-none`,
+        "ui-flex ui-flex-1 ui-items-center ui-justify-between ui-py-4 ui-text-sm ui-font-medium ui-transition-all [&[data-state=open]>svg]:ui-rotate-180",
         className,
       )}
       {...props}
     >
-      {icon && <span className="ui-mr-2">{icon}</span>}
-      <div className="ui-flex ui-flex-col ui-w-full">
-        <div
-          className={cn(
-            "ui-flex ui-items-center ui-justify-between ui-w-full",
-            { "ui-cursor-pointer": expandable },
-          )}
-          onClick={expandable ? toggleOpen : undefined}
-        >
-          <span
-            className="ui-text-primary-text"
-            style={{
-              overflowWrap: "anywhere",
-            }}
-          >
-            {title}
-          </span>
-          {expandable && (
-            <ChevronDownIcon isUp={isOpen} className="ui-min-w-5 ui-min-h-5" />
-          )}
-        </div>
-        {isOpen && children && (
-          <div className="ui-mt-2 ui-pl-4 ui-max-h-96 ui-overflow-y-auto ui-text-sm">
-            {children}
-          </div>
-        )}
-      </div>
-    </li>
-  );
-};
+      {children}
+      <ChevronDownIcon className="ui-h-4 ui-w-4 ui-shrink-0 ui-text-secondary-text ui-transition-transform ui-duration-200" />
+    </AccordionPrimitive.Trigger>
+  </AccordionPrimitive.Header>
+));
+AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;
 
-interface AccordionProps {
-  items: AccordionItemProps[];
-}
+const AccordionContent = React.forwardRef<
+  React.ComponentRef<typeof AccordionPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <AccordionPrimitive.Content
+    ref={ref}
+    className="ui-overflow-hidden ui-text-sm data-[state=closed]:ui-animate-accordion-up data-[state=open]:ui-animate-accordion-down"
+    {...props}
+  >
+    <div className={cn("ui-pb-4 ui-pt-0", className)}>{children}</div>
+  </AccordionPrimitive.Content>
+));
+AccordionContent.displayName = AccordionPrimitive.Content.displayName;
 
-export const Accordion: React.FC<AccordionProps> = ({ items }) => {
-  return (
-    <ul className="ui-list-none ui-p-4 ui-bg-black/50 ui-rounded-lg ui-flex ui-flex-col ui-gap-4">
-      {items.map((item, index) => (
-        <AccordionItem key={index} {...item} />
-      ))}
-    </ul>
-  );
-};
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };

@@ -16,12 +16,12 @@ export const OverviewBalanceTableSkeleton = () => {
             aria-label="skeleton balance information"
           >
             <td
-              className={cn("ui-py-2.5 ui-pl-2 ui-w-6/12", {
+              className={cn("ui-py-2.5 ui-pl-1.5 ui-w-6/12", {
                 "ui-pt-0": index === 0,
                 "ui-pb-0": index === 1,
               })}
             >
-              <div className="ui-flex ui-items-center ui-gap-2 sm:ui-gap-3">
+              <div className="ui-flex ui-items-center ui-gap-1.5 sm:ui-gap-2.5">
                 <Skeleton className="ui-w-8 ui-h-8 ui-rounded-full" />
                 <Skeleton className="ui-h-4 ui-w-16 md:ui-h-6 md:ui-w-24" />
               </div>
@@ -47,7 +47,7 @@ export const OverviewBalanceTableSkeleton = () => {
               </div>
             </td>
             <td
-              className={cn("ui-py-2.5 ui-pr-2 ui-w-3/12", {
+              className={cn("ui-py-2.5 ui-pr-1.5 ui-w-3/12", {
                 "ui-pt-0": index === 0,
                 "ui-pb-0": index === 1,
               })}
@@ -89,12 +89,12 @@ export const OverviewBalanceTable = ({
             aria-label={`${asset.symbol} balance information`}
           >
             <td
-              className={cn("ui-pl-2 ui-w-6/12 ui-py-2.5", {
+              className={cn("ui-pl-1.5 ui-w-6/12 ui-py-2.5", {
                 "ui-pt-0": index === 0,
                 "ui-pb-0": index === assets.length - 1,
               })}
             >
-              <div className="ui-flex ui-items-center ui-gap-2 sm:ui-gap-3">
+              <div className="ui-flex ui-items-center ui-gap-1.5 sm:ui-gap-2.5">
                 {asset.imageUrl && (
                   <img
                     src={asset.imageUrl}
@@ -102,7 +102,7 @@ export const OverviewBalanceTable = ({
                     className="ui-w-8 ui-h-8 ui-rounded-full"
                   />
                 )}
-                <h4 className="ui-text-base sm:ui-text-2xl ui-font-bold">
+                <h4 className="ui-text-body sm:ui-text-title-lg">
                   {asset.symbol}
                 </h4>
               </div>
@@ -118,18 +118,18 @@ export const OverviewBalanceTable = ({
                 aria-label={`${asset.symbol} current price information`}
               >
                 <p
-                  className="ui-text-base sm:ui-text-xl !ui-leading-none ui-font-bold"
+                  className="ui-text-body sm:ui-text-title !ui-leading-none"
                   aria-label={`Current price ${basicFormatCurrency(asset.price)} dollars`}
                 >
                   ${basicFormatCurrency(asset.price)}
                 </p>
-                <p className="ui-text-xs sm:ui-text-sm !ui-leading-none ui-text-white/40">
+                <p className="ui-text-caption sm:ui-text-body !ui-leading-none ui-text-text-muted">
                   Current Price
                 </p>
               </div>
             </td>
             <td
-              className={cn("ui-pr-2 ui-pl-4 ui-w-3/12 ui-py-2.5", {
+              className={cn("ui-pr-1.5 ui-pl-4 ui-w-3/12 ui-py-2.5", {
                 "ui-pt-0": index === 0,
                 "ui-pb-0": index === assets.length - 1,
               })}
@@ -139,13 +139,13 @@ export const OverviewBalanceTable = ({
                 aria-label={`${asset.symbol} balance value information`}
               >
                 <p
-                  className="ui-text-base sm:ui-text-xl !ui-leading-none ui-font-bold"
+                  className="ui-text-body sm:ui-text-title !ui-leading-none"
                   aria-label={`Total value ${basicFormatCurrency(asset.dollarValue || 0)} dollars`}
                 >
                   ${basicFormatCurrency(asset.dollarValue || 0)}
                 </p>
                 <p
-                  className="ui-text-xs sm:ui-text-sm !ui-leading-none ui-text-white/40"
+                  className="ui-text-caption sm:ui-text-body !ui-leading-none ui-text-text-muted"
                   aria-label={`Balance ${basicFormatTokenAmount(asset)} ${asset.symbol}`}
                 >
                   {basicFormatTokenAmount(asset)} {asset.symbol}

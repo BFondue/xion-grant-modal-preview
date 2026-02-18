@@ -21,7 +21,7 @@ interface DialogOverlayProps extends React.ComponentPropsWithoutRef<
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   DialogOverlayProps
->(({ className, overApp, ...props }, ref) => {
+>(({ className, overApp: _overApp, ...props }, ref) => {
   return (
     <DialogPrimitive.Overlay
       className={cn(
@@ -40,45 +40,7 @@ const DialogOverlay = React.forwardRef<
           // Positioning and dimensions
           "ui-absolute ui-inset-0 ui-w-screen ui-h-screen ui-z-30",
           // Visual styling
-          "ui-bg-[#181818]/90 ui-backdrop-blur-sm",
-        )}
-      />
-      {!overApp && (
-        <>
-          {/* Bottom decorative blur */}
-          <div
-            className={cn(
-              // Positioning
-              "ui-absolute ui-right-1/2 ui-bottom-[10%] ui-translate-x-1/2 ui-z-40",
-              // Dimensions
-              "ui-w-[884px] ui-h-[306px]",
-              // Visual styling
-              "ui-bg-white/[0.03] ui-rounded-[90px]",
-              "ui-filter ui-blur-[75px] -ui-rotate-[17.4deg]",
-            )}
-          />
-
-          {/* Top decorative blur */}
-          <div
-            className={cn(
-              // Positioning
-              "ui-absolute ui-right-1/2 ui-top-[20%] ui-translate-x-1/2 ui-z-40",
-              // Dimensions
-              "ui-w-[484px] ui-h-[106px]",
-              // Visual styling
-              "ui-bg-white/[0.03] ui-rounded-[90px]",
-              "ui-filter ui-blur-[75px] ui-rotate-[17.4deg]",
-            )}
-          />
-        </>
-      )}
-
-      <div
-        className={cn(
-          // Positioning and dimensions
-          "ui-absolute ui-inset-0 ui-w-screen ui-h-screen ui-z-50",
-          // Visual styling
-          "ui-bg-modal-static-2 ui-bg-center ui-bg-fixed ui-opacity-[50%]",
+          "ui-bg-black/20",
         )}
       />
     </DialogPrimitive.Overlay>
@@ -95,221 +57,22 @@ interface DialogContentProps extends React.ComponentPropsWithoutRef<
 }
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
-  (
-    { className, children, overApp, closeButton = false, ...props },
-    forwardedRef,
-  ) => {
-    const [isTall, setIsTall] = React.useState(false);
-
-    const stateRef = React.useRef({
-      element: null as HTMLDivElement | null,
-      observers: null as {
-        resize?: ResizeObserver;
-        attributes?: MutationObserver;
-      } | null,
-      timeouts: [] as number[],
-      lastCheckTime: 0,
-      isObserving: false,
-      previousWindowHeight: window.innerHeight,
-      widthMeasurementTimeout: null as number | null,
-      handleWindowResize: null as (() => void) | null,
-    });
-
-    const measureNaturalContentSize = React.useCallback((element: HTMLDivElement) => {
-      const originalStyles = {
-        position: element.style.position,
-        top: element.style.top,
-        left: element.style.left,
-        maxWidth: element.style.maxWidth,
-        width: element.style.width,
-        maxHeight: element.style.maxHeight,
-        height: element.style.height,
-        transform: element.style.transform,
-        overflow: element.style.overflow,
-        display: element.style.display,
-      };
-
-      element.style.position = "absolute";
-      element.style.top = "-9999px";
-      element.style.left = "-9999px";
-      element.style.maxWidth = "min(560px, 100vw - 32px)";
-      element.style.width = "auto";
-      element.style.maxHeight = "";
-      element.style.height = "auto";
-      element.style.transform = "none";
-      element.style.overflow = "visible";
-      element.style.display = "block";
-
-      const naturalWidth = element.offsetWidth;
-      const naturalHeight = element.scrollHeight;
-
-      element.style.position = originalStyles.position;
-      element.style.top = originalStyles.top;
-      element.style.left = originalStyles.left;
-      element.style.maxWidth = originalStyles.maxWidth;
-      element.style.width = originalStyles.width;
-      element.style.maxHeight = originalStyles.maxHeight;
-      element.style.height = originalStyles.height;
-      element.style.transform = originalStyles.transform;
-      element.style.overflow = originalStyles.overflow;
-      element.style.display = originalStyles.display;
-
-      return { width: naturalWidth, height: naturalHeight };
-    }, []);
-
-    const checkHeight = React.useCallback((element: HTMLDivElement) => {
-        const now = Date.now();
-        stateRef.current.lastCheckTime = now;
-
-        const windowHeight = window.innerHeight;
-        stateRef.current.previousWindowHeight = windowHeight;
-        clearTimeout(stateRef.current.widthMeasurementTimeout as number);
-
-        stateRef.current.widthMeasurementTimeout = window.setTimeout(() => {
-          const { height: naturalHeight } = measureNaturalContentSize(element);
-          const shouldBeTall = naturalHeight > Math.max(windowHeight * 0.85, 200);
-          setIsTall(shouldBeTall);
-        }, 100) as unknown as number;
-      }, [measureNaturalContentSize]);
-
-    const checkHeightRef = React.useRef(checkHeight);
-
-    React.useEffect(() => {
-      checkHeightRef.current = checkHeight;
-    }, [checkHeight]);
-
-    const cleanupObservers = React.useCallback(() => {
-      stateRef.current.timeouts.forEach((id) => {
-        window.clearTimeout(id);
-      });
-      stateRef.current.timeouts = [];
-
-      if (stateRef.current.widthMeasurementTimeout) {
-        clearTimeout(stateRef.current.widthMeasurementTimeout);
-        stateRef.current.widthMeasurementTimeout = null;
-      }
-
-      if (stateRef.current.observers) {
-        stateRef.current.observers.resize?.disconnect();
-        stateRef.current.observers.attributes?.disconnect();
-        stateRef.current.observers = null;
-      }
-
-      stateRef.current.isObserving = false;
-
-      if (stateRef.current.handleWindowResize) {
-        window.removeEventListener(
-          "resize",
-          stateRef.current.handleWindowResize,
-        );
-        stateRef.current.handleWindowResize = null;
-      }
-    }, []);
-
-    const setupObservers = React.useCallback(() => {
-      cleanupObservers();
-
-      const element = stateRef.current.element;
-      if (!element) return;
-
-      stateRef.current.observers = {};
-
-      checkHeightRef.current(element);
-
-      const scheduleCheck = (delay: number) => {
-        if (stateRef.current.timeouts.length > 0) {
-          stateRef.current.timeouts.forEach((id) => window.clearTimeout(id));
-          stateRef.current.timeouts = [];
-        }
-        const id = window.setTimeout(() => {
-          checkHeightRef.current(element);
-          stateRef.current.timeouts = stateRef.current.timeouts.filter(
-            (t) => t !== id,
-          );
-        }, delay);
-        stateRef.current.timeouts.push(id);
-      };
-
-      scheduleCheck(150);
-
-      const attributeObserver = new MutationObserver(() => {
-        scheduleCheck(150);
-      });
-      attributeObserver.observe(element, { attributes: true });
-      stateRef.current.observers.attributes = attributeObserver;
-
-      let resizeTimeout: number | null = null;
-      const resizeObserver = new ResizeObserver(() => {
-        if (resizeTimeout !== null) window.clearTimeout(resizeTimeout);
-        resizeTimeout = window.setTimeout(() => {
-          checkHeightRef.current(element);
-        }, 100) as unknown as number;
-      });
-
-      const handleWindowResize = () => {
-        if (!element || !document.body.contains(element)) return;
-        scheduleCheck(100);
-      };
-      stateRef.current.handleWindowResize = handleWindowResize;
-      window.addEventListener("resize", handleWindowResize);
-
-      const startObserving = window.setTimeout(() => {
-        resizeObserver.observe(element);
-        stateRef.current.isObserving = true;
-      }, 300);
-      stateRef.current.timeouts.push(startObserving);
-      stateRef.current.observers.resize = resizeObserver;
-    }, [measureNaturalContentSize, cleanupObservers]);
-
-    const handleRef = React.useCallback(
-      (node: HTMLDivElement | null) => {
-        stateRef.current.element = node;
-
-        cleanupObservers();
-
-        if (node) {
-          setTimeout(() => {
-            if (stateRef.current.element === node) {
-              setupObservers();
-            }
-          }, 0);
-        }
-
-        if (typeof forwardedRef === "function") {
-          forwardedRef(node);
-        } else if (forwardedRef) {
-          forwardedRef.current = node;
-        }
-      },
-      [setupObservers, cleanupObservers, forwardedRef],
-    );
-
-    React.useEffect(() => {
-      return cleanupObservers;
-    }, [cleanupObservers]);
-
+  ({ className, children, overApp, closeButton = false, ...props }, ref) => {
     return (
       <DialogPortal>
         <DialogOverlay overApp={overApp} />
         <DialogPrimitive.Content
           role="dialog"
           aria-modal="true"
-          ref={handleRef}
+          ref={ref}
           className={cn(
             "ui-fixed ui-z-50",
-            !isTall
-              ? "ui-left-0 ui-top-0 md:ui-left-[50%] md:ui-top-[50%] md:-ui-translate-x-1/2 md:-ui-translate-y-1/2"
-              : "ui-left-0 ui-top-0 md:ui-left-[50%] md:-ui-translate-x-1/2",
-            !isTall && "ui-w-full md:ui-max-w-lg lg:ui-min-w-[560px]",
-            isTall && "ui-max-w-full ui-w-full",
-            "ui-p-10 ui-gap-12 !ui-flex ui-flex-col md:ui-p-12 md:ui-block md:ui-flex-none",
-            !isTall && "ui-justify-center",
-            "ui-bg-[#0A0A0A]/50 ui-backdrop-blur-2xl ui-rounded-none md:ui-rounded-[48px] ui-shadow-[0_0_20px_10px_rgba(255,255,255,0.01)]",
-            isTall && "!ui-rounded-none",
-            !isTall
-              ? "ui-h-screen ui-max-h-screen md:ui-max-h-[90vh] md:ui-h-auto"
-              : "ui-max-h-screen ui-h-full ui-overflow-y-auto",
-            "ui-transition-all ui-duration-200",
+            "ui-left-0 ui-top-0 md:ui-left-[50%] md:ui-top-[50%] md:-ui-translate-x-1/2 md:-ui-translate-y-1/2",
+            "ui-w-full ui-min-w-[380px] md:ui-max-w-[480px]",
+            "ui-flex ui-flex-col ui-justify-center ui-gap-6 ui-p-6 md:ui-p-10",
+            "ui-bg-white ui-rounded-none md:ui-rounded-card md:ui-border md:ui-border-surface-border ui-shadow-lg",
+            "ui-h-screen ui-max-h-screen md:ui-max-h-[90vh] md:ui-h-auto",
+            "ui-outline-none ui-transition-opacity ui-duration-200",
             "data-[state=closed]:ui-opacity-0",
             "data-[state=open]:ui-opacity-100",
             className,
@@ -324,13 +87,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
               <CloseIcon strokeWidth={2} className="ui-w-4 ui-h-4" />
             </DialogClose>
           )}
-          <div
-            className={cn(
-              "ui-flex ui-flex-col ui-gap-8",
-              isTall && "ui-w-full ui-max-w-[464px] ui-mx-auto",
-              !isTall && "ui-overflow-y-auto ui-max-h-full",
-            )}
-          >
+          <div className="ui-flex ui-flex-col ui-gap-6 ui-overflow-y-auto ui-max-h-full">
             {children}
           </div>
         </DialogPrimitive.Content>

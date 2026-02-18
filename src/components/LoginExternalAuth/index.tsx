@@ -14,7 +14,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Banner, Dialog, DialogContent, BaseButton } from "../ui";
+import { Banner, Dialog, DialogContent, Button } from "../ui";
 import { DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -148,9 +148,9 @@ export function LoginExternalAuth() {
                 <VisuallyHidden.Root>Connecting</VisuallyHidden.Root>
               </DialogTitle>
             </DialogHeader>
-            <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-py-20 ui-gap-4">
-              <SpinnerV2 size="lg" color="white" />
-              <p className="ui-text-muted-foreground ui-text-sm">
+            <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-py-16 ui-gap-4">
+              <SpinnerV2 size="lg" color="black" />
+              <p className="ui-text-muted-foreground ui-text-body">
                 Redirecting to identity provider...
               </p>
             </div>
@@ -163,24 +163,24 @@ export function LoginExternalAuth() {
             <DialogHeader>
               <DialogTitle>Connection Failed</DialogTitle>
             </DialogHeader>
-            <p className="ui-text-muted-foreground ui-text-sm ui-py-4">
+            <p className="ui-text-muted-foreground ui-text-body ui-py-4">
               {error || "Something went wrong. Please try again."}
             </p>
             <DialogFooter>
-              <BaseButton
+              <Button
                 variant="secondary"
                 onClick={() => window.history.back()}
               >
                 Go Back
-              </BaseButton>
-              <BaseButton
+              </Button>
+              <Button
                 onClick={() => {
                   flowStartedRef.current = false;
                   startOAuthFlow();
                 }}
               >
                 Try Again
-              </BaseButton>
+              </Button>
             </DialogFooter>
           </>
         );

@@ -9,6 +9,11 @@ configure({
   asyncUtilTimeout: 1000,
 });
 
+// input-otp library uses document.elementFromPoint which jsdom doesn't support
+if (typeof document !== "undefined" && !document.elementFromPoint) {
+  document.elementFromPoint = () => null;
+}
+
 expect.extend(matchers);
 
 afterEach(() => {

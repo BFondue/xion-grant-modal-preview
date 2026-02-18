@@ -5,7 +5,8 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { LoginErrorDisplay } from "../LoginErrorDisplay";
+import AnimatedX from "../ui/icons/AnimatedX";
+import { Button } from "../ui";
 import { useSmartAccount, useSigningClient } from "../../hooks";
 import { validateBech32Address } from "../../utils";
 import { WalletSendInput } from "./WalletSendInput";
@@ -227,74 +228,85 @@ export function WalletSendForm({
   return (
     <>
       {sendTokensError ? (
-        <LoginErrorDisplay
-          title="ERROR!"
-          description="Transaction failed. Please try again later."
-          onClose={() => setIsOpen(false)}
-        />
+        <div className="ui-animate-scale-in ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
+          <AnimatedX />
+          <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">Transaction Failed</h2>
+          <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">Please try again later.</p>
+          <Button className="ui-w-full ui-mt-6" onClick={() => setIsOpen(false)}>CLOSE</Button>
+        </div>
       ) : isSuccess && account && selectedCurrency ? (
-        <WalletSendSuccess
-          account={account}
-          onFinish={() => setIsOpen(false)}
-          recipientAddress={recipientAddress}
-          selectedCurrency={selectedCurrency}
-          sendAmount={sendAmount}
-          userMemo={userMemo}
-          transactionHash={transactionHash}
-        />
+        <div className="ui-animate-scale-in">
+          <WalletSendSuccess
+            account={account}
+            onFinish={() => setIsOpen(false)}
+            recipientAddress={recipientAddress}
+            selectedCurrency={selectedCurrency}
+            sendAmount={sendAmount}
+            userMemo={userMemo}
+            transactionHash={transactionHash}
+          />
+        </div>
       ) : isSuccess ? (
-        <LoginErrorDisplay
-          title="Transaction Incomplete"
-          description="Unable to load account or currency data"
-          onClose={() => setIsOpen(false)}
-        />
+        <div className="ui-animate-scale-in ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
+          <AnimatedX />
+          <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">Transaction Incomplete</h2>
+          <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">Unable to load account or currency data</p>
+          <Button className="ui-w-full ui-mt-6" onClick={() => setIsOpen(false)}>CLOSE</Button>
+        </div>
       ) : isOnReviewStep && account && selectedCurrency ? (
-        <WalletSendReview
-          isLoading={isLoading}
-          account={account}
-          recipientAddress={recipientAddress}
-          selectedCurrency={selectedCurrency}
-          sendAmount={sendAmount}
-          userMemo={userMemo}
-          triggerSend={triggerSend}
-          onBack={() => {
-            setIsOnReviewStep(false);
-          }}
-        />
+        <div className="ui-animate-scale-in">
+          <WalletSendReview
+            isLoading={isLoading}
+            account={account}
+            recipientAddress={recipientAddress}
+            selectedCurrency={selectedCurrency}
+            sendAmount={sendAmount}
+            userMemo={userMemo}
+            triggerSend={triggerSend}
+            onBack={() => {
+              setIsOnReviewStep(false);
+            }}
+          />
+        </div>
       ) : isOnReviewStep ? (
-        <LoginErrorDisplay
-          title="Unable to Review"
-          description="Missing account or currency information"
-          onClose={() => setIsOpen(false)}
-        />
+        <div className="ui-animate-scale-in ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
+          <AnimatedX />
+          <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">Unable to Review</h2>
+          <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">Missing account or currency information</p>
+          <Button className="ui-w-full ui-mt-6" onClick={() => setIsOpen(false)}>CLOSE</Button>
+        </div>
       ) : isOnWarningStep ? (
-        <WalletSendWarning
-          onContinue={() => {
-            setIsOnWarningStep(false);
-            setIsOnReviewStep(true);
-          }}
-          onCancel={() => setIsOnWarningStep(false)}
-        />
+        <div className="ui-animate-scale-in">
+          <WalletSendWarning
+            onContinue={() => {
+              setIsOnWarningStep(false);
+              setIsOnReviewStep(true);
+            }}
+            onCancel={() => setIsOnWarningStep(false)}
+          />
+        </div>
       ) : (
-        <WalletSendInput
-          balances={balances}
-          amountError={amountError}
-          onChangeCurrency={setSelectedCurrencyDenom}
-          selectedCurrencyDenom={selectedCurrencyDenom}
-          onAmountChange={handleAmountChange}
-          onUpdateRecipientAddress={(e) => {
-            setRecipientAddressError("");
-            setRecipientAddress(e);
-          }}
-          onUpdateUserMemo={setUserMemo}
-          recipientAddress={recipientAddress}
-          recipientAddressError={recipientAddressError}
-          selectedCurrency={selectedCurrency!}
-          sendAmount={sendAmount}
-          userMemo={userMemo}
-          onStart={handleStart}
-          updateSendAmount={updateSendAmount}
-        />
+        <div className="ui-animate-scale-in">
+          <WalletSendInput
+            balances={balances}
+            amountError={amountError}
+            onChangeCurrency={setSelectedCurrencyDenom}
+            selectedCurrencyDenom={selectedCurrencyDenom}
+            onAmountChange={handleAmountChange}
+            onUpdateRecipientAddress={(e) => {
+              setRecipientAddressError("");
+              setRecipientAddress(e);
+            }}
+            onUpdateUserMemo={setUserMemo}
+            recipientAddress={recipientAddress}
+            recipientAddressError={recipientAddressError}
+            selectedCurrency={selectedCurrency!}
+            sendAmount={sendAmount}
+            userMemo={userMemo}
+            onStart={handleStart}
+            updateSendAmount={updateSendAmount}
+          />
+        </div>
       )}
     </>
   );

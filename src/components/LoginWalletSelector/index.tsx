@@ -8,7 +8,7 @@ import { useSmartAccount } from "../../hooks";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { useAccountDiscovery } from "../../hooks/useAccountDiscovery";
 import {
-  BaseButton,
+  Button,
   CloseIcon,
   DialogClose,
   DialogDescription,
@@ -349,7 +349,7 @@ export const LoginWalletSelector = () => {
   }
 
   return (
-    <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-12">
+    <div className="ui-flex ui-h-full ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-10">
       {!isInLoginFlow && (
         <DialogClose className="ui-absolute ui-top-6 ui-right-6">
           <CloseIcon strokeWidth={2} className="ui-w-4 ui-h-4" />
@@ -361,7 +361,7 @@ export const LoginWalletSelector = () => {
       </DialogHeader>
       <div className="ui-flex ui-w-full ui-flex-col ui-items-start ui-justify-center ui-gap-4">
         <div
-          className="ui-flex ui-max-h-[19rem] ui-w-full ui-flex-col ui-items-center ui-gap-3 ui-overflow-auto"
+          className="ui-flex ui-max-h-[19rem] ui-w-full ui-flex-col ui-items-center ui-gap-2.5 ui-overflow-auto"
           role="region"
           aria-label={dialogTitle}
         >
@@ -369,7 +369,7 @@ export const LoginWalletSelector = () => {
             <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-py-16">
               <SpinnerV2
                 size="lg"
-                color="white"
+                color="black"
                 aria-label={
                   isGeneratingNewWallet
                     ? "Creating account..."
@@ -387,8 +387,8 @@ export const LoginWalletSelector = () => {
                 // has the same authenticator twice on the same meta account.
                 key={`${node.id}-${i}`}
                 subLabel={
-                  <div className="ui-bg-white/10 ui-px-1.5 ui-py-0.5 ui-rounded-[4px] ui-text-xs ui-font-bold">
-                    <span className="ui-text-white/80">
+                  <div className="ui-bg-surface-page ui-px-1.5 ui-py-0.5 ui-rounded-[4px] ui-text-caption ui-font-bold">
+                    <span className="ui-text-text-primary">
                       {truncateAddress(node.id)}
                     </span>
                   </div>
@@ -421,10 +421,10 @@ export const LoginWalletSelector = () => {
           ) : (
             <>
               {connectionMethod === CONNECTION_METHOD.Passkey ? (
-                <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-5 ui-px-8">
+                <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4 ui-px-6">
                   <SadIcon aria-hidden="true" />
                   <p
-                    className="ui-text-center ui-font-bold ui-text-base ui-leading-[19.2px]"
+                    className="ui-text-center ui-font-bold ui-text-body ui-leading-[19.2px]"
                     role="status"
                   >
                     This authenticator can only be used as a backup right now.
@@ -437,14 +437,14 @@ export const LoginWalletSelector = () => {
                   <div className="ui-flex ui-items-center ui-justify-center ui-w-full ui-h-full">
                     <InboxIcon aria-hidden="true" />
                   </div>
-                  <div className="ui-flex ui-flex-col ui-items-center ui-gap-2">
+                  <div className="ui-flex ui-flex-col ui-items-center ui-gap-1.5">
                     <p
-                      className="ui-font-bold ui-text-xl ui-leading-6"
+                      className="ui-text-title ui-leading-6"
                       role="status"
                     >
                       No accounts found
                     </p>
-                    <p className="ui-text-sm ui-text-secondary-text ui-text-center">
+                    <p className="ui-text-body ui-text-secondary-text ui-text-center">
                       You don&apos;t have any accounts on this network yet
                     </p>
                   </div>
@@ -457,9 +457,9 @@ export const LoginWalletSelector = () => {
       {!(loading || isGeneratingNewWallet || shouldAutoNavigate) && (
         <div className="ui-flex ui-w-full ui-flex-col ui-items-center ui-gap-4">
           <DialogFooter>
-            <div className="ui-flex ui-flex-col ui-gap-3 ui-w-full">
+            <div className="ui-flex ui-flex-col ui-gap-2.5 ui-w-full">
               {isInLoginFlow && !shouldAutoNavigate && (
-                <BaseButton
+                <Button
                   className="ui-w-full"
                   onClick={() => {
                     if (connectionMethod === CONNECTION_METHOD.Stytch) {
@@ -481,11 +481,11 @@ export const LoginWalletSelector = () => {
                   }
                 >
                   CREATE NEW ACCOUNT
-                </BaseButton>
+                </Button>
               )}
-              <div className="ui-flex ui-gap-3 ui-w-full">
+              <div className="ui-flex ui-gap-2.5 ui-w-full">
                 {isInLoginFlow && isInGrantFlow && (
-                  <BaseButton
+                  <Button
                     variant="secondary"
                     size="icon-large"
                     className="ui-group/basebutton"
@@ -493,12 +493,12 @@ export const LoginWalletSelector = () => {
                     onClick={xionDisconnect}
                   >
                     <div className="ui-flex ui-items-center ui-justify-center">
-                      <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
-                      <ChevronRightIcon className="ui-fill-white/50 ui-rotate-180 group-hover/basebutton:ui-fill-white" />
+                      <ChevronRightIcon className="ui-fill-text-secondary ui-rotate-180 group-hover/basebutton:ui-fill-text-primary" />
+                      <ChevronRightIcon className="ui-fill-text-secondary ui-rotate-180 group-hover/basebutton:ui-fill-text-primary" />
                     </div>
-                  </BaseButton>
+                  </Button>
                 )}
-                <BaseButton
+                <Button
                   variant={
                     connectionMethod !== CONNECTION_METHOD.Stytch &&
                     uniqueAccounts.length === 0 &&
@@ -514,14 +514,14 @@ export const LoginWalletSelector = () => {
                     "CANCEL"
                   ) : connectionMethod !== CONNECTION_METHOD.Stytch &&
                     uniqueAccounts.length === 0 ? (
-                    <div className="ui-flex ui-items-center ui-justify-center ui-gap-2">
+                    <div className="ui-flex ui-items-center ui-justify-center ui-gap-1.5">
                       <ChevronRightIcon className="ui-fill-current ui-rotate-180" />
                       BACK TO LOGIN
                     </div>
                   ) : (
                     "DISCONNECT"
                   )}
-                </BaseButton>
+                </Button>
               </div>
             </div>
           </DialogFooter>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  BaseButton,
+  Button,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -179,7 +179,7 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
 
   if (loginMode === "choose") {
     return (
-      <div className="ui-flex ui-flex-col ui-gap-8 ui-items-center">
+      <div className="ui-flex ui-flex-col ui-gap-6 ui-items-center">
         <DialogHeader>
           <DialogTitle>Login with zk-Email</DialogTitle>
           <DialogDescription>
@@ -189,17 +189,17 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
         <div className="ui-flex ui-flex-col ui-gap-4 ui-w-full">
           <button
             onClick={() => setLoginMode("direct")}
-            className="ui-w-full ui-p-4 ui-bg-white/5 ui-border ui-border-white/10 ui-rounded-lg ui-text-left hover:ui-bg-white/10 ui-transition-colors"
+            className="ui-w-full ui-p-4 ui-bg-surface-page ui-border ui-border-surface-border ui-rounded-lg ui-text-left hover:ui-bg-gray-200 ui-transition-colors"
           >
-            <div className="ui-flex ui-items-start ui-gap-3">
+            <div className="ui-flex ui-items-start ui-gap-2.5">
               <div className="ui-w-8 ui-h-8 ui-rounded-full ui-bg-green-500/20 ui-flex ui-items-center ui-justify-center ui-flex-shrink-0">
-                <span className="ui-text-green-400 ui-text-sm">✓</span>
+                <span className="ui-text-green-400 ui-text-body">✓</span>
               </div>
               <div>
-                <p className="ui-text-sm ui-font-medium ui-text-white">
+                <p className="ui-text-label ui-text-text-primary">
                   I know my Account Code
                 </p>
-                <p className="ui-text-xs ui-text-gray-400 ui-mt-1">
+                <p className="ui-text-caption ui-text-gray-400 ui-mt-1">
                   Enter your account code and email address to login instantly.
                 </p>
               </div>
@@ -207,31 +207,31 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
           </button>
           <button
             onClick={() => setLoginMode("email")}
-            className="ui-w-full ui-p-4 ui-bg-white/5 ui-border ui-border-white/10 ui-rounded-lg ui-text-left hover:ui-bg-white/10 ui-transition-colors"
+            className="ui-w-full ui-p-4 ui-bg-surface-page ui-border ui-border-surface-border ui-rounded-lg ui-text-left hover:ui-bg-gray-200 ui-transition-colors"
           >
-            <div className="ui-flex ui-items-start ui-gap-3">
+            <div className="ui-flex ui-items-start ui-gap-2.5">
               <div className="ui-w-8 ui-h-8 ui-rounded-full ui-bg-blue-500/20 ui-flex ui-items-center ui-justify-center ui-flex-shrink-0">
-                <span className="ui-text-blue-400 ui-text-sm">✉</span>
+                <span className="ui-text-blue-400 ui-text-body">✉</span>
               </div>
               <div>
-                <p className="ui-text-sm ui-font-medium ui-text-white">
+                <p className="ui-text-label ui-text-text-primary">
                   Get my Account Code via Email
                 </p>
-                <p className="ui-text-xs ui-text-gray-400 ui-mt-1">
+                <p className="ui-text-caption ui-text-gray-400 ui-mt-1">
                   Send a verification email to retrieve your account code.
                 </p>
               </div>
             </div>
           </button>
         </div>
-        <BaseButton
+        <Button
           variant="secondary"
           onClick={onCancel}
           className="ui-w-full"
         >
           CANCEL
-        </BaseButton>
-        <div className="ui-text-center ui-text-xs ui-text-gray-500">
+        </Button>
+        <div className="ui-text-center ui-text-caption ui-text-gray-500">
           <p>
             Your account code is a unique identifier used together with your
             email to access your account securely using zero-knowledge proofs.
@@ -243,16 +243,16 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
 
   if (loginMode === "direct") {
     return (
-      <div className="ui-flex ui-flex-col ui-gap-8 ui-items-center">
+      <div className="ui-flex ui-flex-col ui-gap-6 ui-items-center">
         <DialogHeader>
           <DialogTitle>Enter Account Code</DialogTitle>
           <DialogDescription>
             Your account code can be found in the email from{" "}
-            <span className="ui-text-white ui-font-medium">
+            <span className="ui-text-text-primary ui-font-medium">
               zkauth@burnt.com
             </span>{" "}
             sent when adding zk-Email authenticator. Look for the value after{" "}
-            <span className="ui-text-white ui-font-medium">Code</span> in the
+            <span className="ui-text-text-primary ui-font-medium">Code</span> in the
             email.
           </DialogDescription>
         </DialogHeader>
@@ -283,21 +283,21 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
             className="ui-w-full"
           />
           {directError && (
-            <div className="ui-p-3 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg">
-              <p className="ui-text-sm ui-text-red-400">{directError}</p>
+            <div className="ui-p-2.5 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg">
+              <p className="ui-text-body ui-text-red-400">{directError}</p>
             </div>
           )}
         </div>
-        <div className="ui-flex ui-gap-3 ui-w-full">
-          <BaseButton
+        <div className="ui-flex ui-gap-2.5 ui-w-full">
+          <Button
             variant="secondary"
             onClick={handleBack}
             className="ui-flex-1"
             disabled={isGeneratingSalt}
           >
             BACK
-          </BaseButton>
-          <BaseButton
+          </Button>
+          <Button
             onClick={handleAccountCodeLogin}
             disabled={isGeneratingSalt}
             className="ui-flex-1"
@@ -305,14 +305,14 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
             {isGeneratingSalt ? (
               <>
                 <SpinnerV2 size="sm" color="black" />
-                <span className="ui-ml-2">LOGGING IN...</span>
+                <span className="ui-ml-1.5">LOGGING IN...</span>
               </>
             ) : (
               "LOGIN"
             )}
-          </BaseButton>
+          </Button>
         </div>
-        <div className="ui-text-center ui-text-xs ui-text-gray-500">
+        <div className="ui-text-center ui-text-caption ui-text-gray-500">
           <p>
             Don&apos;t know your account code?{" "}
             <button
@@ -330,7 +330,7 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
   // Email verification mode
   const displayError = flowError ?? null;
   return (
-    <div className="ui-flex ui-flex-col ui-gap-8 ui-items-center">
+    <div className="ui-flex ui-flex-col ui-gap-6 ui-items-center">
       <DialogHeader>
         <DialogTitle>
           {phase === "form"
@@ -379,8 +379,8 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
             className="ui-w-full"
           />
           {displayError && (
-            <div className="ui-p-3 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg">
-              <p className="ui-text-sm ui-text-red-400">{displayError}</p>
+            <div className="ui-p-2.5 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg">
+              <p className="ui-text-body ui-text-red-400">{displayError}</p>
             </div>
           )}
         </div>
@@ -389,13 +389,13 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
       {phase === "waiting" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
           <div className="ui-p-4 ui-bg-blue-900/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-w-full">
-            <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
+            <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
               <div className="ui-w-2 ui-h-2 ui-bg-blue-500 ui-rounded-full ui-animate-pulse"></div>
-              <p className="ui-text-sm ui-font-medium ui-text-blue-400">
+              <p className="ui-text-label ui-text-blue-400">
                 Verification email sent!
               </p>
             </div>
-            <p className="ui-text-xs ui-text-blue-300">
+            <p className="ui-text-caption ui-text-blue-300">
               Please check your email and reply &quot;confirm&quot; to the
               verification email to continue. Your account code will be
               extracted from the proof.
@@ -407,9 +407,9 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
       {phase === "polling" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
           <div className="ui-p-4 ui-bg-yellow-900/20 ui-border ui-border-yellow-500/50 ui-rounded-lg ui-w-full">
-            <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
-              <SpinnerV2 size="sm" color="white" />
-              <p className="ui-text-sm ui-font-medium ui-text-yellow-400">
+            <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
+              <SpinnerV2 size="sm" color="black" />
+              <p className="ui-text-label ui-text-yellow-400">
                 {currentStatus === ZK_EMAIL_STATUS.email_sent_awaiting_reply
                   ? "Waiting for email reply..."
                   : currentStatus === ZK_EMAIL_STATUS.email_replied
@@ -417,7 +417,7 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
                     : "Processing verification..."}
               </p>
             </div>
-            <p className="ui-text-xs ui-text-yellow-300">
+            <p className="ui-text-caption ui-text-yellow-300">
               {currentStatus === ZK_EMAIL_STATUS.email_sent_awaiting_reply
                 ? 'Please check your email and reply "confirm" to continue.'
                 : currentStatus === ZK_EMAIL_STATUS.email_replied
@@ -431,57 +431,57 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
       {phase === "success" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
           <div className="ui-p-4 ui-bg-green-900/20 ui-border ui-border-green-500/50 ui-rounded-lg ui-w-full">
-            <div className="ui-flex ui-items-center ui-gap-2 ui-mb-2">
+            <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
               <div className="ui-w-2 ui-h-2 ui-bg-green-500 ui-rounded-full"></div>
-              <p className="ui-text-sm ui-font-medium ui-text-green-400">
+              <p className="ui-text-label ui-text-green-400">
                 Email verified successfully!
               </p>
             </div>
-            <p className="ui-text-xs ui-text-green-300">
+            <p className="ui-text-caption ui-text-green-300">
               Your account code has been retrieved. Logging you in...
             </p>
           </div>
-          <SpinnerV2 size="md" color="white" />
+          <SpinnerV2 size="md" color="black" />
         </div>
       )}
 
       {phase === "error" && displayError && (
-        <div className="ui-p-3 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg ui-w-full">
-          <p className="ui-text-sm ui-text-red-400">{displayError}</p>
+        <div className="ui-p-2.5 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg ui-w-full">
+          <p className="ui-text-body ui-text-red-400">{displayError}</p>
         </div>
       )}
 
-      <div className="ui-flex ui-gap-3 ui-w-full">
+      <div className="ui-flex ui-gap-2.5 ui-w-full">
         {phase === "error" ? (
           <>
-            <BaseButton
+            <Button
               variant="secondary"
               onClick={handleBack}
               className="ui-flex-1"
             >
               BACK
-            </BaseButton>
-            <BaseButton className="ui-flex-1" onClick={handleRetry}>
+            </Button>
+            <Button className="ui-flex-1" onClick={handleRetry}>
               TRY AGAIN
-            </BaseButton>
+            </Button>
           </>
         ) : phase === "success" ? null : (
           <>
-            <BaseButton
+            <Button
               variant="secondary"
               onClick={handleBack}
               className="ui-flex-1"
               disabled={isProcessing}
             >
               BACK
-            </BaseButton>
+            </Button>
             {phase === "form" && (
-              <BaseButton
+              <Button
                 className="ui-flex-1"
                 onClick={() => handleEmailSubmit()}
               >
                 SEND EMAIL
-              </BaseButton>
+              </Button>
             )}
           </>
         )}
@@ -508,7 +508,7 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
       )}
 
       {phase === "form" && (
-        <div className="ui-text-center ui-text-xs ui-text-gray-500">
+        <div className="ui-text-center ui-text-caption ui-text-gray-500">
           <p>
             Already know your account code?{" "}
             <button
