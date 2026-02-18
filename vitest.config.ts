@@ -15,7 +15,7 @@ export default defineConfig({
     setupFiles: ["./src/tests/setup.ts"],
     globals: true,
     pool: "forks",
-    execArgv: ["--no-experimental-webstorage"],
+    // execArgv: ["--no-experimental-webstorage"],
     server: {
       deps: {
         inline: [
