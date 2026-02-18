@@ -41,7 +41,7 @@ jobs:
         env:
           CLOUDFLARE_ENV: ${{ inputs.environment }}
           VITE_NETWORK: ${{ inputs.environment }}
-          VITE_APP_VERSION: ${{ github.event.release.tag_name || github.sha }}
+          VITE_APP_VERSION: ${{ github.ref_name || github.sha }}
           VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.VITE_STYTCH_PUBLIC_TOKEN || secrets.VITE_DEFAULT_STYTCH_PUBLIC_TOKEN }}
           VITE_NUMIA_TOKEN: ${{ secrets.VITE_NUMIA_TOKEN }}
 
