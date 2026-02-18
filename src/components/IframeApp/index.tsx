@@ -612,23 +612,7 @@ export function IframeApp({
       );
     }
 
-    // Not authenticated yet - show welcome screen or empty container
-    if (isStandalone || isInStandaloneIframe) {
-      return (
-        <div className="ui-flex ui-flex-col ui-w-full ui-h-full ui-items-center ui-justify-center ui-bg-background">
-          <div className="ui-text-center ui-p-6">
-            <h1 className="ui-text-title-lg ui-mb-4">
-              Welcome to XION Auth
-            </h1>
-            <p className="ui-text-body ui-text-text-secondary ui-mb-6">
-              Please sign in to continue
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    // Pure iframe mode - empty container (modals will overlay)
+    // Empty container - modals will overlay
     return <div className="ui-w-full ui-h-full" />;
   };
 
