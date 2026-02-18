@@ -20,7 +20,7 @@ export const testnetConfig = {
   xionApiUrl: "https://api.xion-testnet-2.burnt.com",
   xionRpcUrl: "https://rpc.xion-testnet-2.burnt.com",
   zkEmailBackendUrl: "https://zk-api.testnet.burnt.com",
-  zkEmailHost: "https://zk-api.testnet.burnt.com",
+  zkEmailReceiverEmailId: "zkauth+testnet@zk.burnt.com",
 
   // Turnstile (Cloudflare invisible CAPTCHA)
   turnstileSiteKey: "0x4AAAAAACUOXqmE31xhK_y8",

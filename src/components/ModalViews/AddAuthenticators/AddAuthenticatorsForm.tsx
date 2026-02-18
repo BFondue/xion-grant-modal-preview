@@ -54,7 +54,7 @@ import {
   FEE_GRANTER_ADDRESS,
   XION_API_URL,
   FEATURE_FLAGS,
-  ZK_EMAIL_HOST,
+  ZK_EMAIL_RECEIVER_EMAIL_ID,
   TURNSTILE_SITE_KEY,
 } from "../../../config";
 import {
@@ -403,16 +403,16 @@ export function AddAuthenticatorsForm({
         );
       }
 
-      if (!ZK_EMAIL_HOST) {
+      if (!ZK_EMAIL_RECEIVER_EMAIL_ID) {
         setZKEmailError(
           "ZK-Email configuration error: allowed email host not set",
         );
         setIsLoading(false);
         throw new Error(
-          "ZK_EMAIL_HOST is not configured. Please set VITE_ZK_EMAIL_HOST in your environment.",
+          "ZK_EMAIL_RECEIVER_EMAIL_ID is not configured. Please set VITE_ZK_EMAIL_RECEIVER_EMAIL_ID in your environment.",
         );
       }
-      const allowedEmailHost = ZK_EMAIL_HOST;
+      const allowedEmailHost = ZK_EMAIL_RECEIVER_EMAIL_ID;
 
       const accountIndex = findLowestMissingOrNextIndex(
         abstractAccount.authenticators,

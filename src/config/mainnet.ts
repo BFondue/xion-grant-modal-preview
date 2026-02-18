@@ -19,7 +19,7 @@ export const mainnetConfig = {
   xionApiUrl: "https://api.xion-mainnet-1.burnt.com",
   xionRpcUrl: "https://rpc.xion-mainnet-1.burnt.com",
   zkEmailBackendUrl: "https://zk-api.burnt.com",
-  zkEmailHost: "zkauth@zk.burnt.com",
+  zkEmailReceiverEmailId: "zkauth@zk.burnt.com",
 
   // Turnstile (Cloudflare invisible CAPTCHA)
   turnstileSiteKey: "0x4AAAAAACUOXqmE31xhK_y8",
