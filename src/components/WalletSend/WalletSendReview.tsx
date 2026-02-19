@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import {
   Button,
   DialogDescription,
@@ -14,11 +14,14 @@ import { cn } from "../../utils/classname-util";
 import { InteractiveTooltip } from "../ui/tooltip";
 import { ExternalLinkIcon } from "../ui/icons/ExternalLink";
 import { WarningIcon } from "../ui/icons";
-import { getExplorerAddressUrl } from "../../config";
+import { getExplorerAddressUrl, TURNSTILE_SITE_KEY } from "../../config";
 import { AuthContext, AuthContextProps } from "../AuthContext";
 import { ZKEmailAuthenticatorStatus } from "../ModalViews/AddAuthenticators/ZKEmailAuthenticatorStatus";
 import { useZKEmailSigningStatus } from "../../hooks/useZKEmailSigningStatus";
 import { CONNECTION_METHOD } from "../../auth/AuthStateManager";
+import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
+import { getTurnstileTokenForSubmit } from "../../utils/turnstile";
+import { setZKEmailTurnstileTokenProvider } from "../../auth/zk-email/zk-email-signing-status";
 
 interface WalletSendReviewProps {
   sendAmount: string;
@@ -45,6 +48,22 @@ export function WalletSendReview({
   const zkEmailSigningStatus = useZKEmailSigningStatus(
     connectionMethod === CONNECTION_METHOD.ZKEmail,
   );
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const turnstileTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (connectionMethod !== CONNECTION_METHOD.ZKEmail) return;
+    setZKEmailTurnstileTokenProvider(() =>
+      getTurnstileTokenForSubmit({
+        execute: () => turnstileRef.current?.execute?.() ?? Promise.resolve(),
+        getResponse: () => turnstileRef.current?.getResponse?.() ?? "",
+        getRefToken: () => turnstileTokenRef.current,
+      }),
+    );
+    return () => {
+      setZKEmailTurnstileTokenProvider(null);
+    };
+  }, [connectionMethod]);
 
   const handleBackClick = () => {
     onBack();
@@ -170,6 +189,23 @@ export function WalletSendReview({
               </p>
             </div>
           </div>
+        )}
+
+        {connectionMethod === CONNECTION_METHOD.ZKEmail && TURNSTILE_SITE_KEY && (
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={TURNSTILE_SITE_KEY}
+            options={{ size: "invisible", execution: "execute" }}
+            onSuccess={(token) => {
+              turnstileTokenRef.current = token;
+            }}
+            onError={() => {
+              turnstileTokenRef.current = null;
+            }}
+            onExpire={() => {
+              turnstileTokenRef.current = null;
+            }}
+          />
         )}
 
         <div className="ui-flex ui-gap-2.5">

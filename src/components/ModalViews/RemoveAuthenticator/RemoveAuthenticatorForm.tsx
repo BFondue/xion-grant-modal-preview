@@ -3,8 +3,9 @@ import {
   SetStateAction,
   useContext,
   useEffect,
-  useState,
   useMemo,
+  useRef,
+  useState,
 } from "react";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
@@ -24,7 +25,7 @@ import { removeRegistration } from "../../../auth/passkey";
 import { Loading } from "../../Loading";
 import { ZKEmailAuthenticatorStatus } from "../AddAuthenticators/ZKEmailAuthenticatorStatus";
 import { useZKEmailSigningStatus } from "../../../hooks/useZKEmailSigningStatus";
-import { FEE_GRANTER_ADDRESS } from "../../../config";
+import { FEE_GRANTER_ADDRESS, TURNSTILE_SITE_KEY } from "../../../config";
 import { validateFeeGrant } from "@burnt-labs/account-management";
 import { useAuthTypes } from "../../../auth/hooks/useAuthTypes";
 import {
@@ -36,8 +37,11 @@ import {
 import {
   setZKEmailSigningAbortController,
   setZKEmailSigningStatus,
+  setZKEmailTurnstileTokenProvider,
 } from "../../../auth/zk-email/zk-email-signing-status";
 import { CONNECTION_METHOD } from "../../../auth/useAuthState";
+import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
+import { getTurnstileTokenForSubmit } from "../../../utils/turnstile";
 
 export function RemoveAuthenticatorForm({
   authenticator,
@@ -67,16 +71,26 @@ export function RemoveAuthenticatorForm({
   const zkEmailSigningStatus = useZKEmailSigningStatus(
     connectionMethod === CONNECTION_METHOD.ZKEmail,
   );
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const turnstileTokenRef = useRef<string | null>(null);
 
-  // When modal is open with zk-email, set abort controller so closing modal stops polling
+  // When modal is open with zk-email, set abort controller and Turnstile token provider for signing
   useEffect(() => {
     if (connectionMethod !== CONNECTION_METHOD.ZKEmail) return;
     const controller = new AbortController();
     setZKEmailSigningStatus(null);
     setZKEmailSigningAbortController(controller);
+    setZKEmailTurnstileTokenProvider(() =>
+      getTurnstileTokenForSubmit({
+        execute: () => turnstileRef.current?.execute?.() ?? Promise.resolve(),
+        getResponse: () => turnstileRef.current?.getResponse?.() ?? "",
+        getRefToken: () => turnstileTokenRef.current,
+      }),
+    );
     return () => {
       controller.abort();
       setZKEmailSigningAbortController(null);
+      setZKEmailTurnstileTokenProvider(null);
       setZKEmailSigningStatus(null);
     };
   }, [connectionMethod]);
@@ -275,6 +289,22 @@ export function RemoveAuthenticatorForm({
             detail={zkEmailSigningStatus.detail}
             className="ui-w-full"
           />
+          {TURNSTILE_SITE_KEY && (
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={TURNSTILE_SITE_KEY}
+              options={{ size: "invisible", execution: "execute" }}
+              onSuccess={(token) => {
+                turnstileTokenRef.current = token;
+              }}
+              onError={() => {
+                turnstileTokenRef.current = null;
+              }}
+              onExpire={() => {
+                turnstileTokenRef.current = null;
+              }}
+            />
+          )}
         </div>
       );
     }
@@ -339,6 +369,22 @@ export function RemoveAuthenticatorForm({
         {renderAuthenticator()}
         <span className="ui-text-destructive">{errorMessage}</span>
       </div>
+      {connectionMethod === CONNECTION_METHOD.ZKEmail && TURNSTILE_SITE_KEY && (
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={TURNSTILE_SITE_KEY}
+          options={{ size: "invisible", execution: "execute" }}
+          onSuccess={(token) => {
+            turnstileTokenRef.current = token;
+          }}
+          onError={() => {
+            turnstileTokenRef.current = null;
+          }}
+          onExpire={() => {
+            turnstileTokenRef.current = null;
+          }}
+        />
+      )}
       {errorMessage ? (
         <Button className="ui-w-full" onClick={() => setIsOpen(false)}>
           CONTINUE
