@@ -263,19 +263,25 @@ export function RemoveAuthenticatorForm({
   }
 
   if (isLoading) {
-    if (zkEmailSigningStatus) {
+    if (connectionMethod === CONNECTION_METHOD.ZKEmail) {
       return (
         <div className="ui-animate-scale-in ui-flex ui-flex-col ui-gap-10 ui-items-center ui-w-full">
           <Loading
             header="Removing Authenticator"
-            message="Signing with your email. Don't leave the page or close the window."
+            message={
+              zkEmailSigningStatus
+                ? "Signing with your email. Don't leave the page or close the window."
+                : "Preparing... Don't leave the page or close the window."
+            }
           />
-          <ZKEmailAuthenticatorStatus
-            phase={zkEmailSigningStatus.phase}
-            message={zkEmailSigningStatus.message}
-            detail={zkEmailSigningStatus.detail}
-            className="ui-w-full"
-          />
+          {zkEmailSigningStatus && (
+            <ZKEmailAuthenticatorStatus
+              phase={zkEmailSigningStatus.phase}
+              message={zkEmailSigningStatus.message}
+              detail={zkEmailSigningStatus.detail}
+              className="ui-w-full"
+            />
+          )}
           {renderTurnstile()}
         </div>
       );
@@ -341,7 +347,6 @@ export function RemoveAuthenticatorForm({
         {renderAuthenticator()}
         <span className="ui-text-destructive">{errorMessage}</span>
       </div>
-      {renderTurnstile()}
       {errorMessage ? (
         <Button className="ui-w-full" onClick={() => setIsOpen(false)}>
           CONTINUE
