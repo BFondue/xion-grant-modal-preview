@@ -1,20 +1,17 @@
 # Deployment Process
 
-This project uses a two-environment deployment strategy with **testnet** as a staging/beta environment and **mainnet** as production.
+This project uses a two-environment deployment strategy with **testnet** as a staging/beta environment and **mainnet** as production. All deployments are tag-driven from the `main` branch.
 
 ## Branches
 
-| Branch    | Environment | Purpose                                          |
-| --------- | ----------- | ------------------------------------------------ |
-| `testnet` | Testnet     | Beta/staging - code bakes here before production |
-| `main`    | Mainnet     | Production - stable releases only                |
+| Branch | Purpose                                                   |
+| ------ | --------------------------------------------------------- |
+| `main` | Single trunk branch — all PRs target main, tags come here |
 
 ## Versioning
 
-We use [Changesets](https://github.com/changesets/changesets) for version management:
-
-- **Testnet**: Release candidates (e.g., `v1.2.0-rc.0`, `v1.2.0-rc.1`)
-- **Mainnet**: Stable releases (e.g., `v1.2.0`)
+- **Testnet (RC)**: Release candidate tags (e.g., `v1.2.0-rc.0`, `v1.2.0-rc.1`)
+- **Mainnet (Stable)**: Stable version tags (e.g., `v1.2.0`)
 
 ## Workflow
 
@@ -23,90 +20,107 @@ Feature Branch
       │
       ▼
 ┌─────────────────┐
-│  PR → testnet   │  ← Preview deployment created
+│   PR → main     │  ← Tests run, testnet preview deployed
 └────────┬────────┘
          │ merge
          ▼
 ┌─────────────────┐
-│    testnet      │  ← Changesets creates "Version Packages (RC)" PR
+│      main       │
 └────────┬────────┘
-         │ merge version PR
+         │ push RC tag (e.g. v1.2.0-rc.0)
          ▼
-┌─────────────────┐
-│  Pre-release    │  ← v1.2.0-rc.0 published
-│  (GitHub)       │
-└────────┬────────┘
-         │ triggers
-         ▼
-┌─────────────────┐
-│ Deploy Testnet  │  ← Deployed to testnet environment
-└────────┬────────┘
-         │
-         │ (validate on testnet)
-         │
-         ▼
-┌─────────────────┐
-│ PR → main       │  ← From testnet branch
-└────────┬────────┘
-         │ merge
-         ▼
-┌─────────────────┐
-│     main        │  ← Changesets exits prerelease, creates "Version Packages" PR
-└────────┬────────┘
-         │ merge version PR
-         ▼
-┌─────────────────┐
-│    Release      │  ← v1.2.0 published
-│    (GitHub)     │
-└────────┬────────┘
-         │ triggers
-         ▼
-┌─────────────────┐
-│ Deploy Mainnet  │  ← Deployed to mainnet environment
-└─────────────────┘
+┌─────────────────────┐
+│  Deploy Testnet     │  ← Verify tag on main → tests → GitHub pre-release → deploy to testnet
+└─────────┬───────────┘
+          │ pre-release published
+          ▼
+┌─────────────────────┐
+│  Preview Mainnet    │  ← Tests → mainnet preview build (version upload)
+└─────────────────────┘
+          │
+          │ (validate on testnet + mainnet preview)
+          │
+┌─────────────────────┐
+│ push stable tag     │  ← e.g. v1.2.0 (must be on main)
+│ (e.g. v1.2.0)      │
+└─────────┬───────────┘
+          ▼
+┌─────────────────────┐
+│  Deploy Mainnet     │  ← Verify tag on main → tests → GitHub release → deploy to mainnet
+└─────────────────────┘
 ```
 
 ## GitHub Actions Workflows
 
-| Workflow              | Trigger               | Action                     |
-| --------------------- | --------------------- | -------------------------- |
-| `preview-testnet.yml` | PR to `testnet`       | Creates preview deployment |
-| `release-testnet.yml` | Push to `testnet`     | Creates RC version PR      |
-| `deploy-testnet.yml`  | Pre-release published | Deploys to testnet         |
-| `release-mainnet.yml` | Push to `main`        | Creates stable version PR  |
-| `deploy-mainnet.yml`  | Release published     | Deploys to mainnet         |
+### Trigger Workflows
+
+| Workflow              | Trigger                         | Action                                                     |
+| --------------------- | ------------------------------- | ---------------------------------------------------------- |
+| `preview-testnet.yml` | PR to `main`                    | Runs tests, creates testnet preview via `build-preview.yml` |
+| `deploy-testnet.yml`  | RC tag push (`v*-rc*`)          | Verifies tag on main, tests, creates pre-release, deploys   |
+| `preview-mainnet.yml` | Release published (pre-release) | Runs tests, creates mainnet preview via `build-preview.yml` |
+| `deploy-mainnet.yml`  | Stable tag push (`v*`, not RC)  | Verifies tag on main, tests, creates release, deploys       |
+
+### Reusable Workflows
+
+| Workflow              | Purpose                                            |
+| --------------------- | -------------------------------------------------- |
+| `test.yml`            | Lint, type-check, and run tests with coverage      |
+| `build-deploy.yml`    | Build and deploy to Cloudflare Workers             |
+| `build-preview.yml`   | Build and upload a preview version, comment on PR  |
+
+### Supporting Workflows
+
+| Workflow                      | Trigger                    | Action                              |
+| ----------------------------- | -------------------------- | ----------------------------------- |
+| `dependency-validation.yml`   | PR to `main` (package.json) | Validates dependency changes        |
+
+## Tag-Based Deploys
+
+All deploys are triggered by pushing tags to the `main` branch. A `verify-branch` job ensures the tagged commit exists on `origin/main` before proceeding.
+
+### Deploy to Testnet
+
+```bash
+# From main branch
+git tag v1.2.0-rc.0
+git push origin v1.2.0-rc.0
+```
+
+This triggers `deploy-testnet.yml` which:
+1. Verifies the tag commit is on `main`
+2. Runs the test suite
+3. Creates a GitHub pre-release with auto-generated release notes
+4. Builds and deploys to testnet via `build-deploy.yml`
+
+The pre-release also triggers `preview-mainnet.yml`, which uploads a mainnet preview version so you can validate before promoting.
+
+### Deploy to Mainnet
+
+```bash
+# From main branch
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+This triggers `deploy-mainnet.yml` which:
+1. Verifies the tag commit is on `main`
+2. Runs the test suite
+3. Creates a GitHub release with auto-generated release notes
+4. Builds and deploys to mainnet via `build-deploy.yml`
 
 ## Manual Deployment
 
-All deploy workflows support `workflow_dispatch` for manual triggering via GitHub Actions UI.
-
-## Branch Protection
-
-PRs to `main` are automatically redirected to target `testnet` instead. This ensures all changes go through testnet validation before production. Only PRs from the `testnet` branch itself (or changeset release PRs from the bot) can target `main`.
-
-### Security Model
-
-| Branch Pattern        | Protection                                          |
-| --------------------- | --------------------------------------------------- |
-| `main`                | PR required, 1 approval, tests pass, signed commits |
-| `testnet`             | PR required, 1 approval, tests pass, signed commits |
-| `changeset-release/*` | Ruleset prevents user pushes, only bot can modify   |
-
-### Safeguards
-
-- **Required approvals**: All PRs require human approval before merge
-- **PR redirect**: PRs to `main` from non-`testnet` branches are auto-redirected to `testnet`
-- **Unsigned commits rejected**: PRs with unsigned commits are automatically closed
+Both deploy workflows support `workflow_dispatch` for manual triggering via the GitHub Actions UI.
 
 ## Adding Changes
 
-1. Create a feature branch from `testnet`
+1. Create a feature branch from `main`
 2. Make your changes
-3. Run `pnpm changeset` to create a changeset describing your changes
-4. Open a PR to `testnet`
-5. After merge, the release workflow will create a version PR
-6. Merge the version PR to publish an RC and deploy to testnet
-7. Once validated, open a PR from `testnet` to `main` to promote to production
+3. Open a PR to `main` — a testnet preview deploy is created automatically
+4. After merge, push an RC tag (e.g., `v1.2.0-rc.0`) to deploy to testnet
+5. Validate on testnet and the mainnet preview
+6. Push a stable tag (e.g., `v1.2.0`) to deploy to mainnet
 
 ## Release Version
 

@@ -44,6 +44,8 @@ npm run test:coverage    # Run tests with coverage report
 
 ### Deployment
 
+Deployments are tag-driven from `main`. See [DEPLOYMENT.md](DEPLOYMENT.md) for full details.
+
 ```bash
 npm run deploy:mainnet   # Deploy to mainnet via Cloudflare
 npm run deploy:testnet   # Deploy to testnet via Cloudflare
@@ -59,7 +61,7 @@ npm run deploy:testnet   # Deploy to testnet via Cloudflare
 - **State Management**: React Context API + TanStack Query
 - **Blockchain**: CosmJS for Cosmos SDK interaction
 - **Authentication**: Stytch for social logins (Google, TikTok)
-- **Deployment**: Cloudflare Pages via Wrangler
+- **Deployment**: Cloudflare Workers via Wrangler
 
 ### Project Structure
 
@@ -99,14 +101,14 @@ src/
 2. **UI Components**: Follow existing patterns in `src/components/ui/`
 3. **Tailwind**: Always use "ui-" prefix for CSS classes
 4. **Type Safety**: Strict TypeScript enforcement
-5. **Testing**: Tests co-located with components, 80% coverage threshold
+5. **Testing**: Tests co-located with components, 99% coverage threshold
 
 ### Testing Approach
 
 - Framework: Vitest with React Testing Library
 - Setup file: `src/test/setup.ts`
 - Pattern: `*.test.ts` or `*.spec.ts` files
-- Coverage thresholds: 80% for lines, functions, branches, statements
+- Coverage thresholds: 99% for lines, functions, branches, statements
 
 ### Blockchain Integration
 
