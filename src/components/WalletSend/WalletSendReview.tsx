@@ -18,6 +18,7 @@ import { getExplorerAddressUrl } from "../../config";
 import { AuthContext, AuthContextProps } from "../AuthContext";
 import { ZKEmailAuthenticatorStatus } from "../ModalViews/AddAuthenticators/ZKEmailAuthenticatorStatus";
 import { useZKEmailSigningStatus } from "../../hooks/useZKEmailSigningStatus";
+import { useZKEmailTurnstileProvider } from "../../hooks/useZKEmailTurnstileProvider";
 import { CONNECTION_METHOD } from "../../auth/AuthStateManager";
 
 interface WalletSendReviewProps {
@@ -42,9 +43,9 @@ export function WalletSendReview({
   triggerSend,
 }: WalletSendReviewProps) {
   const { connectionMethod } = useContext(AuthContext) as AuthContextProps;
-  const zkEmailSigningStatus = useZKEmailSigningStatus(
-    connectionMethod === CONNECTION_METHOD.ZKEmail,
-  );
+  const isUsingZKEmail = connectionMethod === CONNECTION_METHOD.ZKEmail;
+  const zkEmailSigningStatus = useZKEmailSigningStatus(isUsingZKEmail);
+  const { renderTurnstile } = useZKEmailTurnstileProvider(isUsingZKEmail);
 
   const handleBackClick = () => {
     onBack();
@@ -171,6 +172,8 @@ export function WalletSendReview({
             </div>
           </div>
         )}
+
+        {renderTurnstile()}
 
         <div className="ui-flex ui-gap-2.5">
           <Button

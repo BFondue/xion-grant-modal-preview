@@ -3,8 +3,8 @@ import {
   SetStateAction,
   useContext,
   useEffect,
-  useState,
   useMemo,
+  useState,
 } from "react";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
@@ -38,6 +38,7 @@ import {
   setZKEmailSigningStatus,
 } from "../../../auth/zk-email/zk-email-signing-status";
 import { CONNECTION_METHOD } from "../../../auth/useAuthState";
+import { useZKEmailTurnstileProvider } from "../../../hooks/useZKEmailTurnstileProvider";
 
 export function RemoveAuthenticatorForm({
   authenticator,
@@ -64,9 +65,9 @@ export function RemoveAuthenticatorForm({
 
   // Hooks
   const { client, getGasCalculation } = useSigningClient();
-  const zkEmailSigningStatus = useZKEmailSigningStatus(
-    connectionMethod === CONNECTION_METHOD.ZKEmail,
-  );
+  const isUsingZKEmail = connectionMethod === CONNECTION_METHOD.ZKEmail;
+  const zkEmailSigningStatus = useZKEmailSigningStatus(isUsingZKEmail);
+  const { renderTurnstile } = useZKEmailTurnstileProvider(isUsingZKEmail);
 
   // When modal is open with zk-email, set abort controller so closing modal stops polling
   useEffect(() => {
@@ -275,6 +276,7 @@ export function RemoveAuthenticatorForm({
             detail={zkEmailSigningStatus.detail}
             className="ui-w-full"
           />
+          {renderTurnstile()}
         </div>
       );
     }
@@ -339,6 +341,7 @@ export function RemoveAuthenticatorForm({
         {renderAuthenticator()}
         <span className="ui-text-destructive">{errorMessage}</span>
       </div>
+      {renderTurnstile()}
       {errorMessage ? (
         <Button className="ui-w-full" onClick={() => setIsOpen(false)}>
           CONTINUE

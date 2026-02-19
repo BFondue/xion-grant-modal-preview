@@ -11,6 +11,7 @@ import { useState } from "react";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import { ZKEmailAuthenticatorStatus } from "../ModalViews/AddAuthenticators/ZKEmailAuthenticatorStatus";
 import { useZKEmailSigningStatus } from "../../hooks/useZKEmailSigningStatus";
+import { useZKEmailTurnstileProvider } from "../../hooks/useZKEmailTurnstileProvider";
 import { CONNECTION_METHOD, type ConnectionMethod } from "../../auth/useAuthState";
 
 interface TransactionData {
@@ -49,7 +50,9 @@ export function SigningModal({
   connectionMethod,
 }: SigningModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const zkEmailStatus = useZKEmailSigningStatus(connectionMethod === CONNECTION_METHOD.ZKEmail);
+  const isUsingZKEmail = connectionMethod === CONNECTION_METHOD.ZKEmail;
+  const zkEmailStatus = useZKEmailSigningStatus(isUsingZKEmail);
+  const { renderTurnstile } = useZKEmailTurnstileProvider(isOpen && isUsingZKEmail);
 
   if (!transaction) return null;
 
@@ -154,6 +157,8 @@ export function SigningModal({
               </>
             )}
           </div>
+
+          {renderTurnstile()}
 
           <div className="ui-flex ui-gap-2.5">
             <Button
