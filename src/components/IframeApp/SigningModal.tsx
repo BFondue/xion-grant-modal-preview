@@ -7,15 +7,12 @@ import {
   Button,
 } from "../ui";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import { ZKEmailAuthenticatorStatus } from "../ModalViews/AddAuthenticators/ZKEmailAuthenticatorStatus";
 import { useZKEmailSigningStatus } from "../../hooks/useZKEmailSigningStatus";
+import { useZKEmailTurnstileProvider } from "../../hooks/useZKEmailTurnstileProvider";
 import { CONNECTION_METHOD, type ConnectionMethod } from "../../auth/useAuthState";
-import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
-import { getTurnstileTokenForSubmit } from "../../utils/turnstile";
-import { setZKEmailTurnstileTokenProvider } from "../../auth/zk-email/zk-email-signing-status";
-import { TURNSTILE_SITE_KEY } from "../../config";
 
 interface TransactionData {
   messages: Array<{
@@ -53,23 +50,9 @@ export function SigningModal({
   connectionMethod,
 }: SigningModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const zkEmailStatus = useZKEmailSigningStatus(connectionMethod === CONNECTION_METHOD.ZKEmail);
-  const turnstileRef = useRef<TurnstileInstance | null>(null);
-  const turnstileTokenRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!isOpen || connectionMethod !== CONNECTION_METHOD.ZKEmail) return;
-    setZKEmailTurnstileTokenProvider(() =>
-      getTurnstileTokenForSubmit({
-        execute: () => turnstileRef.current?.execute?.() ?? Promise.resolve(),
-        getResponse: () => turnstileRef.current?.getResponse?.() ?? "",
-        getRefToken: () => turnstileTokenRef.current,
-      }),
-    );
-    return () => {
-      setZKEmailTurnstileTokenProvider(null);
-    };
-  }, [isOpen, connectionMethod]);
+  const isUsingZKEmail = connectionMethod === CONNECTION_METHOD.ZKEmail;
+  const zkEmailStatus = useZKEmailSigningStatus(isUsingZKEmail);
+  const { renderTurnstile } = useZKEmailTurnstileProvider(isOpen && isUsingZKEmail);
 
   if (!transaction) return null;
 
@@ -175,22 +158,7 @@ export function SigningModal({
             )}
           </div>
 
-          {connectionMethod === CONNECTION_METHOD.ZKEmail && TURNSTILE_SITE_KEY && (
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={TURNSTILE_SITE_KEY}
-              options={{ size: "invisible", execution: "execute" }}
-              onSuccess={(token) => {
-                turnstileTokenRef.current = token;
-              }}
-              onError={() => {
-                turnstileTokenRef.current = null;
-              }}
-              onExpire={() => {
-                turnstileTokenRef.current = null;
-              }}
-            />
-          )}
+          {renderTurnstile()}
 
           <div className="ui-flex ui-gap-2.5">
             <Button

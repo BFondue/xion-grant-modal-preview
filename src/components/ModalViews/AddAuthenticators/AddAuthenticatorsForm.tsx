@@ -4,7 +4,6 @@ import {
   useContext,
   useState,
   useEffect,
-  useRef,
 } from "react";
 import { create } from "@github/webauthn-json/browser-ponyfill";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
@@ -55,19 +54,16 @@ import {
   XION_API_URL,
   FEATURE_FLAGS,
   ZK_EMAIL_RECEIVER_EMAIL_ID,
-  TURNSTILE_SITE_KEY,
 } from "../../../config";
 import {
   setZKEmailSigningAbortController,
   setZKEmailSigningStatus,
-  setZKEmailTurnstileTokenProvider,
 } from "../../../auth/zk-email/zk-email-signing-status";
 import {
   CONNECTION_METHOD,
   type ConnectionMethod,
 } from "../../../auth/useAuthState";
-import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
-import { getTurnstileTokenForSubmit } from "../../../utils/turnstile";
+import { useZKEmailTurnstileProvider } from "../../../hooks/useZKEmailTurnstileProvider";
 
 interface AuthenticatorStateData {
   id: string;
@@ -107,29 +103,19 @@ export function AddAuthenticatorsForm({
     isMainnet,
     connectionMethod,
   } = useContext(AuthContext) as AuthContextProps;
-  const zkEmailSigningStatus = useZKEmailSigningStatus(
-    connectionMethod === CONNECTION_METHOD.ZKEmail,
-  );
-  const turnstileRef = useRef<TurnstileInstance | null>(null);
-  const turnstileTokenRef = useRef<string | null>(null);
+  const isUsingZKEmail = connectionMethod === CONNECTION_METHOD.ZKEmail;
+  const zkEmailSigningStatus = useZKEmailSigningStatus(isUsingZKEmail);
+  const { renderTurnstile } = useZKEmailTurnstileProvider(isUsingZKEmail);
 
-  // When modal is open with zk-email, set abort controller and Turnstile token provider for signing
+  // When modal is open with zk-email, set abort controller so closing modal stops polling
   useEffect(() => {
     if (connectionMethod !== CONNECTION_METHOD.ZKEmail) return;
     setZKEmailSigningStatus(null);
     const controller = new AbortController();
     setZKEmailSigningAbortController(controller);
-    setZKEmailTurnstileTokenProvider(() =>
-      getTurnstileTokenForSubmit({
-        execute: () => turnstileRef.current?.execute?.() ?? Promise.resolve(),
-        getResponse: () => turnstileRef.current?.getResponse?.() ?? "",
-        getRefToken: () => turnstileTokenRef.current,
-      }),
-    );
     return () => {
       controller.abort();
       setZKEmailSigningAbortController(null);
-      setZKEmailTurnstileTokenProvider(null);
       setZKEmailSigningStatus(null);
     };
   }, [connectionMethod]);
@@ -963,22 +949,7 @@ export function AddAuthenticatorsForm({
             detail={zkEmailSigningStatus.detail}
             className="ui-w-full"
           />
-          {TURNSTILE_SITE_KEY && (
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={TURNSTILE_SITE_KEY}
-              options={{ size: "invisible", execution: "execute" }}
-              onSuccess={(token) => {
-                turnstileTokenRef.current = token;
-              }}
-              onError={() => {
-                turnstileTokenRef.current = null;
-              }}
-              onExpire={() => {
-                turnstileTokenRef.current = null;
-              }}
-            />
-          )}
+          {renderTurnstile()}
         </div>
       );
     }
@@ -1175,22 +1146,7 @@ export function AddAuthenticatorsForm({
           SET UP AUTHENTICATOR
         </Button>
       )}
-      {connectionMethod === CONNECTION_METHOD.ZKEmail && TURNSTILE_SITE_KEY && (
-        <Turnstile
-          ref={turnstileRef}
-          siteKey={TURNSTILE_SITE_KEY}
-          options={{ size: "invisible", execution: "execute" }}
-          onSuccess={(token) => {
-            turnstileTokenRef.current = token;
-          }}
-          onError={() => {
-            turnstileTokenRef.current = null;
-          }}
-          onExpire={() => {
-            turnstileTokenRef.current = null;
-          }}
-        />
-      )}
+      {renderTurnstile()}
     </div>
   );
 }
