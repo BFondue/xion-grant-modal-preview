@@ -13,7 +13,7 @@ import {
   generateTreasuryGrants,
   type ContractGrantDescription,
 } from "@burnt-labs/account-management";
-import { FEE_GRANTER_ADDRESS } from "../../config";
+import { FEE_GRANTER_ADDRESS, XION_API_URL } from "../../config";
 import { treasuryStrategy } from "../../utils/query-treasury-contract";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { AuthContext, AuthContextProps } from "../AuthContext";
@@ -105,7 +105,11 @@ export const LoginGrantApproval = ({
 }: AbstraxionGrantProps) => {
   const { client, getGasCalculation } = useSigningClient();
   const { data: account } = useSmartAccount();
-  const { redirect_uri, state } = useQueryParams(["redirect_uri", "state"]);
+  const { redirect_uri, state, mode } = useQueryParams([
+    "redirect_uri",
+    "state",
+    "mode",
+  ]);
   const { xionDisconnect } = useXionDisconnect();
   const { chainInfo, abstraxionError, setAbstraxionError } = useContext(
     AuthContext,
@@ -204,6 +208,26 @@ export const LoginGrantApproval = ({
           return () => clearTimeout(timer);
         }
 
+        // Popup mode: mode=popup is set by PopupController and means we must
+        // close this window when done — never redirect, even if opener is lost.
+        if (mode === "popup") {
+          const timer = setTimeout(() => {
+            if (window.opener && redirect_uri) {
+              const targetOrigin = new URL(redirect_uri).origin;
+              try {
+                window.opener.postMessage(
+                  { type: "CONNECT_SUCCESS", address: account?.id },
+                  targetOrigin,
+                );
+              } catch {
+                // opener gone — close anyway
+              }
+            }
+            setTimeout(() => window.close(), 150);
+          }, 500);
+          return () => clearTimeout(timer);
+        }
+
         if (redirect_uri) {
           const redirectTimer = setTimeout(() => {
             safeRedirectOrDisconnect(
@@ -222,6 +246,7 @@ export const LoginGrantApproval = ({
     },
     [
       showSuccess,
+      mode,
       redirect_uri,
       account?.id,
       setAbstraxionError,
@@ -236,6 +261,21 @@ export const LoginGrantApproval = ({
       onDenyCallback();
       return;
     }
+
+    // Popup mode: close window (with CONNECT_REJECTED if opener is reachable)
+    if (mode === "popup") {
+      if (window.opener && redirect_uri) {
+        const targetOrigin = new URL(redirect_uri).origin;
+        try {
+          window.opener.postMessage({ type: "CONNECT_REJECTED" }, targetOrigin);
+        } catch {
+          // opener gone
+        }
+      }
+      setTimeout(() => window.close(), 150);
+      return;
+    }
+
     safeRedirectOrDisconnect(
       redirect_uri,
       setAbstraxionError,
@@ -385,9 +425,7 @@ export const LoginGrantApproval = ({
         throw new Error("no account");
       }
 
-      if (!chainInfo?.rest) {
-        throw new Error("Chain REST endpoint not available");
-      }
+      const restUrl = chainInfo?.rest || XION_API_URL;
 
       const granter = account.id;
       const timestampThreeMonthsFromNow = BigInt(
@@ -398,7 +436,7 @@ export const LoginGrantApproval = ({
       );
 
       const feeGrantResult = await validateFeeGrant(
-        chainInfo.rest,
+        restUrl,
         FEE_GRANTER_ADDRESS,
         granter,
         [
@@ -409,6 +447,8 @@ export const LoginGrantApproval = ({
         ],
         account.id,
       );
+
+      console.log("[Grant] Fee grant result", feeGrantResult);
 
       const validFeeGranter = feeGrantResult.valid
         ? FEE_GRANTER_ADDRESS
@@ -430,6 +470,15 @@ export const LoginGrantApproval = ({
 
       setShowSuccess(true);
     } catch (error) {
+      console.error("[Grant] Grant failed", {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        name: error instanceof Error ? error.name : undefined,
+        // FeeGrantValidationError has a code and statusCode
+        code: (error as any)?.code,
+        statusCode: (error as any)?.statusCode,
+      });
+
       let errorMessage =
         error instanceof Error ? error.message : "An unknown error occurred";
 
@@ -524,7 +573,9 @@ export const LoginGrantApproval = ({
             Access granted
           </h2>
           <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">
-            You will now be redirected to your application.
+            {mode === "popup"
+              ? "This window will close automatically."
+              : "You will now be redirected to your application."}
           </p>
           <img
             src={xionLogo}

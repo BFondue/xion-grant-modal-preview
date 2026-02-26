@@ -101,9 +101,7 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
   // Check for missing redirect_uri in grant flow
   useEffect(() => {
     if (isInGrantFlow && !redirect_uri) {
-      setAbstraxionError(
-        isInGrantFlow && !redirect_uri ? MALFORMED_REQUEST_MESSAGE : "",
-      );
+      setAbstraxionError(MALFORMED_REQUEST_MESSAGE);
     }
   }, [isInGrantFlow, redirect_uri, setAbstraxionError]);
 
