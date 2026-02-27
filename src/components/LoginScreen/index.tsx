@@ -886,7 +886,7 @@ export const LoginScreen = () => {
           onError={handleZKEmailError}
         />
       ) : isOnOtpStep ? (
-        <div className="ui-animate-scale-in">
+        <div className="ui-animate-scale-in ui-flex ui-flex-col ui-gap-6">
           <DialogHeader>
             <DialogTitle>Input 6 Digit Code</DialogTitle>
             <DialogDescription>

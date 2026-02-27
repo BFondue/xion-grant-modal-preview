@@ -68,7 +68,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           className={cn(
             "ui-fixed ui-z-50",
             "ui-left-0 ui-top-0 md:ui-left-[50%] md:ui-top-[50%] md:-ui-translate-x-1/2 md:-ui-translate-y-1/2",
-            "ui-w-full ui-min-w-[380px] md:ui-max-w-[480px]",
+            "ui-w-full md:ui-min-w-[380px] md:ui-max-w-[480px]",
             "ui-flex ui-flex-col ui-justify-center ui-gap-6 ui-p-6 md:ui-p-10",
             "ui-bg-white ui-rounded-none md:ui-rounded-card md:ui-border md:ui-border-surface-border ui-shadow-lg",
             "ui-h-screen ui-max-h-screen md:ui-max-h-[90vh] md:ui-h-auto",
@@ -87,7 +87,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
               <CloseIcon strokeWidth={2} className="ui-w-4 ui-h-4" />
             </DialogClose>
           )}
-          <div className="ui-flex ui-flex-col ui-gap-6 ui-overflow-y-auto ui-max-h-full">
+          <div className="ui-flex ui-flex-col ui-gap-6 ui-overflow-y-auto ui-overflow-x-hidden ui-max-h-full">
             {children}
           </div>
         </DialogPrimitive.Content>

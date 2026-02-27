@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../ui";
 import { cn } from "../../utils/classname-util";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "../ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
 
 interface LoginOtpFormProps {
   handleOtp: (code: string) => void;
@@ -84,7 +80,10 @@ const LoginOtpForm: React.FC<LoginOtpFormProps> = ({
         "ui-gap-6": error,
       })}
     >
-      <div className="ui-w-fit ui-mx-auto" onKeyDown={handleKeyDown}>
+      <div
+        className="ui-flex ui-justify-center ui-w-full ui-max-w-full"
+        onKeyDown={handleKeyDown}
+      >
         <InputOTP
           maxLength={6}
           value={otp}
@@ -92,14 +91,14 @@ const LoginOtpForm: React.FC<LoginOtpFormProps> = ({
           disabled={isSubmitted}
           autoFocus
         >
-          <InputOTPGroup className="ui-gap-2.5">
+          <InputOTPGroup className="ui-gap-1.5 ui-justify-center sm:ui-gap-2.5">
             {Array.from({ length: 6 }, (_, i) => (
               <InputOTPSlot
                 key={i}
                 index={i}
                 className={cn(
-                  "ui-w-full ui-h-12 ui-text-center ui-text-text-primary ui-text-[28px] ui-font-bold ui-border ui-rounded-lg",
-                  "ui-outline-none ui-border-border focus-within:ui-border-border-focus ui-p-2.5 sm:ui-h-14 sm:ui-w-14 sm:ui-text-2xl ui-bg-transparent",
+                  "ui-w-12 ui-h-12 ui-shrink-0 ui-text-center ui-text-text-primary ui-text-[28px] ui-font-bold ui-border ui-rounded-lg !ui-shadow-none",
+                  "ui-outline-none ui-border-border focus-within:ui-border-border-focus ui-p-2.5 ui-text-2xl ui-bg-transparent",
                   { "ui-bg-surface-page": otp[i] },
                   {
                     "ui-border-destructive !ui-text-destructive ui-bg-inherit":
