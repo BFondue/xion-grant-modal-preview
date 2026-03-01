@@ -115,14 +115,41 @@ export function SignTransactionView() {
   const balanceDisplay = balance !== null ? formatXionAmount(balance, "uxion") : null;
   const isLowBalance = balance !== null && Number(balance) < 50_000; // < 0.05 XION
 
-  // ----- postMessage helpers -----
-  const postToOpener = (data: Record<string, unknown>) => {
-    if (!window.opener || !redirect_uri) return;
-    try {
-      const targetOrigin = new URL(redirect_uri).origin;
-      window.opener.postMessage(data, targetOrigin);
-    } catch {
-      // opener gone
+  // ----- Result delivery (popup postMessage or redirect fallback) -----
+  const sendResult = (data: Record<string, unknown>) => {
+    // Popup path: opener exists → postMessage + close
+    if (window.opener && redirect_uri) {
+      try {
+        const targetOrigin = new URL(redirect_uri).origin;
+        window.opener.postMessage(data, targetOrigin);
+      } catch {
+        // opener gone — fall through to redirect
+      }
+      setTimeout(
+        () => window.close(),
+        data.type === "SIGN_SUCCESS" ? 1200 : 150,
+      );
+      return;
+    }
+
+    // Redirect path: no opener (mobile / redirect mode) → navigate back
+    if (redirect_uri) {
+      try {
+        const url = new URL(redirect_uri);
+        if (data.type === "SIGN_SUCCESS" && data.txHash) {
+          url.searchParams.set("tx_hash", data.txHash as string);
+        } else if (data.type === "SIGN_REJECTED") {
+          url.searchParams.set("sign_rejected", "true");
+        } else if (data.type === "SIGN_ERROR") {
+          url.searchParams.set(
+            "sign_error",
+            (data.message as string) || "Transaction failed",
+          );
+        }
+        window.location.href = url.toString();
+      } catch {
+        // Invalid redirect_uri — nothing we can do
+      }
     }
   };
 
@@ -148,14 +175,11 @@ export function SignTransactionView() {
       setTxHash(result.transactionHash);
       setShowSuccess(true);
 
-      postToOpener({ type: "SIGN_SUCCESS", txHash: result.transactionHash });
-
-      // Auto-close after brief success display
-      setTimeout(() => window.close(), 1200);
+      sendResult({ type: "SIGN_SUCCESS", txHash: result.transactionHash });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Transaction failed";
       setError(message);
-      postToOpener({ type: "SIGN_ERROR", message });
+      sendResult({ type: "SIGN_ERROR", message });
     } finally {
       setInProgress(false);
     }
@@ -163,8 +187,7 @@ export function SignTransactionView() {
 
   // ----- Deny -----
   const handleDeny = () => {
-    postToOpener({ type: "SIGN_REJECTED" });
-    setTimeout(() => window.close(), 150);
+    sendResult({ type: "SIGN_REJECTED" });
   };
 
   // ----- Invalid payload -----
