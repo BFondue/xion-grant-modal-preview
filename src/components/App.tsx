@@ -106,9 +106,7 @@ export function App() {
     window.parent.postMessage({ type: "IFRAME_READY" }, "*");
 
     return () => handler.destroy();
-  }, [isInlineMode]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Intentionally stable deps: handler is created once for the iframe lifetime.
-  // xionDisconnect and account are accessed via refs/closures at call time.
+  }, [isInlineMode]);
 
   // ─── Grant approval / denial callbacks (threaded to LoginModal) ──────────────
   const handleGrantApproved = useCallback(() => {

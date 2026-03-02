@@ -90,7 +90,7 @@ export function InlineConnectedView({
   const legacyGrants = useMemo(() => {
     if (treasury) return null;
 
-    let contractsArray: any[] = [];
+    let contractsArray: string[] = [];
     let bankArray: { denom: string; amount: string }[] = [];
     const hasStake = Boolean(stake);
 
@@ -113,10 +113,6 @@ export function InlineConnectedView({
     if (contractsArray.length === 0 && !hasStake && bankArray.length === 0) return null;
     return { contracts: contractsArray, stake: hasStake, bank: bankArray };
   }, [treasury, contracts, stake, bank]);
-
-  const hasPermissions =
-    (treasury && (isTreasuryLoading || permissions.length > 0)) ||
-    legacyGrants !== null;
 
   return (
     <div className="ui-flex ui-flex-col ui-items-center ui-min-h-screen ui-p-6 ui-bg-background">

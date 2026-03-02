@@ -315,6 +315,25 @@ export function Callback() {
     token: string,
     stytchTokenType: string | null,
   ) => {
+    // Redirect-within-popup: OAuth happened as a redirect inside the popup window.
+    // Restore the original dashboard URL params and pass the token via hash.
+    const savedParams = sessionStorage.getItem("popup_oauth_params");
+    if (savedParams) {
+      console.log(
+        "[Callback] Redirect-within-popup: restoring params and passing token",
+      );
+      sessionStorage.removeItem("popup_oauth_params");
+      const redirectUrl = new URL(window.location.origin);
+      redirectUrl.search = savedParams;
+      redirectUrl.hash = `oauth_token=${encodeURIComponent(token)}&token_type=${encodeURIComponent(stytchTokenType || "oauth")}`;
+      setStatus("success");
+      setMessage("Authentication successful! Redirecting...");
+      setTimeout(() => {
+        window.location.href = redirectUrl.toString();
+      }, 500);
+      return;
+    }
+
     // Check if this was opened as a popup (has opener)
     if (window.opener) {
       console.log("[Callback] Sending OAuth token to opener (popup flow)");

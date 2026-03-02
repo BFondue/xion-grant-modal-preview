@@ -55,9 +55,12 @@ import {
   getStytchPublicToken,
   STYTCH_PROXY_URL,
 } from "../../config";
+import { useQueryParams } from "../../hooks/useQueryParams";
 
 export const LoginScreen = () => {
   const stytchClient = stytchClientSingleton;
+  const { mode } = useQueryParams(["mode"]);
+  const isPopupMode = mode === "popup";
 
   const [email, setEmail] = useState("");
   const [methodId, setMethodId] = useState("");
@@ -158,6 +161,13 @@ export const LoginScreen = () => {
       `signup_redirect_url=${encodeURIComponent(redirectUrl)}&` +
       `prompt=select_account`;
 
+    // Popup mode: redirect within this window instead of opening another popup
+    if (isPopupMode) {
+      sessionStorage.setItem("popup_oauth_params", window.location.search);
+      window.location.href = googleOAuthUrl;
+      return;
+    }
+
     const popup = window.open(
       googleOAuthUrl,
       "Google Login",
@@ -167,13 +177,20 @@ export const LoginScreen = () => {
     if (!popup) {
       console.error("[AbstraxionSignin] Popup was blocked");
       alert("Please allow popups for this site to sign in with Google");
+      setIsRedirectingToOAuth(false);
+      return;
     }
 
     // Listen for the OAuth callback message
+    const cleanup = () => {
+      window.removeEventListener("message", handleOAuthMessage);
+      clearInterval(closedCheck);
+    };
+
     const handleOAuthMessage = async (event: MessageEvent) => {
       // In production, verify event.origin matches your domain
       if (event.data.type === "OAUTH_SUCCESS") {
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
 
         try {
           if (!stytchClient || !stytchClient.oauth) {
@@ -212,13 +229,21 @@ export const LoginScreen = () => {
         }
       } else if (event.data.type === "OAUTH_ERROR") {
         console.error("[AbstraxionSignin] OAuth error:", event.data);
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
         setIsRedirectingToOAuth(false);
       }
     };
 
+    // Detect popup closed without completing auth
+    const closedCheck = setInterval(() => {
+      if (popup.closed) {
+        cleanup();
+        setIsRedirectingToOAuth(false);
+      }
+    }, 500);
+
     window.addEventListener("message", handleOAuthMessage);
-  }, [stytchClient, handlePostAuthentication]);
+  }, [stytchClient, handlePostAuthentication, isPopupMode]);
 
   const loginWithApple = useCallback(async () => {
     setIsRedirectingToOAuth(true);
@@ -235,6 +260,13 @@ export const LoginScreen = () => {
       `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
       `signup_redirect_url=${encodeURIComponent(redirectUrl)}`;
 
+    // Popup mode: redirect within this window instead of opening another popup
+    if (isPopupMode) {
+      sessionStorage.setItem("popup_oauth_params", window.location.search);
+      window.location.href = appleOAuthUrl;
+      return;
+    }
+
     const popup = window.open(
       appleOAuthUrl,
       "Apple Login",
@@ -249,10 +281,15 @@ export const LoginScreen = () => {
     }
 
     // Listen for the OAuth callback message
+    const cleanup = () => {
+      window.removeEventListener("message", handleOAuthMessage);
+      clearInterval(closedCheck);
+    };
+
     const handleOAuthMessage = async (event: MessageEvent) => {
       // In production, verify event.origin matches your domain
       if (event.data.type === "OAUTH_SUCCESS") {
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
 
         try {
           if (!stytchClient || !stytchClient.oauth) {
@@ -295,13 +332,21 @@ export const LoginScreen = () => {
         }
       } else if (event.data.type === "OAUTH_ERROR") {
         console.error("[AbstraxionSignin] Apple OAuth error:", event.data);
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
         setIsRedirectingToOAuth(false);
       }
     };
 
+    // Detect popup closed without completing auth
+    const closedCheck = setInterval(() => {
+      if (popup.closed) {
+        cleanup();
+        setIsRedirectingToOAuth(false);
+      }
+    }, 500);
+
     window.addEventListener("message", handleOAuthMessage);
-  }, [stytchClient, setAbstraxionError, handlePostAuthentication]);
+  }, [stytchClient, setAbstraxionError, handlePostAuthentication, isPopupMode]);
 
   const loginWithTikTok = useCallback(async () => {
     setIsRedirectingToOAuth(true);
@@ -318,6 +363,13 @@ export const LoginScreen = () => {
       `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
       `signup_redirect_url=${encodeURIComponent(redirectUrl)}`;
 
+    // Popup mode: redirect within this window instead of opening another popup
+    if (isPopupMode) {
+      sessionStorage.setItem("popup_oauth_params", window.location.search);
+      window.location.href = tiktokOAuthUrl;
+      return;
+    }
+
     const popup = window.open(
       tiktokOAuthUrl,
       "TikTok Login",
@@ -332,10 +384,15 @@ export const LoginScreen = () => {
     }
 
     // Listen for the OAuth callback message
+    const cleanup = () => {
+      window.removeEventListener("message", handleOAuthMessage);
+      clearInterval(closedCheck);
+    };
+
     const handleOAuthMessage = async (event: MessageEvent) => {
       // In production, verify event.origin matches your domain
       if (event.data.type === "OAUTH_SUCCESS") {
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
 
         try {
           if (!stytchClient || !stytchClient.oauth) {
@@ -378,13 +435,21 @@ export const LoginScreen = () => {
         }
       } else if (event.data.type === "OAUTH_ERROR") {
         console.error("[AbstraxionSignin] TikTok OAuth error:", event.data);
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
         setIsRedirectingToOAuth(false);
       }
     };
 
+    // Detect popup closed without completing auth
+    const closedCheck = setInterval(() => {
+      if (popup.closed) {
+        cleanup();
+        setIsRedirectingToOAuth(false);
+      }
+    }, 500);
+
     window.addEventListener("message", handleOAuthMessage);
-  }, [stytchClient, setAbstraxionError, handlePostAuthentication]);
+  }, [stytchClient, setAbstraxionError, handlePostAuthentication, isPopupMode]);
 
   const handleEmail = async () => {
     if (!email) {
@@ -870,8 +935,14 @@ export const LoginScreen = () => {
     return (
       <div className="ui-animate-scale-in ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
         <SpinnerV2 size="lg" color="black" />
-        <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">Verifying Login</h2>
-        <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">Please complete the login in the popup window.</p>
+        <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
+          {isPopupMode ? "Redirecting" : "Verifying Login"}
+        </h2>
+        <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">
+          {isPopupMode
+            ? "Taking you to your authentication provider..."
+            : "Please complete the login in the popup window."}
+        </p>
         <img src={xionLogo} alt="XION Logo" width="90" height="32" className="ui-mx-auto ui-mt-10 ui-brightness-0" />
       </div>
     );

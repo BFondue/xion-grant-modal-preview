@@ -1,9 +1,8 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui";
 import { Separator } from "../ui/separator";
 import { useSmartAccount, useSigningClient } from "../../hooks";
 import { useQueryParams } from "../../hooks/useQueryParams";
-import { AuthContext, AuthContextProps } from "../AuthContext";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
 import AnimatedX from "../ui/icons/AnimatedX";
@@ -45,6 +44,7 @@ function decodeTxPayload(encoded: string | null | undefined): DecodedTxPayload |
  * - /ibc.applications.transfer.v1.MsgTransfer
  * - /cosmos.authz.v1beta1.MsgGrant / MsgRevoke / MsgExec
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function summarizeMessage(msg: { typeUrl: string; value: any }): string {
   switch (msg.typeUrl) {
     case "/cosmos.bank.v1beta1.MsgSend": {
@@ -74,7 +74,7 @@ export function SignTransactionView() {
   const { tx, granter, redirect_uri } = useQueryParams(["tx", "granter", "redirect_uri"]);
   const { client, getGasCalculation } = useSigningClient();
   const { data: account } = useSmartAccount();
-  const { chainInfo } = useContext(AuthContext) as AuthContextProps;
+
 
   const [inProgress, setInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);

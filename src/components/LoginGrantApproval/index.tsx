@@ -516,8 +516,8 @@ export const LoginGrantApproval = ({
         message: error instanceof Error ? error.message : String(error),
         name: error instanceof Error ? error.name : undefined,
         // FeeGrantValidationError has a code and statusCode
-        code: (error as any)?.code,
-        statusCode: (error as any)?.statusCode,
+        code: (error as Record<string, unknown>)?.code,
+        statusCode: (error as Record<string, unknown>)?.statusCode,
       });
 
       let errorMessage =
