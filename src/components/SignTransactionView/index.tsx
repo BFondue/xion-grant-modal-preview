@@ -9,6 +9,7 @@ import AnimatedX from "../ui/icons/AnimatedX";
 import { ChevronDownIcon } from "../ui/icons/ChevronDown";
 import { truncateAddress, formatXionAmount } from "../../utils";
 import xionLogo from "../../assets/logo.png";
+import { SecuredByXion } from "../ui/SecuredByXion";
 
 interface DecodedTxPayload {
   messages: Array<{ typeUrl: string; value: unknown }>;
@@ -293,7 +294,7 @@ export function SignTransactionView({ transaction: txProp, granterAddress, onRes
 
   // ----- Approval UI -----
   return (
-    <div className="ui-animate-scale-in">
+    <div className="ui-animate-scale-in ui-flex ui-flex-col ui-min-h-full">
       {/* Header */}
       <div className="ui-flex ui-flex-col ui-items-center ui-text-center">
         <h2 className="ui-text-title ui-text-text-primary">Approve transaction</h2>
@@ -398,8 +399,8 @@ export function SignTransactionView({ transaction: txProp, granterAddress, onRes
       </div>
 
       {/* Footer */}
-      <div className="ui-mt-4 ui-flex ui-items-center ui-justify-center ui-gap-1">
-        <span className="ui-text-caption ui-text-text-muted">Secured by XION</span>
+      <div className="ui-mt-auto ui-pt-6">
+        <SecuredByXion />
       </div>
     </div>
   );

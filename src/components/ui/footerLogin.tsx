@@ -1,5 +1,5 @@
 import xionLogo from "../../assets/logo.png";
-import { isMainnet, NETWORK } from "../../config";
+import { isMainnet } from "../../config";
 
 const FooterLogin = () => {
   return (
@@ -17,27 +17,20 @@ const FooterLogin = () => {
         </a>
         <span className="ui-text-secondary-text">.</span>
       </div>
-      <div className="ui-flex ui-gap-3 ui-justify-center ui-items-end sm:ui-my-0">
-        <p className="ui-text-xs sm:ui-text-sm ui-text-secondary-text ui-mb-0.5 sm:ui-mb-1.5 ui-text-nowrap">
-          Powered by
-        </p>
-        <div className="ui-flex ui-flex-row-reverse ui-items-center sm:ui-items-start sm:ui-flex-col">
-          <div
-            className={`ui-flex ui-justify-between ui-items-center ui-h-[18px] ${
-              isMainnet() ? "ui-bg-mainnet-bg" : "ui-bg-testnet-bg"
-            } ui-px-1 ui-py-0 ui-ml-2 ui-mt-1.5 sm:ui-ml-0 sm:ui-mb-2 ${
-              isMainnet() ? "ui-text-mainnet" : "ui-text-testnet"
-            } ui-rounded-[4px] ui-text-[10px] ui-tracking-widest`}
-          >
-            {NETWORK.toUpperCase()}
-          </div>
-          <a
-            href="https://burnt.com/terms-and-conditions"
-            className="ui-w-[70px] ui-h-[24px] sm:ui-w-[108px] sm:ui-h-[39px]"
-          >
-            <img src={xionLogo} alt="XION Logo" width="108" height="39" className="ui-brightness-0" />
-          </a>
-        </div>
+      <div className="ui-flex ui-gap-2 ui-justify-center ui-items-center sm:ui-my-0">
+        <span
+          className={`ui-text-xs sm:ui-text-sm ui-font-medium ui-text-nowrap ${
+            isMainnet() ? "ui-text-mainnet" : "ui-text-testnet"
+          }`}
+        >
+          Secured by
+        </span>
+        <a
+          href="https://burnt.com/terms-and-conditions"
+          className="ui-w-[70px] ui-h-[24px] sm:ui-w-[90px] sm:ui-h-[32px]"
+        >
+          <img src={xionLogo} alt="XION Logo" width="90" height="32" className="ui-brightness-0" />
+        </a>
       </div>
     </div>
   );

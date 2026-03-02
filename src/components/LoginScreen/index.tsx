@@ -41,7 +41,6 @@ import LoginOtpForm from "../LoginOtpForm";
 import { GoogleLogoIcon } from "../ui/icons/GoogleLogo";
 import { TikTokLogoIcon } from "../ui/icons/TikTokLogo";
 import { ZKEmailLogin } from "./ZKEmailLogin";
-import { cn } from "../../utils/classname-util";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import xionLogo from "../../assets/logo.png";
@@ -50,11 +49,11 @@ import { AuthStateManager } from "../../auth/AuthStateManager";
 import { getLoginAuthenticatorFromJWT } from "../../auth/session";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
-  NETWORK,
   FEATURE_FLAGS,
   getStytchPublicToken,
   STYTCH_PROXY_URL,
 } from "../../config";
+import { SecuredByXion } from "../ui/SecuredByXion";
 import { useQueryParams } from "../../hooks/useQueryParams";
 
 export const LoginScreen = () => {
@@ -973,25 +972,6 @@ export const LoginScreen = () => {
         </div>
       ) : (
         <div className="ui-animate-scale-in">
-          <DialogHeader>
-            <div className="ui-flex ui-flex-col ui-items-center ui-gap-2.5 ui-w-full">
-              <div className="ui-flex ui-items-center ui-gap-2.5">
-                <img
-                  src={xionLogo}
-                  alt="XION Logo"
-                  width="108"
-                  height="39"
-                  className="ui-mb-1.5 ui-brightness-0"
-                />
-                <div className="ui-flex ui-justify-between ui-items-center ui-h-[18px] ui-bg-testnet-bg ui-px-1 ui-py-0 ui-mb-1.5 ui-text-testnet ui-rounded-[4px] ui-text-[10px] ui-tracking-widest">
-                  {NETWORK.toUpperCase()}
-                </div>
-              </div>
-              <DialogDescription>
-                Log in or sign up with your email
-              </DialogDescription>
-            </div>
-          </DialogHeader>
           <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full">
             <div className="ui-flex ui-flex-col ui-gap-4">
               <Input
@@ -1046,22 +1026,17 @@ export const LoginScreen = () => {
             </div>
           </div>
           {FEATURE_FLAGS.okx || FEATURE_FLAGS.metamask || FEATURE_FLAGS.zkemail ? (
-            <div className="ui-w-full ui-flex ui-flex-col ui-gap-2.5">
-              <button
-                className="group ui-flex ui-w-full ui-items-center ui-gap-2.5"
-                onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
-              >
-                Advanced Options
-                {/* Down Caret */}
-                <ChevronRightIcon
-                  className={cn(
-                    "ui-fill-text-secondary ui-rotate-180 group-hover/base button:ui-fill-text-primary",
-                    showAdvanced ? "-ui-rotate-[90deg]" : "ui-rotate-90",
-                  )}
-                />
-              </button>
+            <div className="ui-w-full ui-mt-2">
               {showAdvanced ? (
-                <div className="ui-flex ui-w-full ui-gap-1.5">
+                <div className="ui-flex ui-w-full ui-gap-1.5 ui-items-center">
+                  <button
+                    className="ui-flex ui-items-center ui-justify-center ui-h-12 ui-w-8 ui-shrink-0"
+                    onClick={() => setShowAdvanced(false)}
+                  >
+                    <ChevronRightIcon
+                      className="ui-fill-text-secondary -ui-rotate-[90deg]"
+                    />
+                  </button>
                   {FEATURE_FLAGS.okx ? (
                     <Button
                       variant="secondary"
@@ -1122,14 +1097,24 @@ export const LoginScreen = () => {
                     </Button>
                   ) : null}
                 </div>
-              ) : null}
+              ) : (
+                <button
+                  className="group ui-flex ui-w-full ui-items-center ui-gap-2.5"
+                  onClick={() => setShowAdvanced(true)}
+                >
+                  Advanced Options
+                  <ChevronRightIcon
+                    className="ui-fill-text-secondary ui-rotate-90 group-hover/base:ui-fill-text-primary"
+                  />
+                </button>
+              )}
             </div>
           ) : null}
         </div>
       )}
 
       {/* Disclaimer */}
-      <div className="ui-text-caption ui-text-center ui-max-w-[340px] ui-mx-auto ui-mt-4">
+      <div className="ui-text-caption ui-text-center ui-max-w-[340px] ui-mx-auto ui-mt-1">
         <span className="ui-text-secondary-text">
           By continuing, you agree to and acknowledge that you have read and
           understand the{" "}
@@ -1143,6 +1128,11 @@ export const LoginScreen = () => {
           Disclaimer
         </a>
         <span className="ui-text-secondary-text">.</span>
+      </div>
+
+      {/* Secured by XION */}
+      <div className="ui-mt-2">
+        <SecuredByXion />
       </div>
     </>
   );

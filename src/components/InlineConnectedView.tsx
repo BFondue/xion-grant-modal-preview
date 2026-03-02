@@ -12,23 +12,7 @@ import { useQueryParams } from "../hooks/useQueryParams";
 import { useTreasuryDiscovery } from "../hooks/useTreasuryDiscovery";
 import { PermissionsList } from "./LoginGrantApproval/PermissionsList";
 import { LegacyPermissionsList } from "./LoginGrantApproval/LegacyPermissionsList";
-
-const ShieldIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-  </svg>
-);
+import { SecuredByXion } from "./ui/SecuredByXion";
 
 const LockIcon = ({ className }: { className?: string }) => (
   <svg
@@ -187,12 +171,7 @@ export function InlineConnectedView({
       <div className="ui-flex-1" />
 
       {/* Footer */}
-      <div className="ui-flex ui-items-center ui-gap-1">
-        <ShieldIcon className="ui-text-amber-700" />
-        <span className="ui-text-caption ui-text-amber-700 ui-font-medium">
-          Secured by XION
-        </span>
-      </div>
+      <SecuredByXion />
     </div>
   );
 }

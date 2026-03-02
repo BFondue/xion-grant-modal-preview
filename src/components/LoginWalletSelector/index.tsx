@@ -368,8 +368,8 @@ export const LoginWalletSelector = () => {
           {loading || isGeneratingNewWallet || shouldAutoNavigate ? (
             <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-py-16">
               <SpinnerV2
-                size="lg"
-                color="black"
+                size="md"
+                color="blue"
                 aria-label={
                   isGeneratingNewWallet
                     ? "Creating account..."

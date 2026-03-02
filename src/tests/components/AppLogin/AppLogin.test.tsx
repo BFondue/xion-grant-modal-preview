@@ -182,9 +182,6 @@ describe("AbstraxionSignin Component", () => {
     await renderSignin();
 
     // Check all essential elements are present
-    expect(
-      screen.getByText("Log in or sign up with your email"),
-    ).toBeInTheDocument();
     expect(screen.getByText("Email")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /log in \/ sign up/i }),
