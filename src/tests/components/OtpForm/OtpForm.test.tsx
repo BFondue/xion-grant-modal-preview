@@ -1,6 +1,14 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  beforeAll,
+  afterAll,
+} from "vitest";
 import userEvent from "@testing-library/user-event";
 import LoginOtpForm from "../../../components/LoginOtpForm";
 
@@ -58,9 +66,21 @@ describe("OtpForm Component", () => {
     // The InputOTPSlot components render divs
     expect(slots.length).toBe(0); // If no data attributes, try different selector
     // Check that the component rendered by looking for CONFIRM button
-    expect(screen.getByRole("button", { name: /confirm/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /confirm/i }),
+    ).toBeInTheDocument();
   });
 
+  it("uses fixed non-shrinking mobile dimensions for OTP slots", () => {
+    const { container } = renderOtpForm();
+    const slots = container.querySelectorAll("div.ui-rounded-lg");
+
+    expect(slots).toHaveLength(6);
+    slots.forEach((slot) => {
+      expect(slot).toHaveClass("ui-w-12");
+      expect(slot).toHaveClass("ui-shrink-0");
+    });
+  });
   it("shows error message when provided", () => {
     const errorMessage = "Invalid OTP";
     renderOtpForm(errorMessage);
