@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AccountInfo } from "./AccountInfo";
 import { AuthContext } from "./AuthContext";
 import { Overview } from "./Overview";
@@ -14,7 +14,7 @@ import { SignTransactionView } from "./SignTransactionView";
 import { useXionDisconnect } from "../hooks/useXionDisconnect";
 import { InlineConnectedView } from "./InlineConnectedView";
 import { IframeMessageHandler } from "../messaging/handler";
-import type { ConnectResponse } from "../messaging/types";
+import type { ConnectResponse, SignTransactionPayload, SignTransactionResponse } from "../messaging/types";
 import { AuthStateManager } from "../auth/AuthStateManager";
 
 export function App() {
@@ -47,6 +47,15 @@ export function App() {
     resolve: (value: ConnectResponse) => void;
     reject: (error: Error) => void;
   } | null>(null);
+
+  // ─── Inline mode: direct signing state ──────────────────────────────────────
+  // Pending sign request: transaction data + MessageChannel resolver
+  const signRequestRef = useRef<{
+    transaction: SignTransactionPayload["transaction"];
+    resolve: (value: SignTransactionResponse) => void;
+    reject: (error: Error) => void;
+  } | null>(null);
+  const [showSigningModal, setShowSigningModal] = useState(false);
 
   // Track whether the user was connected in inline mode.
   // After disconnect, render nothing — the SDK is about to remove the iframe,
@@ -84,12 +93,18 @@ export function App() {
         return { address: account?.id ?? null };
       },
 
-      // Phase 2 — not implemented in inline mode yet
-      onSignTransaction: async () => {
-        throw new Error("Sign transaction not available in inline mode");
+      // Direct signing: show SigningModal, resolve when user approves/rejects
+      onSignTransaction: (_origin, payload) => {
+        return new Promise<SignTransactionResponse>((resolve, reject) => {
+          signRequestRef.current = { transaction: payload.transaction, resolve, reject };
+          setShowSigningModal(true);
+        });
       },
-      onSignAndBroadcast: async () => {
-        throw new Error("Sign and broadcast not available in inline mode");
+      onSignAndBroadcast: (_origin, payload) => {
+        return new Promise<SignTransactionResponse>((resolve, reject) => {
+          signRequestRef.current = { transaction: payload.transaction, resolve, reject };
+          setShowSigningModal(true);
+        });
       },
       onAddAuthenticator: async () => {
         throw new Error("Add authenticator not available in inline mode");
@@ -144,7 +159,39 @@ export function App() {
     connectResolverRef.current = null;
   }, [isInlineMode, account?.id, needsGrants, granted]);
 
+  // ─── Inline signing result handler ──────────────────────────────────────────
+  const handleSignResult = useCallback((data: Record<string, unknown>) => {
+    const req = signRequestRef.current;
+    if (!req) return;
+
+    if (data.type === "SIGN_SUCCESS" && data.txHash) {
+      req.resolve({ signedTx: { transactionHash: data.txHash } } as unknown as SignTransactionResponse);
+    } else {
+      req.resolve({ error: (data.message as string) || "User rejected" } as unknown as SignTransactionResponse);
+    }
+    signRequestRef.current = null;
+    setShowSigningModal(false);
+  }, []);
+
   if (isInlineMode) {
+    // Signing request pending: show SignTransactionView (same as popup mode=sign)
+    if (showSigningModal && signRequestRef.current && account?.id) {
+      return (
+        <div className="ui-flex ui-w-full ui-h-svh ui-z-[50] ui-fixed ui-flex-1 ui-items-center ui-justify-center ui-overflow-y-auto ui-p-6">
+          <Banner className="ui-fixed ui-top-0 ui-left-0 ui-z-[10001]" />
+          <Dialog open onOpenChange={() => null}>
+            <DialogContent>
+              <SignTransactionView
+                transaction={signRequestRef.current.transaction}
+                granterAddress={account.id}
+                onResult={handleSignResult}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      );
+    }
+
     // After disconnect, render nothing. The SDK will remove the iframe momentarily
     // (via DISCONNECTED postMessage → removeIframe). Rendering LoginModal here would
     // cause a brief flash of the login/error screen before the iframe is torn down.

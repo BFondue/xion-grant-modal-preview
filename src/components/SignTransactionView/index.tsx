@@ -62,19 +62,32 @@ function summarizeMessage(msg: { typeUrl: string; value: any }): string {
   }
 }
 
+interface SignTransactionViewProps {
+  /** Transaction data passed directly (iframe mode). Falls back to URL params when absent. */
+  transaction?: DecodedTxPayload;
+  /** Granter address passed directly (iframe mode). Falls back to URL params when absent. */
+  granterAddress?: string;
+  /** When provided, results are delivered via this callback instead of postMessage/redirect. */
+  onResult?: (data: Record<string, unknown>) => void;
+}
+
 /**
  * SignTransactionView
  *
- * Rendered inside a popup window when the SDK opens the dashboard with
- * `mode=sign`. It displays the transaction details, lets the user approve
- * or deny, signs with the user's meta-account authenticator, broadcasts,
- * and sends the result back to the dApp via postMessage.
+ * Displays transaction details, lets the user approve or deny, signs with
+ * the user's meta-account authenticator, broadcasts, and sends the result
+ * back to the dApp.
+ *
+ * Used in popup mode (tx data from URL params, result via postMessage) and
+ * inline iframe mode (tx data from props, result via onResult callback).
  */
-export function SignTransactionView() {
-  const { tx, granter, redirect_uri } = useQueryParams(["tx", "granter", "redirect_uri"]);
+export function SignTransactionView({ transaction: txProp, granterAddress, onResult }: SignTransactionViewProps = {}) {
+  const { tx, granter: granterParam, redirect_uri } = useQueryParams(["tx", "granter", "redirect_uri"]);
   const { client, getGasCalculation } = useSigningClient();
   const { data: account } = useSmartAccount();
 
+  // Props take precedence over URL params (iframe mode vs popup mode)
+  const granter = granterAddress ?? granterParam;
 
   const [inProgress, setInProgress] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -84,7 +97,7 @@ export function SignTransactionView() {
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
   const [showRawPayload, setShowRawPayload] = useState(false);
 
-  const payload = useMemo(() => decodeTxPayload(tx), [tx]);
+  const payload = useMemo(() => txProp ?? decodeTxPayload(tx), [txProp, tx]);
 
   // Fetch meta-account balance once client is available
   useEffect(() => {
@@ -115,8 +128,14 @@ export function SignTransactionView() {
   const balanceDisplay = balance !== null ? formatXionAmount(balance, "uxion") : null;
   const isLowBalance = balance !== null && Number(balance) < 50_000; // < 0.05 XION
 
-  // ----- Result delivery (popup postMessage or redirect fallback) -----
+  // ----- Result delivery -----
   const sendResult = (data: Record<string, unknown>) => {
+    // Callback path (iframe mode): deliver via onResult prop
+    if (onResult) {
+      onResult(data);
+      return;
+    }
+
     // Popup path: opener exists → postMessage + close
     if (window.opener && redirect_uri) {
       try {
