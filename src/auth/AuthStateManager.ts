@@ -119,6 +119,9 @@ class AuthStateManagerClass {
   private listeners = new Set<AuthStateListener>();
   private initialized = false;
 
+  /** Origin of the parent SDK window (set from IframeMessageHandler's onConnect callback) */
+  private parentOrigin: string | null = null;
+
   /**
    * Initialize from localStorage on startup
    * Should be called once when the app loads
@@ -158,6 +161,15 @@ class AuthStateManagerClass {
     }
 
     this.initialized = true;
+  }
+
+  /**
+   * Store the parent SDK's origin for scoped postMessage.
+   * Called from App.tsx's IframeMessageHandler onConnect callback.
+   */
+  setParentOrigin(origin: string): void {
+    this.parentOrigin = origin;
+    console.log("[AuthStateManager] Parent origin set:", origin);
   }
 
   /**
@@ -417,9 +429,14 @@ class AuthStateManagerClass {
     this.notifyListeners(disconnectingState);
     this.dispatchStorageEvent(AUTH_STORAGE_KEYS.LOGIN_AUTHENTICATOR, null);
 
-    // Notify parent window (for iframe scenarios)
+    // Notify parent window (for iframe scenarios).
+    // Uses stored parentOrigin from CONNECT handshake; falls back to "*"
+    // only when origin wasn't set (standalone dashboard, not in iframe).
     try {
-      window.parent.postMessage({ type: "DISCONNECTED" }, "*");
+      window.parent.postMessage(
+        { type: "DISCONNECTED" },
+        this.parentOrigin || "*",
+      );
     } catch {
       // Ignore if not in iframe context
     }

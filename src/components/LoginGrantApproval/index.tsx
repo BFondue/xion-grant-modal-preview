@@ -228,6 +228,34 @@ export const LoginGrantApproval = ({
           return () => clearTimeout(timer);
         }
 
+        // Inline mode: notify parent window, then strip grant params so
+        // App.tsx renders the canonical "Connected" view.
+        if (mode === "inline") {
+          const timer = setTimeout(() => {
+            if (redirect_uri) {
+              const targetOrigin = new URL(redirect_uri).origin;
+              try {
+                window.parent.postMessage(
+                  { type: "CONNECT_SUCCESS", address: account?.id },
+                  targetOrigin,
+                );
+              } catch {
+                // parent unreachable
+              }
+            }
+
+            // Mark grant as completed so App.tsx switches to the connected view.
+            // All other params (treasury, contracts, etc.) stay in the URL so
+            // InlineConnectedView can re-query permissions directly.
+            const url = new URL(window.location.href);
+            url.searchParams.set("granted", "true");
+            window.history.replaceState({}, "", url.toString());
+            // Trigger useQueryParams to re-read the updated URL
+            window.dispatchEvent(new PopStateEvent("popstate"));
+          }, 500);
+          return () => clearTimeout(timer);
+        }
+
         if (redirect_uri) {
           const redirectTimer = setTimeout(() => {
             safeRedirectOrDisconnect(
@@ -273,6 +301,19 @@ export const LoginGrantApproval = ({
         }
       }
       setTimeout(() => window.close(), 150);
+      return;
+    }
+
+    // Inline mode: notify parent, stay open
+    if (mode === "inline") {
+      if (redirect_uri) {
+        const targetOrigin = new URL(redirect_uri).origin;
+        try {
+          window.parent.postMessage({ type: "CONNECT_REJECTED" }, targetOrigin);
+        } catch {
+          // parent unreachable
+        }
+      }
       return;
     }
 
@@ -566,6 +607,20 @@ export const LoginGrantApproval = ({
   const renderContent = () => {
     // --- Success state ---
     if (showSuccess) {
+      // Inline mode: grant params are stripped in the useEffect above,
+      // which causes App.tsx to render the canonical connected view.
+      // Show a brief transitional state while that happens.
+      if (mode === "inline") {
+        return (
+          <div className="ui-flex ui-flex-col ui-items-center ui-py-12 ui-text-center">
+            <AnimatedCheckmark />
+            <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
+              Connected
+            </h2>
+          </div>
+        );
+      }
+
       return (
         <div className="ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
           <AnimatedCheckmark />

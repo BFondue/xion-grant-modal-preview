@@ -18,12 +18,16 @@ import FooterLogin from "../ui/footerLogin";
 export interface ModalProps {
   onClose: VoidFunction;
   isOpen: boolean;
+  /** Called when grant approval completes (inline iframe mode) */
+  onApprove?: () => void;
+  /** Called when user denies the grant (inline iframe mode) */
+  onDeny?: () => void;
 }
 
 const MALFORMED_REQUEST_MESSAGE =
   "Application is not setup correctly. For safety and security, we cannot log you in.";
 
-export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
+export const LoginModal = ({ isOpen, onClose, onApprove, onDeny }: ModalProps) => {
   const { contracts, stake, bank, grantee, treasury, redirect_uri } =
     useQueryParams([
       "contracts",
@@ -187,6 +191,8 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
               grantee={grantee}
               stake={Boolean(stake)}
               treasury={treasury || undefined}
+              onApprove={onApprove}
+              onDeny={onDeny}
             />
           ) : isConnected ? (
             <LoginWalletSelector />
