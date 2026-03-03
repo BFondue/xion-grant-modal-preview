@@ -28,7 +28,8 @@ function decodeTxPayload(encoded: string | null | undefined): DecodedTxPayload |
     const parsed = JSON.parse(json);
     if (!parsed.messages || !Array.isArray(parsed.messages)) return null;
     return parsed as DecodedTxPayload;
-  } catch {
+  } catch (err) {
+    console.error("[SignTransactionView] Failed to decode tx payload:", err);
     return null;
   }
 }
@@ -45,7 +46,7 @@ function decodeTxPayload(encoded: string | null | undefined): DecodedTxPayload |
  * - /ibc.applications.transfer.v1.MsgTransfer
  * - /cosmos.authz.v1beta1.MsgGrant / MsgRevoke / MsgExec
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Cosmos SDK messages are polymorphic
 function summarizeMessage(msg: { typeUrl: string; value: any }): string {
   switch (msg.typeUrl) {
     case "/cosmos.bank.v1beta1.MsgSend": {
@@ -106,7 +107,10 @@ export function SignTransactionView({ transaction: txProp, granterAddress, onRes
     client
       .getBalance(granter, "uxion")
       .then((b) => setBalance(b.amount))
-      .catch(() => setBalance(null));
+      .catch((err) => {
+        console.warn("[SignTransactionView] Failed to fetch balance:", err);
+        setBalance(null);
+      });
   }, [client, granter]);
 
   // Estimate fee via simulation
@@ -123,7 +127,10 @@ export function SignTransactionView({ transaction: txProp, granterAddress, onRes
           }
         }
       })
-      .catch(() => setEstimatedFee(null));
+      .catch((err) => {
+        console.warn("[SignTransactionView] Failed to estimate fee:", err);
+        setEstimatedFee(null);
+      });
   }, [client, granter, payload, getGasCalculation]);
 
   const balanceDisplay = balance !== null ? formatXionAmount(balance, "uxion") : null;
@@ -142,8 +149,8 @@ export function SignTransactionView({ transaction: txProp, granterAddress, onRes
       try {
         const targetOrigin = new URL(redirect_uri).origin;
         window.opener.postMessage(data, targetOrigin);
-      } catch {
-        // opener gone — fall through to redirect
+      } catch (err) {
+        console.warn("[SignTransactionView] postMessage to opener failed:", err);
       }
       setTimeout(
         () => window.close(),
@@ -167,8 +174,8 @@ export function SignTransactionView({ transaction: txProp, granterAddress, onRes
           );
         }
         window.location.href = url.toString();
-      } catch {
-        // Invalid redirect_uri — nothing we can do
+      } catch (err) {
+        console.error("[SignTransactionView] Failed to redirect after transaction:", err);
       }
     }
   };

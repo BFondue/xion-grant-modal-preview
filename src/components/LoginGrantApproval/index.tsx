@@ -211,14 +211,14 @@ export const LoginGrantApproval = ({
         if (mode === "popup") {
           const timer = setTimeout(() => {
             if (window.opener && redirect_uri) {
-              const targetOrigin = new URL(redirect_uri).origin;
               try {
+                const targetOrigin = new URL(redirect_uri).origin;
                 window.opener.postMessage(
                   { type: "CONNECT_SUCCESS", address: account?.id },
                   targetOrigin,
                 );
               } catch {
-                // opener gone — close anyway
+                // opener gone or invalid redirect_uri — close anyway
               }
             }
             setTimeout(() => window.close(), 150);
@@ -231,14 +231,14 @@ export const LoginGrantApproval = ({
         if (mode === "inline") {
           const timer = setTimeout(() => {
             if (redirect_uri) {
-              const targetOrigin = new URL(redirect_uri).origin;
               try {
+                const targetOrigin = new URL(redirect_uri).origin;
                 window.parent.postMessage(
                   { type: "CONNECT_SUCCESS", address: account?.id },
                   targetOrigin,
                 );
               } catch {
-                // parent unreachable
+                // parent unreachable or invalid redirect_uri
               }
             }
 
@@ -291,11 +291,11 @@ export const LoginGrantApproval = ({
     // Popup mode: close window (with CONNECT_REJECTED if opener is reachable)
     if (mode === "popup") {
       if (window.opener && redirect_uri) {
-        const targetOrigin = new URL(redirect_uri).origin;
         try {
+          const targetOrigin = new URL(redirect_uri).origin;
           window.opener.postMessage({ type: "CONNECT_REJECTED" }, targetOrigin);
         } catch {
-          // opener gone
+          // opener gone or invalid redirect_uri
         }
       }
       setTimeout(() => window.close(), 150);
@@ -305,11 +305,11 @@ export const LoginGrantApproval = ({
     // Inline mode: notify parent, stay open
     if (mode === "inline") {
       if (redirect_uri) {
-        const targetOrigin = new URL(redirect_uri).origin;
         try {
+          const targetOrigin = new URL(redirect_uri).origin;
           window.parent.postMessage({ type: "CONNECT_REJECTED" }, targetOrigin);
         } catch {
-          // parent unreachable
+          // parent unreachable or invalid redirect_uri
         }
       }
       return;
