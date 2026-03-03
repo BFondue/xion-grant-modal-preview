@@ -1,0 +1,4 @@
+# Run the same checks as CI
+pnpm exec eslint .
+pnpm exec tsc --noEmit
+pnpm exec vitest run --coverage

@@ -1,0 +1,105 @@
+name: Dependency Validation
+
+on:
+  pull_request:
+    branches: [main, testnet]
+    paths: [package.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    name: Validate Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: package.json
+          sparse-checkout-cone-mode: false
+
+      - name: Reject file protocol dependencies
+        run: |
+          if grep -q '"file:' package.json; then
+            echo "❌ package.json contains file: protocol dependencies"
+            grep '"file:' package.json
+            exit 1
+          fi
+
+      - name: Verify @cosmjs version consistency
+        run: |
+          VERSIONS=$(jq -r '
+            .dependencies | to_entries[]
+            | select(.key | startswith("@cosmjs/"))
+            | "\(.key): \(.value)"
+          ' package.json)
+
+          [ -z "$VERSIONS" ] && { echo "No @cosmjs packages found"; exit 0; }
+          echo "$VERSIONS"
+
+          UNIQUE=$(echo "$VERSIONS" | awk -F': ' '{print $2}' | sort -u | wc -l)
+          if [ "$UNIQUE" -gt 1 ]; then
+            echo "❌ Mismatched @cosmjs versions"
+            exit 1
+          fi
+          echo "✅ All @cosmjs packages use consistent versions"
+
+      - name: Check @burnt-labs updates
+        id: burnt_labs
+        run: |
+          OUTDATED=""
+          for pkg in abstraxion-core account-management signers constants; do
+            FULL="@burnt-labs/$pkg"
+            CURRENT=$(jq -r ".dependencies[\"$FULL\"] // empty" package.json)
+            [ -z "$CURRENT" ] && continue
+
+            LATEST=$(npm view "$FULL" version 2>/dev/null || true)
+            [ -z "$LATEST" ] && continue
+
+            CLEAN=${CURRENT#^}; CLEAN=${CLEAN#\~}
+            echo "$FULL: $CURRENT (latest: $LATEST)"
+
+            [ "$CLEAN" != "$LATEST" ] && OUTDATED="${OUTDATED}${FULL}|${CURRENT}|${LATEST};"
+          done
+
+          echo "outdated=${OUTDATED:+true}" >> $GITHUB_OUTPUT
+          echo "packages=$OUTDATED" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && steps.burnt_labs.outputs.outdated == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const packages = '${{ steps.burnt_labs.outputs.packages }}'
+              .split(';').filter(Boolean).map(p => p.split('|'));
+
+            const rows = packages
+              .map(([name, cur, latest]) => `| ${name} | \`${cur}\` | \`${latest}\` |`)
+              .join('\n');
+            const cmds = packages
+              .map(([name, , latest]) => `pnpm add ${name}@${latest}`)
+              .join('\n');
+
+            const body = [
+              '## 📦 Dependency Updates Available\n',
+              '| Package | Current | Latest |',
+              '|---------|---------|--------|',
+              rows,
+              `\n### To update:\n\`\`\`bash\n${cmds}\n\`\`\`\n`,
+              "> ⚠️ Informational only — won't block your PR.",
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body.includes('📦 Dependency Updates'));
+            if (existing) {
+              await github.rest.issues.deleteComment({ ...context.repo, comment_id: existing.id });
+            }
+            await github.rest.issues.createComment({
+              ...context.repo, issue_number: context.issue.number, body,
+            });

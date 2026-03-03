@@ -1,0 +1,69 @@
+name: Build and Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: "Deployment environment (testnet or mainnet)"
+    outputs:
+      deployment-url:
+        description: "The deployment URL"
+        value: ${{ jobs.build-deploy.outputs.deployment-url }}
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.set-url.outputs.deployment-url }}
+    permissions:
+      contents: read
+      deployments: write
+    outputs:
+      deployment-url: ${{ steps.set-url.outputs.deployment-url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build app
+        run: pnpm exec vite build --mode ${{ inputs.environment }}
+        env:
+          CLOUDFLARE_ENV: ${{ inputs.environment }}
+          VITE_NETWORK: ${{ inputs.environment }}
+          VITE_APP_VERSION: ${{ github.ref_name || github.sha }}
+          VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.VITE_STYTCH_PUBLIC_TOKEN || secrets.VITE_DEFAULT_STYTCH_PUBLIC_TOKEN }}
+          VITE_NUMIA_TOKEN: ${{ secrets.VITE_NUMIA_TOKEN }}
+
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.BURNT_CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.BURNT_CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          environment: ${{ inputs.environment }}
+          packageManager: pnpm
+
+      - name: Set deployment URL
+        id: set-url
+        run: |
+          if [[ "${{ inputs.environment }}" == "mainnet" ]]; then
+            URL="https://settings.burnt.com"
+          else
+            URL="https://settings.testnet.burnt.com"
+          fi
+
+          echo "deployment-url=$URL" >> $GITHUB_OUTPUT
+          echo "### 🚀 Deployed to ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** $URL" >> $GITHUB_STEP_SUMMARY

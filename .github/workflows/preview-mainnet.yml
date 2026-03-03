@@ -1,0 +1,17 @@
+name: Preview Mainnet
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  preview:
+    needs: test
+    uses: ./.github/workflows/build-preview.yml
+    with:
+      environment: mainnet
+      message: "${{ github.event.release.tag_name }}"
+    secrets: inherit

@@ -1,0 +1,99 @@
+# This workflow will release stable packages with Changesets
+
+name: 🚀 Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  HUSKY: 0
+
+jobs:
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/test.yml
+
+  release:
+    name: 🚀 Release
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: 🟢 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📂 Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: 💾 Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 🧩 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Load SSH signing key
+        run: |
+          echo "${{ secrets.SSH_SIGNING_PK }}" > /tmp/.git_signing_key
+          chmod 600 /tmp/.git_signing_key
+        shell: bash
+
+      - name: Set git user
+        shell: bash
+        run: |
+          git config user.name "isburnt"
+          git config user.email "197779235+isburnt@users.noreply.github.com"
+          git config commit.gpgsign true
+          git config gpg.format ssh
+          git config user.signingkey /tmp/.git_signing_key
+
+      - name: 📣 Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          title: "chore(release): version packages 🦋"
+          publish: pnpm run publish:packages
+          version: pnpm run version:packages
+          commit: "chore: update versions"
+          setupGitUser: false
+        env:
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+
+  # Deploy to mainnet when changesets publishes a stable release.
+  # This runs inline to avoid the GITHUB_TOKEN limitation where
+  # release events created by GITHUB_TOKEN don't trigger other workflows.
+  deploy:
+    name: 🚀 Deploy to Mainnet
+    needs: [test, release]
+    if: needs.release.outputs.published == 'true'
+    uses: ./.github/workflows/build-and-deploy.yml
+    with:
+      environment: mainnet
+    secrets: inherit
