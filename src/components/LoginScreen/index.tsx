@@ -41,7 +41,6 @@ import LoginOtpForm from "../LoginOtpForm";
 import { GoogleLogoIcon } from "../ui/icons/GoogleLogo";
 import { TikTokLogoIcon } from "../ui/icons/TikTokLogo";
 import { ZKEmailLogin } from "./ZKEmailLogin";
-import { cn } from "../../utils/classname-util";
 import { ChevronRightIcon } from "../ui/icons/ChevronRight";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
 import xionLogo from "../../assets/logo.png";
@@ -50,14 +49,17 @@ import { AuthStateManager } from "../../auth/AuthStateManager";
 import { getLoginAuthenticatorFromJWT } from "../../auth/session";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
-  NETWORK,
   FEATURE_FLAGS,
   getStytchPublicToken,
   STYTCH_PROXY_URL,
 } from "../../config";
+import { SecuredByXion } from "../ui/SecuredByXion";
+import { useQueryParams } from "../../hooks/useQueryParams";
 
 export const LoginScreen = () => {
   const stytchClient = stytchClientSingleton;
+  const { mode } = useQueryParams(["mode"]);
+  const isPopupMode = mode === "popup";
 
   const [email, setEmail] = useState("");
   const [methodId, setMethodId] = useState("");
@@ -158,6 +160,13 @@ export const LoginScreen = () => {
       `signup_redirect_url=${encodeURIComponent(redirectUrl)}&` +
       `prompt=select_account`;
 
+    // Popup mode: redirect within this window instead of opening another popup
+    if (isPopupMode) {
+      sessionStorage.setItem("popup_oauth_params", window.location.search);
+      window.location.href = googleOAuthUrl;
+      return;
+    }
+
     const popup = window.open(
       googleOAuthUrl,
       "Google Login",
@@ -167,13 +176,20 @@ export const LoginScreen = () => {
     if (!popup) {
       console.error("[AbstraxionSignin] Popup was blocked");
       alert("Please allow popups for this site to sign in with Google");
+      setIsRedirectingToOAuth(false);
+      return;
     }
 
     // Listen for the OAuth callback message
+    const cleanup = () => {
+      window.removeEventListener("message", handleOAuthMessage);
+      clearInterval(closedCheck);
+    };
+
     const handleOAuthMessage = async (event: MessageEvent) => {
       // In production, verify event.origin matches your domain
       if (event.data.type === "OAUTH_SUCCESS") {
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
 
         try {
           if (!stytchClient || !stytchClient.oauth) {
@@ -212,13 +228,21 @@ export const LoginScreen = () => {
         }
       } else if (event.data.type === "OAUTH_ERROR") {
         console.error("[AbstraxionSignin] OAuth error:", event.data);
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
         setIsRedirectingToOAuth(false);
       }
     };
 
+    // Detect popup closed without completing auth
+    const closedCheck = setInterval(() => {
+      if (popup.closed) {
+        cleanup();
+        setIsRedirectingToOAuth(false);
+      }
+    }, 500);
+
     window.addEventListener("message", handleOAuthMessage);
-  }, [stytchClient, handlePostAuthentication]);
+  }, [stytchClient, handlePostAuthentication, isPopupMode]);
 
   const loginWithApple = useCallback(async () => {
     setIsRedirectingToOAuth(true);
@@ -235,6 +259,13 @@ export const LoginScreen = () => {
       `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
       `signup_redirect_url=${encodeURIComponent(redirectUrl)}`;
 
+    // Popup mode: redirect within this window instead of opening another popup
+    if (isPopupMode) {
+      sessionStorage.setItem("popup_oauth_params", window.location.search);
+      window.location.href = appleOAuthUrl;
+      return;
+    }
+
     const popup = window.open(
       appleOAuthUrl,
       "Apple Login",
@@ -249,10 +280,15 @@ export const LoginScreen = () => {
     }
 
     // Listen for the OAuth callback message
+    const cleanup = () => {
+      window.removeEventListener("message", handleOAuthMessage);
+      clearInterval(closedCheck);
+    };
+
     const handleOAuthMessage = async (event: MessageEvent) => {
       // In production, verify event.origin matches your domain
       if (event.data.type === "OAUTH_SUCCESS") {
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
 
         try {
           if (!stytchClient || !stytchClient.oauth) {
@@ -295,13 +331,21 @@ export const LoginScreen = () => {
         }
       } else if (event.data.type === "OAUTH_ERROR") {
         console.error("[AbstraxionSignin] Apple OAuth error:", event.data);
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
         setIsRedirectingToOAuth(false);
       }
     };
 
+    // Detect popup closed without completing auth
+    const closedCheck = setInterval(() => {
+      if (popup.closed) {
+        cleanup();
+        setIsRedirectingToOAuth(false);
+      }
+    }, 500);
+
     window.addEventListener("message", handleOAuthMessage);
-  }, [stytchClient, setAbstraxionError, handlePostAuthentication]);
+  }, [stytchClient, setAbstraxionError, handlePostAuthentication, isPopupMode]);
 
   const loginWithTikTok = useCallback(async () => {
     setIsRedirectingToOAuth(true);
@@ -318,6 +362,13 @@ export const LoginScreen = () => {
       `login_redirect_url=${encodeURIComponent(redirectUrl)}&` +
       `signup_redirect_url=${encodeURIComponent(redirectUrl)}`;
 
+    // Popup mode: redirect within this window instead of opening another popup
+    if (isPopupMode) {
+      sessionStorage.setItem("popup_oauth_params", window.location.search);
+      window.location.href = tiktokOAuthUrl;
+      return;
+    }
+
     const popup = window.open(
       tiktokOAuthUrl,
       "TikTok Login",
@@ -332,10 +383,15 @@ export const LoginScreen = () => {
     }
 
     // Listen for the OAuth callback message
+    const cleanup = () => {
+      window.removeEventListener("message", handleOAuthMessage);
+      clearInterval(closedCheck);
+    };
+
     const handleOAuthMessage = async (event: MessageEvent) => {
       // In production, verify event.origin matches your domain
       if (event.data.type === "OAUTH_SUCCESS") {
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
 
         try {
           if (!stytchClient || !stytchClient.oauth) {
@@ -378,13 +434,21 @@ export const LoginScreen = () => {
         }
       } else if (event.data.type === "OAUTH_ERROR") {
         console.error("[AbstraxionSignin] TikTok OAuth error:", event.data);
-        window.removeEventListener("message", handleOAuthMessage);
+        cleanup();
         setIsRedirectingToOAuth(false);
       }
     };
 
+    // Detect popup closed without completing auth
+    const closedCheck = setInterval(() => {
+      if (popup.closed) {
+        cleanup();
+        setIsRedirectingToOAuth(false);
+      }
+    }, 500);
+
     window.addEventListener("message", handleOAuthMessage);
-  }, [stytchClient, setAbstraxionError, handlePostAuthentication]);
+  }, [stytchClient, setAbstraxionError, handlePostAuthentication, isPopupMode]);
 
   const handleEmail = async () => {
     if (!email) {
@@ -870,8 +934,14 @@ export const LoginScreen = () => {
     return (
       <div className="ui-animate-scale-in ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
         <SpinnerV2 size="lg" color="black" />
-        <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">Verifying Login</h2>
-        <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">Please complete the login in the popup window.</p>
+        <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
+          {isPopupMode ? "Redirecting" : "Verifying Login"}
+        </h2>
+        <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">
+          {isPopupMode
+            ? "Taking you to your authentication provider..."
+            : "Please complete the login in the popup window."}
+        </p>
         <img src={xionLogo} alt="XION Logo" width="90" height="32" className="ui-mx-auto ui-mt-10 ui-brightness-0" />
       </div>
     );
@@ -902,24 +972,8 @@ export const LoginScreen = () => {
         </div>
       ) : (
         <div className="ui-animate-scale-in">
-          <DialogHeader>
-            <div className="ui-flex ui-flex-col ui-items-center ui-gap-2.5 ui-w-full">
-              <div className="ui-flex ui-items-center ui-gap-2.5">
-                <img
-                  src={xionLogo}
-                  alt="XION Logo"
-                  width="108"
-                  height="39"
-                  className="ui-mb-1.5 ui-brightness-0"
-                />
-                <div className="ui-flex ui-justify-between ui-items-center ui-h-[18px] ui-bg-testnet-bg ui-px-1 ui-py-0 ui-mb-1.5 ui-text-testnet ui-rounded-[4px] ui-text-[10px] ui-tracking-widest">
-                  {NETWORK.toUpperCase()}
-                </div>
-              </div>
-              <DialogDescription>
-                Log in or sign up with your email
-              </DialogDescription>
-            </div>
+          <DialogHeader className="ui-text-left">
+            <DialogTitle className="ui-font-light">Log in / Sign up</DialogTitle>
           </DialogHeader>
           <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full">
             <div className="ui-flex ui-flex-col ui-gap-4">
@@ -975,22 +1029,17 @@ export const LoginScreen = () => {
             </div>
           </div>
           {FEATURE_FLAGS.okx || FEATURE_FLAGS.metamask || FEATURE_FLAGS.zkemail ? (
-            <div className="ui-w-full ui-flex ui-flex-col ui-gap-2.5">
-              <button
-                className="group ui-flex ui-w-full ui-items-center ui-gap-2.5"
-                onClick={() => setShowAdvanced((showAdvanced) => !showAdvanced)}
-              >
-                Advanced Options
-                {/* Down Caret */}
-                <ChevronRightIcon
-                  className={cn(
-                    "ui-fill-text-secondary ui-rotate-180 group-hover/base button:ui-fill-text-primary",
-                    showAdvanced ? "-ui-rotate-[90deg]" : "ui-rotate-90",
-                  )}
-                />
-              </button>
+            <div className="ui-w-full ui-mt-2">
               {showAdvanced ? (
-                <div className="ui-flex ui-w-full ui-gap-1.5">
+                <div className="ui-flex ui-w-full ui-gap-1.5 ui-items-center">
+                  <button
+                    className="ui-flex ui-items-center ui-justify-center ui-h-12 ui-w-8 ui-shrink-0"
+                    onClick={() => setShowAdvanced(false)}
+                  >
+                    <ChevronRightIcon
+                      className="ui-fill-text-secondary -ui-rotate-[90deg]"
+                    />
+                  </button>
                   {FEATURE_FLAGS.okx ? (
                     <Button
                       variant="secondary"
@@ -1051,14 +1100,24 @@ export const LoginScreen = () => {
                     </Button>
                   ) : null}
                 </div>
-              ) : null}
+              ) : (
+                <button
+                  className="group ui-flex ui-w-full ui-items-center ui-gap-2.5"
+                  onClick={() => setShowAdvanced(true)}
+                >
+                  Advanced Options
+                  <ChevronRightIcon
+                    className="ui-fill-text-secondary ui-rotate-90 group-hover/base:ui-fill-text-primary"
+                  />
+                </button>
+              )}
             </div>
           ) : null}
         </div>
       )}
 
       {/* Disclaimer */}
-      <div className="ui-text-caption ui-text-center ui-max-w-[340px] ui-mx-auto ui-mt-4">
+      <div className="ui-text-caption ui-text-center ui-max-w-[340px] ui-mx-auto ui-mt-1">
         <span className="ui-text-secondary-text">
           By continuing, you agree to and acknowledge that you have read and
           understand the{" "}
@@ -1072,6 +1131,11 @@ export const LoginScreen = () => {
           Disclaimer
         </a>
         <span className="ui-text-secondary-text">.</span>
+      </div>
+
+      {/* Secured by XION */}
+      <div className="ui-mt-2">
+        <SecuredByXion />
       </div>
     </>
   );

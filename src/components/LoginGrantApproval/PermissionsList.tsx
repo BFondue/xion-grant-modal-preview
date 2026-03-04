@@ -37,7 +37,7 @@ export const PermissionsList: React.FC<PermissionsListProps> = ({
   return (
     <div>
       {appName && (
-        <p className="ui-mb-4 ui-text-body ui-text-text-secondary">
+        <p className="ui-mb-2 ui-text-body ui-text-text-secondary ui-font-medium ui-pl-2.5">
           This will allow {appName} to:
         </p>
       )}

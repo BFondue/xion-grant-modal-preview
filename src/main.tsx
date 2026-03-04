@@ -15,8 +15,6 @@ import { LoginExternalAuth } from "./components/LoginExternalAuth";
 import { RootProviders } from "./components/RootProviders";
 
 import "./index.css";
-import { StandAloneWrapper } from "./components/IframeApp/StandAloneWrapper";
-import { IframeApp } from "./components/IframeApp";
 
 (function captureOAuthTokens() {
   if (typeof window !== "undefined") {
@@ -79,8 +77,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <Route path="/callback" element={<Callback />} />
       <Route path="/oauth/callback" element={<Callback />} />
       <Route path="/oauth/external" element={<LoginExternalAuth />} />
-      <Route path="/dashboard" element={<StandAloneWrapper />} />
-      <Route path="/iframe" element={<IframeApp />} />
       <Route path="/*" element={<App />} />
     </Routes>
   </RootProviders>,

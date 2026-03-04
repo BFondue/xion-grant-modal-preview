@@ -13,7 +13,7 @@ import {
   generateTreasuryGrants,
   type ContractGrantDescription,
 } from "@burnt-labs/account-management";
-import { FEE_GRANTER_ADDRESS } from "../../config";
+import { FEE_GRANTER_ADDRESS, XION_API_URL } from "../../config";
 import { treasuryStrategy } from "../../utils/query-treasury-contract";
 import { useXionDisconnect } from "../../hooks/useXionDisconnect";
 import { AuthContext, AuthContextProps } from "../AuthContext";
@@ -27,10 +27,7 @@ import { isContractGrantConfigValid } from "@burnt-labs/account-management";
 import { validateFeeGrant } from "@burnt-labs/account-management";
 import { useTreasuryDiscovery } from "../../hooks/useTreasuryDiscovery";
 import { safeRedirectOrDisconnect } from "../../utils/redirect-utils";
-import xionLogo from "../../assets/logo.png";
 import SpinnerV2 from "../ui/icons/SpinnerV2";
-import AnimatedCheckmark from "../ui/icons/AnimatedCheck";
-import AnimatedX from "../ui/icons/AnimatedX";
 import FallbackImage from "../FallbackImage";
 import {
   getDomainAndProtocol,
@@ -40,6 +37,7 @@ import {
 import { ChevronDownIcon, WarningIcon, CopyIcon, CheckIcon } from "../ui/icons";
 import { isMainnet } from "../../config";
 import { parseTreasuryMetadata } from "../../types/treasury-types";
+import { SecuredByXion } from "../ui/SecuredByXion";
 import { truncateAddress } from "../../utils";
 import { cn } from "../../utils/classname-util";
 
@@ -59,23 +57,6 @@ const LockIcon = ({ className }: { className?: string }) => (
   >
     <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-);
-
-const ShieldIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
   </svg>
 );
 
@@ -105,7 +86,11 @@ export const LoginGrantApproval = ({
 }: AbstraxionGrantProps) => {
   const { client, getGasCalculation } = useSigningClient();
   const { data: account } = useSmartAccount();
-  const { redirect_uri, state } = useQueryParams(["redirect_uri", "state"]);
+  const { redirect_uri, state, mode } = useQueryParams([
+    "redirect_uri",
+    "state",
+    "mode",
+  ]);
   const { xionDisconnect } = useXionDisconnect();
   const { chainInfo, abstraxionError, setAbstraxionError } = useContext(
     AuthContext,
@@ -149,8 +134,25 @@ export const LoginGrantApproval = ({
     return undefined;
   }, [treasuryParams.redirect_url]);
 
-  // Display name: use domain if available, fallback to "A 3rd party" for legacy flows
-  const appDisplayName = appDomain || "A 3rd party";
+  // Extract a friendly app name (e.g. "localhost", "mydomain") from the URL
+  const appFriendlyName = useMemo(() => {
+    if (!treasuryParams.redirect_url) return undefined;
+    try {
+      const hostname = new URL(treasuryParams.redirect_url).hostname;
+      const parts = hostname.split(".");
+      // Simple hostname (localhost) or IP address
+      if (parts.length <= 1 || /^\d+$/.test(parts[parts.length - 1])) {
+        return hostname;
+      }
+      // Return main domain name (second-to-last part)
+      return parts[parts.length - 2];
+    } catch {
+      return appDomain;
+    }
+  }, [treasuryParams.redirect_url, appDomain]);
+
+  // Display name: use friendly name if available, fallback to "A 3rd party" for legacy flows
+  const appDisplayName = appFriendlyName || "A 3rd party";
 
   // Check if redirect_uri is the official OAuth2 address
   const isOfficialOAuth2Redirect = (
@@ -204,6 +206,54 @@ export const LoginGrantApproval = ({
           return () => clearTimeout(timer);
         }
 
+        // Popup mode: mode=popup is set by PopupController and means we must
+        // close this window when done — never redirect, even if opener is lost.
+        if (mode === "popup") {
+          const timer = setTimeout(() => {
+            if (window.opener && redirect_uri) {
+              try {
+                const targetOrigin = new URL(redirect_uri).origin;
+                window.opener.postMessage(
+                  { type: "CONNECT_SUCCESS", address: account?.id },
+                  targetOrigin,
+                );
+              } catch {
+                // opener gone or invalid redirect_uri — close anyway
+              }
+            }
+            setTimeout(() => window.close(), 150);
+          }, 500);
+          return () => clearTimeout(timer);
+        }
+
+        // Inline mode: notify parent window, then strip grant params so
+        // App.tsx renders the canonical "Connected" view.
+        if (mode === "inline") {
+          const timer = setTimeout(() => {
+            if (redirect_uri) {
+              try {
+                const targetOrigin = new URL(redirect_uri).origin;
+                window.parent.postMessage(
+                  { type: "CONNECT_SUCCESS", address: account?.id },
+                  targetOrigin,
+                );
+              } catch {
+                // parent unreachable or invalid redirect_uri
+              }
+            }
+
+            // Mark grant as completed so App.tsx switches to the connected view.
+            // All other params (treasury, contracts, etc.) stay in the URL so
+            // InlineConnectedView can re-query permissions directly.
+            const url = new URL(window.location.href);
+            url.searchParams.set("granted", "true");
+            window.history.replaceState({}, "", url.toString());
+            // Trigger useQueryParams to re-read the updated URL
+            window.dispatchEvent(new PopStateEvent("popstate"));
+          }, 500);
+          return () => clearTimeout(timer);
+        }
+
         if (redirect_uri) {
           const redirectTimer = setTimeout(() => {
             safeRedirectOrDisconnect(
@@ -222,6 +272,7 @@ export const LoginGrantApproval = ({
     },
     [
       showSuccess,
+      mode,
       redirect_uri,
       account?.id,
       setAbstraxionError,
@@ -236,6 +287,34 @@ export const LoginGrantApproval = ({
       onDenyCallback();
       return;
     }
+
+    // Popup mode: close window (with CONNECT_REJECTED if opener is reachable)
+    if (mode === "popup") {
+      if (window.opener && redirect_uri) {
+        try {
+          const targetOrigin = new URL(redirect_uri).origin;
+          window.opener.postMessage({ type: "CONNECT_REJECTED" }, targetOrigin);
+        } catch {
+          // opener gone or invalid redirect_uri
+        }
+      }
+      setTimeout(() => window.close(), 150);
+      return;
+    }
+
+    // Inline mode: notify parent, stay open
+    if (mode === "inline") {
+      if (redirect_uri) {
+        try {
+          const targetOrigin = new URL(redirect_uri).origin;
+          window.parent.postMessage({ type: "CONNECT_REJECTED" }, targetOrigin);
+        } catch {
+          // parent unreachable or invalid redirect_uri
+        }
+      }
+      return;
+    }
+
     safeRedirectOrDisconnect(
       redirect_uri,
       setAbstraxionError,
@@ -385,9 +464,7 @@ export const LoginGrantApproval = ({
         throw new Error("no account");
       }
 
-      if (!chainInfo?.rest) {
-        throw new Error("Chain REST endpoint not available");
-      }
+      const restUrl = chainInfo?.rest || XION_API_URL;
 
       const granter = account.id;
       const timestampThreeMonthsFromNow = BigInt(
@@ -398,7 +475,7 @@ export const LoginGrantApproval = ({
       );
 
       const feeGrantResult = await validateFeeGrant(
-        chainInfo.rest,
+        restUrl,
         FEE_GRANTER_ADDRESS,
         granter,
         [
@@ -409,6 +486,8 @@ export const LoginGrantApproval = ({
         ],
         account.id,
       );
+
+      console.log("[Grant] Fee grant result", feeGrantResult);
 
       const validFeeGranter = feeGrantResult.valid
         ? FEE_GRANTER_ADDRESS
@@ -430,6 +509,15 @@ export const LoginGrantApproval = ({
 
       setShowSuccess(true);
     } catch (error) {
+      console.error("[Grant] Grant failed", {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        name: error instanceof Error ? error.name : undefined,
+        // FeeGrantValidationError has a code and statusCode
+        code: (error as Record<string, unknown>)?.code,
+        statusCode: (error as Record<string, unknown>)?.statusCode,
+      });
+
       let errorMessage =
         error instanceof Error ? error.message : "An unknown error occurred";
 
@@ -517,22 +605,39 @@ export const LoginGrantApproval = ({
   const renderContent = () => {
     // --- Success state ---
     if (showSuccess) {
+      // Inline mode: grant params are stripped in the useEffect above,
+      // which causes App.tsx to render the canonical connected view.
+      // Show a brief transitional state while that happens.
+      if (mode === "inline") {
+        return (
+          <div className="ui-flex ui-flex-col ui-items-center ui-py-12 ui-text-center">
+            <div className="ui-flex ui-h-16 ui-w-16 ui-items-center ui-justify-center ui-rounded-full ui-bg-accent-trust/10">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ui-text-accent-trust">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
+              Connected
+            </h2>
+          </div>
+        );
+      }
+
       return (
         <div className="ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
-          <AnimatedCheckmark />
+          <div className="ui-flex ui-h-16 ui-w-16 ui-items-center ui-justify-center ui-rounded-full ui-bg-accent-trust/10">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ui-text-accent-trust">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
           <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
             Access granted
           </h2>
           <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">
-            You will now be redirected to your application.
+            {mode === "popup"
+              ? "This window will close automatically."
+              : "You will now be redirected to your application."}
           </p>
-          <img
-            src={xionLogo}
-            alt="XION Logo"
-            width="90"
-            height="32"
-            className="ui-mx-auto ui-mt-10 ui-brightness-0"
-          />
         </div>
       );
     }
@@ -541,7 +646,7 @@ export const LoginGrantApproval = ({
     if (inProgress) {
       return (
         <div className="ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
-          <SpinnerV2 size="lg" color="black" />
+          <SpinnerV2 size="md" color="blue" />
           <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
             Granting access...
           </h2>
@@ -556,7 +661,12 @@ export const LoginGrantApproval = ({
     if (grantError) {
       return (
         <div className="ui-flex ui-flex-col ui-items-center ui-py-28 ui-text-center">
-          <AnimatedX />
+          <div className="ui-flex ui-h-16 ui-w-16 ui-items-center ui-justify-center ui-rounded-full ui-bg-accent-error/10">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ui-text-accent-error">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </div>
           <h2 className="ui-mt-6 ui-text-title ui-text-text-primary">
             Something went wrong
           </h2>
@@ -624,14 +734,14 @@ export const LoginGrantApproval = ({
                   </span>
                 </div>
               )}
-              <p className="ui-mt-1.5 ui-text-body ui-text-text-muted">
+              <p className="ui-mt-4 ui-text-body ui-text-text-muted">
                 is requesting permissions
               </p>
             </>
           )}
         </div>
 
-        <Separator className="ui-my-2.5" />
+        <Separator className="ui-my-4" />
 
         {/* Permissions */}
         {treasury ? (
@@ -714,7 +824,7 @@ export const LoginGrantApproval = ({
         )}
 
         {/* Actions */}
-        <div className="ui-mt-2.5 ui-flex ui-flex-col ui-items-center ui-gap-2.5">
+        <div className="ui-mt-4 ui-flex ui-flex-col ui-items-center ui-gap-2.5">
           <Button
             className="ui-w-full"
             disabled={
@@ -727,7 +837,7 @@ export const LoginGrantApproval = ({
               grant();
             }}
           >
-            Allow
+            <span className="ui-font-bold">Allow</span>
           </Button>
           <Button variant="text" size="text" onClick={handleDeny}>
             Deny
@@ -743,16 +853,13 @@ export const LoginGrantApproval = ({
         </div>
 
         {/* Footer — Secured by XION + wallet address */}
-        <div className="ui-mt-4 ui-flex ui-flex-col ui-items-center ui-gap-1">
+        <div className="ui-mt-auto ui-pt-6 ui-flex ui-flex-col ui-items-center ui-gap-1">
           <button
             type="button"
             onClick={() => setShowAddress((v) => !v)}
-            className="ui-flex ui-items-center ui-gap-1 ui-transition-opacity ui-duration-fast hover:ui-opacity-70"
+            className="ui-transition-opacity ui-duration-fast hover:ui-opacity-70"
           >
-            <ShieldIcon className="ui-text-amber-700" />
-            <span className="ui-text-caption ui-text-amber-700 ui-font-medium">
-              Secured by XION
-            </span>
+            <SecuredByXion />
           </button>
           {showAddress && account?.id && (
             <button
@@ -780,5 +887,5 @@ export const LoginGrantApproval = ({
     );
   };
 
-  return <div className="ui-animate-scale-in">{renderContent()}</div>;
+  return <div className="ui-animate-scale-in ui-flex ui-flex-col ui-min-h-full">{renderContent()}</div>;
 };

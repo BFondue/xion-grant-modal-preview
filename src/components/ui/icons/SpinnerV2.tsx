@@ -2,7 +2,7 @@ import React from "react";
 
 interface SpinnerV2Props {
   size?: "sm" | "md" | "lg";
-  color?: "white" | "black";
+  color?: "white" | "black" | "blue";
 }
 
 const SPINNER_SIZES: Record<
@@ -52,7 +52,9 @@ const SpinnerV2: React.FC<SpinnerV2Props> = ({
               stopColor={
                 color === "white"
                   ? "rgba(255, 255, 255, 0)"
-                  : "rgba(0, 0, 0, 0)"
+                  : color === "blue"
+                    ? "rgba(37, 99, 235, 0)"
+                    : "rgba(0, 0, 0, 0)"
               }
             />
             <stop
@@ -60,12 +62,14 @@ const SpinnerV2: React.FC<SpinnerV2Props> = ({
               stopColor={
                 color === "white"
                   ? "rgba(255, 255, 255, 0.05)"
-                  : "rgba(0, 0, 0, 0.05)"
+                  : color === "blue"
+                    ? "rgba(37, 99, 235, 0.05)"
+                    : "rgba(0, 0, 0, 0.05)"
               }
             />
             <stop
               offset="100%"
-              stopColor={color === "white" ? "white" : "black"}
+              stopColor={color === "white" ? "white" : color === "blue" ? "#2563EB" : "black"}
             />
           </linearGradient>
         </defs>

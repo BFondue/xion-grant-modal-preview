@@ -13,17 +13,20 @@ import { CONNECTION_METHOD } from "../../auth/useAuthState";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 
 import { useQueryParams } from "../../hooks/useQueryParams";
-import FooterLogin from "../ui/footerLogin";
 
 export interface ModalProps {
   onClose: VoidFunction;
   isOpen: boolean;
+  /** Called when grant approval completes (inline iframe mode) */
+  onApprove?: () => void;
+  /** Called when user denies the grant (inline iframe mode) */
+  onDeny?: () => void;
 }
 
 const MALFORMED_REQUEST_MESSAGE =
   "Application is not setup correctly. For safety and security, we cannot log you in.";
 
-export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
+export const LoginModal = ({ isOpen, onClose, onApprove, onDeny }: ModalProps) => {
   const { contracts, stake, bank, grantee, treasury, redirect_uri } =
     useQueryParams([
       "contracts",
@@ -101,9 +104,7 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
   // Check for missing redirect_uri in grant flow
   useEffect(() => {
     if (isInGrantFlow && !redirect_uri) {
-      setAbstraxionError(
-        isInGrantFlow && !redirect_uri ? MALFORMED_REQUEST_MESSAGE : "",
-      );
+      setAbstraxionError(MALFORMED_REQUEST_MESSAGE);
     }
   }, [isInGrantFlow, redirect_uri, setAbstraxionError]);
 
@@ -189,6 +190,8 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
               grantee={grantee}
               stake={Boolean(stake)}
               treasury={treasury || undefined}
+              onApprove={onApprove}
+              onDeny={onDeny}
             />
           ) : isConnected ? (
             <LoginWalletSelector />
@@ -197,8 +200,6 @@ export const LoginModal = ({ isOpen, onClose }: ModalProps) => {
           )}
         </DialogContent>
       </Dialog>
-      {/* TOS Footer - Only show during login flows, not when viewing wallets in dashboard */}
-      {!isConnected && <FooterLogin />}
     </>
   );
 };
