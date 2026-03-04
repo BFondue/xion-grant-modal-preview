@@ -189,17 +189,17 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
         <div className="ui-flex ui-flex-col ui-gap-4 ui-w-full">
           <button
             onClick={() => setLoginMode("direct")}
-            className="ui-w-full ui-p-4 ui-bg-surface-page ui-border ui-border-surface-border ui-rounded-lg ui-text-left hover:ui-bg-gray-200 ui-transition-colors"
+            className="ui-w-full ui-p-4 ui-bg-surface-page ui-border ui-border-surface-border ui-rounded-lg ui-text-left hover:ui-bg-surface-border ui-transition-colors"
           >
             <div className="ui-flex ui-items-start ui-gap-2.5">
-              <div className="ui-w-8 ui-h-8 ui-rounded-full ui-bg-green-500/20 ui-flex ui-items-center ui-justify-center ui-flex-shrink-0">
-                <span className="ui-text-green-400 ui-text-body">✓</span>
+              <div className="ui-w-8 ui-h-8 ui-rounded-full ui-bg-accent-trust/20 ui-flex ui-items-center ui-justify-center ui-flex-shrink-0">
+                <span className="ui-text-accent-trust ui-text-body">✓</span>
               </div>
               <div>
                 <p className="ui-text-label ui-text-text-primary">
                   I know my Account Code
                 </p>
-                <p className="ui-text-caption ui-text-gray-400 ui-mt-1">
+                <p className="ui-text-caption ui-text-text-muted ui-mt-1">
                   Enter your account code and email address to login instantly.
                 </p>
               </div>
@@ -207,17 +207,17 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
           </button>
           <button
             onClick={() => setLoginMode("email")}
-            className="ui-w-full ui-p-4 ui-bg-surface-page ui-border ui-border-surface-border ui-rounded-lg ui-text-left hover:ui-bg-gray-200 ui-transition-colors"
+            className="ui-w-full ui-p-4 ui-bg-surface-page ui-border ui-border-surface-border ui-rounded-lg ui-text-left hover:ui-bg-surface-border ui-transition-colors"
           >
             <div className="ui-flex ui-items-start ui-gap-2.5">
-              <div className="ui-w-8 ui-h-8 ui-rounded-full ui-bg-blue-500/20 ui-flex ui-items-center ui-justify-center ui-flex-shrink-0">
-                <span className="ui-text-blue-400 ui-text-body">✉</span>
+              <div className="ui-w-8 ui-h-8 ui-rounded-full ui-bg-cta/20 ui-flex ui-items-center ui-justify-center ui-flex-shrink-0">
+                <span className="ui-text-cta ui-text-body">✉</span>
               </div>
               <div>
                 <p className="ui-text-label ui-text-text-primary">
                   Get my Account Code via Email
                 </p>
-                <p className="ui-text-caption ui-text-gray-400 ui-mt-1">
+                <p className="ui-text-caption ui-text-text-muted ui-mt-1">
                   Send a verification email to retrieve your account code.
                 </p>
               </div>
@@ -231,7 +231,7 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
         >
           CANCEL
         </Button>
-        <div className="ui-text-center ui-text-caption ui-text-gray-500">
+        <div className="ui-text-center ui-text-caption ui-text-secondary-text">
           <p>
             Your account code is a unique identifier used together with your
             email to access your account securely using zero-knowledge proofs.
@@ -283,8 +283,8 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
             className="ui-w-full"
           />
           {directError && (
-            <div className="ui-p-2.5 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg">
-              <p className="ui-text-body ui-text-red-400">{directError}</p>
+            <div className="ui-p-2.5 ui-bg-destructive/10 ui-border ui-border-destructive/50 ui-rounded-lg">
+              <p className="ui-text-body ui-text-destructive">{directError}</p>
             </div>
           )}
         </div>
@@ -312,12 +312,12 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
             )}
           </Button>
         </div>
-        <div className="ui-text-center ui-text-caption ui-text-gray-500">
+        <div className="ui-text-center ui-text-caption ui-text-secondary-text">
           <p>
             Don&apos;t know your account code?{" "}
             <button
               onClick={() => setLoginMode("email")}
-              className="ui-text-blue-400 ui-underline hover:ui-text-blue-300"
+              className="ui-text-cta ui-underline hover:ui-text-cta/80"
             >
               Get it via email verification
             </button>
@@ -379,8 +379,8 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
             className="ui-w-full"
           />
           {displayError && (
-            <div className="ui-p-2.5 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg">
-              <p className="ui-text-body ui-text-red-400">{displayError}</p>
+            <div className="ui-p-2.5 ui-bg-destructive/10 ui-border ui-border-destructive/50 ui-rounded-lg">
+              <p className="ui-text-body ui-text-destructive">{displayError}</p>
             </div>
           )}
         </div>
@@ -388,14 +388,14 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
 
       {phase === "waiting" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
-          <div className="ui-p-4 ui-bg-blue-900/20 ui-border ui-border-blue-500/50 ui-rounded-lg ui-w-full">
+          <div className="ui-p-4 ui-bg-blue-50 ui-border ui-border-blue-200 ui-rounded-lg ui-w-full">
             <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
-              <div className="ui-w-2 ui-h-2 ui-bg-blue-500 ui-rounded-full ui-animate-pulse"></div>
-              <p className="ui-text-label ui-text-blue-400">
+              <div className="ui-w-2 ui-h-2 ui-bg-cta ui-rounded-full ui-animate-pulse"></div>
+              <p className="ui-text-label ui-text-cta">
                 Verification email sent!
               </p>
             </div>
-            <p className="ui-text-caption ui-text-blue-300">
+            <p className="ui-text-caption ui-text-cta">
               Please check your email and reply &quot;confirm&quot; to the
               verification email to continue. Your account code will be
               extracted from the proof.
@@ -406,10 +406,10 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
 
       {phase === "polling" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
-          <div className="ui-p-4 ui-bg-yellow-900/20 ui-border ui-border-yellow-500/50 ui-rounded-lg ui-w-full">
+          <div className="ui-p-4 ui-bg-amber-50 ui-border ui-border-amber-300 ui-rounded-lg ui-w-full">
             <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
               <SpinnerV2 size="sm" color="black" />
-              <p className="ui-text-label ui-text-yellow-400">
+              <p className="ui-text-label ui-text-amber-600">
                 {currentStatus === ZK_EMAIL_STATUS.email_sent_awaiting_reply
                   ? "Waiting for email reply..."
                   : currentStatus === ZK_EMAIL_STATUS.email_replied
@@ -417,7 +417,7 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
                     : "Processing verification..."}
               </p>
             </div>
-            <p className="ui-text-caption ui-text-yellow-300">
+            <p className="ui-text-caption ui-text-amber-700">
               {currentStatus === ZK_EMAIL_STATUS.email_sent_awaiting_reply
                 ? 'Please check your email and reply "confirm" to continue.'
                 : currentStatus === ZK_EMAIL_STATUS.email_replied
@@ -430,14 +430,14 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
 
       {phase === "success" && (
         <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full ui-items-center">
-          <div className="ui-p-4 ui-bg-green-900/20 ui-border ui-border-green-500/50 ui-rounded-lg ui-w-full">
+          <div className="ui-p-4 ui-bg-emerald-50 ui-border ui-border-emerald-200 ui-rounded-lg ui-w-full">
             <div className="ui-flex ui-items-center ui-gap-1.5 ui-mb-1.5">
-              <div className="ui-w-2 ui-h-2 ui-bg-green-500 ui-rounded-full"></div>
-              <p className="ui-text-label ui-text-green-400">
+              <div className="ui-w-2 ui-h-2 ui-bg-accent-trust ui-rounded-full"></div>
+              <p className="ui-text-label ui-text-accent-trust">
                 Email verified successfully!
               </p>
             </div>
-            <p className="ui-text-caption ui-text-green-300">
+            <p className="ui-text-caption ui-text-accent-trust">
               Your account code has been retrieved. Logging you in...
             </p>
           </div>
@@ -446,8 +446,8 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
       )}
 
       {phase === "error" && displayError && (
-        <div className="ui-p-2.5 ui-bg-red-900/20 ui-border ui-border-red-500/50 ui-rounded-lg ui-w-full">
-          <p className="ui-text-body ui-text-red-400">{displayError}</p>
+        <div className="ui-p-2.5 ui-bg-destructive/10 ui-border ui-border-destructive/50 ui-rounded-lg ui-w-full">
+          <p className="ui-text-body ui-text-destructive">{displayError}</p>
         </div>
       )}
 
@@ -508,12 +508,12 @@ export const ZKEmailLogin: React.FC<ZKEmailLoginProps> = ({
       )}
 
       {phase === "form" && (
-        <div className="ui-text-center ui-text-caption ui-text-gray-500">
+        <div className="ui-text-center ui-text-caption ui-text-secondary-text">
           <p>
             Already know your account code?{" "}
             <button
               onClick={() => setLoginMode("direct")}
-              className="ui-text-blue-400 ui-underline hover:ui-text-blue-300"
+              className="ui-text-cta ui-underline hover:ui-text-cta/80"
             >
               Enter it directly
             </button>

@@ -17,7 +17,7 @@ const NavigationButton = React.forwardRef<
       ref={ref}
       {...props}
       className={cn(
-        "ui-h-[55px] ui-bg-surface-page ui-text-text-primary ui-border ui-rounded-lg ui-px-4 ui-py-3 ui-text-base ui-font-bold",
+        "ui-h-[52px] ui-bg-surface-page ui-text-text-primary ui-border ui-rounded-lg ui-px-4 ui-py-3 ui-text-body ui-font-bold",
         "ui-flex ui-items-center ui-justify-start ui-gap-3",
         "hover:ui-bg-surface-border ui-transition-colors ui-duration-100 ui-ease-in-out",
         { "ui-justify-between": subLabel },
@@ -26,7 +26,7 @@ const NavigationButton = React.forwardRef<
     >
       <div className="ui-flex ui-items-center ui-gap-3">
         {icon && (
-          <div className="ui-flex ui-items-center ui-justify-center ui-w-6 ui-h-6 min-w-6 min-h-6">
+          <div className="ui-flex ui-items-center ui-justify-center ui-w-6 ui-h-6 ui-min-w-6 ui-min-h-6">
             {icon}
           </div>
         )}

@@ -63,11 +63,13 @@ const config: Config = {
         lg: "10px",
         md: "10px",
       },
+      // Typography scale based on √φ (1.272) ratio: 12 → 14 → 18 → 23 → 29
+      // Line heights use φ (1.618) for body, √φ (1.272) for headings
       fontSize: {
-        "title-lg": ["32px", { lineHeight: "38px", fontWeight: "700" }],
-        title: ["24px", { lineHeight: "30px", fontWeight: "600" }],
-        "body-lg": ["18px", { lineHeight: "26px", fontWeight: "400" }],
-        body: ["14px", { lineHeight: "20px", fontWeight: "400" }],
+        "title-lg": ["29px", { lineHeight: "37px", fontWeight: "700" }],
+        title: ["23px", { lineHeight: "29px", fontWeight: "600" }],
+        "body-lg": ["18px", { lineHeight: "29px", fontWeight: "400" }],
+        body: ["14px", { lineHeight: "22px", fontWeight: "400" }],
         caption: ["12px", { lineHeight: "16px", fontWeight: "400" }],
         label: ["12px", { lineHeight: "16px", fontWeight: "600", letterSpacing: "0.05em" }],
       },

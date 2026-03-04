@@ -424,7 +424,7 @@ export const LoginWalletSelector = () => {
                 <div className="ui-flex ui-flex-col ui-items-center ui-justify-center ui-gap-4 ui-px-6">
                   <SadIcon aria-hidden="true" />
                   <p
-                    className="ui-text-center ui-font-bold ui-text-body ui-leading-[19.2px]"
+                    className="ui-text-center ui-font-bold ui-text-body"
                     role="status"
                   >
                     This authenticator can only be used as a backup right now.

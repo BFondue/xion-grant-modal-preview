@@ -76,9 +76,7 @@ const LoginOtpForm: React.FC<LoginOtpFormProps> = ({
 
   return (
     <div
-      className={cn("ui-flex ui-flex-col ui-items-center ui-gap-10 ui-w-full", {
-        "ui-gap-6": error,
-      })}
+      className="ui-flex ui-flex-col ui-items-center ui-gap-6 ui-w-full"
     >
       <div
         className="ui-flex ui-justify-center ui-w-full ui-max-w-full"
@@ -97,8 +95,8 @@ const LoginOtpForm: React.FC<LoginOtpFormProps> = ({
                 key={i}
                 index={i}
                 className={cn(
-                  "ui-w-12 ui-h-12 ui-shrink-0 ui-text-center ui-text-text-primary ui-text-[28px] ui-font-bold ui-border ui-rounded-lg !ui-shadow-none",
-                  "ui-outline-none ui-border-border focus-within:ui-border-border-focus ui-p-2.5 ui-text-2xl ui-bg-transparent",
+                  "ui-w-12 ui-h-12 ui-shrink-0 ui-text-center ui-text-text-primary ui-text-title-lg ui-border ui-rounded-lg !ui-shadow-none",
+                  "ui-outline-none ui-border-border focus-within:ui-border-border-focus ui-p-2.5 ui-bg-transparent",
                   { "ui-bg-surface-page": otp[i] },
                   {
                     "ui-border-destructive !ui-text-destructive ui-bg-inherit":
@@ -112,14 +110,14 @@ const LoginOtpForm: React.FC<LoginOtpFormProps> = ({
         </InputOTP>
       </div>
       <div className="ui-w-full ui-flex ui-flex-col ui-gap-2.5">
-        <p className="ui-text-center ui-text-destructive">{error}</p>
+        {error && <p className="ui-text-body ui-text-center ui-text-destructive">{error}</p>}
         <Button onClick={submitOtp} disabled={!isOtpValid || isSubmitted}>
           {isSubmitted ? <SpinnerV2 size="sm" color="black" /> : "CONFIRM"}
         </Button>
         {timeLeft ? (
           <div
             className={cn(
-              "ui-text-caption ui-text-inactive ui-w-full ui-text-center ui-leading-none ui-py-1",
+              "ui-text-caption ui-text-secondary-text ui-w-full ui-text-center ui-py-1",
               { "ui-opacity-50": isSubmitted },
             )}
           >

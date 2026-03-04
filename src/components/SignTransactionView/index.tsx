@@ -385,8 +385,8 @@ export function SignTransactionView({ transaction: txProp, granterAddress, onRes
 
         {/* Raw payload overlay — fills exact same space */}
         {showRawPayload && (
-          <div className="ui-absolute ui-inset-0 ui-rounded-xl ui-border ui-border-surface-border ui-bg-zinc-100 ui-p-3 ui-overflow-auto">
-            <pre className="ui-text-[11px] ui-leading-relaxed ui-font-mono ui-text-zinc-600 ui-whitespace-pre-wrap ui-break-all">
+          <div className="ui-absolute ui-inset-0 ui-rounded-xl ui-border ui-border-surface-border ui-bg-surface-page ui-p-3 ui-overflow-auto">
+            <pre className="ui-text-caption ui-leading-relaxed ui-font-mono ui-text-text-muted ui-whitespace-pre-wrap ui-break-all">
               {JSON.stringify(payload, null, 2)}
             </pre>
           </div>

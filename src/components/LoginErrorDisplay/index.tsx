@@ -54,7 +54,7 @@ export const LoginErrorDisplay = ({
       {errorMessage && (
         <div className="ui-w-full ui-border ui-border-destructive ui-rounded-lg ui-bg-destructive/10 ui-p-4 ui-flex ui-flex-col ui-items-center ui-text-center ui-gap-2.5">
           <ErrorIcon />
-          <span className="ui-font-bold ui-text-body-lg ui-leading-[21.6px]">
+          <span className="ui-font-bold ui-text-body-lg">
             Error Message
           </span>
           <p className="ui-text-body ui-font-bold">{errorMessage}</p>

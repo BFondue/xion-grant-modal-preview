@@ -67,16 +67,17 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           ref={ref}
           className={cn(
             "ui-fixed ui-z-50",
-            "ui-left-0 ui-top-0 md:ui-left-[50%] md:ui-top-[50%] md:-ui-translate-x-1/2 md:-ui-translate-y-1/2",
+            "ui-inset-0 md:ui-m-auto md:ui-h-fit",
             "ui-w-full md:ui-min-w-[380px] md:ui-max-w-[480px]",
             "ui-flex ui-flex-col ui-justify-center ui-gap-6 ui-p-6 md:ui-p-10",
-            "ui-bg-white ui-rounded-none md:ui-rounded-card md:ui-border md:ui-border-surface-border ui-shadow-lg",
-            "ui-h-screen ui-max-h-screen md:ui-max-h-[90vh] md:ui-h-auto",
+            "ui-bg-white ui-rounded-none md:ui-rounded-card md:ui-border md:ui-border-black/10 ui-shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]",
+            "ui-h-screen ui-max-h-screen md:ui-max-h-[90vh]",
             "ui-outline-none ui-transition-opacity ui-duration-200",
             "data-[state=closed]:ui-opacity-0",
             "data-[state=open]:ui-opacity-100",
             className,
           )}
+          style={{ zoom: typeof window !== "undefined" && window.innerWidth >= 768 ? 0.8 : undefined }}
           {...props}
         >
           {closeButton && (
@@ -141,7 +142,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     className={cn(
-      "ui-text-[32px] ui-leading-[38px] ui-font-bold ui-tracking-tight",
+      "ui-text-title ui-tracking-tight",
       className,
     )}
     ref={ref}
@@ -162,7 +163,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     className={cn(
-      "ui-text-secondary-text ui-text-sm ui-max-w-[340px] ui-mx-auto",
+      "ui-text-secondary-text ui-text-body ui-max-w-[340px] ui-mx-auto",
       className,
     )}
     ref={ref}

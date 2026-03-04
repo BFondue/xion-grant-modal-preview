@@ -51,8 +51,10 @@ import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 import {
   FEATURE_FLAGS,
   getStytchPublicToken,
+  isMainnet,
   STYTCH_PROXY_URL,
 } from "../../config";
+import { Separator } from "../ui/separator";
 import { SecuredByXion } from "../ui/SecuredByXion";
 import { useQueryParams } from "../../hooks/useQueryParams";
 
@@ -70,6 +72,7 @@ export const LoginScreen = () => {
   const [otpError, setOtpError] = useState<string | null>(null);
   const [isRedirectingToOAuth, setIsRedirectingToOAuth] = useState(false);
   const [showZKEmailLogin, setShowZKEmailLogin] = useState(false);
+  const [showNetwork, setShowNetwork] = useState(false);
   const tokenProcessed = useRef(false);
 
   // Use AuthStateManager via hook
@@ -972,19 +975,22 @@ export const LoginScreen = () => {
         </div>
       ) : (
         <div className="ui-animate-scale-in">
-          <DialogHeader className="ui-text-left">
-            <DialogTitle className="ui-font-light">Log in / Sign up</DialogTitle>
+          <DialogHeader>
+            <DialogTitle>Log in / Sign up</DialogTitle>
           </DialogHeader>
           <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full">
             <div className="ui-flex ui-flex-col ui-gap-4">
               <Input
-                baseInputClassName="!ui-text-[16px]"
                 placeholder="Email"
                 value={email}
                 onChange={handleEmailChange}
                 error={emailError}
                 onBlur={validateEmail}
                 onKeyDown={(e) => e.key === "Enter" && handleEmail()}
+                autoComplete="off"
+                data-1p-ignore
+                data-lpignore="true"
+                data-form-type="other"
               />
               <Button
                 onClick={handleEmail}
@@ -994,14 +1000,14 @@ export const LoginScreen = () => {
                 {isSendingEmail ? (
                   <SpinnerV2 size="sm" color="black" />
                 ) : (
-                  "LOG IN / SIGN UP"
+                  "CONTINUE"
                 )}
               </Button>
             </div>
             <div className="ui-flex ui-items-center ui-justify-center ui-gap-2.5">
-              <span className="ui-h-px ui-bg-border ui-w-full" />
-              <h6 className="ui-text-caption ui-text-secondary-text">OR</h6>
-              <span className="ui-h-px ui-bg-border ui-w-full" />
+              <Separator />
+              <span className="ui-text-caption ui-text-secondary-text ui-shrink-0">OR</span>
+              <Separator />
             </div>
             <div className="ui-flex ui-flex-col ui-gap-2.5">
               <NavigationButton
@@ -1027,115 +1033,117 @@ export const LoginScreen = () => {
                 </NavigationButton>
               )}
             </div>
-          </div>
-          {FEATURE_FLAGS.okx || FEATURE_FLAGS.metamask || FEATURE_FLAGS.zkemail ? (
-            <div className="ui-w-full ui-mt-2">
-              {showAdvanced ? (
-                <div className="ui-flex ui-w-full ui-gap-1.5 ui-items-center">
-                  <button
-                    className="ui-flex ui-items-center ui-justify-center ui-h-12 ui-w-8 ui-shrink-0"
-                    onClick={() => setShowAdvanced(false)}
-                  >
-                    <ChevronRightIcon
-                      className="ui-fill-text-secondary -ui-rotate-[90deg]"
-                    />
-                  </button>
-                  {FEATURE_FLAGS.okx ? (
-                    <Button
-                      variant="secondary"
-                      size="icon-large"
-                      onClick={handleOkx}
-                    >
-                      <img
-                        src={okxLogo}
-                        height={82}
-                        width={50}
-                        alt="OKX Logo"
-                        className="ui-min-w-7 ui-brightness-0"
-                      />
-                    </Button>
-                  ) : null}
-                  {FEATURE_FLAGS.keplr ? (
-                    <Button
-                      variant="secondary"
-                      size="icon-large"
-                      onClick={handleKeplr}
-                    >
-                      <KeplrLogo className="ui-min-w-6 ui-min-h-6" />
-                    </Button>
-                  ) : null}
-                  {FEATURE_FLAGS.metamask ? (
-                    <Button
-                      variant="secondary"
-                      size="icon-large"
-                      onClick={handleMetamask}
-                    >
-                      <MetamaskLogo className="ui-min-w-6 ui-min-h-6" />
-                    </Button>
-                  ) : null}
-                  {FEATURE_FLAGS.passkey ? (
-                    <Button
-                      variant="secondary"
-                      size="icon-large"
-                      onClick={getPasskey}
-                      className="ui-relative"
-                    >
-                      <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-neutral-500/50 ui-text-white ui-text-[10px] ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
-                        BETA
-                      </span>
-                      <PasskeyIcon className="ui-min-w-6 ui-min-h-6" />
-                    </Button>
-                  ) : null}
-                  {FEATURE_FLAGS.zkemail ? (
-                    <Button
-                      variant="secondary"
-                      size="icon-large"
-                      onClick={() => setShowZKEmailLogin(true)}
-                      className="ui-relative"
-                    >
-                      <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-emerald-600/80 ui-text-white ui-text-[10px] ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
-                        BETA
-                      </span>
-                      <ZKEmailIcon className="ui-min-w-6 ui-min-h-6" />
-                    </Button>
-                  ) : null}
-                </div>
-              ) : (
+            {(FEATURE_FLAGS.okx || FEATURE_FLAGS.metamask || FEATURE_FLAGS.zkemail) && (
+              <div className="ui-flex ui-flex-col ui-items-center ui-gap-2.5">
                 <button
-                  className="group ui-flex ui-w-full ui-items-center ui-gap-2.5"
-                  onClick={() => setShowAdvanced(true)}
+                  className="ui-flex ui-items-center ui-gap-1.5 ui-text-caption ui-text-secondary-text ui-transition-colors hover:ui-text-text-primary"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
                 >
                   Advanced Options
                   <ChevronRightIcon
-                    className="ui-fill-text-secondary ui-rotate-90 group-hover/base:ui-fill-text-primary"
+                    className={`ui-fill-current ui-transition-transform ui-duration-fast ${showAdvanced ? "-ui-rotate-90" : "ui-rotate-90"}`}
                   />
                 </button>
-              )}
-            </div>
-          ) : null}
+                {showAdvanced && (
+                  <div className="ui-flex ui-flex-wrap ui-justify-center ui-gap-2.5 ui-animate-fade-in">
+                    {FEATURE_FLAGS.okx && (
+                      <Button
+                        variant="secondary"
+                        size="icon-large"
+                        onClick={handleOkx}
+                      >
+                        <img
+                          src={okxLogo}
+                          height={82}
+                          width={50}
+                          alt="OKX Logo"
+                          className="ui-min-w-7 ui-brightness-0"
+                        />
+                      </Button>
+                    )}
+                    {FEATURE_FLAGS.keplr && (
+                      <Button
+                        variant="secondary"
+                        size="icon-large"
+                        onClick={handleKeplr}
+                      >
+                        <KeplrLogo className="ui-min-w-6 ui-min-h-6" />
+                      </Button>
+                    )}
+                    {FEATURE_FLAGS.metamask && (
+                      <Button
+                        variant="secondary"
+                        size="icon-large"
+                        onClick={handleMetamask}
+                      >
+                        <MetamaskLogo className="ui-min-w-6 ui-min-h-6" />
+                      </Button>
+                    )}
+                    {FEATURE_FLAGS.passkey && (
+                      <Button
+                        variant="secondary"
+                        size="icon-large"
+                        onClick={getPasskey}
+                        className="ui-relative"
+                      >
+                        <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-text-muted/50 ui-text-white ui-text-caption ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
+                          BETA
+                        </span>
+                        <PasskeyIcon className="ui-min-w-6 ui-min-h-6" />
+                      </Button>
+                    )}
+                    {FEATURE_FLAGS.zkemail && (
+                      <Button
+                        variant="secondary"
+                        size="icon-large"
+                        onClick={() => setShowZKEmailLogin(true)}
+                        className="ui-relative"
+                      >
+                        <span className="ui-absolute ui-top-0 ui-right-0 ui-bg-accent-trust/80 ui-text-white ui-text-caption ui-leading-none ui-font-bold ui-px-1 ui-py-0.5 ui-rounded-[7px] ui-rounded-br-none ui-rounded-tl-none">
+                          BETA
+                        </span>
+                        <ZKEmailIcon className="ui-min-w-6 ui-min-h-6" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Disclaimer */}
-      <div className="ui-text-caption ui-text-center ui-max-w-[340px] ui-mx-auto ui-mt-1">
-        <span className="ui-text-secondary-text">
-          By continuing, you agree to and acknowledge that you have read and
-          understand the{" "}
-        </span>
-        <a
-          href="https://burnt.com/terms-and-conditions"
-          target="_blank"
-          rel="noreferrer"
-          className="ui-text-text-primary ui-underline ui-font-bold"
+      {/* Footer */}
+      <div className="ui-mt-auto ui-pt-6 ui-flex ui-flex-col ui-items-center ui-gap-2">
+        <div className="ui-text-caption ui-text-center ui-max-w-[340px]">
+          <span className="ui-text-secondary-text">
+            By continuing, you agree to and acknowledge that you have read and
+            understand the{" "}
+          </span>
+          <a
+            href="https://burnt.com/terms-and-conditions"
+            target="_blank"
+            rel="noreferrer"
+            className="ui-text-text-primary ui-underline ui-font-bold"
+          >
+            Disclaimer
+          </a>
+          <span className="ui-text-secondary-text">.</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowNetwork((v) => !v)}
+          className="ui-transition-opacity ui-duration-fast hover:ui-opacity-70"
         >
-          Disclaimer
-        </a>
-        <span className="ui-text-secondary-text">.</span>
-      </div>
-
-      {/* Secured by XION */}
-      <div className="ui-mt-2">
-        <SecuredByXion />
+          <SecuredByXion />
+        </button>
+        {showNetwork && (
+          <span
+            className={`ui-text-caption ui-font-medium ui-animate-fade-in ${isMainnet() ? "ui-text-mainnet" : "ui-text-testnet"}`}
+          >
+            {isMainnet() ? "Mainnet" : "Testnet"}
+          </span>
+        )}
       </div>
     </>
   );

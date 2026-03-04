@@ -184,7 +184,7 @@ describe("AbstraxionSignin Component", () => {
     // Check all essential elements are present
     expect(screen.getByText("Email")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /log in \/ sign up/i }),
+      screen.getByRole("button", { name: /continue/i }),
     ).toBeInTheDocument();
     expect(screen.getByText("Google")).toBeInTheDocument();
   });
@@ -205,7 +205,7 @@ describe("AbstraxionSignin Component", () => {
     // Submit valid email
     await user.type(getEmailInput(), "test@example.com");
     await user.click(
-      screen.getByRole("button", { name: /log in \/ sign up/i }),
+      screen.getByRole("button", { name: /continue/i }),
     );
 
     // Check transition to OTP screen
@@ -239,7 +239,7 @@ describe("AbstraxionSignin Component", () => {
     // Navigate to OTP screen
     await user.type(getEmailInput(), "test@example.com");
     await user.click(
-      screen.getByRole("button", { name: /log in \/ sign up/i }),
+      screen.getByRole("button", { name: /continue/i }),
     );
 
     await waitFor(() => {
@@ -275,7 +275,7 @@ describe("AbstraxionSignin Component", () => {
     // Attempt login
     await user.type(getEmailInput(), "test@example.com");
     await user.click(
-      screen.getByRole("button", { name: /log in \/ sign up/i }),
+      screen.getByRole("button", { name: /continue/i }),
     );
 
     await waitFor(() => {
