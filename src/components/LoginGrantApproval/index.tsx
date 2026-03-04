@@ -111,7 +111,7 @@ export const LoginGrantApproval = ({
     data: treasuryData,
     isLoading: isTreasuryQueryLoading,
     error: treasuryError,
-  } = useTreasuryDiscovery(treasury, client, account?.id);
+  } = useTreasuryDiscovery(treasury);
 
   // Extract permissions and params from query result
   const permissions = treasuryData?.permissionDescriptions || [];

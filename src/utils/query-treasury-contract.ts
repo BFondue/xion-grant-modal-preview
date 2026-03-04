@@ -6,12 +6,10 @@ import {
   formatXionAmount,
   CosmosAuthzPermission,
   createCompositeTreasuryStrategy,
-  queryTreasuryContractWithPermissions,
   type TreasuryContractResponse,
   type PermissionDescription,
 } from "@burnt-labs/account-management";
-import type { AAClient } from "@burnt-labs/signers";
-import { DAODAO_TREASURY_INDEXER_URL, USDC_DENOM } from "../config";
+import { DAODAO_TREASURY_INDEXER_URL, TREASURY_API_URL } from "../config";
 
 // Re-export for backward compatibility
 export {
@@ -27,6 +25,7 @@ export type { TreasuryContractResponse, PermissionDescription };
 
 // Create treasury strategy once at module level (singleton pattern)
 // This uses xion.js implementation with DaoDao indexer + direct query fallback
+// Used by LoginGrantApproval for grant generation
 export const treasuryStrategy = createCompositeTreasuryStrategy({
   daodao: {
     indexerUrl: DAODAO_TREASURY_INDEXER_URL,
@@ -35,39 +34,27 @@ export const treasuryStrategy = createCompositeTreasuryStrategy({
 });
 
 /**
- * Queries the DAPP treasury contract to parse and display requested permissions to end user
- * Now uses xion.js implementation directly for consistency across all consumers
+ * Queries the treasury worker API to get treasury permissions and parameters
  *
  * @param contractAddress - The address for the deployed treasury contract instance
- * @param client - Client to query RPC (AAClient implements ContractQueryClient interface)
- * @param account - Users account address
  * @returns The human-readable permission descriptions and treasury parameters
  */
 export const queryTreasuryContract = async (
   contractAddress?: string,
-  client?: AAClient,
-  account?: string,
 ): Promise<TreasuryContractResponse> => {
   if (!contractAddress) {
     throw new Error("Missing contract address");
   }
 
-  if (!client) {
-    throw new Error("Missing client");
-  }
-
-  if (!account) {
-    throw new Error("Missing account");
-  }
-
-  // Use xion.js queryTreasuryContractWithPermissions directly
-  // AAClient implements ContractQueryClient interface required by xion.js
-  // Returns TreasuryParams with metadata as JSON string (matching contract definition)
-  return await queryTreasuryContractWithPermissions(
-    contractAddress,
-    client,
-    account,
-    treasuryStrategy,
-    USDC_DENOM, // Pass network-specific USDC denom
+  const response = await fetch(
+    `${TREASURY_API_URL}/treasury/${contractAddress}`,
   );
+
+  if (!response.ok) {
+    throw new Error(
+      `Treasury query failed: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  return response.json();
 };

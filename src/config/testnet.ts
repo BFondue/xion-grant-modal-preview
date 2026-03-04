@@ -17,6 +17,7 @@ export const testnetConfig = {
   dashboardUrl: "https://settings.testnet.burnt.com",
   stytchProxyUrl: "https://stytch.testnet.burnt.com/v1",
   abstraxionApiUrl: "https://aa-api.testnet.burnt.com",
+  treasuryApiUrl: "https://treasury-api.testnet.burnt.com",
   xionApiUrl: "https://api.xion-testnet-2.burnt.com",
   xionRpcUrl: "https://rpc.xion-testnet-2.burnt.com",
   zkEmailBackendUrl: "https://zk-api.testnet.burnt.com",
