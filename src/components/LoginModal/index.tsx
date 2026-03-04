@@ -13,7 +13,6 @@ import { CONNECTION_METHOD } from "../../auth/useAuthState";
 import { AUTHENTICATOR_TYPE } from "@burnt-labs/signers";
 
 import { useQueryParams } from "../../hooks/useQueryParams";
-import FooterLogin from "../ui/footerLogin";
 
 export interface ModalProps {
   onClose: VoidFunction;
@@ -201,8 +200,6 @@ export const LoginModal = ({ isOpen, onClose, onApprove, onDeny }: ModalProps) =
           )}
         </DialogContent>
       </Dialog>
-      {/* TOS Footer - Only show during login flows, not when viewing wallets in dashboard */}
-      {!isConnected && <FooterLogin />}
     </>
   );
 };

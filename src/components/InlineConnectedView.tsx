@@ -7,7 +7,6 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "./ui/collapsible";
-import { useSigningClient } from "../hooks";
 import { useQueryParams } from "../hooks/useQueryParams";
 import { useTreasuryDiscovery } from "../hooks/useTreasuryDiscovery";
 import { PermissionsList } from "./LoginGrantApproval/PermissionsList";
@@ -45,8 +44,6 @@ export function InlineConnectedView({
 }: InlineConnectedViewProps) {
   const [permissionsOpen, setPermissionsOpen] = useState(false);
 
-  const { client } = useSigningClient();
-
   // Read grant params directly from URL (they stay in the URL after grant approval)
   const { treasury, contracts, stake, bank } = useQueryParams([
     "treasury",
@@ -66,7 +63,7 @@ export function InlineConnectedView({
 
   // Re-query treasury contract for permissions (React Query cache serves instantly if recent)
   const { data: treasuryData, isLoading: isTreasuryLoading } =
-    useTreasuryDiscovery(treasury || undefined, client, account.id);
+    useTreasuryDiscovery(treasury || undefined);
 
   const permissions = treasuryData?.permissionDescriptions || [];
 

@@ -133,6 +133,10 @@ export const STYTCH_PROXY_URL =
 export const ABSTRAXION_API_URL =
   import.meta.env.VITE_ABSTRAXION_API_URL || networkConfig.abstraxionApiUrl;
 
+// Treasury Worker API URL - used for treasury contract queries
+export const TREASURY_API_URL =
+  import.meta.env.VITE_TREASURY_API_URL || networkConfig.treasuryApiUrl;
+
 export const ZK_EMAIL_BACKEND_URL =
   import.meta.env.VITE_ZKEMAIL_BACKEND_URL || networkConfig.zkEmailBackendUrl;
 

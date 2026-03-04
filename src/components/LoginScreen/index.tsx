@@ -972,6 +972,9 @@ export const LoginScreen = () => {
         </div>
       ) : (
         <div className="ui-animate-scale-in">
+          <DialogHeader className="ui-text-left">
+            <DialogTitle className="ui-font-light">Log in / Sign up</DialogTitle>
+          </DialogHeader>
           <div className="ui-flex ui-flex-col ui-gap-6 ui-w-full">
             <div className="ui-flex ui-flex-col ui-gap-4">
               <Input
@@ -1027,18 +1030,16 @@ export const LoginScreen = () => {
           </div>
           {FEATURE_FLAGS.okx || FEATURE_FLAGS.metamask || FEATURE_FLAGS.zkemail ? (
             <div className="ui-w-full ui-mt-2">
-              <button
-                className="group ui-flex ui-w-full ui-items-center ui-gap-1.5"
-                onClick={() => setShowAdvanced((v) => !v)}
-              >
-                <ChevronRightIcon
-                  className={`ui-fill-text-secondary ui-transition-transform ui-duration-200 ${showAdvanced ? "-ui-rotate-[90deg]" : "ui-rotate-90"}`}
-                />
-                <span className="ui-text-secondary-text group-hover:ui-text-text-primary ui-transition-colors">
-                  Advanced Options
-                </span>
-              </button>
-              <div className={`ui-flex ui-w-full ui-gap-1.5 ui-items-center ui-mt-2 ui-transition-all ui-duration-300 ${showAdvanced ? "ui-opacity-100 ui-translate-y-0" : "ui-opacity-0 -ui-translate-y-1 ui-pointer-events-none"}`}>
+              {showAdvanced ? (
+                <div className="ui-flex ui-w-full ui-gap-1.5 ui-items-center">
+                  <button
+                    className="ui-flex ui-items-center ui-justify-center ui-h-12 ui-w-8 ui-shrink-0"
+                    onClick={() => setShowAdvanced(false)}
+                  >
+                    <ChevronRightIcon
+                      className="ui-fill-text-secondary -ui-rotate-[90deg]"
+                    />
+                  </button>
                   {FEATURE_FLAGS.okx ? (
                     <Button
                       variant="secondary"
@@ -1098,7 +1099,18 @@ export const LoginScreen = () => {
                       <ZKEmailIcon className="ui-min-w-6 ui-min-h-6" />
                     </Button>
                   ) : null}
-              </div>
+                </div>
+              ) : (
+                <button
+                  className="group ui-flex ui-w-full ui-items-center ui-gap-2.5"
+                  onClick={() => setShowAdvanced(true)}
+                >
+                  Advanced Options
+                  <ChevronRightIcon
+                    className="ui-fill-text-secondary ui-rotate-90 group-hover/base:ui-fill-text-primary"
+                  />
+                </button>
+              )}
             </div>
           ) : null}
         </div>
